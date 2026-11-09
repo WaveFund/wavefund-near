@@ -1,0 +1,35 @@
+Compiling 2 files with Solc 0.8.26
+Solc 0.8.26 finished in 22.46s
+Compiler run successful with warnings:
+Warning (2018): Function state mutability can be restricted to pure
+  --> test/RedstoneOracle.t.sol:86:5:
+   |
+86 |     function _package(uint256 key, uint256 stable, uint256 asset, uint256 timestamp) internal returns (bytes memory) {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+Ran 21 tests for test/RedstoneOracle.t.sol:RedstoneOracleTest
+[PASS] testCacheExpiresEvenWithoutAnotherUpdate() (gas: 113078)
+[PASS] testDiagnosticProbeDoesNotClaimFreshness() (gas: 738743)
+[PASS] testDuplicateSignerCannotMeetQuorum() (gas: 39664)
+[PASS] testFutureSignedUpdateRejected() (gas: 44429)
+[PASS] testHistoricalProductionDataCannotPassAsCurrent() (gas: 841665)
+[PASS] testInvalidRecoveryByteRejected() (gas: 16501)
+[PASS] testMedianIsTakenAcrossSigners() (gas: 112560)
+[PASS] testMismatchedPackageTimesRejected() (gas: 33915)
+[PASS] testNoPayloadRejected() (gas: 11121)
+[PASS] testOlderFreshUpdateCannotRollBackPrice() (gas: 150165)
+[PASS] testOnlyAssetSignaturesCannotSupplyStablePrice() (gas: 38118)
+[PASS] testProductionPolicyAcceptsAuthenticHistoricalPackages() (gas: 914667)
+[PASS] testReadBeforeVerifiedUpdateRejected() (gas: 11254)
+[PASS] testReplayCannotReplaceVerifiedPrice() (gas: 143497)
+[PASS] testStaleSignedUpdateRejected() (gas: 44784)
+[PASS] testTamperedPriceRejectedBySignature() (gas: 25725)
+[PASS] testThreeUniqueSignersPopulateReadInterface() (gas: 114097)
+[PASS] testTwoSignersCannotMeetQuorum() (gas: 32973)
+[PASS] testUnauthorizedSignerRejected() (gas: 23704)
+[PASS] testVerifiedCacheSettlesActualPerformanceTracker() (gas: 1415796)
+[PASS] testZeroPriceRejectedWithoutMutatingCache() (gas: 50128)
+Suite result: ok. 21 passed; 0 failed; 0 skipped; finished in 6.03ms (9.98ms CPU time)
+
+Ran 1 test suite in 6.87ms (6.03ms CPU time): 21 tests passed, 0 failed, 0 skipped (21 total tests)

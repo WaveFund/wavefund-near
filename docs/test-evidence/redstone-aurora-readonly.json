@@ -1,0 +1,90 @@
+[
+  {
+    "endpoint": "https://testnet.aurora.dev",
+    "block": "0x1081ebea",
+    "block_timestamp": 1794244810,
+    "case": "authentic_historical_signature_diagnostic",
+    "runtime_sha256": "ddb7666c4c5d9238d3ede8951c7acb4efc679bef0ee78da4cf17207f87785504",
+    "response": {
+      "id": 1,
+      "jsonrpc": "2.0",
+      "result": "0x0000000000000000000000000000000000000000000000000000000005f5b4d9000000000000000000000000000000000000000000000000000000512fda8e9d000000000000000000000000000000000000000000000000000001906f75a7a0"
+    }
+  },
+  {
+    "endpoint": "https://testnet.aurora.dev",
+    "block": "0x1081ebea",
+    "block_timestamp": 1794244810,
+    "case": "tampered_signature_rejected",
+    "runtime_sha256": "ddb7666c4c5d9238d3ede8951c7acb4efc679bef0ee78da4cf17207f87785504",
+    "response": {
+      "error": {
+        "code": 3,
+        "data": "0xec459bc00000000000000000000000000e2391a327471e64c419d9acf9215ff78c6fb403",
+        "message": "execution reverted"
+      },
+      "id": 1,
+      "jsonrpc": "2.0"
+    }
+  },
+  {
+    "endpoint": "https://testnet.aurora.dev",
+    "block": "0x1081ebea",
+    "block_timestamp": 1794244810,
+    "case": "production_stale_data_rejected",
+    "runtime_sha256": "d15d2c94ac4392231645acec2c2fa9542b8c078af70023ef1e5ad6cb04a178ef",
+    "response": {
+      "error": {
+        "code": 3,
+        "data": "0x4a2be93f000000000000000000000000000000000000000000000000000001906f75a7a0",
+        "message": "execution reverted"
+      },
+      "id": 1,
+      "jsonrpc": "2.0"
+    }
+  },
+  {
+    "endpoint": "https://mainnet.aurora.dev",
+    "block": "0xd56dfbc",
+    "block_timestamp": 1794244812,
+    "case": "authentic_historical_signature_diagnostic",
+    "runtime_sha256": "ddb7666c4c5d9238d3ede8951c7acb4efc679bef0ee78da4cf17207f87785504",
+    "response": {
+      "id": 1,
+      "jsonrpc": "2.0",
+      "result": "0x0000000000000000000000000000000000000000000000000000000005f5b4d9000000000000000000000000000000000000000000000000000000512fda8e9d000000000000000000000000000000000000000000000000000001906f75a7a0"
+    }
+  },
+  {
+    "endpoint": "https://mainnet.aurora.dev",
+    "block": "0xd56dfbc",
+    "block_timestamp": 1794244812,
+    "case": "tampered_signature_rejected",
+    "runtime_sha256": "ddb7666c4c5d9238d3ede8951c7acb4efc679bef0ee78da4cf17207f87785504",
+    "response": {
+      "error": {
+        "code": 3,
+        "data": "0xec459bc00000000000000000000000000e2391a327471e64c419d9acf9215ff78c6fb403",
+        "message": "execution reverted"
+      },
+      "id": 1,
+      "jsonrpc": "2.0"
+    }
+  },
+  {
+    "endpoint": "https://mainnet.aurora.dev",
+    "block": "0xd56dfbc",
+    "block_timestamp": 1794244812,
+    "case": "production_stale_data_rejected",
+    "runtime_sha256": "d15d2c94ac4392231645acec2c2fa9542b8c078af70023ef1e5ad6cb04a178ef",
+    "response": {
+      "error": {
+        "code": 3,
+        "data": "0x4a2be93f000000000000000000000000000000000000000000000000000001906f75a7a0",
+        "message": "execution reverted"
+      },
+      "id": 1,
+      "jsonrpc": "2.0"
+    }
+  }
+]

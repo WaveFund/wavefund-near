@@ -1,0 +1,23 @@
+Compiling 2 files with Solc 0.8.26
+Solc 0.8.26 finished in 22.53s
+Compiler run successful with warnings:
+Warning (2018): Function state mutability can be restricted to pure
+  --> test/RedstoneOracle.t.sol:86:5:
+   |
+86 |     function _package(uint256 key, uint256 stable, uint256 asset, uint256 timestamp) internal returns (bytes memory) {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+Ran 1 test for test/RedstoneOracle.t.sol:RedstoneOracleTest
+[FAIL: next call did not revert as expected] testReplayCannotReplaceVerifiedPrice() (gas: 144804)
+Suite result: FAILED. 0 passed; 1 failed; 0 skipped; finished in 5.34ms (1.17ms CPU time)
+
+Ran 1 test suite in 7.28ms (5.34ms CPU time): 0 tests passed, 1 failed, 0 skipped (1 total tests)
+
+Failing tests:
+Encountered 1 failing test in test/RedstoneOracle.t.sol:RedstoneOracleTest
+[FAIL: next call did not revert as expected] testReplayCannotReplaceVerifiedPrice() (gas: 144804)
+
+Encountered a total of 1 failing tests, 0 tests succeeded
+
+Tip: Run `forge test --rerun` to retry only the 1 failed test

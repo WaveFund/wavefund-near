@@ -1,0 +1,19 @@
+No files changed, compilation skipped
+
+Ran 13 tests for test/WaveV4ProposalMarket.Quotes.t.sol:WaveV4ProposalMarketQuotesTest
+[PASS] testFuzz_QuoteEqualsExecution_AtAnyTimeInWindow(uint256,uint256,uint8) (runs: 256, μ: 898269, ~: 776116)
+[PASS] testFuzz_QuotesRevertAtAnyTimeOutsideWindow(uint256,bool) (runs: 256, μ: 42874, ~: 42771)
+[PASS] test_QuoteEqualsExecution_AtTradingStartAndLastSecond() (gas: 1655904)
+[PASS] test_QuoteSell_PendingRemainderInsideWindow_TradingClosedOutside() (gas: 839206)
+[PASS] test_Quotes_RevertAfterTradingEnd() (gas: 67563)
+[PASS] test_Quotes_RevertAtTradingEnd() (gas: 39168)
+[PASS] test_Quotes_RevertBeforeTradingStart() (gas: 66011)
+[PASS] test_Quotes_TradingClosedCarriesTheMarketsOwnTiming() (gas: 1432106)
+[PASS] test_Quotes_UnseededMarketReportsNotSeededRegardlessOfTime() (gas: 26952)
+[PASS] test_Quotes_WindowIsHalfOpen_ReopeningTheClockReopensQuotes() (gas: 713685)
+[PASS] test_Quotes_WorkAtTradingStart() (gas: 684690)
+[PASS] test_Quotes_WorkMidWindowAndAtLastSecond() (gas: 1344352)
+[PASS] test_Quotes_ZeroAmountStillRejectedInsideWindow() (gas: 37702)
+Suite result: ok. 13 passed; 0 failed; 0 skipped; finished in 348.62ms (368.20ms CPU time)
+
+Ran 1 test suite in 349.09ms (348.62ms CPU time): 13 tests passed, 0 failed, 0 skipped (13 total tests)

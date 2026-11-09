@@ -1,0 +1,14 @@
+No files changed, compilation skipped
+
+Ran 8 tests for test/WaveV4ProposalMarket.ErrorArgs.t.sol:WaveV4ProposalMarketErrorArgsTest
+[PASS] test_AlreadyFinalized_CarriesRoundAndProposalId() (gas: 1476085)
+[PASS] test_AlreadySeeded_CarriesRoundAndProposalId() (gas: 1442673)
+[PASS] test_MarketNotFound_CarriesRoundAndProposalId() (gas: 35672)
+[PASS] test_MarketNotSeeded_CarriesRoundAndProposalId_OnEveryEntryPoint() (gas: 124607)
+[PASS] test_MarketNotSeeded_OnlyForTheMissingPairNotItsNeighbours() (gas: 1435332)
+[PASS] test_NoPendingSettlement_CarriesRoundAndProposalId() (gas: 2319048)
+[PASS] test_PendingRemainder_CarriesRoundAndProposalId() (gas: 2178225)
+[PASS] test_Slippage_CarriesMinRequiredThenActual_AllFourTrades() (gas: 3202651)
+Suite result: ok. 8 passed; 0 failed; 0 skipped; finished in 7.55ms (8.63ms CPU time)
+
+Ran 1 test suite in 7.92ms (7.55ms CPU time): 8 tests passed, 0 failed, 0 skipped (8 total tests)

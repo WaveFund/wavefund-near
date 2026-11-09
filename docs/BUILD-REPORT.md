@@ -1,5 +1,7 @@
 # Contracts v1 — build and verification report
 
+Follow-up: [RedStone proof](REDSTONE-PROOF.md) adds a verified signed-price cache. The counts and live-integration notes below describe the original v1 baseline.
+
 9 November 2026. New local repository, branch `feat/trading-safe-v1`. No remote configured; original Wavefund repository unchanged.
 
 ## Outcome

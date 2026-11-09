@@ -1,0 +1,153 @@
+No files changed, compilation skipped
+
+Ran 4 tests for test/ProposerRegistry.Invariant.t.sol:ProposerRegistryInvariantTest
+[PASS] invariant_CountersMatchGhosts() (runs: 64, calls: 2048, reverts: 0)
+
+╭-----------------+----------------+-------+---------+----------╮
+| Contract        | Selector       | Calls | Reverts | Discards |
++===============================================================+
+| RegistryHandler | claim          | 294   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | lock           | 310   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | recordProposal | 301   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | recordWin      | 288   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | refund         | 286   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | setBlocked     | 289   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | slash          | 280   | 0       | 0        |
+╰-----------------+----------------+-------+---------+----------╯
+
+Logs:
+  Bound result 4411
+  Bound result 2518961
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 1294
+  Bound result 2195
+  Bound result 537
+  Bound result 1863243
+  Bound result 11
+  Bound result 3000
+  Bound result 849368
+  Bound result 40832
+  Bound result 183
+  Bound result 192
+  Bound result 71057
+
+[PASS] invariant_NoNativeBalance() (runs: 64, calls: 2048, reverts: 0)
+
+╭-----------------+----------------+-------+---------+----------╮
+| Contract        | Selector       | Calls | Reverts | Discards |
++===============================================================+
+| RegistryHandler | claim          | 302   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | lock           | 280   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | recordProposal | 273   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | recordWin      | 292   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | refund         | 273   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | setBlocked     | 322   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | slash          | 306   | 0       | 0        |
+╰-----------------+----------------+-------+---------+----------╯
+
+Logs:
+  Bound result 914782
+  Bound result 0
+  Bound result 1000
+  Bound result 1
+  Bound result 1048814
+  Bound result 242
+  Bound result 3109
+  Bound result 3
+  Bound result 2032
+  Bound result 3665087
+  Bound result 4183
+  Bound result 256
+  Bound result 933816
+
+[PASS] invariant_RegistryBalanceEqualsLockedPlusPending() (runs: 64, calls: 2048, reverts: 0)
+
+╭-----------------+----------------+-------+---------+----------╮
+| Contract        | Selector       | Calls | Reverts | Discards |
++===============================================================+
+| RegistryHandler | claim          | 293   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | lock           | 316   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | recordProposal | 279   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | recordWin      | 252   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | refund         | 314   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | setBlocked     | 304   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | slash          | 290   | 0       | 0        |
+╰-----------------+----------------+-------+---------+----------╯
+
+Logs:
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2948378
+  Bound result 1751
+  Bound result 0
+  Bound result 2631436
+  Bound result 3
+  Bound result 0
+  Bound result 3
+  Bound result 0
+  Bound result 0
+  Bound result 3350568
+  Bound result 5000000
+
+[PASS] invariant_TreasuryReceivedExactlySlashed() (runs: 64, calls: 2048, reverts: 0)
+
+╭-----------------+----------------+-------+---------+----------╮
+| Contract        | Selector       | Calls | Reverts | Discards |
++===============================================================+
+| RegistryHandler | claim          | 272   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | lock           | 317   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | recordProposal | 304   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | recordWin      | 281   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | refund         | 278   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | setBlocked     | 308   | 0       | 0        |
+|-----------------+----------------+-------+---------+----------|
+| RegistryHandler | slash          | 288   | 0       | 0        |
+╰-----------------+----------------+-------+---------+----------╯
+
+Logs:
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 0
+  Bound result 2
+  Bound result 0
+  Bound result 5030
+  Bound result 0
+  Bound result 18
+  Bound result 0
+  Bound result 830
+  Bound result 0
+  Bound result 12
+  Bound result 0
+  Bound result 4579176
+
+Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 311.60ms (805.96ms CPU time)
+
+Ran 1 test suite in 312.38ms (311.60ms CPU time): 4 tests passed, 0 failed, 0 skipped (4 total tests)

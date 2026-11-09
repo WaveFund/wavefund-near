@@ -2,6 +2,8 @@
 
 Local Solidity implementation targeting Aurora testnet (chain 1313161555). This is a prototype, not an audited or production-approved deployment. No live deployment has been performed.
 
+Current follow-up: [RedStone signature proof and remaining live-data gate](docs/REDSTONE-PROOF.md). The latest full suite has **391 passed / 0 failed / 0 skipped**.
+
 ## Model
 
 Manager-owned Safe assets are independent of forecaster escrow. A manager authorizes exact round timing, payout bounds and averaging window. Forecasters trade conditional claims; the selected allocation executes through a CALL-only module. Proposal 0 means Hold actual quantities. Other proposals specify the investment asset weight in basis points. All eligible Safe capital is available, with no extra mandatory 50% cap.
@@ -34,6 +36,7 @@ Run untrusted code in your isolated environment. The development verification us
 | TradingSafeModule | Safe-approved terms, frozen balances, canonical execution, approvals and postconditions |
 | PerformanceTracker | Fixed-portfolio valuation and bounded post-deadline settlement |
 | FeedPortfolioOracle | Validates AggregatorV3-format feed prices, freshness and decimal normalization |
+| RedstonePortfolioOracle | Permissionless signature-verified USDC/ETH price cache; live gateway access still pending |
 | DiaPortfolioOracle | Equivalent validated DIA-format consumer; documented live testnet feed is stale |
 
 Detailed flow and custody boundaries: [architecture](docs/ARCHITECTURE.md).
@@ -52,7 +55,7 @@ The first successful observation inside the configured window settles. Both feed
 
 - DIA's documented testnet contract had stale ETH/USD and USDC/USD observations in 9 November 2026 RPC checks. It must not be used as a live price source.
 - AggregatorV3 compatibility is an ABI format, not evidence that Chainlink operates a suitable Aurora deployment.
-- RedStone signed data remains a candidate; this repository does not implement or claim verified RedStone payload handling.
+- RedStone signature verification now passes local tests and read-only Aurora runtime probes using historical production data. Fresh gateway delivery remains unverified without API access; no historical-data fallback exists.
 - Local v4 tests do not prove a canonical Aurora v4 deployment, Aurora gas limits, or live hook execution.
 - Investment router tests use a clearly named test fixture. Real token identity, pool liquidity, quote/slippage and Safe fills remain deployment gates.
 - Forecasters must verify the instance bytecode and oracle implementation/feed identity; arbitrary manager-supplied oracle contracts are not trustworthy merely because they implement an interface. Oracle inputs must match the approved assets. Nonstandard fee/rebasing tokens are outside v1.
@@ -67,4 +70,4 @@ Engine administration goes to the Safe. Token-factory and registry role administ
 
 ## Attribution
 
-Forecasting code and associated tests derive from https://github.com/advaitrane98/wavefund at commit 8629c21f2c7b93591afbf27c2a858a9008f9350e. Original MIT copyright is retained in LICENSE. New execution/oracle/integration code is identified in docs/BUILD-REPORT.md. Dependency commits/checksums are in docs/dependency-pins.json. Uniswap dependencies contain their own per-file licenses; the root MIT license does not relicense them.
+Forecasting code and associated tests derive from https://github.com/advaitrane98/wavefund at commit 8629c21f2c7b93591afbf27c2a858a9008f9350e. Original MIT copyright is retained in LICENSE. New execution/oracle/integration code is identified in docs/BUILD-REPORT.md. Dependency commits/checksums are in docs/dependency-pins.json. Uniswap and RedStone dependencies contain their own per-file licenses; the root MIT license does not relicense them.

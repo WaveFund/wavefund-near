@@ -1,0 +1,50 @@
+No files changed, compilation skipped
+
+Ran 24 tests for test/WaveHook.Twap.t.sol:WaveHookTwapTest
+[PASS] test_AdapterTradesAtOrAfterEndAreRejectedByHook() (gas: 1952152)
+[PASS] test_BoundaryTradesCannotExceedBounds_LongIs0_BuyLong() (gas: 2939073)
+Logs:
+  max LONG buy (credits): 44750738
+  pLong at the edge: 0.989946902198476752
+
+[PASS] test_BoundaryTradesCannotExceedBounds_LongIs0_BuyShort() (gas: 3101981)
+Logs:
+  max SHORT buy (credits): 44750738
+  pLong at the edge: 0.010053097801523247
+
+[PASS] test_BoundaryTradesCannotExceedBounds_LongIs1_BuyLong() (gas: 3106387)
+Logs:
+  max LONG buy (credits): 44750738
+  pLong at the edge: 0.989946902198476752
+
+[PASS] test_BoundaryTradesCannotExceedBounds_LongIs1_BuyShort() (gas: 2933094)
+Logs:
+  max SHORT buy (credits): 44750738
+  pLong at the edge: 0.010053097801523247
+
+[PASS] test_DifferentWindowsAreEnforcedPerMarket() (gas: 2933067)
+[PASS] test_FinalWindowObservationEventOnlyInsideWindow() (gas: 2118518)
+[PASS] test_GriefedPoolRepairStillWorksLateInTheWindow() (gas: 1505415)
+[PASS] test_LongProbabilityIsBoundedAndComplementary() (gas: 8841199)
+[PASS] test_LongProbabilityIsBoundedAndComplementary_LongIsCurrency0() (gas: 4452968)
+[PASS] test_LongProbabilityIsBoundedAndComplementary_LongIsCurrency1() (gas: 4432210)
+[PASS] test_MarketsSharingOneHookAreIsolated() (gas: 4935722)
+[PASS] test_NoTradeInWindow_TwapEqualsLastProbability() (gas: 1722037)
+[PASS] test_SeedSucceedsAfterGriefInitialize() (gas: 1657660)
+[PASS] test_SeedSucceedsAfterGriefInitialize_ExtremePrices() (gas: 3912726)
+[PASS] test_SeedSucceedsAfterGriefInitialize_Half() (gas: 1670778)
+[PASS] test_SeedSucceedsAfterGriefInitialize_TickAboveRange() (gas: 1684501)
+[PASS] test_SeedSucceedsAfterGriefInitialize_TickBelowRange() (gas: 1697888)
+[PASS] test_SeedSucceedsWhenGrieferInitialisedAtTheCorrectPrice() (gas: 1622459)
+[PASS] test_SeedingOutsideTheWindowReverts() (gas: 5295499)
+[PASS] test_TradeAtLastSecondBarelyMovesTwap() (gas: 1636811)
+[PASS] test_TradeExactlyAtWindowStart_ExtrapolatesNewValueOverWholeWindow() (gas: 1603045)
+[PASS] test_TwapHandComputed() (gas: 2689363)
+Logs:
+  pLong sequence p1 (SHORT buy): 0.513512650278142880
+  probability TWAP: 0.533229742309228755
+
+[PASS] test_WindowEqualToWholeDuration() (gas: 1836028)
+Suite result: ok. 24 passed; 0 failed; 0 skipped; finished in 29.59ms (55.85ms CPU time)
+
+Ran 1 test suite in 30.03ms (29.59ms CPU time): 24 tests passed, 0 failed, 0 skipped (24 total tests)

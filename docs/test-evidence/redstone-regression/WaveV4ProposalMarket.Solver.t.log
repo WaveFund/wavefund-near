@@ -1,0 +1,15 @@
+No files changed, compilation skipped
+
+Ran 9 tests for test/WaveV4ProposalMarket.Solver.t.sol:WaveV4ProposalMarketSolverTest
+[PASS] test_InsufficientDepth_Buy_ReportsRequestedInputAndWhatThePoolAbsorbed() (gas: 652422)
+[PASS] test_InsufficientDepth_Sell_ReportsSolvedInputAndConsumedLessThanIt() (gas: 2352647)
+[PASS] test_Solver_AmountAboveInt256IsRejectedBySafeCast() (gas: 102062)
+[PASS] test_Solver_BelowLimitIsAlwaysADepthRevert_NeverSolver() (gas: 4823107)
+[PASS] test_Solver_ExecutionAtLimitIsADepthRevert() (gas: 1304616)
+[PASS] test_Solver_ExecutionRevertsAndLeavesNoTrace() (gas: 4833209)
+[PASS] test_Solver_LimitConvergesButOneMoreRawUnitDoesNot_Quote() (gas: 22078177)
+[PASS] test_UnexpectedSwapDelta_Buy_AllBranches_BothOrderings_BothSides() (gas: 2164734)
+[PASS] test_UnexpectedSwapDelta_Sell_BothOrderings_BothSides() (gas: 8433966)
+Suite result: ok. 9 passed; 0 failed; 0 skipped; finished in 58.00ms (90.17ms CPU time)
+
+Ran 1 test suite in 58.45ms (58.00ms CPU time): 9 tests passed, 0 failed, 0 skipped (9 total tests)

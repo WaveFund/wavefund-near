@@ -1,0 +1,11 @@
+No files changed, compilation skipped
+
+Ran 5 tests for test/SafeEndToEnd.t.sol:SafeEndToEndTest
+[PASS] testDisableAfterExecutionDoesNotBlockSettlement() (gas: 4206934)
+[PASS] testDisabledUnexecutedRoundCancelsAtPar() (gas: 2235024)
+[PASS] testFullRoundSeparatesInvestmentCapitalAndForecastPayouts() (gas: 4316803)
+[PASS] testOwnerWithdrawalAndDonationDoNotRewriteStrategyReturn() (gas: 4240604)
+[PASS] testSafeRejectsKeeperChangingAuthorizedPayoutBounds() (gas: 345914)
+Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 4.61ms (5.15ms CPU time)
+
+Ran 1 test suite in 4.99ms (4.61ms CPU time): 5 tests passed, 0 failed, 0 skipped (5 total tests)

@@ -1,0 +1,18 @@
+No files changed, compilation skipped
+
+Ran 12 tests for test/ProposerRegistry.Blocklist.t.sol:ProposerRegistryBlocklistTest
+[PASS] testFuzz_DeferredThenClaimedConservesFunds(uint256,bool) (runs: 256, μ: 96324, ~: 89381)
+[PASS] test_ClaimRefund_AfterUnblock_FalseMode() (gas: 120122)
+[PASS] test_ClaimRefund_AfterUnblock_RevertMode() (gas: 103923)
+[PASS] test_ClaimRefund_FalseReturnRevertsWithSafeERC20Error() (gas: 95322)
+[PASS] test_ClaimRefund_OthersCannotClaimForProposer() (gas: 126636)
+[PASS] test_ClaimRefund_WorksWhilePaused() (gas: 112746)
+[PASS] test_Refund_DeferralsAccumulate() (gas: 109224)
+[PASS] test_Refund_DefersWhenTransferReturnsFalse() (gas: 107739)
+[PASS] test_Refund_DefersWhenTransferReverts() (gas: 87865)
+[PASS] test_Refund_DoesNotAffectOtherProposers() (gas: 151594)
+[PASS] test_Refund_DoesNotRevertForBlocklistedProposer() (gas: 81113)
+[PASS] test_Slash_RevertsAtomicallyIfTreasuryBlocked() (gas: 65800)
+Suite result: ok. 12 passed; 0 failed; 0 skipped; finished in 14.00ms (14.05ms CPU time)
+
+Ran 1 test suite in 14.36ms (14.00ms CPU time): 12 tests passed, 0 failed, 0 skipped (12 total tests)

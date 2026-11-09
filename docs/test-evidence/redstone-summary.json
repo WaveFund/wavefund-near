@@ -1,0 +1,154 @@
+{
+  "date": "2026-11-09",
+  "tests": [
+    {
+      "file": "Deployment.t.sol",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "OracleTracker.t.sol",
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "ProposalTokens.t.sol",
+      "passed": 36,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "ProposerRegistry.Blocklist.t.sol",
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "ProposerRegistry.Invariant.t.sol",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "ProposerRegistry.t.sol",
+      "passed": 49,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "RedstoneOracle.t.sol",
+      "passed": 21,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "RoundIntegration.t.sol",
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "SafeEndToEnd.t.sol",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "SafeModule.t.sol",
+      "passed": 40,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "WaveHook.Gating.t.sol",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "WaveHook.Twap.t.sol",
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "WaveHook.t.sol",
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "WaveMarket.Fuzz.t.sol",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "WaveMarket.Gas.t.sol",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "WaveMarket.Invariant.t.sol",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "WaveV4ProposalMarket.Economics.t.sol",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "WaveV4ProposalMarket.ErrorArgs.t.sol",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "WaveV4ProposalMarket.Funding.t.sol",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "WaveV4ProposalMarket.Hardening.t.sol",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "WaveV4ProposalMarket.Quotes.t.sol",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "WaveV4ProposalMarket.Solver.t.sol",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "WaveV4ProposalMarket.t.sol",
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "passed": 391,
+  "failed": 0,
+  "skipped": 0,
+  "new_oracle_tests": 21,
+  "aurora_readonly_checks": 6,
+  "live_fresh_feed_verified": false,
+  "gateway_key_available": false,
+  "production_oracle_runtime_bytes": 3783,
+  "dependency_commit": "e1c20caab6ad4652b06e37a89284c9f52a29ad7d",
+  "targeted_oracle_mutants_killed": 3,
+  "restored_oracle_baseline_passed": 21
+}

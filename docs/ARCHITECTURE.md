@@ -34,6 +34,10 @@ The sponsor arrow is economic funding, not a permissionless seed API: v1's Safe-
 7. After evaluation end, anyone invokes tracker settlement with no caller-supplied return. Valid fresh post-deadline prices mark the recorded posttrade quantities. The ratio compares this value to pretrade value, including execution costs.
 8. Users redeem selected-world balances and unclaimed selected-world principal. Non-depositors holding transferred winning tokens can redeem. Deferred payouts remain backed after seed release/rescue.
 
+## Signed-price follow-up
+
+RedstonePortfolioOracle now provides a permissionless signature-verified USDC/ETH cache through the same read interface. See [the proof and fresh-feed gate](REDSTONE-PROOF.md); historical authenticity has been verified on Aurora by unsigned calls, but fresh data is not yet available without gateway access.
+
 ## Boundaries that remain visible
 
 - Stablecoin 6 / asset 18 / CREDIT 6 / outcomes 18; USD prices and return ratios use 1e18.

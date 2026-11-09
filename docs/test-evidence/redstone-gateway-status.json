@@ -1,0 +1,8 @@
+{
+  "url": "https://oracle-gateway.a.redstone.finance/v2/data-packages/latest-by-data-feeds/redstone-primary-prod?dataFeedIds=ETH%2CUSDC",
+  "api_key_sent": false,
+  "source": "Pinned official SDK fetch-data-packages.ts and data-services-urls.ts",
+  "live_payload_obtained": false,
+  "http_status": 403,
+  "body": "{\"message\":\"Forbidden\"}"
+}

@@ -1,0 +1,27 @@
+No files changed, compilation skipped
+
+Ran 21 tests for test/RedstoneOracle.t.sol:RedstoneOracleTest
+[PASS] testCacheExpiresEvenWithoutAnotherUpdate() (gas: 113078)
+[PASS] testDiagnosticProbeDoesNotClaimFreshness() (gas: 738743)
+[PASS] testDuplicateSignerCannotMeetQuorum() (gas: 39664)
+[PASS] testFutureSignedUpdateRejected() (gas: 44429)
+[PASS] testHistoricalProductionDataCannotPassAsCurrent() (gas: 841665)
+[PASS] testInvalidRecoveryByteRejected() (gas: 16501)
+[PASS] testMedianIsTakenAcrossSigners() (gas: 112560)
+[PASS] testMismatchedPackageTimesRejected() (gas: 33915)
+[PASS] testNoPayloadRejected() (gas: 11121)
+[PASS] testOlderFreshUpdateCannotRollBackPrice() (gas: 150165)
+[PASS] testOnlyAssetSignaturesCannotSupplyStablePrice() (gas: 38118)
+[PASS] testProductionPolicyAcceptsAuthenticHistoricalPackages() (gas: 914667)
+[PASS] testReadBeforeVerifiedUpdateRejected() (gas: 11254)
+[PASS] testReplayCannotReplaceVerifiedPrice() (gas: 143497)
+[PASS] testStaleSignedUpdateRejected() (gas: 44784)
+[PASS] testTamperedPriceRejectedBySignature() (gas: 25725)
+[PASS] testThreeUniqueSignersPopulateReadInterface() (gas: 114097)
+[PASS] testTwoSignersCannotMeetQuorum() (gas: 32973)
+[PASS] testUnauthorizedSignerRejected() (gas: 23704)
+[PASS] testVerifiedCacheSettlesActualPerformanceTracker() (gas: 1415796)
+[PASS] testZeroPriceRejectedWithoutMutatingCache() (gas: 50128)
+Suite result: ok. 21 passed; 0 failed; 0 skipped; finished in 5.03ms (8.80ms CPU time)
+
+Ran 1 test suite in 5.56ms (5.03ms CPU time): 21 tests passed, 0 failed, 0 skipped (21 total tests)
