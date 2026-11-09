@@ -1,0 +1,37 @@
+{
+  "v4-periphery": {
+    "repo": "Uniswap/v4-periphery",
+    "commit": "3779387e5d296f39df543d23524b050f89a62917",
+    "archive_sha256": "7a00bff7243ddd113b1dc4e5f355d3201985d8470b8fdc72a36169a647c23809"
+  },
+  "v4-periphery/lib/v4-core": {
+    "repo": "Uniswap/v4-core",
+    "commit": "59d3ecf53afa9264a16bba0e38f4c5d2231f80bc",
+    "archive_sha256": "130e1ae60c10254ecebadd9d963294617081da7fb3f7f5c3b98e3f0db06769a6"
+  },
+  "v4-periphery/lib/v4-core/lib/forge-std": {
+    "repo": "foundry-rs/forge-std",
+    "commit": "1de6eecf821de7fe2c908cc48d3ab3dced20717f",
+    "archive_sha256": "09b5e6514bda6dee2271569fab7e3a91dfc3ba7a0f22d4a0abfdd154aad35eda"
+  },
+  "v4-periphery/lib/v4-core/lib/solmate": {
+    "repo": "transmissions11/solmate",
+    "commit": "4b47a19038b798b4a33d9749d25e570443520647",
+    "archive_sha256": "9aa78449f8bc10931520500ec24734f089af9ac875a3334d8b512f8727241667"
+  },
+  "openzeppelin-contracts": {
+    "repo": "OpenZeppelin/openzeppelin-contracts",
+    "commit": "5fd1781b1454fd1ef8e722282f86f9293cacf256",
+    "archive_sha256": "6542272013ef3322d86f1eb6b47fc94ae1a95992169a5b3e160af189989187a4"
+  },
+  "permit2": {
+    "repo": "Uniswap/permit2",
+    "commit": "cc56ad0f3439c502c246fc5cfcc3db92bb8b7219",
+    "archive_sha256": "1f0da63e66c69fa85f2a68af7f598aca8f3354f87e7703aa3abe6522685e9f04"
+  },
+  "safe-contracts": {
+    "repo": "safe-global/safe-smart-account",
+    "commit": "bf943f80fec5ac647159d26161446ac5d716a294",
+    "archive_sha256": "3e8970c21af00edee1f0f9667251cd6468b6072ab360d16bbbb106d1011281ee"
+  }
+}
