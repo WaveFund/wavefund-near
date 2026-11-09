@@ -1,0 +1,13 @@
+Compiling 2 files with Solc 0.8.26
+Solc 0.8.26 finished in 88.04s
+Compiler run successful!
+
+Ran 5 tests for test/SafeEndToEnd.t.sol:SafeEndToEndTest
+[PASS] testDisableAfterExecutionDoesNotBlockSettlement() (gas: 4206934)
+[PASS] testDisabledUnexecutedRoundCancelsAtPar() (gas: 2235024)
+[PASS] testFullRoundSeparatesInvestmentCapitalAndForecastPayouts() (gas: 4316803)
+[PASS] testOwnerWithdrawalAndDonationDoNotRewriteStrategyReturn() (gas: 4240604)
+[PASS] testSafeRejectsKeeperChangingAuthorizedPayoutBounds() (gas: 345914)
+Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 5.09ms (5.42ms CPU time)
+
+Ran 1 test suite in 5.96ms (5.09ms CPU time): 5 tests passed, 0 failed, 0 skipped (5 total tests)

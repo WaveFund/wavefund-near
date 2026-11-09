@@ -4,3 +4,5 @@ cache/
 .env.*
 !.env.example
 lib/
+test-results/
+broadcast/

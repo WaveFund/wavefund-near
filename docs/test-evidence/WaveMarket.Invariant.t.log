@@ -1,0 +1,512 @@
+Compiling 1 files with Solc 0.8.26
+Solc 0.8.26 finished in 43.55s
+Compiler run successful!
+
+Ran 7 tests for test/WaveMarket.Invariant.t.sol:WaveMarketInvariantTest
+[PASS] invariant_AdapterHoldsOnlyIdleSets() (runs: 128, calls: 6400, reverts: 0)
+
+╭-------------------+-----------+-------+---------+----------╮
+| Contract          | Selector  | Calls | Reverts | Discards |
++============================================================+
+| WaveMarketHandler | buyLong   | 1250  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | buyShort  | 1268  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | sellLong  | 1244  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | sellShort | 1322  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | warp      | 1316  | 0       | 0        |
+╰-------------------+-----------+-------+---------+----------╯
+
+Logs:
+  Bound result 98
+  Bound result 100
+  Bound result 1022
+  Bound result 0
+  Bound result 97
+  Bound result 760
+  Bound result 8662
+  Bound result 9206527
+  Bound result 6077232
+  Bound result 2295
+  Bound result 3913
+  Bound result 1
+  Bound result 9588312
+  Bound result 84
+  Bound result 7459
+  Bound result 431440
+  Bound result 200
+  Bound result 8
+  Bound result 2614366
+  Bound result 65
+  Bound result 1
+  Bound result 2429
+  Bound result 255
+  Bound result 1116
+  Bound result 89
+  Bound result 5046809
+  Bound result 86
+  Bound result 92
+  Bound result 88
+  Bound result 9999999
+  Bound result 4
+  Bound result 1301
+  Bound result 51
+  Bound result 9999998
+  Bound result 3273016
+  Bound result 2752
+  Bound result 91
+  Bound result 98
+  Bound result 256
+  Bound result 0
+  Bound result 3452
+  Bound result 30
+  Bound result 3732
+  Bound result 7986785
+  Bound result 6254390
+  Bound result 3
+  Bound result 6374719
+  Bound result 5538330
+  Bound result 9944
+  Bound result 2696
+  buys: 19
+  sells: 12
+  depth rejects: 0
+  funded credits: 82393913
+
+[PASS] invariant_CreditsNeverExceedBacking() (runs: 128, calls: 6400, reverts: 0)
+
+╭-------------------+-----------+-------+---------+----------╮
+| Contract          | Selector  | Calls | Reverts | Discards |
++============================================================+
+| WaveMarketHandler | buyLong   | 1267  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | buyShort  | 1284  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | sellLong  | 1250  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | sellShort | 1316  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | warp      | 1283  | 0       | 0        |
+╰-------------------+-----------+-------+---------+----------╯
+
+Logs:
+  Bound result 5
+  Bound result 5668
+  Bound result 66
+  Bound result 256
+  Bound result 75
+  Bound result 32
+  Bound result 21
+  Bound result 19
+  Bound result 64
+  Bound result 29
+  Bound result 0
+  Bound result 7629
+  Bound result 9587
+  Bound result 53
+  Bound result 6746
+  Bound result 43
+  Bound result 1955
+  Bound result 100
+  Bound result 89
+  Bound result 48
+  Bound result 9498877
+  Bound result 2296179
+  Bound result 25
+  Bound result 2832
+  Bound result 1839
+  Bound result 2804
+  Bound result 33
+  Bound result 57
+  Bound result 246
+  Bound result 4793
+  Bound result 36
+  Bound result 56
+  Bound result 7978
+  Bound result 7387682
+  Bound result 9917575
+  Bound result 1453874
+  Bound result 15
+  Bound result 12
+  Bound result 5918
+  Bound result 2744369
+  Bound result 3
+  Bound result 10000000
+  Bound result 15
+  Bound result 9034
+  Bound result 19
+  Bound result 53
+  Bound result 31
+  Bound result 7279
+  Bound result 9781
+  Bound result 2
+  buys: 14
+  sells: 16
+  depth rejects: 0
+  funded credits: 43316373
+
+[PASS] invariant_LongSupplyEqualsShortSupply() (runs: 128, calls: 6400, reverts: 0)
+
+╭-------------------+-----------+-------+---------+----------╮
+| Contract          | Selector  | Calls | Reverts | Discards |
++============================================================+
+| WaveMarketHandler | buyLong   | 1316  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | buyShort  | 1263  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | sellLong  | 1280  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | sellShort | 1252  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | warp      | 1289  | 0       | 0        |
+╰-------------------+-----------+-------+---------+----------╯
+
+Logs:
+  Bound result 1
+  Bound result 5000000
+  Bound result 70
+  Bound result 7715
+  Bound result 24
+  Bound result 4
+  Bound result 2214571
+  Bound result 0
+  Bound result 100
+  Bound result 10000000
+  Bound result 2696
+  Bound result 9966671
+  Bound result 647
+  Bound result 3
+  Bound result 10000000
+  Bound result 7681
+  Bound result 2556
+  Bound result 100
+  Bound result 200
+  Bound result 11410
+  Bound result 6656276
+  Bound result 5112882
+  Bound result 7972017
+  Bound result 4243
+  Bound result 8188711
+  Bound result 97
+  Bound result 38
+  Bound result 9265
+  Bound result 49
+  Bound result 77
+  Bound result 74
+  Bound result 10230
+  Bound result 100
+  Bound result 7996
+  Bound result 34
+  Bound result 1910228
+  Bound result 6791
+  Bound result 18
+  Bound result 10000000
+  Bound result 14
+  Bound result 61
+  Bound result 654
+  Bound result 1822
+  Bound result 244994
+  Bound result 4
+  Bound result 1000000
+  Bound result 4090
+  Bound result 1207477
+  Bound result 6
+  Bound result 7386499
+  buys: 22
+  sells: 14
+  depth rejects: 0
+  funded credits: 86887341
+
+[PASS] invariant_NoStuckPendingState() (runs: 128, calls: 6400, reverts: 0)
+
+╭-------------------+-----------+-------+---------+----------╮
+| Contract          | Selector  | Calls | Reverts | Discards |
++============================================================+
+| WaveMarketHandler | buyLong   | 1234  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | buyShort  | 1313  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | sellLong  | 1300  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | sellShort | 1282  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | warp      | 1271  | 0       | 0        |
+╰-------------------+-----------+-------+---------+----------╯
+
+Logs:
+  Bound result 2
+  Bound result 93
+  Bound result 45
+  Bound result 167700
+  Bound result 1196
+  Bound result 1405895
+  Bound result 43
+  Bound result 7384288
+  Bound result 1349
+  Bound result 200
+  Bound result 2
+  Bound result 56
+  Bound result 2455
+  Bound result 35
+  Bound result 6183
+  Bound result 82
+  Bound result 1
+  Bound result 9802184
+  Bound result 88
+  Bound result 35
+  Bound result 144
+  Bound result 100
+  Bound result 4
+  Bound result 10
+  Bound result 79
+  Bound result 1772038
+  Bound result 2
+  Bound result 5177496
+  Bound result 3452
+  Bound result 9034
+  Bound result 71
+  Bound result 100
+  Bound result 32
+  Bound result 9961
+  Bound result 2717261
+  Bound result 6
+  Bound result 3736534
+  Bound result 15
+  Bound result 6134
+  Bound result 255
+  Bound result 37
+  Bound result 2063714
+  Bound result 73
+  Bound result 44
+  Bound result 2918
+  Bound result 32
+  Bound result 64
+  Bound result 1831523
+  Bound result 2574700
+  Bound result 144705
+  buys: 20
+  sells: 15
+  depth rejects: 0
+  funded credits: 38787319
+
+[PASS] invariant_NoUnexpectedRevertsInTrading() (runs: 128, calls: 6400, reverts: 0)
+
+╭-------------------+-----------+-------+---------+----------╮
+| Contract          | Selector  | Calls | Reverts | Discards |
++============================================================+
+| WaveMarketHandler | buyLong   | 1281  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | buyShort  | 1254  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | sellLong  | 1271  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | sellShort | 1313  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | warp      | 1281  | 0       | 0        |
+╰-------------------+-----------+-------+---------+----------╯
+
+Logs:
+  Bound result 65
+  Bound result 65
+  Bound result 20
+  Bound result 94
+  Bound result 4
+  Bound result 3
+  Bound result 46
+  Bound result 29
+  Bound result 100
+  Bound result 84
+  Bound result 10799
+  Bound result 15538
+  Bound result 85
+  Bound result 83
+  Bound result 100
+  Bound result 10000000
+  Bound result 60
+  Bound result 1
+  Bound result 79
+  Bound result 9284781
+  Bound result 5000000
+  Bound result 3
+  Bound result 7538905
+  Bound result 48
+  Bound result 27
+  Bound result 2275665
+  Bound result 25
+  Bound result 1
+  Bound result 86
+  Bound result 4
+  Bound result 10
+  Bound result 9321754
+  Bound result 10000000
+  Bound result 1957091
+  Bound result 6
+  Bound result 12953
+  Bound result 4302852
+  Bound result 70
+  Bound result 2416470
+  Bound result 91
+  Bound result 92
+  Bound result 713
+  Bound result 32
+  Bound result 7466643
+  Bound result 66
+  Bound result 67
+  Bound result 97
+  Bound result 9841
+  Bound result 100
+  Bound result 1513
+  buys: 17
+  sells: 14
+  depth rejects: 0
+  funded credits: 69594173
+
+[PASS] invariant_PLongWithinBoundsAndComplementary() (runs: 128, calls: 6400, reverts: 0)
+
+╭-------------------+-----------+-------+---------+----------╮
+| Contract          | Selector  | Calls | Reverts | Discards |
++============================================================+
+| WaveMarketHandler | buyLong   | 1244  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | buyShort  | 1241  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | sellLong  | 1298  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | sellShort | 1320  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | warp      | 1297  | 0       | 0        |
+╰-------------------+-----------+-------+---------+----------╯
+
+Logs:
+  Bound result 10000000
+  Bound result 92
+  Bound result 10227
+  Bound result 10000000
+  Bound result 8114581
+  Bound result 10000000
+  Bound result 13
+  Bound result 43
+  Bound result 44
+  Bound result 1296
+  Bound result 18
+  Bound result 6867
+  Bound result 69
+  Bound result 486
+  Bound result 2
+  Bound result 92
+  Bound result 22
+  Bound result 250062
+  Bound result 6275
+  Bound result 6096195
+  Bound result 53
+  Bound result 10800
+  Bound result 9372563
+  Bound result 6
+  Bound result 5
+  Bound result 100
+  Bound result 32
+  Bound result 3000
+  Bound result 33
+  Bound result 2
+  Bound result 4286992
+  Bound result 4
+  Bound result 7651679
+  Bound result 3000
+  Bound result 2
+  Bound result 3
+  Bound result 11448
+  Bound result 98
+  Bound result 765
+  Bound result 4005
+  Bound result 2855356
+  Bound result 13
+  Bound result 2685305
+  Bound result 56
+  Bound result 17476
+  Bound result 57
+  Bound result 7604
+  Bound result 2
+  Bound result 45
+  Bound result 10000000
+  buys: 22
+  sells: 16
+  depth rejects: 0
+  funded credits: 81365938
+
+[PASS] invariant_TwapWithinBounds() (runs: 128, calls: 6400, reverts: 0)
+
+╭-------------------+-----------+-------+---------+----------╮
+| Contract          | Selector  | Calls | Reverts | Discards |
++============================================================+
+| WaveMarketHandler | buyLong   | 1285  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | buyShort  | 1303  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | sellLong  | 1274  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | sellShort | 1253  | 0       | 0        |
+|-------------------+-----------+-------+---------+----------|
+| WaveMarketHandler | warp      | 1285  | 0       | 0        |
+╰-------------------+-----------+-------+---------+----------╯
+
+Logs:
+  Bound result 6504704
+  Bound result 1746
+  Bound result 8770717
+  Bound result 2378
+  Bound result 100
+  Bound result 69
+  Bound result 256
+  Bound result 9999999
+  Bound result 4543
+  Bound result 5043
+  Bound result 75
+  Bound result 23
+  Bound result 17
+  Bound result 1726
+  Bound result 5136662
+  Bound result 2180
+  Bound result 7665
+  Bound result 2348222
+  Bound result 37
+  Bound result 131071
+  Bound result 95
+  Bound result 6040206
+  Bound result 9
+  Bound result 47
+  Bound result 60
+  Bound result 6
+  Bound result 1
+  Bound result 54
+  Bound result 538
+  Bound result 2463686
+  Bound result 3443
+  Bound result 632
+  Bound result 3841378
+  Bound result 77
+  Bound result 100
+  Bound result 1
+  Bound result 10305
+  Bound result 7746
+  Bound result 28
+  Bound result 360
+  Bound result 72
+  Bound result 9226
+  Bound result 9711353
+  Bound result 2479
+  Bound result 84
+  Bound result 3197
+  Bound result 10000000
+  Bound result 17476
+  Bound result 5219
+  Bound result 6487
+  buys: 17
+  sells: 13
+  depth rejects: 0
+  funded credits: 64980881
+
+Suite result: ok. 7 passed; 0 failed; 0 skipped; finished in 18.46s (46.07s CPU time)
+
+Ran 1 test suite in 18.46s (18.46s CPU time): 7 tests passed, 0 failed, 0 skipped (7 total tests)

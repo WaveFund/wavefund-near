@@ -1,0 +1,176 @@
+{
+  "date": "2026-11-09",
+  "chain_target": 1313161555,
+  "execution": "Local Foundry EVM, no public deployment",
+  "forge_version": "1.5.1-stable b0a9dd9ceda36f63e2326ce530c10e6916f4b8a2",
+  "solc_version": "0.8.26+commit.8a97fa7a",
+  "evm": "cancun",
+  "via_ir": true,
+  "optimizer_runs": 200,
+  "safe_profile_via_ir": false,
+  "files": [
+    {
+      "file": "test/Deployment.t.sol",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/OracleTracker.t.sol",
+      "passed": 30,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/ProposalTokens.t.sol",
+      "passed": 36,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/ProposerRegistry.Blocklist.t.sol",
+      "passed": 12,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/ProposerRegistry.Invariant.t.sol",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/ProposerRegistry.t.sol",
+      "passed": 49,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/RoundIntegration.t.sol",
+      "passed": 29,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/SafeEndToEnd.t.sol",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/SafeModule.t.sol",
+      "passed": 40,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/WaveHook.Gating.t.sol",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/WaveHook.Twap.t.sol",
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/WaveHook.t.sol",
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/WaveMarket.Fuzz.t.sol",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/WaveMarket.Gas.t.sol",
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/WaveMarket.Invariant.t.sol",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/WaveV4ProposalMarket.Economics.t.sol",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/WaveV4ProposalMarket.ErrorArgs.t.sol",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/WaveV4ProposalMarket.Funding.t.sol",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/WaveV4ProposalMarket.Hardening.t.sol",
+      "passed": 10,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/WaveV4ProposalMarket.Quotes.t.sol",
+      "passed": 13,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/WaveV4ProposalMarket.Solver.t.sol",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "test/WaveV4ProposalMarket.t.sol",
+      "passed": 26,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "total_passed": 370,
+  "failed": 0,
+  "skipped": 0,
+  "targeted_mutants_killed": 3,
+  "clean_cache_deployment_tests_passed": 5,
+  "runtime_bytes": {
+    "QuantumRound": 21177,
+    "TradingSafeModule": 12175,
+    "PerformanceTracker": 3409,
+    "WaveHook": 7984,
+    "WaveV4ProposalMarket": 20246,
+    "ProposalToken": 3454,
+    "ProposalTokens": 4229,
+    "ProposerRegistry": 5300,
+    "FeedPortfolioOracle": 1284,
+    "DiaPortfolioOracle": 1666
+  },
+  "invariants": {
+    "registry": {
+      "runs": 64,
+      "depth": 32,
+      "calls_per_property": 2048,
+      "unexpected_reverts": 0
+    },
+    "market": {
+      "runs": 128,
+      "depth": 50,
+      "calls_per_property": 6400,
+      "unexpected_reverts": 0
+    }
+  }
+}

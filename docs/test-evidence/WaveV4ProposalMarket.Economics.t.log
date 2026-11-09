@@ -1,0 +1,77 @@
+Compiling 1 files with Solc 0.8.26
+Solc 0.8.26 finished in 44.66s
+Compiler run successful!
+
+Ran 16 tests for test/WaveV4ProposalMarket.Economics.t.sol:WaveV4ProposalMarketEconomicsTest
+[PASS] test_BuyEmitsTradeAndPaysQuotedAmount() (gas: 301401)
+[PASS] test_BuyLongThenSellAllReturnsAtMostSpentAndNoLeftovers() (gas: 1302927)
+Logs:
+  LONG  round trip: credits in : 1000000
+                      credits back: 997248
+                      LONG dust   : 993853408784
+                      SHORT dust  : 993854509289
+
+[PASS] test_BuyShortThenSellAllReturnsAtMostSpentAndNoLeftovers() (gas: 1443449)
+Logs:
+  SHORT round trip: credits in : 1000000
+                      credits back: 997248
+                      LONG dust   : 993854509289
+                      SHORT dust  : 993853408784
+
+[PASS] test_BuySlippageRevert() (gas: 421199)
+[PASS] test_CalibrationTable() (gas: 15672310)
+Logs:
+  === calibration: 5 USDC seed (5_000_000 credits), start p = 50% ===
+  BUY LONG  100000 credits -> p(side) 50.9%  (+0.98 pp)
+  BUY SHORT 100000 credits -> p(side) 50.9%  (+0.98 pp)
+  BUY LONG  500000 credits -> p(side) 54.7%  (+4.73 pp)
+  BUY SHORT 500000 credits -> p(side) 54.7%  (+4.73 pp)
+  BUY LONG  1000000 credits -> p(side) 58.9%  (+8.99 pp)
+  BUY SHORT 1000000 credits -> p(side) 58.9%  (+8.99 pp)
+  BUY LONG  2000000 credits -> p(side) 66.1%  (+16.17 pp)
+  BUY SHORT 2000000 credits -> p(side) 66.1%  (+16.17 pp)
+  BUY LONG  5000000 credits -> p(side) 79.9%  (+29.95 pp)
+  BUY SHORT 5000000 credits -> p(side) 79.9%  (+29.95 pp)
+
+[PASS] test_HugeBuyAndSellRevertInsufficientDepth() (gas: 2260747)
+[PASS] test_RoundTripLargeAmount() (gas: 1349578)
+Logs:
+  SHORT round trip: credits in : 3000000
+                      credits back: 2992681
+                      LONG dust   : 518809588129
+                      SHORT dust  : 518809091412
+
+[PASS] test_RoundTripSmallAmount() (gas: 1243351)
+Logs:
+  LONG  round trip: credits in : 10000
+                      credits back: 9970
+                      LONG dust   : 29805129473
+                      SHORT dust  : 29806139159
+
+[PASS] test_SellEmitsTrade() (gas: 1491368)
+[PASS] test_SellLongAtHalfReturnsAboutHalfInCredits() (gas: 8130430)
+Logs:
+  --- sell LONG at p=0.5 (seed 5 USDC) ---
+  rawIn | N/2/1e12 (naive) | expected(const-product) | actual credits | actual/naive
+  1000000000000000 | 500 | 499 | 499 | 99.8%
+  10000000000000000 | 5000 | 4989 | 4989 | 99.7%
+  100000000000000000 | 50000 | 49675 | 49675 | 99.3%
+  1000000000000000000 | 500000 | 474352 | 474352 | 94.8%
+
+[PASS] test_SellShortAtHalfReturnsAboutHalfInCredits() (gas: 8385274)
+Logs:
+  --- sell SHORT at p=0.5 (seed 5 USDC) ---
+  rawIn | N/2/1e12 (naive) | expected(const-product) | actual credits | actual/naive
+  1000000000000000 | 500 | 499 | 499 | 99.8%
+  10000000000000000 | 5000 | 4989 | 4989 | 99.7%
+  100000000000000000 | 50000 | 49675 | 49675 | 99.3%
+  1000000000000000000 | 500000 | 474352 | 474352 | 94.8%
+
+[PASS] test_SellShortSlippageRevert() (gas: 1273600)
+[PASS] test_SellSlippageRevert() (gas: 1905231)
+[PASS] test_TinySellYieldsZeroCreditsAndReturnsAllAsDust() (gas: 546869)
+[PASS] test_TradesOnUnseededMarketRevert() (gas: 58630)
+[PASS] test_ZeroRecipientAndZeroAmountsRevert() (gas: 186911)
+Suite result: ok. 16 passed; 0 failed; 0 skipped; finished in 22.23ms (40.70ms CPU time)
+
+Ran 1 test suite in 23.18ms (22.23ms CPU time): 16 tests passed, 0 failed, 0 skipped (16 total tests)

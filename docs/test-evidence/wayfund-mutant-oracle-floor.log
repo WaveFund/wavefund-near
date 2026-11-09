@@ -1,0 +1,29 @@
+Compiling 2 files with Solc 0.8.26
+Solc 0.8.26 finished in 32.28s
+Compiler run successful with warnings:
+Warning (2072): Unused local variable.
+   --> src/safe/TradingSafeModule.sol:178:13:
+    |
+178 |             uint256 expected = Math.mulDiv(Math.mulDiv(amountIn, stablePrice, 1e6), 1e18, assetPrice);
+    |             ^^^^^^^^^^^^^^^^
+
+Warning (2072): Unused local variable.
+   --> src/safe/TradingSafeModule.sol:182:13:
+    |
+182 |             uint256 expected = Math.mulDiv(Math.mulDiv(amountIn, assetPrice, 1e18), 1e6, stablePrice);
+    |             ^^^^^^^^^^^^^^^^
+
+
+Ran 1 test for test/SafeModule.t.sol:SafeModuleTest
+[FAIL: next call did not revert as expected] testLowCallerMinimumCannotBypassOracleFloor() (gas: 698132)
+Suite result: FAILED. 0 passed; 1 failed; 0 skipped; finished in 2.69ms (752.28µs CPU time)
+
+Ran 1 test suite in 5.47ms (2.69ms CPU time): 0 tests passed, 1 failed, 0 skipped (1 total tests)
+
+Failing tests:
+Encountered 1 failing test in test/SafeModule.t.sol:SafeModuleTest
+[FAIL: next call did not revert as expected] testLowCallerMinimumCannotBypassOracleFloor() (gas: 698132)
+
+Encountered a total of 1 failing tests, 0 tests succeeded
+
+Tip: Run `forge test --rerun` to retry only the 1 failed test

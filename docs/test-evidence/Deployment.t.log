@@ -1,0 +1,13 @@
+Compiling 1 files with Solc 0.8.26
+Solc 0.8.26 finished in 85.77s
+Compiler run successful!
+
+Ran 5 tests for test/Deployment.t.sol:DeploymentTest
+[PASS] testDeployWiresActualHookAndTransfersAdministration() (gas: 41860167)
+[PASS] testExistingPoolManagerPath() (gas: 132613472)
+[PASS] testInvalidOracleBlocksDeployment() (gas: 37252)
+[PASS] testLocalDeploymentEntryRejectsPublicNetwork() (gas: 20008)
+[PASS] testMissingPoolManagerRejected() (gas: 32838)
+Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 460.14ms (584.17ms CPU time)
+
+Ran 1 test suite in 461.45ms (460.14ms CPU time): 5 tests passed, 0 failed, 0 skipped (5 total tests)
