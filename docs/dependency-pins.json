@@ -33,5 +33,10 @@
     "repo": "safe-global/safe-smart-account",
     "commit": "bf943f80fec5ac647159d26161446ac5d716a294",
     "archive_sha256": "3e8970c21af00edee1f0f9667251cd6468b6072ab360d16bbbb106d1011281ee"
+  },
+  "redstone": {
+    "repo": "redstone-finance/redstone-oracles-monorepo",
+    "commit": "e1c20caab6ad4652b06e37a89284c9f52a29ad7d",
+    "archive_sha256": "36df37e7f22f9dfd9a3016b0baa60edbcb87ae519eebeb0bf291d9f79ab5343f"
   }
 }

@@ -12,10 +12,12 @@ via_ir = true
 optimizer = true
 optimizer_runs = 200
 bytecode_hash = "none"
+fs_permissions = [{ access = "read", path = "./test/fixtures" }]
 additional_compiler_profiles = [{ name = "safe", via_ir = false }]
 compilation_restrictions = [{ paths = "lib/safe-contracts/contracts/Safe.sol", via_ir = false }]
 
 remappings = [
+  "@redstone-finance/evm-connector/=lib/redstone/packages/evm-connector/",
   "@uniswap/v4-core/=lib/v4-periphery/lib/v4-core/",
   "@uniswap/v4-periphery/=lib/v4-periphery/",
   "@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/",
