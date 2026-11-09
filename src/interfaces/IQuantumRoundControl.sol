@@ -11,19 +11,19 @@ enum RoundStatus {
 }
 
 /// @title IAllocationSource
-/// @notice Provides the allocation that proposal 0 (the status quo) represents. Implemented by the vault.
+/// @notice Provides the allocation that proposal 0 (the status quo) represents. Implemented by the bound Safe module.
 interface IAllocationSource {
     /// @notice Current tETH share of the portfolio in basis points (0..10_000), marked at the oracle.
     function currentTEthBps() external view returns (uint256);
 }
 
 /// @title IQuantumRoundControl
-/// @notice The part of QuantumRound that the vault and the resolver use.
+/// @notice The part of QuantumRound that the Safe module and performance tracker use.
 interface IQuantumRoundControl {
-    /// @notice Cancels a collapsed, unsettled round so that it redeems at par. VAULT_ROLE only.
+    /// @notice Cancels a collapsed, unsettled round so that it redeems at par. Bound execution module only.
     function cancelRound(uint256 roundId) external;
 
-    /// @notice Records a successful vault execution. VAULT_ROLE only, while collapsed, once.
+    /// @notice Records a successful Safe execution. VAULT_ROLE only, while collapsed, once.
     function markExecuted(uint256 roundId) external;
 
     function roundExecuted(uint256 roundId) external view returns (bool);

@@ -11,6 +11,7 @@ import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
 import {IProposalMarket} from "./interfaces/IProposalMarket.sol";
 import {IQuantumRound} from "./interfaces/IQuantumRound.sol";
 import {IAllocationSource, IQuantumRoundControl, RoundStatus} from "./interfaces/IQuantumRoundControl.sol";
+import {IRoundPreparation} from "./interfaces/ISafeIntegration.sol";
 import {ProposalToken} from "./ProposalToken.sol";
 import {ProposalTokens} from "./ProposalTokens.sol";
 import {ProposerRegistry} from "./ProposerRegistry.sol";
@@ -81,6 +82,11 @@ contract QuantumRound is IQuantumRound, IQuantumRoundControl, AccessControl, Ree
     IProposalMarket public immutable market;
 
     address public allocationSource;
+    /// @notice One-time bound Safe module and oracle performance tracker. Roles cannot override these identities.
+    address public executionModule;
+    address public performanceTracker;
+    mapping(uint256 roundId => uint256) public executionDeadline;
+    mapping(uint256 roundId => bytes32) public policyHash;
     /// @notice Credits (6 decimals, = raw USDC) each new proposal market is seeded with.
     uint256 public initialLiquidityPerProposal = 5e6;
     /// @notice UNALLOCATED protocol reserve in raw USDC. Seeds are drawn from it and returned to it.
@@ -97,6 +103,12 @@ contract QuantumRound is IQuantumRound, IQuantumRoundControl, AccessControl, Ree
     mapping(address user => uint256) public pendingPayout;
 
     error ZeroAddress();
+    error ExecutionAlreadyBound();
+    error ExecutionNotBound();
+    error UnauthorizedExecutionModule(address caller);
+    error ExecutionDeadlinePassed(uint256 roundId);
+    error ExecutionWindowOpen(uint256 roundId);
+    error RoundNotExecuted(uint256 roundId);
     error ZeroAmount();
     error InvalidParameters();
     error RegistryAssetMismatch(address registryUsdc, address roundUsdc);
@@ -127,16 +139,37 @@ contract QuantumRound is IQuantumRound, IQuantumRoundControl, AccessControl, Ree
     event ProtocolSeedRescued(address indexed to, uint256 amount, uint256 reserve);
     event InitialLiquidityUpdated(uint256 credits);
     event AllocationSourceUpdated(address indexed source);
+    event ExecutionBound(address indexed module, address indexed tracker);
+    event RoundPolicyCommitted(uint256 indexed roundId, bytes32 policyHash, uint256 executionDeadline);
     event RoundOpened(
-        uint256 indexed roundId, uint256 tradingEnd, uint256 evaluationEnd, uint256 rMin, uint256 rMax, uint256 twapWindow
+        uint256 indexed roundId,
+        uint256 tradingEnd,
+        uint256 evaluationEnd,
+        uint256 rMin,
+        uint256 rMax,
+        uint256 twapWindow
     );
     event ProposalCreated(
         uint256 indexed roundId, uint256 indexed proposalId, address indexed proposer, uint16 tEthBps, string rationale
     );
     event Deposited(uint256 indexed roundId, address indexed user, uint256 amount);
     event CreditsClaimed(uint256 indexed roundId, uint256 indexed proposalId, address indexed user, uint256 amount);
-    event Bought(uint256 indexed roundId, uint256 indexed proposalId, address indexed user, bool isLong, uint256 credits, uint256 tokensOut);
-    event Sold(uint256 indexed roundId, uint256 indexed proposalId, address indexed user, bool isLong, uint256 tokensIn, uint256 creditsOut);
+    event Bought(
+        uint256 indexed roundId,
+        uint256 indexed proposalId,
+        address indexed user,
+        bool isLong,
+        uint256 credits,
+        uint256 tokensOut
+    );
+    event Sold(
+        uint256 indexed roundId,
+        uint256 indexed proposalId,
+        address indexed user,
+        bool isLong,
+        uint256 tokensIn,
+        uint256 creditsOut
+    );
     event Collapsed(uint256 indexed roundId, uint256 indexed winnerId, uint256[] probabilities);
     event RoundCancelled(uint256 indexed roundId);
     event RoundSettled(uint256 indexed roundId, uint256 realisedReturn, uint256 pi, bool emergency);
@@ -145,7 +178,13 @@ contract QuantumRound is IQuantumRound, IQuantumRoundControl, AccessControl, Ree
     event PayoutClaimed(address indexed user, uint256 amount);
     event SeedReleased(uint256 indexed roundId, uint256 amount);
 
-    constructor(address admin, IERC20 usdc_, ProposalTokens tokens_, ProposerRegistry registry_, IProposalMarket market_) {
+    constructor(
+        address admin,
+        IERC20 usdc_,
+        ProposalTokens tokens_,
+        ProposerRegistry registry_,
+        IProposalMarket market_
+    ) {
         if (
             admin == address(0) || address(usdc_) == address(0) || address(tokens_) == address(0)
                 || address(registry_) == address(0) || address(market_) == address(0)
@@ -163,15 +202,32 @@ contract QuantumRound is IQuantumRound, IQuantumRoundControl, AccessControl, Ree
     // ------------------------------------------------------------------ admin
 
     function setInitialLiquidityPerProposal(uint256 credits) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (rounds[currentRoundId].status == RoundStatus.Trading) revert PreviousRoundActive(currentRoundId);
         if (credits == 0 || credits > MAX_SEED_CREDITS) revert InvalidParameters();
         initialLiquidityPerProposal = credits;
         emit InitialLiquidityUpdated(credits);
     }
 
+    /// @notice Legacy pre-binding configuration only. The binding fixes the allocation source permanently.
     function setAllocationSource(address source) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (executionModule != address(0)) revert ExecutionAlreadyBound();
+        if (currentRoundId != 0) revert PreviousRoundActive(currentRoundId);
         if (source == address(0)) revert ZeroAddress();
         allocationSource = source;
         emit AllocationSourceUpdated(source);
+    }
+
+    /// @notice Binds integration identities once, before any round. No admin role can replace them later.
+    function bindExecution(address module, address tracker) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        if (executionModule != address(0)) revert ExecutionAlreadyBound();
+        if (currentRoundId != 0) revert PreviousRoundActive(currentRoundId);
+        if (module == address(0) || tracker == address(0)) revert ZeroAddress();
+        if (module.code.length == 0 || tracker.code.length == 0) revert InvalidParameters();
+        executionModule = module;
+        performanceTracker = tracker;
+        allocationSource = module;
+        emit AllocationSourceUpdated(module);
+        emit ExecutionBound(module, tracker);
     }
 
     /// @notice Pulls USDC from the admin into the protocol reserve.
@@ -210,8 +266,8 @@ contract QuantumRound is IQuantumRound, IQuantumRoundControl, AccessControl, Ree
             RoundStatus s = rounds[previous].status;
             if (s != RoundStatus.Settled && s != RoundStatus.Cancelled) revert PreviousRoundActive(previous);
         }
-        address source = allocationSource;
-        if (source == address(0)) revert AllocationSourceNotSet();
+        address source = executionModule;
+        if (source == address(0)) revert ExecutionNotBound();
         if (
             tradingEnd <= block.timestamp || twapWindow == 0 || twapWindow > tradingEnd - block.timestamp
                 || horizon == 0 || rMin >= rMax
@@ -228,6 +284,14 @@ contract QuantumRound is IQuantumRound, IQuantumRoundControl, AccessControl, Ree
         rd.rMax = rMax;
         rd.status = RoundStatus.Trading;
         rd.proposalCount = 1;
+        (bytes32 commitment, uint256 deadline) =
+            IRoundPreparation(source).prepareRound(roundId, tradingEnd, tradingEnd + horizon, rMin, rMax, twapWindow);
+        if (commitment == bytes32(0) || deadline <= tradingEnd || deadline >= tradingEnd + horizon) {
+            revert InvalidParameters();
+        }
+        policyHash[roundId] = commitment;
+        executionDeadline[roundId] = deadline;
+        emit RoundPolicyCommitted(roundId, commitment, deadline);
         emit RoundOpened(roundId, tradingEnd, tradingEnd + horizon, rMin, rMax, twapWindow);
 
         uint256 bps = IAllocationSource(source).currentTEthBps();
@@ -408,22 +472,25 @@ contract QuantumRound is IQuantumRound, IQuantumRoundControl, AccessControl, Ree
         emit Collapsed(roundId, winner, twaps);
     }
 
-    /// @notice VAULT_ROLE only. Called by the vault's permissionless `cancelUnexecutedRound` once a collapsed round's
-    ///         evaluation period has ended without an execution. A failed execution (for example a swap outside the
-    ///         oracle band) does NOT cancel the round: it reverts and the keeper can retry until `evaluationEnd`.
-    ///         A cancelled round redeems deposits at par.
-    function cancelRound(uint256 roundId) external onlyRole(VAULT_ROLE) nonReentrant {
+    /// @notice Bound module cancels only an unexecuted round after its committed execution deadline.
+    ///         A failed swap reverts and is retryable during the execution window, never a post-loss cancellation.
+    function cancelRound(uint256 roundId) external nonReentrant {
+        if (msg.sender != executionModule) revert UnauthorizedExecutionModule(msg.sender);
         Round storage rd = rounds[roundId];
         if (rd.status != RoundStatus.Collapsed) revert NotCollapsed(roundId);
+        if (_executed[roundId]) revert AlreadyExecuted(roundId);
+        if (block.timestamp <= executionDeadline[roundId]) revert ExecutionWindowOpen(roundId);
         rd.status = RoundStatus.Cancelled;
         emit RoundCancelled(roundId);
         _releaseIfClear(roundId, rd);
     }
 
-    /// @notice VAULT_ROLE records a successful execution exactly once while collapsed.
-    function markExecuted(uint256 roundId) external onlyRole(VAULT_ROLE) {
+    /// @notice The bound module records successful execution once, within the committed window.
+    function markExecuted(uint256 roundId) external {
+        if (msg.sender != executionModule) revert UnauthorizedExecutionModule(msg.sender);
         if (rounds[roundId].status != RoundStatus.Collapsed) revert NotCollapsed(roundId);
         if (_executed[roundId]) revert AlreadyExecuted(roundId);
+        if (block.timestamp > executionDeadline[roundId]) revert ExecutionDeadlinePassed(roundId);
         _executed[roundId] = true;
     }
 
@@ -431,14 +498,14 @@ contract QuantumRound is IQuantumRound, IQuantumRoundControl, AccessControl, Ree
         return _executed[roundId];
     }
 
-    /// @notice RESOLVER_ROLE after evaluationEnd with the realised return ratio (1e18).
+    /// @notice Only the bound performance tracker supplies an oracle-derived return ratio (1e18).
     /// @dev Anyone may call after evaluationEnd + EMERGENCY_SETTLE_DELAY, but then the supplied value is IGNORED and
     ///      executed rounds settle at the midpoint of [rMin, rMax]; unexecuted rounds cancel at par.
     function settle(uint256 roundId, uint256 realisedReturn) external nonReentrant {
         Round storage rd = rounds[roundId];
         if (rd.status != RoundStatus.Collapsed) revert NotCollapsed(roundId);
         if (block.timestamp < rd.evaluationEnd) revert EvaluationNotEnded(roundId);
-        bool emergency = !hasRole(RESOLVER_ROLE, msg.sender);
+        bool emergency = msg.sender != performanceTracker;
         uint256 value = realisedReturn;
         if (emergency) {
             if (block.timestamp < uint256(rd.evaluationEnd) + EMERGENCY_SETTLE_DELAY) revert NotAuthorizedToSettle();
@@ -448,8 +515,9 @@ contract QuantumRound is IQuantumRound, IQuantumRoundControl, AccessControl, Ree
                 _releaseIfClear(roundId, rd);
                 return;
             }
-            value = (rd.rMin + rd.rMax) / 2;
+            value = rd.rMin + (rd.rMax - rd.rMin) / 2;
         }
+        if (!_executed[roundId]) revert RoundNotExecuted(roundId);
         uint256 clamped = Math.min(Math.max(value, rd.rMin), rd.rMax);
         uint256 pi = Math.mulDiv(clamped - rd.rMin, ONE, rd.rMax - rd.rMin);
         rd.realisedReturn = value;
@@ -559,8 +627,8 @@ contract QuantumRound is IQuantumRound, IQuantumRoundControl, AccessControl, Ree
 
     function liabilitiesClear(uint256 roundId) external view returns (bool) {
         Round storage rd = rounds[roundId];
-        return (rd.status == RoundStatus.Settled || rd.status == RoundStatus.Cancelled)
-            && _liabilitiesClear(roundId, rd);
+        return
+            (rd.status == RoundStatus.Settled || rd.status == RoundStatus.Cancelled) && _liabilitiesClear(roundId, rd);
     }
 
     /// @notice What `redeem` would pay `user` right now (0 if not redeemable).
@@ -575,8 +643,8 @@ contract QuantumRound is IQuantumRound, IQuantumRoundControl, AccessControl, Ree
             uint256 w = rd.winnerId;
             if (first) payout -= creditsClaimed[roundId][w][user];
             payout += IERC20(tokens.creditToken(roundId, w)).balanceOf(user)
-                + Math.mulDiv(IERC20(tokens.longToken(roundId, w)).balanceOf(user), rd.pi, ONE * SCALE)
-                + Math.mulDiv(IERC20(tokens.shortToken(roundId, w)).balanceOf(user), ONE - rd.pi, ONE * SCALE);
+            + Math.mulDiv(IERC20(tokens.longToken(roundId, w)).balanceOf(user), rd.pi, ONE * SCALE)
+            + Math.mulDiv(IERC20(tokens.shortToken(roundId, w)).balanceOf(user), ONE - rd.pi, ONE * SCALE);
         }
     }
 

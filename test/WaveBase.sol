@@ -48,15 +48,15 @@ abstract contract WaveBase is Test {
     }
 
     function _deployPoolManager() internal virtual returns (IPoolManager) {
-        return IPoolManager(address(new PoolManager(address(this))));
+        return IPoolManager(deployCode("PoolManager.sol:PoolManager", abi.encode(address(this))));
     }
 
     function _deployStack() internal {
-        tokens = new ProposalTokens(address(this));
+        tokens = ProposalTokens(deployCode("ProposalTokens.sol:ProposalTokens", abi.encode(address(this))));
         tokens.setCreditDecimals(6);
         qr = new MockQuantumRound(tokens);
         tokens.grantRole(tokens.QUANTUM_ROUND_ROLE(), address(qr));
-        adapter = new WaveV4ProposalMarket(pm, tokens, address(this));
+        adapter = WaveV4ProposalMarket(deployCode("WaveV4ProposalMarket.sol:WaveV4ProposalMarket", abi.encode(pm, tokens, address(this))));
         qr.setMarket(adapter);
         hook = _deployHookAt(HOOK_ADDR, address(adapter));
         adapter.setQuantumRound(address(qr));
