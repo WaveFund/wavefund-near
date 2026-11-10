@@ -6,7 +6,7 @@ import { mnemonicToAccount } from 'viem/accounts';
 export const LOCAL_MNEMONIC = 'test test test test test test test test test test test junk';
 export const LOCAL_CHAIN_ID = 31337;
 export const CONTRACT_NAMES = ['safe', 'stable', 'asset', 'oracle', 'router', 'poolManager', 'engine', 'module', 'tracker', 'tokens', 'registry', 'hook', 'market'];
-export const STAGES = ['idle', 'opening', 'proposing', 'forecasting', 'selecting', 'executing', 'evaluating', 'settling', 'redeeming', 'completed', 'failed', 'interrupted'];
+export const STAGES = ['idle', 'analysing', 'opening', 'proposing', 'forecasting', 'selecting', 'executing', 'evaluating', 'settling', 'redeeming', 'completed', 'failed', 'interrupted'];
 
 export function assertLocalRpc(value) {
   let url;

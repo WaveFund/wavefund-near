@@ -15,7 +15,9 @@
     "test:runtime": "node --test runtime/test/*.test.mjs",
     "frontend:build": "npm run build --workspace @wavefund/frontend",
     "frontend:typecheck": "npm run typecheck --workspace @wavefund/frontend",
-    "demo:scenario": "node runtime/scenario.mjs"
+    "demo:scenario": "node runtime/scenario.mjs",
+    "agents:check": "node --env-file-if-exists=.env.agents runtime/agents/check.mjs",
+    "demo:agents": "node --env-file=.env.agents scripts/local-demo.mjs"
   },
   "dependencies": {
     "viem": "2.57.17"

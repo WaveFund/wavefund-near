@@ -1,13 +1,15 @@
 import { spawn } from 'node:child_process';
 import { mkdir, readFile, writeFile, access } from 'node:fs/promises';
 import { setTimeout as delay } from 'node:timers/promises';
+import { providerConfig, subprocessEnvironment } from '../runtime/agents/provider.mjs';
 import { LOCAL_MNEMONIC } from '../runtime/config.mjs';
 
 // Starts only a fresh disposable local chain. Never attaches to an existing RPC.
 const children = [];
 let stopping = false;
-function child(command, args, env = {}) {
-  const proc = spawn(command, args, { stdio: 'inherit', env: { ...process.env, NEXT_TELEMETRY_DISABLED: '1', ...env } });
+function child(command, args, env = {}, inferenceAccess = false) {
+  const childEnv = subprocessEnvironment({ ...process.env, NEXT_TELEMETRY_DISABLED: '1', ...env }, inferenceAccess);
+  const proc = spawn(command, args, { stdio: 'inherit', env: childEnv });
   children.push(proc); return proc;
 }
 async function command(name, args) {
@@ -17,6 +19,7 @@ async function command(name, args) {
 function stop() { if (stopping) return; stopping = true; for (const proc of children.reverse()) if (proc.exitCode === null) proc.kill('SIGTERM'); }
 process.once('SIGINT', stop); process.once('SIGTERM', stop);
 try {
+  providerConfig(); // Validate optional inference configuration before starting any chain process.
   await mkdir('deployments', { recursive: true });
   await mkdir('.run/local-demo', { recursive: true });
   try { await access('.run/local-demo/journal.json'); throw new Error('A previous journal exists. Preserve it or explicitly remove .run/local-demo after stopping the old demo.'); } catch (error) { if (error.code !== 'ENOENT') throw error; }
@@ -37,7 +40,7 @@ try {
   const manifest = JSON.parse(await readFile('deployments/local.json', 'utf8'));
   manifest.deployedAtBlock = Math.min(...broadcast.receipts.map((r) => Number(BigInt(r.blockNumber))));
   await writeFile('deployments/local.json', JSON.stringify(manifest, null, 2) + '\n');
-  const api = child(process.execPath, ['runtime/server.mjs']);
+  const api = child(process.execPath, ['runtime/server.mjs'], {}, true);
   const ui = child(process.execPath, ['node_modules/next/dist/bin/next', 'dev', 'frontend', '--hostname', '127.0.0.1', '--port', '3000']);
   console.log('Open http://127.0.0.1:3000 — disposable simulation only. Ctrl+C stops owned processes.');
   await Promise.race([anvil, api, ui].map((proc) => new Promise((_, reject) => proc.once('exit', (code) => reject(new Error(`Demo process exited ${code}`))))));

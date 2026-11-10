@@ -14,7 +14,7 @@ export async function startServer(options = {}) {
   const port = Number(options.port ?? process.env.PORT ?? 3001);
   if (!['127.0.0.1', 'localhost', '::1'].includes(host) && !(host === '0.0.0.0' && process.env.WAVEFUND_CONTAINER === '1')) throw new Error('Public listening is disabled; container binding requires explicit local-container mode');
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid API port');
-  const runtime = options.runtime ?? await createRuntime({ rpcUrl: process.env.LOCAL_RPC_URL, manifestPath: process.env.LOCAL_MANIFEST ?? 'deployments/local.json', journalPath: process.env.LOCAL_JOURNAL ?? '.run/local-demo/journal.json', artifactsDir: process.env.CONTRACT_ARTIFACTS ?? 'out', ...options });
+  const runtime = options.runtime ?? await createRuntime({ rpcUrl: process.env.LOCAL_RPC_URL, manifestPath: process.env.LOCAL_MANIFEST ?? 'deployments/local.json', journalPath: process.env.LOCAL_JOURNAL ?? '.run/local-demo/journal.json', artifactsDir: process.env.CONTRACT_ARTIFACTS ?? 'out', marketDataPath: process.env.WAVEFUND_MARKET_DATA_FILE, ...options });
   const server = createServer(async (request, response) => {
     const origin = request.headers.origin;
     function send(status, value) {
@@ -46,7 +46,7 @@ export async function startServer(options = {}) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     const app = await startServer();
-    console.log('Wavefund local-simulation API ready on port 3001. No live AI or production oracle is connected.');
+    console.log('Wavefund local-simulation API ready on port 3001. Inference is configured separately; assets and oracle prices remain simulated.');
     const close = () => app.close().then(() => process.exit(0), (error) => { console.error(safeError(error)); process.exit(1); });
     process.once('SIGINT', close); process.once('SIGTERM', close);
   } catch (error) { console.error(safeError(error)); process.exitCode = 1; }
