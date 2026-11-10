@@ -1,0 +1,26 @@
+{
+  "chainId": 1313161555,
+  "blockNumber": "277079092",
+  "timestamp": "1794320549",
+  "version": "1.4.1",
+  "owners": [
+    "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9"
+  ],
+  "threshold": 1,
+  "moduleEnabled": true,
+  "maxSlippageBps": 100,
+  "activeRoundId": "2",
+  "activeStatus": 3,
+  "pendingAuthorization": "0",
+  "currentRoundId": "2",
+  "stableBalance": "0",
+  "assetBalance": "953080948395546500",
+  "sponsorReserve": "100377579",
+  "oracle": {
+    "usable": false,
+    "message": "Oracle unavailable or stale; round preparation is blocked."
+  },
+  "unsignedOnly": true,
+  "note": "Bindings verified against deployed contracts; bytecode provenance and independent security review remain separate checks.",
+  "manifestSha256": "8398f8b5524c0393c660849aff475f88fb382d227790441be8e9f8a232396605"
+}

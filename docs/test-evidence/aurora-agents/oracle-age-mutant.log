@@ -1,0 +1,73 @@
+TAP version 13
+# Subtest: four validated decisions bind to this treasury, round and real-research shape
+ok 1 - four validated decisions bind to this treasury, round and real-research shape
+  ---
+  duration_ms: 2.511924
+  type: 'test'
+  ...
+# Subtest: different chain, round, treasury, changed holdings and expired research are rejected
+ok 2 - different chain, round, treasury, changed holdings and expired research are rejected
+  ---
+  duration_ms: 1.159523
+  type: 'test'
+  ...
+# Subtest: altered allocations, proposer identity, forecast coverage and model records fail closed
+ok 3 - altered allocations, proposer identity, forecast coverage and model records fail closed
+  ---
+  duration_ms: 1.16194
+  type: 'test'
+  ...
+# Subtest: synthetic research and secret-bearing snapshots cannot start live inference
+ok 4 - synthetic research and secret-bearing snapshots cannot start live inference
+  ---
+  duration_ms: 0.229921
+  type: 'test'
+  ...
+# Subtest: bounded provider uses documented Qwen JSON controls and at most four calls
+ok 5 - bounded provider uses documented Qwen JSON controls and at most four calls
+  ---
+  duration_ms: 12.001027
+  type: 'test'
+  ...
+# Subtest: oversized requests and the wrong model consume zero requests
+ok 6 - oversized requests and the wrong model consume zero requests
+  ---
+  duration_ms: 0.295423
+  type: 'test'
+  ...
+# Subtest: small live trade can clear execution costs where larger entry would rationally abstain
+ok 7 - small live trade can clear execution costs where larger entry would rationally abstain
+  ---
+  duration_ms: 0.151628
+  type: 'test'
+  ...
+# Subtest: authenticated snapshot metadata enforces units, exact pairs, positive prices and freshness
+not ok 8 - authenticated snapshot metadata enforces units, exact pairs, positive prices and freshness
+  ---
+  duration_ms: 0.400049
+  type: 'test'
+  location: '/work/runtime/test/aurora-agents.test.mjs:92:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///work/runtime/test/aurora-agents.test.mjs:95:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 7
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 70.012956

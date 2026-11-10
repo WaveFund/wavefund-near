@@ -1,0 +1,784 @@
+{
+  "date": "2026-11-10",
+  "chainId": 1313161555,
+  "manifest": "deployments/aurora-testnet.json",
+  "manifestSha256": "8398f8b5524c0393c660849aff475f88fb382d227790441be8e9f8a232396605",
+  "actors": {
+    "owner": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+    "Momentum": "0x8B6aF0B1738b941c0C7dd4deeC6fabEe3447888F",
+    "Conservative": "0x5613C60B04Fa16363C3a388AA4545073fb440345",
+    "Quant": "0x954362D2D831fC9430122d95F79c2eE3841E975D",
+    "Guardian": "0xc410cE4092eB91E89792F5AB731D64d544932B47"
+  },
+  "inference": {
+    "provider": "near-ai",
+    "configuredModel": "Qwen/Qwen3.6-35B-A3B-FP8",
+    "calls": 4,
+    "inputTokens": 4849,
+    "outputTokens": 1086,
+    "estimatedUsd": "0.00201893",
+    "approvedBudgetUsd": "0.05",
+    "attestationVerified": false,
+    "scope": "Four separate prompts to one model; not independent model families or independent operators."
+  },
+  "plan": {
+    "schemaVersion": 1,
+    "chainId": 1313161555,
+    "roundId": "2",
+    "safe": "0x781430393ec48f5c2af78be63ae273875b180ad1",
+    "engine": "0x825b31dbc1af25b230d31caf5210c2b5a8fe22af",
+    "createdAt": 1794319717,
+    "snapshot": {
+      "chainId": 1313161555,
+      "roundId": "2",
+      "safe": "0x781430393ec48f5c2af78be63ae273875b180ad1",
+      "engine": "0x825b31dbc1af25b230d31caf5210c2b5a8fe22af",
+      "portfolio": {
+        "stableBalance": "0",
+        "assetBalance": "953080948395546500",
+        "currentAllocationBps": 10000
+      },
+      "blockNumber": "277077558"
+    },
+    "market": {
+      "source": "external-unverified",
+      "asOf": 1794319652,
+      "stableUsdX18": "1000000000000000000",
+      "history": [
+        {
+          "timestamp": 1794316200,
+          "assetUsdX18": "2096510000000000000000"
+        },
+        {
+          "timestamp": 1794316500,
+          "assetUsdX18": "2094950000000000000000"
+        },
+        {
+          "timestamp": 1794316800,
+          "assetUsdX18": "2091600000000000000000"
+        },
+        {
+          "timestamp": 1794317100,
+          "assetUsdX18": "2095310000000000000000"
+        },
+        {
+          "timestamp": 1794317400,
+          "assetUsdX18": "2095520000000000000000"
+        },
+        {
+          "timestamp": 1794317700,
+          "assetUsdX18": "2063600000000000000000"
+        },
+        {
+          "timestamp": 1794318000,
+          "assetUsdX18": "2062690000000000000000"
+        },
+        {
+          "timestamp": 1794318300,
+          "assetUsdX18": "2066870000000000000000"
+        },
+        {
+          "timestamp": 1794318600,
+          "assetUsdX18": "2072740000000000000000"
+        },
+        {
+          "timestamp": 1794318900,
+          "assetUsdX18": "2065860000000000000000"
+        },
+        {
+          "timestamp": 1794319200,
+          "assetUsdX18": "2063180000000000000000"
+        },
+        {
+          "timestamp": 1794319500,
+          "assetUsdX18": "2067550000000000000000"
+        },
+        {
+          "timestamp": 1794319652,
+          "assetUsdX18": "2068970000000000000000"
+        }
+      ],
+      "features": {
+        "lookbackReturnBps": -131,
+        "maxDrawdownBps": 161,
+        "largestStepBps": 152
+      },
+      "warning": "External research data is unverified and cannot settle the contract.",
+      "evidenceId": "market-79efc296cc162c72"
+    },
+    "proposals": [
+      {
+        "id": 0,
+        "name": "Hold",
+        "allocationBps": 10000,
+        "rationale": "Keep current token quantities; no rebalance fee."
+      },
+      {
+        "id": 1,
+        "name": "Momentum",
+        "accountIndex": 1,
+        "allocationBps": 0,
+        "confidenceBps": 1000,
+        "rationale": "Trend is down (-131bps). High volatility (161bps drawdown) and unverified data pose significant downside risk. Preserving capital is prudent.",
+        "risks": [
+          "Unverified external data source.",
+          "Recent price decline and high volatility.",
+          "Potential for further drawdown."
+        ],
+        "evidenceIds": [
+          "market-79efc296cc162c72"
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Conservative",
+        "accountIndex": 4,
+        "allocationBps": 0,
+        "confidenceBps": 8500,
+        "rationale": "Conservative stance: -131bps return and 161bps drawdown signal high volatility. Unverified external data increases risk. Retaining stablecoin capital preserves value against potential further downside.",
+        "risks": [
+          "External data unverified.",
+          "Recent negative trend.",
+          "High volatility (161bps max drawdown)."
+        ],
+        "evidenceIds": [
+          "market-79efc296cc162c72"
+        ]
+      }
+    ],
+    "forecasts": [
+      {
+        "name": "Quant",
+        "accountIndex": 2,
+        "forecasts": [
+          {
+            "proposalId": 0,
+            "expectedReturnBps": -30,
+            "confidenceBps": 2000,
+            "rationale": "Hold incurs router fee. Trend is negative (-131bps). Volatility is high. No alpha generation.",
+            "risks": [
+              "Fee drag",
+              "Downside trend continuation"
+            ],
+            "evidenceIds": [
+              "market-79efc296cc162c72"
+            ]
+          },
+          {
+            "proposalId": 1,
+            "expectedReturnBps": -60,
+            "confidenceBps": 3000,
+            "rationale": "Trend is down (-131bps). Momentum strategy fails in downtrends. High volatility increases slippage risk.",
+            "risks": [
+              "Trend reversal failure",
+              "Execution slippage",
+              "Unverified data noise"
+            ],
+            "evidenceIds": [
+              "market-79efc296cc162c72"
+            ]
+          },
+          {
+            "proposalId": 2,
+            "expectedReturnBps": -30,
+            "confidenceBps": 2000,
+            "rationale": "Conservative stance avoids asset exposure. Returns limited by router fee. Preserves capital in volatile environment.",
+            "risks": [
+              "Fee drag",
+              "Opportunity cost if trend reverses"
+            ],
+            "evidenceIds": [
+              "market-79efc296cc162c72"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Guardian",
+        "accountIndex": 3,
+        "forecasts": [
+          {
+            "proposalId": 0,
+            "expectedReturnBps": 0,
+            "confidenceBps": 100,
+            "rationale": "Hold avoids fees. Volatility suggests potential drift, but no directional conviction.",
+            "risks": [
+              "Asset price drift reduces NAV.",
+              "Opportunity cost if trend reverses."
+            ],
+            "evidenceIds": [
+              "market-79efc296cc162c72"
+            ]
+          },
+          {
+            "proposalId": 1,
+            "expectedReturnBps": -30,
+            "confidenceBps": 400,
+            "rationale": "Selling into downtrend (-131bps) preserves capital. Fee cost (-30bps) outweighs likely small recovery.",
+            "risks": [
+              "False breakdown signal.",
+              "Execution slippage.",
+              "Unverified data reliability."
+            ],
+            "evidenceIds": [
+              "market-79efc296cc162c72"
+            ]
+          },
+          {
+            "proposalId": 2,
+            "expectedReturnBps": -30,
+            "confidenceBps": 400,
+            "rationale": "Same as Momentum: exit to stablecoin to avoid further downside in unverified, volatile market.",
+            "risks": [
+              "False breakdown signal.",
+              "Execution slippage.",
+              "Unverified data reliability."
+            ],
+            "evidenceIds": [
+              "market-79efc296cc162c72"
+            ]
+          }
+        ]
+      }
+    ],
+    "records": [
+      {
+        "name": "Momentum",
+        "role": "proposer",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "0222356cf396dbefbe950e2c8dc3cc5d89704269f0a2b1da868480d2949af24a",
+        "outputHash": "950f48ab139eacc36e80a5fbe9903a473187c112ffc13a774140d99955b986d8",
+        "decision": {
+          "allocationBps": 0,
+          "confidenceBps": 1000,
+          "rationale": "Trend is down (-131bps). High volatility (161bps drawdown) and unverified data pose significant downside risk. Preserving capital is prudent.",
+          "risks": [
+            "Unverified external data source.",
+            "Recent price decline and high volatility.",
+            "Potential for further drawdown."
+          ],
+          "evidenceIds": [
+            "market-79efc296cc162c72"
+          ]
+        },
+        "usage": {
+          "inputTokens": 1101,
+          "outputTokens": 138
+        },
+        "timestamp": "2026-11-10T14:08:39.014Z"
+      },
+      {
+        "name": "Conservative",
+        "role": "proposer",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "703f4472574eadfa61804d8e52b10d4ab131d1910ca0fba57fdf41cceb152093",
+        "outputHash": "44a28020b13b9e0d4c4effe28700903050eb612f09036745e58a2fd70a619045",
+        "decision": {
+          "allocationBps": 0,
+          "confidenceBps": 8500,
+          "rationale": "Conservative stance: -131bps return and 161bps drawdown signal high volatility. Unverified external data increases risk. Retaining stablecoin capital preserves value against potential further downside.",
+          "risks": [
+            "External data unverified.",
+            "Recent negative trend.",
+            "High volatility (161bps max drawdown)."
+          ],
+          "evidenceIds": [
+            "market-79efc296cc162c72"
+          ]
+        },
+        "usage": {
+          "inputTokens": 1106,
+          "outputTokens": 145
+        },
+        "timestamp": "2026-11-10T14:08:40.091Z"
+      },
+      {
+        "name": "Quant",
+        "role": "forecaster",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "0f111ad9f5a536ec98192bea76f5278d1400b14649cd37887a22370f58fd8704",
+        "outputHash": "731b17d538d403ea7cc15e065384bd831bfe9815c59ac093d9d4555ecb5f03cd",
+        "decision": {
+          "forecasts": [
+            {
+              "proposalId": 0,
+              "expectedReturnBps": -30,
+              "confidenceBps": 2000,
+              "rationale": "Hold incurs router fee. Trend is negative (-131bps). Volatility is high. No alpha generation.",
+              "risks": [
+                "Fee drag",
+                "Downside trend continuation"
+              ],
+              "evidenceIds": [
+                "market-79efc296cc162c72"
+              ]
+            },
+            {
+              "proposalId": 1,
+              "expectedReturnBps": -60,
+              "confidenceBps": 3000,
+              "rationale": "Trend is down (-131bps). Momentum strategy fails in downtrends. High volatility increases slippage risk.",
+              "risks": [
+                "Trend reversal failure",
+                "Execution slippage",
+                "Unverified data noise"
+              ],
+              "evidenceIds": [
+                "market-79efc296cc162c72"
+              ]
+            },
+            {
+              "proposalId": 2,
+              "expectedReturnBps": -30,
+              "confidenceBps": 2000,
+              "rationale": "Conservative stance avoids asset exposure. Returns limited by router fee. Preserves capital in volatile environment.",
+              "risks": [
+                "Fee drag",
+                "Opportunity cost if trend reverses"
+              ],
+              "evidenceIds": [
+                "market-79efc296cc162c72"
+              ]
+            }
+          ]
+        },
+        "usage": {
+          "inputTokens": 1318,
+          "outputTokens": 402
+        },
+        "timestamp": "2026-11-10T14:08:42.146Z"
+      },
+      {
+        "name": "Guardian",
+        "role": "forecaster",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "5809a02e458fd441247ebb9ee7e267b55179f1d7a6a64ed5703f15c393d28cd2",
+        "outputHash": "77d2832b8cb0fced3abf8ecef4c783a1bdb5596f0a037cf0e5b153836a2a48c2",
+        "decision": {
+          "forecasts": [
+            {
+              "proposalId": 0,
+              "expectedReturnBps": 0,
+              "confidenceBps": 100,
+              "rationale": "Hold avoids fees. Volatility suggests potential drift, but no directional conviction.",
+              "risks": [
+                "Asset price drift reduces NAV.",
+                "Opportunity cost if trend reverses."
+              ],
+              "evidenceIds": [
+                "market-79efc296cc162c72"
+              ]
+            },
+            {
+              "proposalId": 1,
+              "expectedReturnBps": -30,
+              "confidenceBps": 400,
+              "rationale": "Selling into downtrend (-131bps) preserves capital. Fee cost (-30bps) outweighs likely small recovery.",
+              "risks": [
+                "False breakdown signal.",
+                "Execution slippage.",
+                "Unverified data reliability."
+              ],
+              "evidenceIds": [
+                "market-79efc296cc162c72"
+              ]
+            },
+            {
+              "proposalId": 2,
+              "expectedReturnBps": -30,
+              "confidenceBps": 400,
+              "rationale": "Same as Momentum: exit to stablecoin to avoid further downside in unverified, volatile market.",
+              "risks": [
+                "False breakdown signal.",
+                "Execution slippage.",
+                "Unverified data reliability."
+              ],
+              "evidenceIds": [
+                "market-79efc296cc162c72"
+              ]
+            }
+          ]
+        },
+        "usage": {
+          "inputTokens": 1324,
+          "outputTokens": 401
+        },
+        "timestamp": "2026-11-10T14:08:44.242Z"
+      }
+    ],
+    "provider": {
+      "mode": "near-ai",
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "attestationVerified": false
+    },
+    "attestationVerified": false
+  },
+  "result": {
+    "stage": "complete",
+    "chainId": 1313161555,
+    "roundId": "2",
+    "winner": "0",
+    "allocation": 10000,
+    "round": {
+      "tradingStart": "1794319851",
+      "tradingEnd": "1794320139",
+      "evaluationEnd": "1794320319",
+      "twapWindow": "90",
+      "rMin": "950000000000000000",
+      "rMax": "1050000000000000000",
+      "status": 3,
+      "proposalCount": 3,
+      "winnerId": 0,
+      "seedReleased": true,
+      "realisedReturn": "999590619617798599",
+      "pi": "495906196177985990",
+      "totalDeposits": "20000000",
+      "depositsOutstanding": "0",
+      "escrow": "25000000",
+      "totalPaid": "20000000"
+    },
+    "portfolio": {
+      "startingValueX18": "1967249620178505552917",
+      "stableQty6": "0",
+      "assetQty18": "953080948395546500",
+      "executedAt": "1794320172",
+      "observedAt": "1794320342",
+      "oraclePublishedAt": "1794320323",
+      "realisedReturn": "999590619617798599",
+      "observationHash": "0x260a839d73b0ebbb08b123130cf429a5ead18973081afe9dd65ae3dcaeefb431"
+    },
+    "payouts": [
+      {
+        "name": "Quant",
+        "address": "0x954362D2D831fC9430122d95F79c2eE3841E975D",
+        "deposit": "10000000",
+        "payout": "10000000",
+        "profitLoss": "0"
+      },
+      {
+        "name": "Guardian",
+        "address": "0xc410cE4092eB91E89792F5AB731D64d544932B47",
+        "deposit": "10000000",
+        "payout": "10000000",
+        "profitLoss": "0"
+      }
+    ],
+    "decisions": [
+      {
+        "name": "Quant",
+        "action": "abstain",
+        "reason": "No forecast clears confidence and actual entry-cost edge checks"
+      },
+      {
+        "name": "Guardian",
+        "action": "abstain",
+        "reason": "No forecast clears confidence and actual entry-cost edge checks"
+      }
+    ],
+    "reserve": "100377579",
+    "provider": {
+      "mode": "near-ai",
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "attestationVerified": false
+    },
+    "recordHashes": [
+      {
+        "name": "Momentum",
+        "inputHash": "0222356cf396dbefbe950e2c8dc3cc5d89704269f0a2b1da868480d2949af24a",
+        "outputHash": "950f48ab139eacc36e80a5fbe9903a473187c112ffc13a774140d99955b986d8"
+      },
+      {
+        "name": "Conservative",
+        "inputHash": "703f4472574eadfa61804d8e52b10d4ab131d1910ca0fba57fdf41cceb152093",
+        "outputHash": "44a28020b13b9e0d4c4effe28700903050eb612f09036745e58a2fd70a619045"
+      },
+      {
+        "name": "Quant",
+        "inputHash": "0f111ad9f5a536ec98192bea76f5278d1400b14649cd37887a22370f58fd8704",
+        "outputHash": "731b17d538d403ea7cc15e065384bd831bfe9815c59ac093d9d4555ecb5f03cd"
+      },
+      {
+        "name": "Guardian",
+        "inputHash": "5809a02e458fd441247ebb9ee7e267b55179f1d7a6a64ed5703f15c393d28cd2",
+        "outputHash": "77d2832b8cb0fced3abf8ecef4c783a1bdb5596f0a037cf0e5b153836a2a48c2"
+      }
+    ],
+    "scope": "Four separate agent wallets and four separately prompted calls to the same NEAR AI model; test assets, no verified attestation, no forced winner or trade."
+  },
+  "execution": {
+    "stage": "execution",
+    "hash": "0xfec554892f8f85fcf874910f4054b4c67ab3c210271901a7ea65af84a0e8dbb0",
+    "swaps": [],
+    "note": "Chosen allocation required no swap; do not claim a venue fill"
+  },
+  "transactions": [
+    {
+      "stage": "confirmed",
+      "label": "round2:gas:Momentum",
+      "actor": "owner",
+      "hash": "0x66b5489d092a6282610ee1a7d22c97ef32de54ac121e38f20a32bef910fb893d",
+      "blockNumber": "277077241",
+      "gasUsed": "21000",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:mint:Momentum",
+      "actor": "owner",
+      "hash": "0x00f2d9c5997c31f3b774ef25314b42b2d42174373fc57006da129063129ea174",
+      "blockNumber": "277077253",
+      "gasUsed": "51047",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:register:Momentum",
+      "actor": "Momentum",
+      "hash": "0xb9c6830216583541d402b21069f09cfc76ff3f6bb03c8160353f5bae161c74e4",
+      "blockNumber": "277077266",
+      "gasUsed": "70150",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:bondApproval:Momentum",
+      "actor": "Momentum",
+      "hash": "0x7b45a0e9fa70b4b51f6918b63801d295a35a85ccfd5cfe2665ae8d1846a7ed09",
+      "blockNumber": "277077277",
+      "gasUsed": "45909",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:gas:Conservative",
+      "actor": "owner",
+      "hash": "0x81ddd152405c2fa3f52db03543e97d3b5c48d6fb7be8158f5131d95fe1ba40a3",
+      "blockNumber": "277077288",
+      "gasUsed": "21000",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:mint:Conservative",
+      "actor": "owner",
+      "hash": "0x53c329ed8fc6dd31d6bdfd8a03f3a246b8da6b0465fb956594104493afb09fe3",
+      "blockNumber": "277077299",
+      "gasUsed": "51047",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:register:Conservative",
+      "actor": "Conservative",
+      "hash": "0x704190f377d676fb59a00c40e8b4b9c59a9120aa9fe949e2d7ad38889b4c78fb",
+      "blockNumber": "277077315",
+      "gasUsed": "70198",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:bondApproval:Conservative",
+      "actor": "Conservative",
+      "hash": "0x8752cc180aea2b2502a6bbab181221f64b01a202c3b5c8bf7ce4c7b9b138f5c5",
+      "blockNumber": "277077329",
+      "gasUsed": "45909",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:gas:Quant",
+      "actor": "owner",
+      "hash": "0x9f274e3c9a52c6b2084b93310ef037e4f35a2c53d46d2f415ef6c6f638f9c7f1",
+      "blockNumber": "277077343",
+      "gasUsed": "21000",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:mint:Quant",
+      "actor": "owner",
+      "hash": "0x505b72296b3db20b635ddf7c98a064647108e43f6fdadfe2ff8b6d479b5f8de4",
+      "blockNumber": "277077357",
+      "gasUsed": "51047",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:depositApproval:Quant",
+      "actor": "Quant",
+      "hash": "0x09cd7a1da1e6e19087e988e4220feb2cb33678f0bcc1454dd8c06a0695817f6a",
+      "blockNumber": "277077366",
+      "gasUsed": "45921",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:gas:Guardian",
+      "actor": "owner",
+      "hash": "0x8cada4d5e74a4618172e0f0def84af0e82f799bd94dae2bf9ac30835cd076bab",
+      "blockNumber": "277077376",
+      "gasUsed": "21000",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:mint:Guardian",
+      "actor": "owner",
+      "hash": "0x35ac3b26076973c0b0b542c674b24711ae48e71a575fc114b001b150fed871c3",
+      "blockNumber": "277077386",
+      "gasUsed": "51047",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:depositApproval:Guardian",
+      "actor": "Guardian",
+      "hash": "0x12ce072e234ea9d0a4b944c02b913015ea228d79010e0c4c6eb126545adb4927",
+      "blockNumber": "277077396",
+      "gasUsed": "45921",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:oracle:open",
+      "actor": "owner",
+      "hash": "0x02d9275722ea24e28396d3576fa7bba7418b34c03cba0e29e79680405d730a4c",
+      "blockNumber": "277077877",
+      "gasUsed": "431405",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:authorize",
+      "actor": "owner",
+      "hash": "0xb54449708bb9d0af0629e1deb8a0cf4a8b7d66d4a8dc310c4dde5e5b2bf38864",
+      "blockNumber": "277077890",
+      "gasUsed": "221993",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:open",
+      "actor": "owner",
+      "hash": "0x4bac949bd417072a44616f05d05bbcf29f57d638f87edf02f5004f6debe692c5",
+      "blockNumber": "277077902",
+      "gasUsed": "1753785",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:propose:Momentum",
+      "actor": "Momentum",
+      "hash": "0x37601742ef670663b6ec6e792e6553ba389e331467d8d172fd2d6998a879414d",
+      "blockNumber": "277077918",
+      "gasUsed": "1718074",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:propose:Conservative",
+      "actor": "Conservative",
+      "hash": "0xbe42a132329a3beb8e707de452d2e32c56d9d44217db0c5019baf301b68ba872",
+      "blockNumber": "277077931",
+      "gasUsed": "1746868",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:deposit:Quant",
+      "actor": "Quant",
+      "hash": "0x1af4a155e43ed178c2e32e20b91f8a8efde75244d0725147c606fbaf019ea1ba",
+      "blockNumber": "277077948",
+      "gasUsed": "114040",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:deposit:Guardian",
+      "actor": "Guardian",
+      "hash": "0x2abffb809d09efb2496a93ce5f1e9ac659987546131a0b950e312cfc999c689b",
+      "blockNumber": "277077966",
+      "gasUsed": "79840",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:collapse",
+      "actor": "owner",
+      "hash": "0xc46b0de30a11e099e4c3b27ced37bcb28b0faa8281b13b1f8b1b3951f6fa9f94",
+      "blockNumber": "277078412",
+      "gasUsed": "906306",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:oracle:execute",
+      "actor": "owner",
+      "hash": "0x406425985ab3915b89a7be704c95575dccf5ffb128bfc2abaaf694d0872188fb",
+      "blockNumber": "277078437",
+      "gasUsed": "439995",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:execute",
+      "actor": "owner",
+      "hash": "0xfec554892f8f85fcf874910f4054b4c67ab3c210271901a7ea65af84a0e8dbb0",
+      "blockNumber": "277078448",
+      "gasUsed": "226896",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:oracle:settle",
+      "actor": "owner",
+      "hash": "0x10d4613c5494ac21932e21022583746a87f64dc93bcd4d01ef8efad62badb3dc",
+      "blockNumber": "277078731",
+      "gasUsed": "445609",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:settle",
+      "actor": "owner",
+      "hash": "0x6dee5be5186ee012f5c9d137c61b7ebcf9676fcc01ce8a73df6694efb0ad53b2",
+      "blockNumber": "277078743",
+      "gasUsed": "207628",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:redeem:Quant",
+      "actor": "Quant",
+      "hash": "0x7221c5b7e6386a833947732ac618afb74d9d377deea298b657eeb22d53ca672a",
+      "blockNumber": "277078759",
+      "gasUsed": "136467",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round2:redeem:Guardian",
+      "actor": "Guardian",
+      "hash": "0xf58d199ba768eca1353cdf41904213d4f8a9effa7021f1e4c975c1aebdadd78b",
+      "blockNumber": "277078772",
+      "gasUsed": "146405",
+      "gasPrice": "70000000"
+    }
+  ],
+  "gasUsed": "9187507",
+  "gasCostWei": "643125490000000",
+  "limitations": [
+    "Both forecasters abstained below the confidence threshold; no live model-directed forecasting trade occurred.",
+    "Hold won and needed no investment swap. Prior genuine round separately proves the actual Trisolaris fill.",
+    "Test tokens have no redemption value; no production audit or attestation verification.",
+    "No continuous oracle updater or always-on autonomous operator was installed."
+  ]
+}

@@ -1,0 +1,77 @@
+TAP version 13
+# Subtest: four validated decisions bind to this treasury, round and real-research shape
+ok 1 - four validated decisions bind to this treasury, round and real-research shape
+  ---
+  duration_ms: 1.663694
+  type: 'test'
+  ...
+# Subtest: different chain, round, treasury, changed holdings and expired research are rejected
+ok 2 - different chain, round, treasury, changed holdings and expired research are rejected
+  ---
+  duration_ms: 1.369815
+  type: 'test'
+  ...
+# Subtest: altered allocations, proposer identity, forecast coverage and model records fail closed
+ok 3 - altered allocations, proposer identity, forecast coverage and model records fail closed
+  ---
+  duration_ms: 1.163895
+  type: 'test'
+  ...
+# Subtest: synthetic research and secret-bearing snapshots cannot start live inference
+ok 4 - synthetic research and secret-bearing snapshots cannot start live inference
+  ---
+  duration_ms: 0.198712
+  type: 'test'
+  ...
+# Subtest: bounded provider uses documented Qwen JSON controls and at most four calls
+ok 5 - bounded provider uses documented Qwen JSON controls and at most four calls
+  ---
+  duration_ms: 10.013416
+  type: 'test'
+  ...
+# Subtest: oversized requests and the wrong model consume zero requests
+not ok 6 - oversized requests and the wrong model consume zero requests
+  ---
+  duration_ms: 1.772779
+  type: 'test'
+  location: '/work/runtime/test/aurora-agents.test.mjs:78:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /input limit/. Input:
+    
+    'Error: Inference failed: invalid, incomplete, oversized or timed-out response; no fallback or retry'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: 'Inference failed: invalid, incomplete, oversized or timed-out response; no fallback or retry'
+  stack: |-
+    Object.complete (file:///work/runtime/agents/provider.mjs:50:15)
+  operator: 'rejects'
+  stack: |-
+    async TestContext.<anonymous> (file:///work/runtime/test/aurora-agents.test.mjs:82:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: small live trade can clear execution costs where larger entry would rationally abstain
+ok 7 - small live trade can clear execution costs where larger entry would rationally abstain
+  ---
+  duration_ms: 0.20767
+  type: 'test'
+  ...
+# Subtest: authenticated snapshot metadata enforces units, exact pairs, positive prices and freshness
+ok 8 - authenticated snapshot metadata enforces units, exact pairs, positive prices and freshness
+  ---
+  duration_ms: 0.189545
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 7
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 56.141015

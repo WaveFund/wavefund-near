@@ -1,0 +1,332 @@
+
+> wavefund-near@0.1.0 test:runtime
+> node --test runtime/test/*.test.mjs scripts/lib/*.test.mjs
+
+TAP version 13
+# Subtest: proposals permit full capital and reject forbidden fields, allocations, types and citations
+ok 1 - proposals permit full capital and reject forbidden fields, allocations, types and citations
+  ---
+  duration_ms: 0.84589
+  type: 'test'
+  ...
+# Subtest: forecasters must cover each supplied proposal exactly once
+ok 2 - forecasters must cover each supplied proposal exactly once
+  ---
+  duration_ms: 0.325798
+  type: 'test'
+  ...
+# Subtest: continuous payout interpolation uses signed performance, with clipped endpoints
+ok 3 - continuous payout interpolation uses signed performance, with clipped endpoints
+  ---
+  duration_ms: 0.079543
+  type: 'test'
+  ...
+# Subtest: entry quote determines profitability and can cause abstention
+ok 4 - entry quote determines profitability and can cause abstention
+  ---
+  duration_ms: 0.143836
+  type: 'test'
+  ...
+# Subtest: low confidence, zero edge and insufficient budget cannot force a trade
+ok 5 - low confidence, zero edge and insufficient budget cannot force a trade
+  ---
+  duration_ms: 0.202879
+  type: 'test'
+  ...
+# Subtest: research evidence rejects stale, future and unordered observations
+ok 6 - research evidence rejects stale, future and unordered observations
+  ---
+  duration_ms: 0.439841
+  type: 'test'
+  ...
+# Subtest: provider config requires explicit remote enablement and confines local endpoints
+ok 7 - provider config requires explicit remote enablement and confines local endpoints
+  ---
+  duration_ms: 0.26863
+  type: 'test'
+  ...
+# Subtest: actual HTTP adapter parses JSON, counts calls and never reflects secrets in metadata
+ok 8 - actual HTTP adapter parses JSON, counts calls and never reflects secrets in metadata
+  ---
+  duration_ms: 36.210682
+  type: 'test'
+  ...
+# Subtest: HTTP failures do not retry or leak provider error bodies
+ok 9 - HTTP failures do not retry or leak provider error bodies
+  ---
+  duration_ms: 4.313159
+  type: 'test'
+  ...
+# Subtest: truncated answers, tool calls, markdown and oversize responses fail closed
+ok 10 - truncated answers, tool calls, markdown and oversize responses fail closed
+  ---
+  duration_ms: 14.996641
+  type: 'test'
+  ...
+# Subtest: inference timeout is bounded and does not retry
+ok 11 - inference timeout is bounded and does not retry
+  ---
+  duration_ms: 22.448356
+  type: 'test'
+  ...
+# Subtest: four independent HTTP decisions are validated, hashed and reflect changed inputs
+ok 12 - four independent HTTP decisions are validated, hashed and reflect changed inputs
+  ---
+  duration_ms: 10.876234
+  type: 'test'
+  ...
+# Subtest: malicious model output halts the team before any forecasting decision
+ok 13 - malicious model output halts the team before any forecasting decision
+  ---
+  duration_ms: 0.165878
+  type: 'test'
+  ...
+# Subtest: configuration check reports readiness without printing a key or enabling remote calls
+ok 14 - configuration check reports readiness without printing a key or enabling remote calls
+  ---
+  duration_ms: 80.243669
+  type: 'test'
+  ...
+# Subtest: inference credential is withheld from non-API child processes
+ok 15 - inference credential is withheld from non-API child processes
+  ---
+  duration_ms: 0.183087
+  type: 'test'
+  ...
+# Subtest: launcher rejects disabled remote inference before touching the workspace or starting tools
+ok 16 - launcher rejects disabled remote inference before touching the workspace or starting tools
+  ---
+  duration_ms: 240.370084
+  type: 'test'
+  ...
+# Subtest: changing provider configuration cannot relabel an old scripted round as model inference
+ok 17 - changing provider configuration cannot relabel an old scripted round as model inference
+  ---
+  duration_ms: 225.940787
+  type: 'test'
+  ...
+# Subtest: four validated decisions bind to this treasury, round and real-research shape
+ok 18 - four validated decisions bind to this treasury, round and real-research shape
+  ---
+  duration_ms: 1.615237
+  type: 'test'
+  ...
+# Subtest: different chain, round, treasury, changed holdings and expired research are rejected
+ok 19 - different chain, round, treasury, changed holdings and expired research are rejected
+  ---
+  duration_ms: 0.907391
+  type: 'test'
+  ...
+# Subtest: altered allocations, proposer identity, forecast coverage and model records fail closed
+ok 20 - altered allocations, proposer identity, forecast coverage and model records fail closed
+  ---
+  duration_ms: 1.205396
+  type: 'test'
+  ...
+# Subtest: synthetic research and secret-bearing snapshots cannot start live inference
+ok 21 - synthetic research and secret-bearing snapshots cannot start live inference
+  ---
+  duration_ms: 0.19642
+  type: 'test'
+  ...
+# Subtest: bounded provider uses documented Qwen JSON controls and at most four calls
+ok 22 - bounded provider uses documented Qwen JSON controls and at most four calls
+  ---
+  duration_ms: 10.469226
+  type: 'test'
+  ...
+# Subtest: oversized requests and the wrong model consume zero requests
+ok 23 - oversized requests and the wrong model consume zero requests
+  ---
+  duration_ms: 0.27038
+  type: 'test'
+  ...
+# Subtest: small live trade can clear execution costs where larger entry would rationally abstain
+ok 24 - small live trade can clear execution costs where larger entry would rationally abstain
+  ---
+  duration_ms: 0.147044
+  type: 'test'
+  ...
+# Subtest: authenticated snapshot metadata enforces units, exact pairs, positive prices and freshness
+ok 25 - authenticated snapshot metadata enforces units, exact pairs, positive prices and freshness
+  ---
+  duration_ms: 0.196795
+  type: 'test'
+  ...
+# Subtest: RPC accepts loopback and rejects public, credential and query URLs
+ok 26 - RPC accepts loopback and rejects public, credential and query URLs
+  ---
+  duration_ms: 0.539343
+  type: 'test'
+  ...
+# Subtest: Host validation distinguishes local and hostile names
+ok 27 - Host validation distinguishes local and hostile names
+  ---
+  duration_ms: 0.075959
+  type: 'test'
+  ...
+# Subtest: bigint amounts serialize exactly
+ok 28 - bigint amounts serialize exactly
+  ---
+  duration_ms: 0.064876
+  type: 'test'
+  ...
+# Subtest: journal lock and interruption prevent automatic replay
+ok 29 - journal lock and interruption prevent automatic replay
+  ---
+  duration_ms: 15.026433
+  type: 'test'
+  ...
+# Subtest: HTTP rejects hostile origins and caller-supplied transaction parameters
+ok 30 - HTTP rejects hostile origins and caller-supplied transaction parameters
+  ---
+  duration_ms: 17.154095
+  type: 'test'
+  ...
+# Subtest: Safe receipt schema decodes the indexed execution hash
+ok 31 - Safe receipt schema decodes the indexed execution hash
+  ---
+  duration_ms: 2.378709
+  type: 'test'
+  ...
+# Subtest: research normalization preserves decimal precision and USDC deviations
+ok 32 - research normalization preserves decimal precision and USDC deviations
+  ---
+  duration_ms: 1.204105
+  type: 'test'
+  ...
+# Subtest: research rejects stale prices, wrong pairs, duplicate and malformed candles
+ok 33 - research rejects stale prices, wrong pairs, duplicate and malformed candles
+  ---
+  duration_ms: 0.347381
+  type: 'test'
+  ...
+# Subtest: unfinished candle data cannot leak a future close into research
+ok 34 - unfinished candle data cannot leak a future close into research
+  ---
+  duration_ms: 0.141003
+  type: 'test'
+  ...
+# Subtest: collector requests only the three fixed public sources without authorization
+ok 35 - collector requests only the three fixed public sources without authorization
+  ---
+  duration_ms: 9.390208
+  type: 'test'
+  ...
+# Subtest: research snapshots report missing and stale data instead of inventing live values
+ok 36 - research snapshots report missing and stale data instead of inventing live values
+  ---
+  duration_ms: 12.97473
+  type: 'test'
+  ...
+# Subtest: read-only RPC rejects signing, broadcasting and arbitrary endpoints
+ok 37 - read-only RPC rejects signing, broadcasting and arbitrary endpoints
+  ---
+  duration_ms: 0.340381
+  type: 'test'
+  ...
+# Subtest: Aurora probe requires both positive opcodes and a rejecting negative control
+ok 38 - Aurora probe requires both positive opcodes and a rejecting negative control
+  ---
+  duration_ms: 2.000535
+  type: 'test'
+  ...
+# Subtest: receipt audit resolves a known hash by chain evidence without rewriting or retrying
+ok 39 - receipt audit resolves a known hash by chain evidence without rewriting or retrying
+  ---
+  duration_ms: 0.24017
+  type: 'test'
+  ...
+# Subtest: missing receipts, nonce mismatch and block mismatch require manual review
+ok 40 - missing receipts, nonce mismatch and block mismatch require manual review
+  ---
+  duration_ms: 0.396299
+  type: 'test'
+  ...
+# Subtest: generic transaction success never substitutes for Safe internal success
+ok 41 - generic transaction success never substitutes for Safe internal success
+  ---
+  duration_ms: 0.345131
+  type: 'test'
+  ...
+# Subtest: receipt audit bypasses cached block height
+ok 42 - receipt audit bypasses cached block height
+  ---
+  duration_ms: 0.158295
+  type: 'test'
+  ...
+# Subtest: manager validates bindings and does not expose arbitrary call parameters
+ok 43 - manager validates bindings and does not expose arbitrary call parameters
+  ---
+  duration_ms: 1.750614
+  type: 'test'
+  ...
+# Subtest: manager sponsor amounts cannot exceed Safe capital or unallocated seed
+ok 44 - manager sponsor amounts cannot exceed Safe capital or unallocated seed
+  ---
+  duration_ms: 5.802186
+  type: 'test'
+  ...
+# Subtest: pending or active rounds block sponsor changes and policy changes
+ok 45 - pending or active rounds block sponsor changes and policy changes
+  ---
+  duration_ms: 1.005726
+  type: 'test'
+  ...
+# Subtest: manager refuses stale oracle round authorization
+ok 46 - manager refuses stale oracle round authorization
+  ---
+  duration_ms: 0.366923
+  type: 'test'
+  ...
+# Subtest: Aurora manifests reject mainnet, missing and duplicate contracts and discard extra fields
+ok 47 - Aurora manifests reject mainnet, missing and duplicate contracts and discard extra fields
+  ---
+  duration_ms: 0.205128
+  type: 'test'
+  ...
+# Subtest: smoke dry run and disabled inference never send HTTP
+ok 48 - smoke dry run and disabled inference never send HTTP
+  ---
+  duration_ms: 0.665011
+  type: 'test'
+  ...
+# Subtest: one validated response produces a credential-free report without attestation claims
+ok 49 - one validated response produces a credential-free report without attestation claims
+  ---
+  duration_ms: 11.106238
+  type: 'test'
+  ...
+# Subtest: stale nonce, wrong status, extra fields and HTTP errors fail closed without retry
+ok 50 - stale nonce, wrong status, extra fields and HTTP errors fail closed without retry
+  ---
+  duration_ms: 0.720304
+  type: 'test'
+  ...
+# Subtest: bare REST hex is normalized without changing bytes
+ok 51 - bare REST hex is normalized without changing bytes
+  ---
+  duration_ms: 0.350882
+  type: 'test'
+  ...
+# Subtest: already prefixed hex is preserved
+ok 52 - already prefixed hex is preserved
+  ---
+  duration_ms: 0.137419
+  type: 'test'
+  ...
+# Subtest: empty, odd, oversized and nonhex payloads are rejected
+ok 53 - empty, odd, oversized and nonhex payloads are rejected
+  ---
+  duration_ms: 0.258921
+  type: 'test'
+  ...
+1..53
+# tests 53
+# suites 0
+# pass 53
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1272.767423

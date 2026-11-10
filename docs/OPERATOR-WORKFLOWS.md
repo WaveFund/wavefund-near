@@ -1,5 +1,7 @@
 # Wavefund operator workflows
 
+Historical local/operator milestone. Current public proofs: [genuine Safe swap round](AURORA-SAFE-ROUND.md) and [real NEAR AI abstention round](AURORA-AGENTS.md). Their dated results supersede the corresponding pending deployment/inference gates below.
+
 This milestone adds a manager console, public research collection, receipt recovery inspection and read-only Aurora monitoring. It does not deploy contracts publicly, sign owner transactions or turn research quotes into a settlement oracle.
 
 ## Manager console

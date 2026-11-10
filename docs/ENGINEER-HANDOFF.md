@@ -1,6 +1,8 @@
 # Engineer handoff — 10 November 2026
 
-**Latest:** [genuine Aurora Safe round completed](AURORA-SAFE-ROUND.md), with actual Trisolaris execution, authenticated Supra observations and forecaster redemption. Use `deployments/aurora-testnet.json` for that fresh stack. The earlier forecasting-only mock-controller proof remains separate. The completion below supersedes the corresponding pending gates in this historical handoff; real-agent coordination remains pending.
+**Agent milestone:** [real NEAR AI round 2](AURORA-AGENTS.md) completed with four distinct agent wallets and four model calls (~$0.00202 estimated). Both forecasters abstained; Hold settled and both deposits returned. Frontend/read-only developer-owned files were not edited.
+
+**Latest:** [genuine Aurora Safe round completed](AURORA-SAFE-ROUND.md), with actual Trisolaris execution, authenticated Supra observations and forecaster redemption. Use `deployments/aurora-testnet.json` for that fresh stack. The earlier forecasting-only mock-controller proof remains separate. The completion below supersedes the corresponding pending gates in this historical handoff; The real-agent abstention path is now verified; a live model-directed forecasting trade remains a separate gate.
 
 Product: **Wavefund**. Target: Aurora testnet, chain **1313161555**. This is a prototype, not an audited or production-approved system. Read this file before changing adapters or using deployed addresses.
 
@@ -19,9 +21,9 @@ Use a feature branch from current `main`. Restore pinned dependencies with insta
 | Area | Evidence and limit |
 |---|---|
 | Solidity | 419 passed, zero failed/skipped across all 26 suites. Final oracle/token sources also recompiled and passed 19 tests; initcode exactly matches deployed artifacts. |
-| Runtime/frontend | Current 45 Node tests and 2 Python bridge safety tests passed. Earlier frontend typecheck/build remain valid prior evidence; frontend source was not changed here. Critical oracle, transport, mint and signer-lock mutations failed as intended and restored green. |
+| Runtime/frontend | Current 53 Node tests and 6 Python bridge safety tests passed. Earlier frontend typecheck/build remain valid prior evidence; frontend source was not changed here. Critical oracle, transport, mint and signer-lock mutations failed as intended and restored green. |
 | Local lifecycle | Actual local Safe and v4 interactions; investment router, prices and fixture agents are simulated. |
-| NEAR AI | One approved real Qwen/Qwen3.6-35B-A3B-FP8 response challenge passed. No verified attestation or full live model-driven strategy round. |
+| NEAR AI | Four real Qwen calls and distinct agent wallets completed round 2, including agent proposals, guarded abstentions, Hold execution, measured settlement and principal redemption. No verified attestation or live model-directed trade. |
 | Aurora forecasting | Fresh collateralized QuantumRound/v4/WaveHook stack completed the genuine Safe round. Historical unrestricted test-controller proof remains separate. |
 | Supra oracle | Authenticated consumer deployed and updated onchain; actual entry and post-deadline settlement observations accepted. Exact feed IDs 19/89, milliseconds/freshness/skew/replay checks tested. |
 
@@ -38,7 +40,7 @@ Investment capital stays in the manager's Safe. Forecaster collateral and sponso
 1. **Completed:** Supra consumer validation, real proof updates and measured settlement. See [round proof](AURORA-SAFE-ROUND.md).
 2. **Completed for test assets:** existing Trisolaris factory/router, self-seeded pool, executable quote, actual Safe fill, output/allowance postconditions.
 3. **Completed:** genuine Safe/engine/module/tracker wiring, full normal settlement and forecaster redemption. Dedicated testnet wallet/test assets only.
-4. Run complete real-agent coordination separately with an explicit inference budget. Provider configuration is remote-disabled by default; the earlier approval covered only one smoke request.
+4. **Completed for abstention path:** four-call coordination with explicit $0.05 approval; measured estimate $0.00201893. No additional paid calls are approved automatically. Next verify/calibrate genuine trade decisions and implement reviewed oracle maintenance.
 
 No private key, API key, real funding, mainnet deployment or paid service use is authorized by this handoff alone. Use dedicated testnet accounts and agree on scope before broadcasting.
 

@@ -1,6 +1,8 @@
 # Wavefund agent layer
 
-The local round now supports validated model-generated proposals and independent performance forecasts. A NEAR AI Cloud adapter and a local chat-completions adapter are implemented. The original milestone used mocked HTTP; one explicitly approved real provider smoke request has now passed (see the dated section below). A complete live model-driven strategy round is still pending. Tests use an explicitly labelled scripted HTTP responder. Tokens, investment venue and price history remain simulated.
+**Latest public result:** [four real NEAR AI decisions completed Aurora round 2](AURORA-AGENTS.md). Both forecasters abstained; Hold executed without a swap, settled normally, and both deposits were redeemed. This is distinct from the earlier local/mock and provider-smoke milestones below.
+
+The local round now supports validated model-generated proposals and independent performance forecasts. A NEAR AI Cloud adapter and a local chat-completions adapter are implemented. The original milestone used mocked HTTP; one explicitly approved real provider smoke request has now passed (see the dated section below). The sections below describe the earlier local implementation. Its tests use an explicitly labelled scripted HTTP responder and simulated assets/prices; the dated public result above uses fresh research, authenticated settlement observations and test assets.
 
 ## Set up your NEAR AI key
 

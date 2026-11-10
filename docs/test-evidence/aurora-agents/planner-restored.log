@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: four validated decisions bind to this treasury, round and real-research shape
+ok 1 - four validated decisions bind to this treasury, round and real-research shape
+  ---
+  duration_ms: 1.729403
+  type: 'test'
+  ...
+# Subtest: different chain, round, treasury, changed holdings and expired research are rejected
+ok 2 - different chain, round, treasury, changed holdings and expired research are rejected
+  ---
+  duration_ms: 0.878098
+  type: 'test'
+  ...
+# Subtest: altered allocations, proposer identity, forecast coverage and model records fail closed
+ok 3 - altered allocations, proposer identity, forecast coverage and model records fail closed
+  ---
+  duration_ms: 1.059726
+  type: 'test'
+  ...
+# Subtest: synthetic research and secret-bearing snapshots cannot start live inference
+ok 4 - synthetic research and secret-bearing snapshots cannot start live inference
+  ---
+  duration_ms: 0.192337
+  type: 'test'
+  ...
+# Subtest: bounded provider uses documented Qwen JSON controls and at most four calls
+ok 5 - bounded provider uses documented Qwen JSON controls and at most four calls
+  ---
+  duration_ms: 10.488007
+  type: 'test'
+  ...
+# Subtest: oversized requests and the wrong model consume zero requests
+ok 6 - oversized requests and the wrong model consume zero requests
+  ---
+  duration_ms: 0.272671
+  type: 'test'
+  ...
+# Subtest: small live trade can clear execution costs where larger entry would rationally abstain
+ok 7 - small live trade can clear execution costs where larger entry would rationally abstain
+  ---
+  duration_ms: 0.14642
+  type: 'test'
+  ...
+# Subtest: authenticated snapshot metadata enforces units, exact pairs, positive prices and freshness
+ok 8 - authenticated snapshot metadata enforces units, exact pairs, positive prices and freshness
+  ---
+  duration_ms: 0.208795
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 57.871711

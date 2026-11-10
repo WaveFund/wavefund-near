@@ -4,11 +4,11 @@
 
 Solidity implementation targeting Aurora testnet (chain 1313161555). A [genuine public Safe round](docs/AURORA-SAFE-ROUND.md) completed v4 forecasting, an actual Trisolaris swap, Supra-authenticated settlement and forecaster redemption. This is a single-operator rehearsal with freely minted test assets, not an audited or production-approved deployment.
 
-Supra supplies authenticated public-testnet observations without a gateway key. [RedStone access](docs/REDSTONE-PROOF.md) remains an alternative, not a blocker for the completed round. Current checks: **419 Solidity tests, 45 Node tests and 2 Python safety tests passed**, with zero failures or skips.
+Supra supplies authenticated public-testnet observations without a gateway key. [RedStone access](docs/REDSTONE-PROOF.md) remains an alternative, not a blocker for the completed round. Current runtime checks: **53 Node tests and 6 Python safety tests passed**. Solidity is unchanged from the **419 passing tests** in the preceding milestone.
 
 [Local full-stack demo](docs/LOCAL-DEMO.md): real local Safe/v4 transactions, a Node orchestration API and a Next.js dashboard. Run `npm run demo:local` after isolated dependency setup. Prices and agents are explicitly simulated.
 
-[Agent layer and private key setup](docs/AGENT-LAYER.md): model proposals, independent forecasts, entry-quote and budget checks. Provider HTTP integration is tested with mocks, and one approved real NEAR AI smoke request passed. Complete live strategy inference remains pending.
+[Agent layer and private key setup](docs/AGENT-LAYER.md): model proposals, independent forecasts, entry-quote and budget checks. Four approved real NEAR AI calls completed a [public agent round](docs/AURORA-AGENTS.md). Both forecasters abstained under the confidence gate; Hold settled normally. A live model-directed forecasting trade remains unverified.
 
 [Manager console, research collector, receipt recovery and Aurora monitoring](docs/OPERATOR-WORKFLOWS.md). Local manager console: `http://127.0.0.1:3000/manager`. Public network monitoring is read-only and requires a real verified deployment manifest.
 

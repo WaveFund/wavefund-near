@@ -1,0 +1,30 @@
+{
+  "node": {
+    "passed": 53,
+    "failed": 0,
+    "skipped": 0,
+    "environment": "Dedicated Docker container, network none, no host credentials; copied pinned runtime dependencies only"
+  },
+  "python": {
+    "passed": 6,
+    "failed": 0,
+    "environment": "Dedicated Docker container, network none, fake/no credentials"
+  },
+  "solidity": "Unchanged; preceding 419-test baseline not rerun",
+  "mutations": {
+    "treasuryBinding": "RED then restored GREEN",
+    "oracleSnapshotAge": "RED then restored GREEN",
+    "inferenceInputCap": "RED then restored GREEN",
+    "paidCallReplay": "RED then restored GREEN"
+  },
+  "publicIntegration": {
+    "roundId": "2",
+    "modelCalls": 4,
+    "confirmedTransactions": 28,
+    "winner": "Hold",
+    "forecastTrades": 0,
+    "investmentSwaps": 0,
+    "forecasterDepositsRedeemed": true,
+    "normalMeasuredSettlement": true
+  }
+}
