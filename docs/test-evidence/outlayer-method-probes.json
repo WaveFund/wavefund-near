@@ -1,0 +1,50 @@
+[
+  {
+    "account": "price-oracle.testnet",
+    "method": "get_asset_exchange_config",
+    "viewOnly": true,
+    "deposit": 0,
+    "response": {
+      "jsonrpc": "2.0",
+      "result": {
+        "block_hash": "4dwigsz5Y6EiGTTcqzvFWAgUaoCz6ZDspF7PAWyfSEsq",
+        "block_height": 277058958,
+        "error": "wasm execution failed with error: MethodResolveError(MethodNotFound)",
+        "logs": []
+      },
+      "id": "readonly-no-deposit"
+    }
+  },
+  {
+    "account": "price-oracle.testnet",
+    "method": "request_price_data",
+    "viewOnly": true,
+    "deposit": 0,
+    "response": {
+      "jsonrpc": "2.0",
+      "result": {
+        "block_hash": "59VT7G3YZeBbd2fMw84fdJdwGkdTVA6GJ38oXfZvGJtW",
+        "block_height": 277058965,
+        "error": "wasm execution failed with error: HostError(ProhibitedInView { method_name: \"predecessor_account_id\" })",
+        "logs": []
+      },
+      "id": "readonly-no-deposit"
+    }
+  },
+  {
+    "account": "price-oracle.near",
+    "method": "request_price_data",
+    "viewOnly": true,
+    "deposit": 0,
+    "response": {
+      "jsonrpc": "2.0",
+      "result": {
+        "block_hash": "9EA1WQipbw7vafdYZkYM9eNDHP1tezoLxreM8VrkbQKE",
+        "block_height": 223907372,
+        "error": "wasm execution failed with error: HostError(ProhibitedInView { method_name: \"predecessor_account_id\" })",
+        "logs": []
+      },
+      "id": "readonly-no-deposit"
+    }
+  }
+]

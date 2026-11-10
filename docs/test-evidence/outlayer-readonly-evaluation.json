@@ -1,0 +1,203 @@
+{
+  "observedAt": 1794308658,
+  "sourceCommit": "888ae663803209e5689892d671657331852428f8",
+  "checks": [
+    {
+      "account": "price-oracle.testnet",
+      "method": "get_asset",
+      "args": {
+        "asset_id": "eth.bridge.near"
+      },
+      "blockHeight": 277058828,
+      "value": null
+    },
+    {
+      "account": "price-oracle.testnet",
+      "method": "get_asset",
+      "args": {
+        "asset_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
+      },
+      "blockHeight": 277058828,
+      "value": {
+        "reports": [
+          {
+            "oracle_id": "price-oracle.testnet",
+            "timestamp": "1770393248392931183",
+            "price": {
+              "multiplier": "99927382",
+              "decimals": 8
+            }
+          }
+        ],
+        "emas": []
+      }
+    },
+    {
+      "account": "price-oracle.testnet",
+      "method": "get_asset_exchange_config",
+      "args": {
+        "asset_id": "eth.bridge.near"
+      },
+      "blockHeight": 277058835,
+      "error": "RPC unavailable/unparseable"
+    },
+    {
+      "account": "price-oracle.testnet",
+      "method": "can_subsidize_outlayer_calls",
+      "args": {},
+      "blockHeight": 277058834,
+      "value": false
+    },
+    {
+      "account": "price-oracle.testnet",
+      "method": "get_oracles",
+      "args": {
+        "from_index": 0,
+        "limit": 30
+      },
+      "blockHeight": 277058841,
+      "value": []
+    },
+    {
+      "account": "price-oracle.testnet",
+      "method": "get_price_data",
+      "args": {
+        "asset_ids": [
+          "eth.bridge.near",
+          "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
+        ]
+      },
+      "blockHeight": 277058842,
+      "value": {
+        "timestamp": "1794308646720921537",
+        "recency_duration_sec": 300,
+        "prices": [
+          {
+            "asset_id": "eth.bridge.near",
+            "price": null
+          },
+          {
+            "asset_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+            "price": null
+          }
+        ]
+      }
+    },
+    {
+      "account": "price-oracle.near",
+      "method": "get_asset",
+      "args": {
+        "asset_id": "eth.bridge.near"
+      },
+      "blockHeight": 223907256,
+      "value": {
+        "reports": [
+          {
+            "oracle_id": "price-oracle.near",
+            "timestamp": "1794038471353148197",
+            "price": {
+              "multiplier": "224617666666",
+              "decimals": 8
+            }
+          }
+        ],
+        "emas": [],
+        "push_signer_accounts": [
+          "1e4eae7913600d015d9134eee5ed6325845d78bcdf5ba8045d23051c2cc16ccb"
+        ]
+      }
+    },
+    {
+      "account": "price-oracle.near",
+      "method": "get_asset",
+      "args": {
+        "asset_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
+      },
+      "blockHeight": 223907257,
+      "value": {
+        "reports": [
+          {
+            "oracle_id": "price-oracle.near",
+            "timestamp": "1772376912311014515",
+            "price": {
+              "multiplier": "99997746",
+              "decimals": 8
+            }
+          },
+          {
+            "oracle_id": "1e4eae7913600d015d9134eee5ed6325845d78bcdf5ba8045d23051c2cc16ccb",
+            "timestamp": "1782588756798165888",
+            "price": {
+              "multiplier": "100039200",
+              "decimals": 8
+            }
+          }
+        ],
+        "emas": [],
+        "push_signer_accounts": [
+          "1e4eae7913600d015d9134eee5ed6325845d78bcdf5ba8045d23051c2cc16ccb"
+        ]
+      }
+    },
+    {
+      "account": "price-oracle.near",
+      "method": "get_asset_exchange_config",
+      "args": {
+        "asset_id": "eth.bridge.near"
+      },
+      "blockHeight": 223907262,
+      "value": "{\"decimals\":18,\"binance_us\":\"ETHUSD\",\"huobi\":\"ethusdt\",\"cryptocom\":\"ETH_USDT\",\"kucoin\":\"ETH-USDT\",\"gate\":\"eth_usdt\",\"pyth\":\"0xff61491a931112ddf1bd8147cd1b641375f79f5825126d665480874634fd0ace\",\"coingecko\":\"ethereum\",\"chainlink\":\"0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419\",\"kraken\":\"XETHZUSD\",\"coinbase\":\"ETH-USD\",\"bitstamp\":\"ETH/USD\",\"okx\":\"ETH-USDT\",\"bitget\":\"ETHUSDT\",\"mexc\":\"ETHUSDT\"}"
+    },
+    {
+      "account": "price-oracle.near",
+      "method": "can_subsidize_outlayer_calls",
+      "args": {},
+      "blockHeight": 223907263,
+      "value": false
+    },
+    {
+      "account": "price-oracle.near",
+      "method": "get_oracles",
+      "args": {
+        "from_index": 0,
+        "limit": 30
+      },
+      "blockHeight": 223907267,
+      "value": [
+        [
+          "1e4eae7913600d015d9134eee5ed6325845d78bcdf5ba8045d23051c2cc16ccb",
+          {
+            "last_report": "1782588756798165888",
+            "price_reports": 204,
+            "last_near_claim": "0"
+          }
+        ]
+      ]
+    },
+    {
+      "account": "price-oracle.near",
+      "method": "get_price_data",
+      "args": {
+        "asset_ids": [
+          "eth.bridge.near",
+          "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1"
+        ]
+      },
+      "blockHeight": 223907268,
+      "value": {
+        "timestamp": "1794308656127481902",
+        "recency_duration_sec": 600,
+        "prices": [
+          {
+            "asset_id": "eth.bridge.near",
+            "price": null
+          },
+          {
+            "asset_id": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+            "price": null
+          }
+        ]
+      }
+    }
+  ]
+}

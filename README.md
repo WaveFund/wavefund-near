@@ -1,5 +1,7 @@
 # Wavefund NEAR — trading Safe contracts v1
 
+**Team starting point:** [Engineer handoff, current blockers and verified evidence](docs/ENGINEER-HANDOFF.md).
+
 Local Solidity implementation targeting Aurora testnet (chain 1313161555). This is a prototype, not an audited or production-approved deployment. A partial Aurora testnet forecasting proof is now deployed; it is not a complete Safe strategy deployment. See [testnet proof](docs/AURORA-TESTNET-PROOF.md).
 
 Current follow-up: [RedStone signature proof and remaining live-data gate](docs/REDSTONE-PROOF.md). The latest full suite has **400 passed / 0 failed / 0 skipped**.

@@ -1,0 +1,65 @@
+{
+  "observedAt": 1794309028,
+  "chainId": 1313161555,
+  "method": "verifyOracleProofV2",
+  "ethCallOnly": true,
+  "cases": [
+    {
+      "case": "valid",
+      "decoded": [
+        [
+          [
+            19,
+            89
+          ],
+          [
+            209232000000,
+            99983500
+          ],
+          [
+            1794308999112,
+            1794308999112
+          ],
+          [
+            8,
+            8
+          ],
+          [
+            1794308999000,
+            1794308999000
+          ]
+        ]
+      ]
+    },
+    {
+      "case": "tampered",
+      "rpcError": {
+        "code": 3,
+        "data": "0x08c379a00000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000000000000001f4d65726b6c6550726f6f663a20696e76616c6964206d756c746970726f6f6600",
+        "message": "execution reverted: MerkleProof: invalid multiproof"
+      }
+    }
+  ],
+  "feeds": [
+    {
+      "pairId": 19,
+      "priceRaw": "209232000000",
+      "decimals": 8,
+      "publishedAtMilliseconds": 1794308999112,
+      "ageSecondsAtVerification": 28.888
+    },
+    {
+      "pairId": 89,
+      "priceRaw": "99983500",
+      "decimals": 8,
+      "publishedAtMilliseconds": 1794308999112,
+      "ageSecondsAtVerification": 28.888
+    }
+  ],
+  "limitations": [
+    "eth_call simulation only; no persistent cache update, consumer deployment or financial settlement",
+    "Freshness and exact feed IDs must be enforced by the Wavefund consumer",
+    "Returned timestamps are milliseconds; normalize before comparing with block.timestamp",
+    "Proxy implementation/upgrades and production operation still require review"
+  ]
+}

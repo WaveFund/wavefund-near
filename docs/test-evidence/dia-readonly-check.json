@@ -1,0 +1,56 @@
+[
+  {
+    "endpoint": "https://testnet.aurora.dev",
+    "feed": "ETH/USD",
+    "address": "0xf4e9C0697c6B35fbDe5a17DB93196Afd7aDFe84f",
+    "value8": "162974092217",
+    "publishedAt": 1693585456,
+    "ageSeconds": 100722751,
+    "status": "missing-or-stale"
+  },
+  {
+    "endpoint": "https://testnet.aurora.dev",
+    "feed": "USDC/USD",
+    "address": "0xf4e9C0697c6B35fbDe5a17DB93196Afd7aDFe84f",
+    "value8": "100008538",
+    "publishedAt": 1791876227,
+    "ageSeconds": 2431980,
+    "status": "missing-or-stale"
+  },
+  {
+    "endpoint": "https://testnet.aurora.dev",
+    "feed": "BTC/USD",
+    "address": "0xf4e9C0697c6B35fbDe5a17DB93196Afd7aDFe84f",
+    "value8": "8374928216446",
+    "publishedAt": 1791876238,
+    "ageSeconds": 2431969,
+    "status": "missing-or-stale"
+  },
+  {
+    "endpoint": "https://mainnet.aurora.dev",
+    "feed": "ETH/USD",
+    "address": "0xf4e9C0697c6B35fbDe5a17DB93196Afd7aDFe84f",
+    "value8": "160809332618",
+    "publishedAt": 1693592242,
+    "ageSeconds": 100715966,
+    "status": "missing-or-stale"
+  },
+  {
+    "endpoint": "https://mainnet.aurora.dev",
+    "feed": "USDC/USD",
+    "address": "0xf4e9C0697c6B35fbDe5a17DB93196Afd7aDFe84f",
+    "value8": "100005081",
+    "publishedAt": 1791876597,
+    "ageSeconds": 2431611,
+    "status": "missing-or-stale"
+  },
+  {
+    "endpoint": "https://mainnet.aurora.dev",
+    "feed": "BTC/USD",
+    "address": "0xf4e9C0697c6B35fbDe5a17DB93196Afd7aDFe84f",
+    "value8": "8367371610461",
+    "publishedAt": 1791876576,
+    "ageSeconds": 2431632,
+    "status": "missing-or-stale"
+  }
+]
