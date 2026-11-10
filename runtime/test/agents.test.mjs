@@ -112,6 +112,8 @@ test('four independent HTTP decisions are validated, hashed and reflect changed 
     assert.ok(records.every((record) => /^[a-f0-9]{64}$/.test(record.inputHash) && record.attestationVerified === false));
     assert.deepEqual(inputs.map((input) => input.agent), AGENT_SPECS.map((agent) => agent.name));
     assert.ok(!JSON.stringify(inputs).includes('MUST-NOT-LEAK')); assert.ok(!JSON.stringify(inputs[3]).includes('forecasts'));
+    assert.equal(inputs[2].proposals[0].swapFeeEstimatePortfolioBps, 0);
+    assert.ok(inputs[2].proposals.every(p => !('name' in p)));
     assert.ok(!JSON.stringify(inputs).includes('2100000000000000000000'));
   } finally { await mock.close(); }
 });

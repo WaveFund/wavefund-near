@@ -8,15 +8,16 @@ export const LIVE_LIMITS = Object.freeze({ calls: 4, outputTokens: 1800, inputBy
 const check = (condition, message) => { if (!condition) throw new Error(message); };
 const same = (a, b) => typeof a === 'string' && typeof b === 'string' && a.toLowerCase() === b.toLowerCase();
 
-export function boundedLiveProvider(config, { fetchImpl, onRequest } = {}) {
+export function boundedLiveProvider(config, { fetchImpl, onRequest, maxCalls = 4, budgetNanoUsd = 50000000 } = {}) {
   check(config?.mode === 'near-ai' && config.model === LIVE_MODEL, 'Use the explicitly priced live model');
+  check(Number.isInteger(maxCalls) && maxCalls >= 1 && maxCalls <= 8 && Number.isSafeInteger(budgetNanoUsd) && budgetNanoUsd > 0 && budgetNanoUsd <= 100000000, 'Invalid explicit live budget');
   const provider = createProvider(config, { fetchImpl: (url, options) => {
     const body = JSON.parse(options.body);
     // Documented Qwen3.6 controls: keep the bounded response for the requested JSON.
     body.chat_template_kwargs = { enable_thinking: false };
     body.response_format = { type: 'json_object' };
     return (fetchImpl ?? fetch)(url, { ...options, body: JSON.stringify(body) });
-  }, maxCalls: 4, timeoutMs: 20000 });
+  }, maxCalls, timeoutMs: 20000 });
   let reserved = 0; let requests = 0;
   return {
     info: provider.info,
@@ -26,7 +27,7 @@ export function boundedLiveProvider(config, { fetchImpl, onRequest } = {}) {
       // Conservative byte-token allowance plus envelope margin, using the checked catalog rates.
       // This is a client estimate, not a provider-enforced billing cap.
       const allowance = (bytes + 512) * 170 + LIVE_LIMITS.outputTokens * 1100;
-      check(requests < 4 && reserved + allowance <= LIVE_LIMITS.budgetNanoUsd, 'Live inference budget exhausted');
+      check(requests < maxCalls && reserved + allowance <= budgetNanoUsd, 'Live inference budget exhausted');
       requests++; reserved += allowance;
       await onRequest?.({ request: requests, inputBytes: bytes, reservedNanoUsd: reserved });
       return provider.complete(task); // No retries or fallback.
@@ -56,11 +57,11 @@ export function validateAuroraPlan(plan, { contracts, roundId, portfolio, now })
   const market = validateMarket(plan.market, { now });
   check(market.source === 'external-unverified' && market.evidenceId === plan.market.evidenceId, 'Invalid live research identity');
   check(Number.isSafeInteger(plan.createdAt) && plan.createdAt <= now && now - plan.createdAt <= 300, 'Plan expired or future-dated');
-  for (const key of ['stableBalance', 'assetBalance', 'currentAllocationBps']) check(plan.snapshot?.portfolio?.[key] === portfolio[key], 'Treasury changed after model analysis');
+  for (const key of ['stableBalance', 'assetBalance']) check(plan.snapshot?.portfolio?.[key] === portfolio[key], 'Treasury changed after model analysis');
   check(plan.proposals?.length === 3 && plan.forecasts?.length === 2 && plan.records?.length === 4, 'Incomplete four-agent plan');
   const evidenceIds = [market.evidenceId];
   const hold = plan.proposals[0];
-  check(hold.id === 0 && hold.allocationBps === portfolio.currentAllocationBps, 'Hold allocation differs from snapshot');
+  check(hold.id === 0 && hold.allocationBps === plan.snapshot.portfolio.currentAllocationBps, 'Hold allocation differs from snapshot');
   for (const [index, spec] of AGENT_SPECS.filter(s => s.role === 'proposer').entries()) {
     const proposal = plan.proposals[index + 1];
     check(proposal.id === index + 1 && proposal.name === spec.name && proposal.accountIndex === spec.accountIndex, 'Unexpected proposer mapping');

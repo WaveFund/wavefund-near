@@ -16,13 +16,14 @@ export const requireLive = (condition, message) => { if (!condition) throw new E
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 
-export function createAuroraChain({ manifest, artifacts, privateKey, actorKeys, events = [], emit, acknowledge }) {
+export function createAuroraChain({ manifest, artifacts, privateKey, actorKeys, actorNames = ['Momentum', 'Conservative', 'Quant', 'Guardian'], events = [], emit, acknowledge }) {
   requireLive(manifest?.chainId === 1313161555 && manifest.schemaVersion === 1, 'Aurora testnet manifest required');
   const contracts = manifest.contracts;
   const accounts = { owner: privateKeyToAccount(privateKey) };
-  for (const name of ['Momentum', 'Conservative', 'Quant', 'Guardian']) accounts[name] = privateKeyToAccount(actorKeys[name]);
+  requireLive(Array.isArray(actorNames) && actorNames.length >= 4 && actorNames.length <= 8 && new Set(actorNames).size === actorNames.length && actorNames.every(n => /^[A-Za-z]{1,24}$/.test(n) && n !== 'owner'), 'Invalid actor roster');
+  for (const name of actorNames) accounts[name] = privateKeyToAccount(actorKeys[name]);
   requireLive(sameAddress(accounts.owner.address, OPERATOR), 'Wrong dedicated testnet operator');
-  requireLive(new Set(Object.values(accounts).map(x => x.address.toLowerCase())).size === 5, 'Agent wallets must be distinct');
+  requireLive(new Set(Object.values(accounts).map(x => x.address.toLowerCase())).size === actorNames.length + 1, 'Agent wallets must be distinct');
   const client = createPublicClient({ chain: auroraTestnet, transport: http(RPC, { retryCount: 1, timeout: 20000 }) });
   const broadcast = createPublicClient({ chain: auroraTestnet, transport: http(RPC, { retryCount: 0, timeout: 20000 }) });
   const abi = (name) => artifacts[artifactNames[name]].abi;
@@ -46,7 +47,7 @@ export function createAuroraChain({ manifest, artifacts, privateKey, actorKeys, 
     emit({ stage: 'prepared', label, actor, from: account.address, to, hash, nonce, gas, gasPrice, value, calldataHash: keccak256(data) });
     await acknowledge(hash); // Host fsyncs the prepared journal entry before acknowledging.
     requireLive(await broadcast.sendRawTransaction({ serializedTransaction: signed }) === hash, 'Broadcast hash mismatch');
-    const receipt = await client.waitForTransactionReceipt({ hash, timeout: 120000 });
+    const receipt = await client.waitForTransactionReceipt({ hash, timeout: 120000, pollingInterval: 1000 });
     requireLive(receipt.status === 'success', 'Transaction reverted; inspect its known hash');
     for (const entry of receipt.logs.filter(x => sameAddress(x.address, contracts.safe))) {
       let event; try { event = decodeEventLog({ abi: abi('safe'), ...entry }); } catch { continue; }
