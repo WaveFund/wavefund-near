@@ -1,0 +1,52 @@
+TAP version 13
+# Subtest: deliberate profile has four distinct mandates, four forecasters and explicit fixture provenance
+ok 1 - deliberate profile has four distinct mandates, four forecasters and explicit fixture provenance
+  ---
+  duration_ms: 4.146988
+  type: 'test'
+  ...
+# Subtest: forecasters receive anonymous allocations and correct zero Hold fee
+ok 2 - forecasters receive anonymous allocations and correct zero Hold fee
+  ---
+  duration_ms: 0.455382
+  type: 'test'
+  ...
+# Subtest: live profile preserves decisions and separate forecaster inputs without fixture substitution
+ok 3 - live profile preserves decisions and separate forecaster inputs without fixture substitution
+  ---
+  duration_ms: 0.541051
+  type: 'test'
+  ...
+# Subtest: wrong mandate output halts before forecasters and never rewrites or regenerates it
+ok 4 - wrong mandate output halts before forecasters and never rewrites or regenerates it
+  ---
+  duration_ms: 0.29588
+  type: 'test'
+  ...
+# Subtest: duplicate, altered and secret-bearing plans are rejected
+ok 5 - duplicate, altered and secret-bearing plans are rejected
+  ---
+  duration_ms: 0.867223
+  type: 'test'
+  ...
+# Subtest: mark-price weight drift does not masquerade as a custody change
+ok 6 - mark-price weight drift does not masquerade as a custody change
+  ---
+  duration_ms: 0.527551
+  type: 'test'
+  ...
+# Subtest: explicit expanded budget admits eight requests and rejects the ninth
+ok 7 - explicit expanded budget admits eight requests and rejects the ninth
+  ---
+  duration_ms: 11.365197
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 54.355153

@@ -1,0 +1,3133 @@
+{
+  "chainId": 1313161555,
+  "kind": "live-model",
+  "roundId": "4",
+  "plan": {
+    "schemaVersion": 2,
+    "profile": "diverse-v1",
+    "kind": "live-model",
+    "chainId": 1313161555,
+    "roundId": "4",
+    "safe": "0x781430393ec48f5c2af78be63ae273875b180ad1",
+    "engine": "0x825b31dbc1af25b230d31caf5210c2b5a8fe22af",
+    "snapshot": {
+      "chainId": 1313161555,
+      "roundId": "4",
+      "safe": "0x781430393ec48f5c2af78be63ae273875b180ad1",
+      "engine": "0x825b31dbc1af25b230d31caf5210c2b5a8fe22af",
+      "portfolio": {
+        "stableBalance": "1094400091",
+        "assetBalance": "428886426777995925",
+        "currentAllocationBps": 4430
+      },
+      "blockNumber": "277101984"
+    },
+    "createdAt": 1794334002,
+    "market": {
+      "source": "external-unverified",
+      "asOf": 1794334000,
+      "stableUsdX18": "1000000000000000000",
+      "history": [
+        {
+          "timestamp": 1794330600,
+          "assetUsdX18": "2017200000000000000000"
+        },
+        {
+          "timestamp": 1794330900,
+          "assetUsdX18": "2020900000000000000000"
+        },
+        {
+          "timestamp": 1794331200,
+          "assetUsdX18": "2025150000000000000000"
+        },
+        {
+          "timestamp": 1794331500,
+          "assetUsdX18": "2020960000000000000000"
+        },
+        {
+          "timestamp": 1794331800,
+          "assetUsdX18": "2022970000000000000000"
+        },
+        {
+          "timestamp": 1794332100,
+          "assetUsdX18": "2025600000000000000000"
+        },
+        {
+          "timestamp": 1794332400,
+          "assetUsdX18": "2015540000000000000000"
+        },
+        {
+          "timestamp": 1794332700,
+          "assetUsdX18": "2018700000000000000000"
+        },
+        {
+          "timestamp": 1794333000,
+          "assetUsdX18": "2023550000000000000000"
+        },
+        {
+          "timestamp": 1794333300,
+          "assetUsdX18": "2026850000000000000000"
+        },
+        {
+          "timestamp": 1794333600,
+          "assetUsdX18": "2026750000000000000000"
+        },
+        {
+          "timestamp": 1794333900,
+          "assetUsdX18": "2026960000000000000000"
+        },
+        {
+          "timestamp": 1794334000,
+          "assetUsdX18": "2029580000000000000000"
+        }
+      ],
+      "features": {
+        "lookbackReturnBps": 61,
+        "maxDrawdownBps": 49,
+        "largestStepBps": 49
+      },
+      "warning": "External research data is unverified and cannot settle the contract.",
+      "evidenceId": "market-b6bca8b5c69f100a"
+    },
+    "proposals": [
+      {
+        "id": 0,
+        "name": "Hold",
+        "allocationBps": 4430,
+        "rationale": "Preserve current token quantities."
+      },
+      {
+        "id": 1,
+        "name": "Conservative",
+        "allocationBps": 500,
+        "confidenceBps": 2000,
+        "rationale": "Conservative mandate requires low exposure. Recent price action shows minor volatility with a slight upward drift (+61 bps). Reducing allocation from current 4430 bps to 500 bps prioritizes capital preservation while maintaining minimal asset exposure as permitted by the 0-2000 bps range.",
+        "risks": [
+          "External data unverified",
+          "Asset price may decline further",
+          "Liquidity constraints"
+        ],
+        "evidenceIds": [
+          "market-b6bca8b5c69f100a"
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Balanced",
+        "allocationBps": 4430,
+        "confidenceBps": 2500,
+        "rationale": "Current allocation is within the 3500-5000 bps mandate. Recent price action shows slight upward momentum (+61 bps lookback) with low volatility (max drawdown 49 bps). Maintaining current exposure balances the mandate constraints with observed stability.",
+        "risks": [
+          "External data is unverified",
+          "Market volatility may increase beyond historical max drawdown",
+          "Router fees impact net returns on rebalancing"
+        ],
+        "evidenceIds": [
+          "market-b6bca8b5c69f100a"
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Momentum",
+        "allocationBps": 7500,
+        "confidenceBps": 2000,
+        "rationale": "Momentum policy mandates high growth exposure (6500-8000 bps). Recent 180s trend is positive (+61 bps) with price holding near recent highs, supporting the upper end of the mandate. Low confidence due to unverified external data source and volatility risk.",
+        "risks": [
+          "External data unverified",
+          "Recent intraday volatility (max drawdown 49 bps)",
+          "Potential mean reversion after short-term gain"
+        ],
+        "evidenceIds": [
+          "market-b6bca8b5c69f100a"
+        ]
+      },
+      {
+        "id": 4,
+        "name": "HighBeta",
+        "allocationBps": 9500,
+        "confidenceBps": 2500,
+        "rationale": "Mandate requires high exposure (90-100%). Recent price action shows resilience with a +61bps lookback return and only 49bps max drawdown. Current 44.3% allocation is far below the 90% floor, necessitating a massive rebalance to the upper end of the allowed range to comply with the high-beta mandate.",
+        "risks": [
+          "External data is unverified and may not reflect true market state.",
+          "High volatility asset may experience sudden downside reversal.",
+          "Liquidity constraints could impede large rebalancing trades."
+        ],
+        "evidenceIds": [
+          "market-b6bca8b5c69f100a"
+        ]
+      }
+    ],
+    "forecasts": [
+      {
+        "name": "Quant",
+        "forecasts": [
+          {
+            "proposalId": 0,
+            "expectedReturnBps": 6,
+            "confidenceBps": 2000,
+            "rationale": "Hold preserves current 44.3% exposure. Low trend momentum suggests minimal drift.",
+            "risks": [
+              "Missed upside if asset rallies."
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 1,
+            "expectedReturnBps": -1170,
+            "confidenceBps": 3000,
+            "rationale": "Drastic cut to 5% allocation incurs high fees. Weak trend makes this loss-inevitable.",
+            "risks": [
+              "High slippage on large sell order."
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 2,
+            "expectedReturnBps": 6,
+            "confidenceBps": 2000,
+            "rationale": "Same allocation as hold. No fee or turnover. Identical expected return to proposal 0.",
+            "risks": [
+              "Redundant strategy with no benefit."
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 3,
+            "expectedReturnBps": -800,
+            "confidenceBps": 2500,
+            "rationale": "Increase to 75% incurs fees. Current weak trend does not justify higher exposure cost.",
+            "risks": [
+              "Asset pullback increases loss."
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 4,
+            "expectedReturnBps": -1400,
+            "confidenceBps": 2500,
+            "rationale": "Aggressive 95% allocation with high fees. Weak trend makes fee drag dominant.",
+            "risks": [
+              "Maximum drawdown risk if asset drops."
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Guardian",
+        "forecasts": [
+          {
+            "proposalId": 0,
+            "expectedReturnBps": 61,
+            "confidenceBps": 2000,
+            "rationale": "Hold preserves current 44.3% exposure to recent uptrend.",
+            "risks": [
+              "Market volatility reversal"
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 1,
+            "expectedReturnBps": -1179,
+            "confidenceBps": 1000,
+            "rationale": "High fee on large rebalance to 5% asset exposure.",
+            "risks": [
+              "Fee exceeds potential alpha"
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 2,
+            "expectedReturnBps": 61,
+            "confidenceBps": 2000,
+            "rationale": "Identical to Hold, zero cost, same market exposure.",
+            "risks": [
+              "Redundant strategy"
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 3,
+            "expectedReturnBps": -860,
+            "confidenceBps": 1000,
+            "rationale": "Fee likely outweighs marginal gain from 75% exposure.",
+            "risks": [
+              "Slippage on large swap"
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 4,
+            "expectedReturnBps": -1460,
+            "confidenceBps": 1000,
+            "rationale": "Highest fee on 95% exposure, high downside risk.",
+            "risks": [
+              "Depeg and slippage"
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "FeeAnalyst",
+        "forecasts": [
+          {
+            "proposalId": 0,
+            "expectedReturnBps": 0,
+            "confidenceBps": 100,
+            "rationale": "Hold avoids fees. No edge to trade.",
+            "risks": [
+              "Opportunity cost if trend continues"
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 1,
+            "expectedReturnBps": -12,
+            "confidenceBps": 50,
+            "rationale": "High turnover fee exceeds likely 180s move.",
+            "risks": [
+              "Slippage increases cost"
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 2,
+            "expectedReturnBps": 0,
+            "confidenceBps": 100,
+            "rationale": "Same allocation as hold, no action.",
+            "risks": [
+              "Redundant proposal"
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 3,
+            "expectedReturnBps": -9,
+            "confidenceBps": 50,
+            "rationale": "Fee likely exceeds 180s alpha.",
+            "risks": [
+              "Execution cost > return"
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 4,
+            "expectedReturnBps": -15,
+            "confidenceBps": 50,
+            "rationale": "Highest fee, low probability of covering cost.",
+            "risks": [
+              "High slippage risk"
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "StressAnalyst",
+        "forecasts": [
+          {
+            "proposalId": 0,
+            "expectedReturnBps": 5,
+            "confidenceBps": 2000,
+            "rationale": "Hold preserves capital. Minimal exposure to asset volatility over 180s horizon.",
+            "risks": [
+              "Missed upside if asset rallies."
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 1,
+            "expectedReturnBps": -1200,
+            "confidenceBps": 3000,
+            "rationale": "High turnover fee (11.79 bps) outweighs likely small price movement. Heavy rebalance into underweight asset.",
+            "risks": [
+              "Slippage on large swap."
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 2,
+            "expectedReturnBps": 5,
+            "confidenceBps": 2000,
+            "rationale": "Identical to Hold. No fee, no exposure change. Safe baseline.",
+            "risks": [
+              "Opportunity cost."
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 3,
+            "expectedReturnBps": 45,
+            "confidenceBps": 2500,
+            "rationale": "Increases asset exposure to 75%. Benefits from recent uptrend momentum. Fee is manageable.",
+            "risks": [
+              "Reversal of recent 61bps gain."
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "proposalId": 4,
+            "expectedReturnBps": 80,
+            "confidenceBps": 2000,
+            "rationale": "Max exposure (95%). Highest potential gain if trend continues. High fee and slippage risk.",
+            "risks": [
+              "Large drawdown if asset drops."
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          }
+        ]
+      }
+    ],
+    "records": [
+      {
+        "name": "Conservative",
+        "role": "proposer",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "e269ecf113006594ac529177723928b373d55ab19ebd4102dbd962d43649eaa3",
+        "outputHash": "7f31787280265418f1815dacec0d86d1c476c3a8a37dfc5e3ef3b3b6881a59d2",
+        "decision": {
+          "allocationBps": 500,
+          "confidenceBps": 2000,
+          "rationale": "Conservative mandate requires low exposure. Recent price action shows minor volatility with a slight upward drift (+61 bps). Reducing allocation from current 4430 bps to 500 bps prioritizes capital preservation while maintaining minimal asset exposure as permitted by the 0-2000 bps range.",
+          "risks": [
+            "External data unverified",
+            "Asset price may decline further",
+            "Liquidity constraints"
+          ],
+          "evidenceIds": [
+            "market-b6bca8b5c69f100a"
+          ]
+        },
+        "usage": {
+          "inputTokens": 1028,
+          "outputTokens": 169
+        },
+        "timestamp": "2026-11-10T18:06:45.057Z"
+      },
+      {
+        "name": "Balanced",
+        "role": "proposer",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "daa6c42d6f54919e148a0b30653912fba14c5feac23c9f246e501972ca6fd2c4",
+        "outputHash": "dc78b24f33761b428d37db928bc87cc5b92afbfdddca698ef9fd6e08aad99185",
+        "decision": {
+          "allocationBps": 4430,
+          "confidenceBps": 2500,
+          "rationale": "Current allocation is within the 3500-5000 bps mandate. Recent price action shows slight upward momentum (+61 bps lookback) with low volatility (max drawdown 49 bps). Maintaining current exposure balances the mandate constraints with observed stability.",
+          "risks": [
+            "External data is unverified",
+            "Market volatility may increase beyond historical max drawdown",
+            "Router fees impact net returns on rebalancing"
+          ],
+          "evidenceIds": [
+            "market-b6bca8b5c69f100a"
+          ]
+        },
+        "usage": {
+          "inputTokens": 1034,
+          "outputTokens": 172
+        },
+        "timestamp": "2026-11-10T18:06:47.797Z"
+      },
+      {
+        "name": "Momentum",
+        "role": "proposer",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "6a83972fbd059e1e8e24abeab618b6be8e5c50aa8ee871930a5c316aaffffc4e",
+        "outputHash": "8a8a1eec9e8bc7d1fe62d3ff044512cd566dae9abe739c086e644003da433eca",
+        "decision": {
+          "allocationBps": 7500,
+          "confidenceBps": 2000,
+          "rationale": "Momentum policy mandates high growth exposure (6500-8000 bps). Recent 180s trend is positive (+61 bps) with price holding near recent highs, supporting the upper end of the mandate. Low confidence due to unverified external data source and volatility risk.",
+          "risks": [
+            "External data unverified",
+            "Recent intraday volatility (max drawdown 49 bps)",
+            "Potential mean reversion after short-term gain"
+          ],
+          "evidenceIds": [
+            "market-b6bca8b5c69f100a"
+          ]
+        },
+        "usage": {
+          "inputTokens": 1032,
+          "outputTokens": 178
+        },
+        "timestamp": "2026-11-10T18:06:52.601Z"
+      },
+      {
+        "name": "HighBeta",
+        "role": "proposer",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "7479e47c3bef1594ebabea17ed33e10176957af732a304c9803298a3c1b7efc1",
+        "outputHash": "8cd48395b3d7a4d0c053a70dc3c643d7ed98d0dd02dffbcd9bf19cd05be74bd7",
+        "decision": {
+          "allocationBps": 9500,
+          "confidenceBps": 2500,
+          "rationale": "Mandate requires high exposure (90-100%). Recent price action shows resilience with a +61bps lookback return and only 49bps max drawdown. Current 44.3% allocation is far below the 90% floor, necessitating a massive rebalance to the upper end of the allowed range to comply with the high-beta mandate.",
+          "risks": [
+            "External data is unverified and may not reflect true market state.",
+            "High volatility asset may experience sudden downside reversal.",
+            "Liquidity constraints could impede large rebalancing trades."
+          ],
+          "evidenceIds": [
+            "market-b6bca8b5c69f100a"
+          ]
+        },
+        "usage": {
+          "inputTokens": 1037,
+          "outputTokens": 200
+        },
+        "timestamp": "2026-11-10T18:06:55.740Z"
+      },
+      {
+        "name": "Quant",
+        "role": "forecaster",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "cdad638f7ee46d0cf560c6ba9f80403f1169535480d0bf62719b4a9c84f5b794",
+        "outputHash": "f2c236f424904559734843ccd12e642d353d13b4664f79d28c1219a16db6fe90",
+        "decision": {
+          "forecasts": [
+            {
+              "proposalId": 0,
+              "expectedReturnBps": 6,
+              "confidenceBps": 2000,
+              "rationale": "Hold preserves current 44.3% exposure. Low trend momentum suggests minimal drift.",
+              "risks": [
+                "Missed upside if asset rallies."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 1,
+              "expectedReturnBps": -1170,
+              "confidenceBps": 3000,
+              "rationale": "Drastic cut to 5% allocation incurs high fees. Weak trend makes this loss-inevitable.",
+              "risks": [
+                "High slippage on large sell order."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 2,
+              "expectedReturnBps": 6,
+              "confidenceBps": 2000,
+              "rationale": "Same allocation as hold. No fee or turnover. Identical expected return to proposal 0.",
+              "risks": [
+                "Redundant strategy with no benefit."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 3,
+              "expectedReturnBps": -800,
+              "confidenceBps": 2500,
+              "rationale": "Increase to 75% incurs fees. Current weak trend does not justify higher exposure cost.",
+              "risks": [
+                "Asset pullback increases loss."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 4,
+              "expectedReturnBps": -1400,
+              "confidenceBps": 2500,
+              "rationale": "Aggressive 95% allocation with high fees. Weak trend makes fee drag dominant.",
+              "risks": [
+                "Maximum drawdown risk if asset drops."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            }
+          ]
+        },
+        "usage": {
+          "inputTokens": 1383,
+          "outputTokens": 608
+        },
+        "timestamp": "2026-11-10T18:07:03.074Z"
+      },
+      {
+        "name": "Guardian",
+        "role": "forecaster",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "5059db30b3177156744eb6dfd62a9adb429ee0cc435d61f8535ddeae9ebcf255",
+        "outputHash": "72d29024e41889e82fca45690c7fe2bac2b7793ef98a3843840a5be561085c82",
+        "decision": {
+          "forecasts": [
+            {
+              "proposalId": 0,
+              "expectedReturnBps": 61,
+              "confidenceBps": 2000,
+              "rationale": "Hold preserves current 44.3% exposure to recent uptrend.",
+              "risks": [
+                "Market volatility reversal"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 1,
+              "expectedReturnBps": -1179,
+              "confidenceBps": 1000,
+              "rationale": "High fee on large rebalance to 5% asset exposure.",
+              "risks": [
+                "Fee exceeds potential alpha"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 2,
+              "expectedReturnBps": 61,
+              "confidenceBps": 2000,
+              "rationale": "Identical to Hold, zero cost, same market exposure.",
+              "risks": [
+                "Redundant strategy"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 3,
+              "expectedReturnBps": -860,
+              "confidenceBps": 1000,
+              "rationale": "Fee likely outweighs marginal gain from 75% exposure.",
+              "risks": [
+                "Slippage on large swap"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 4,
+              "expectedReturnBps": -1460,
+              "confidenceBps": 1000,
+              "rationale": "Highest fee on 95% exposure, high downside risk.",
+              "risks": [
+                "Depeg and slippage"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            }
+          ]
+        },
+        "usage": {
+          "inputTokens": 1380,
+          "outputTokens": 568
+        },
+        "timestamp": "2026-11-10T18:07:08.412Z"
+      },
+      {
+        "name": "FeeAnalyst",
+        "role": "forecaster",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "3bd10d689a9a44dbf4a624381b74401bbdba3ad4a602fdf78c070d4fb759289e",
+        "outputHash": "c53d55dc6b9c1a72c3d34fbfc41c5b25c1968401721fe674af20781da5ca4085",
+        "decision": {
+          "forecasts": [
+            {
+              "proposalId": 0,
+              "expectedReturnBps": 0,
+              "confidenceBps": 100,
+              "rationale": "Hold avoids fees. No edge to trade.",
+              "risks": [
+                "Opportunity cost if trend continues"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 1,
+              "expectedReturnBps": -12,
+              "confidenceBps": 50,
+              "rationale": "High turnover fee exceeds likely 180s move.",
+              "risks": [
+                "Slippage increases cost"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 2,
+              "expectedReturnBps": 0,
+              "confidenceBps": 100,
+              "rationale": "Same allocation as hold, no action.",
+              "risks": [
+                "Redundant proposal"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 3,
+              "expectedReturnBps": -9,
+              "confidenceBps": 50,
+              "rationale": "Fee likely exceeds 180s alpha.",
+              "risks": [
+                "Execution cost > return"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 4,
+              "expectedReturnBps": -15,
+              "confidenceBps": 50,
+              "rationale": "Highest fee, low probability of covering cost.",
+              "risks": [
+                "High slippage risk"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            }
+          ]
+        },
+        "usage": {
+          "inputTokens": 1386,
+          "outputTokens": 473
+        },
+        "timestamp": "2026-11-10T18:07:13.308Z"
+      },
+      {
+        "name": "StressAnalyst",
+        "role": "forecaster",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "e323d00f28b2755c138ce2a8983aca1f486138701c9bf6e0cb40d01e9be9596d",
+        "outputHash": "24ad4da8b7e218d20675a970ff01d62cf454d0a492713951db53ac0fb378f12d",
+        "decision": {
+          "forecasts": [
+            {
+              "proposalId": 0,
+              "expectedReturnBps": 5,
+              "confidenceBps": 2000,
+              "rationale": "Hold preserves capital. Minimal exposure to asset volatility over 180s horizon.",
+              "risks": [
+                "Missed upside if asset rallies."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 1,
+              "expectedReturnBps": -1200,
+              "confidenceBps": 3000,
+              "rationale": "High turnover fee (11.79 bps) outweighs likely small price movement. Heavy rebalance into underweight asset.",
+              "risks": [
+                "Slippage on large swap."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 2,
+              "expectedReturnBps": 5,
+              "confidenceBps": 2000,
+              "rationale": "Identical to Hold. No fee, no exposure change. Safe baseline.",
+              "risks": [
+                "Opportunity cost."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 3,
+              "expectedReturnBps": 45,
+              "confidenceBps": 2500,
+              "rationale": "Increases asset exposure to 75%. Benefits from recent uptrend momentum. Fee is manageable.",
+              "risks": [
+                "Reversal of recent 61bps gain."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 4,
+              "expectedReturnBps": 80,
+              "confidenceBps": 2000,
+              "rationale": "Max exposure (95%). Highest potential gain if trend continues. High fee and slippage risk.",
+              "risks": [
+                "Large drawdown if asset drops."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            }
+          ]
+        },
+        "usage": {
+          "inputTokens": 1383,
+          "outputTokens": 604
+        },
+        "timestamp": "2026-11-10T18:07:19.257Z"
+      }
+    ],
+    "provider": {
+      "mode": "near-ai",
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "attestationVerified": false
+    },
+    "attestationVerified": false
+  },
+  "events": [
+    {
+      "stage": "actors",
+      "actors": {
+        "owner": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+        "Conservative": "0x5613C60B04Fa16363C3a388AA4545073fb440345",
+        "Balanced": "0xcBF919ed9A28Da19786d97e1282C92B186500Cb8",
+        "Momentum": "0x8B6aF0B1738b941c0C7dd4deeC6fabEe3447888F",
+        "HighBeta": "0x1Ba3C5bf69b1Dd2077d7550Ee4f479bB35B5EA0a",
+        "Quant": "0x954362D2D831fC9430122d95F79c2eE3841E975D",
+        "Guardian": "0xc410cE4092eB91E89792F5AB731D64d544932B47",
+        "FeeAnalyst": "0x50ef16734f1443c97c37e29F31F8AA0aa045bf51",
+        "StressAnalyst": "0x949A277347a18c984c13D5228e0acE60cD2D99E6"
+      }
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:gas:Conservative",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x5613C60B04Fa16363C3a388AA4545073fb440345",
+      "hash": "0xd5e7f74ba11b6dfa65ad9c008119fc32c4098a4cbc0e9b882f747810a6f78fa7",
+      "nonce": 108,
+      "gas": "35000",
+      "gasPrice": "70000000",
+      "value": "120265180000000",
+      "calldataHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:gas:Conservative",
+      "actor": "owner",
+      "hash": "0xd5e7f74ba11b6dfa65ad9c008119fc32c4098a4cbc0e9b882f747810a6f78fa7",
+      "blockNumber": "277101577",
+      "gasUsed": "21000",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:mint:Conservative",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0xb64ccb5b65380ee6c7d9205e74f27949d2430b9de7efe6ad0ba34849db445918",
+      "nonce": 109,
+      "gas": "56577",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0xd2c6a9da6e96d5be72e47581579ebe33fc88adbffdac47aae591c11ed09a78f7"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:mint:Conservative",
+      "actor": "owner",
+      "hash": "0xb64ccb5b65380ee6c7d9205e74f27949d2430b9de7efe6ad0ba34849db445918",
+      "blockNumber": "277101588",
+      "gasUsed": "33947",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:bondApproval:Conservative",
+      "actor": "Conservative",
+      "from": "0x5613C60B04Fa16363C3a388AA4545073fb440345",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0xb80463e41bf81f22ce7c8765258920af715f09218d55b5b9ff1298717713b46f",
+      "nonce": 5,
+      "gas": "76515",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0xb00d5268425bf8065eb3005bbb298d2e7c4c4503654d44b83de1a998645e3991"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:bondApproval:Conservative",
+      "actor": "Conservative",
+      "hash": "0xb80463e41bf81f22ce7c8765258920af715f09218d55b5b9ff1298717713b46f",
+      "blockNumber": "277101601",
+      "gasUsed": "45909",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:gas:Balanced",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0xcBF919ed9A28Da19786d97e1282C92B186500Cb8",
+      "hash": "0xcfa8d4b26b0e44370bbc6d6ede9d0d04f883b734e6a0d76ecdc4f27248b67482",
+      "nonce": 110,
+      "gas": "35000",
+      "gasPrice": "70000000",
+      "value": "123968810000000",
+      "calldataHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:gas:Balanced",
+      "actor": "owner",
+      "hash": "0xcfa8d4b26b0e44370bbc6d6ede9d0d04f883b734e6a0d76ecdc4f27248b67482",
+      "blockNumber": "277101616",
+      "gasUsed": "21000",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:mint:Balanced",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0x419b1671a619c8be11c2815709ad48ce2c1a7f223a0d4246713b820604b09b0b",
+      "nonce": 111,
+      "gas": "56577",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0xfbaf52fb18e31e877fd7e7b128778c21ecb143e90544797eed0ec2d47d98af34"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:mint:Balanced",
+      "actor": "owner",
+      "hash": "0x419b1671a619c8be11c2815709ad48ce2c1a7f223a0d4246713b820604b09b0b",
+      "blockNumber": "277101629",
+      "gasUsed": "33947",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:bondApproval:Balanced",
+      "actor": "Balanced",
+      "from": "0xcBF919ed9A28Da19786d97e1282C92B186500Cb8",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0x0ba1306224ffca83597884a4034856e5228d7cf5d7b19e1aee35eafc670a55a3",
+      "nonce": 3,
+      "gas": "76515",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0xb00d5268425bf8065eb3005bbb298d2e7c4c4503654d44b83de1a998645e3991"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:bondApproval:Balanced",
+      "actor": "Balanced",
+      "hash": "0x0ba1306224ffca83597884a4034856e5228d7cf5d7b19e1aee35eafc670a55a3",
+      "blockNumber": "277101645",
+      "gasUsed": "45909",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:gas:Momentum",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x8B6aF0B1738b941c0C7dd4deeC6fabEe3447888F",
+      "hash": "0x7467579aa966fd339e1e0131fdfc02856f74d8ff154a2b8f7cb2f61b532729fb",
+      "nonce": 112,
+      "gas": "35000",
+      "gasPrice": "70000000",
+      "value": "119068180000000",
+      "calldataHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:gas:Momentum",
+      "actor": "owner",
+      "hash": "0x7467579aa966fd339e1e0131fdfc02856f74d8ff154a2b8f7cb2f61b532729fb",
+      "blockNumber": "277101659",
+      "gasUsed": "21000",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:mint:Momentum",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0x32dca351fabfedd604c71bb35011bc0b94bd197ac737ba8bd23c35c634de5fde",
+      "nonce": 113,
+      "gas": "56577",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0xaa36601694d1e71eb2c1b1b0e92be0dfb73b4c8cb8ba6c2adc90b30777d3db9d"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:mint:Momentum",
+      "actor": "owner",
+      "hash": "0x32dca351fabfedd604c71bb35011bc0b94bd197ac737ba8bd23c35c634de5fde",
+      "blockNumber": "277101672",
+      "gasUsed": "33947",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:bondApproval:Momentum",
+      "actor": "Momentum",
+      "from": "0x8B6aF0B1738b941c0C7dd4deeC6fabEe3447888F",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0x29647dd54ce980b60806eab68e2605ee9cb917d63496b83b9ca1a3a20cb7d153",
+      "nonce": 5,
+      "gas": "76515",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0xb00d5268425bf8065eb3005bbb298d2e7c4c4503654d44b83de1a998645e3991"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:bondApproval:Momentum",
+      "actor": "Momentum",
+      "hash": "0x29647dd54ce980b60806eab68e2605ee9cb917d63496b83b9ca1a3a20cb7d153",
+      "blockNumber": "277101684",
+      "gasUsed": "45909",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:gas:HighBeta",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x1Ba3C5bf69b1Dd2077d7550Ee4f479bB35B5EA0a",
+      "hash": "0xe855613f4c59a2bc96274f24356b929868d10140c45f272499b6f18257c08692",
+      "nonce": 114,
+      "gas": "35000",
+      "gasPrice": "70000000",
+      "value": "123978680000000",
+      "calldataHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:gas:HighBeta",
+      "actor": "owner",
+      "hash": "0xe855613f4c59a2bc96274f24356b929868d10140c45f272499b6f18257c08692",
+      "blockNumber": "277101699",
+      "gasUsed": "21000",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:mint:HighBeta",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0xa103a979564e1f3453ec190c2eea4790d413f14ab321f2c3eb4c982d61e8daeb",
+      "nonce": 115,
+      "gas": "56577",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0x5eff1ed3945ccf3323b836ba1daeb7d5e0628525a47916c7dfd884bffdaea171"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:mint:HighBeta",
+      "actor": "owner",
+      "hash": "0xa103a979564e1f3453ec190c2eea4790d413f14ab321f2c3eb4c982d61e8daeb",
+      "blockNumber": "277101712",
+      "gasUsed": "33947",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:bondApproval:HighBeta",
+      "actor": "HighBeta",
+      "from": "0x1Ba3C5bf69b1Dd2077d7550Ee4f479bB35B5EA0a",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0xe6404b68ce43488eacf7dbcf699c82b6f582db43933f0832e5e53e240c0fab55",
+      "nonce": 3,
+      "gas": "76515",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0xb00d5268425bf8065eb3005bbb298d2e7c4c4503654d44b83de1a998645e3991"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:bondApproval:HighBeta",
+      "actor": "HighBeta",
+      "hash": "0xe6404b68ce43488eacf7dbcf699c82b6f582db43933f0832e5e53e240c0fab55",
+      "blockNumber": "277101726",
+      "gasUsed": "45909",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:gas:Quant",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x954362D2D831fC9430122d95F79c2eE3841E975D",
+      "hash": "0x91a900a2bbfef31159b754f722476bab8ef0852308e5006c277cb9751900d445",
+      "nonce": 116,
+      "gas": "35000",
+      "gasPrice": "70000000",
+      "value": "51041900000000",
+      "calldataHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:gas:Quant",
+      "actor": "owner",
+      "hash": "0x91a900a2bbfef31159b754f722476bab8ef0852308e5006c277cb9751900d445",
+      "blockNumber": "277101742",
+      "gasUsed": "21000",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:mint:Quant",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0x7d4284f3a4b2a5e96797f83d6403ca04cef86c000115d758a8f770ef67260352",
+      "nonce": 117,
+      "gas": "56577",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0x234ef1696463d8a3cb1e1f1fe1af8a36b3d066ed79ebe2b239c97de63871b9dd"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:mint:Quant",
+      "actor": "owner",
+      "hash": "0x7d4284f3a4b2a5e96797f83d6403ca04cef86c000115d758a8f770ef67260352",
+      "blockNumber": "277101756",
+      "gasUsed": "33947",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:depositApproval:Quant",
+      "actor": "Quant",
+      "from": "0x954362D2D831fC9430122d95F79c2eE3841E975D",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0x92ecc1af1ecb9137c442e8ac2c7423a654a0a53ce58d30a0e663c0b025a6972c",
+      "nonce": 8,
+      "gas": "76535",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0x32f76d94519b421001ebc72a6cb91556439ac89ab710cc349de70a76ddfeaa6d"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:depositApproval:Quant",
+      "actor": "Quant",
+      "hash": "0x92ecc1af1ecb9137c442e8ac2c7423a654a0a53ce58d30a0e663c0b025a6972c",
+      "blockNumber": "277101771",
+      "gasUsed": "45921",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:gas:Guardian",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0xc410cE4092eB91E89792F5AB731D64d544932B47",
+      "hash": "0xd5a9d006a45755e21bd84d736f795b1bdfb685f0bca450b4ead9ee22e0ca758b",
+      "nonce": 118,
+      "gas": "35000",
+      "gasPrice": "70000000",
+      "value": "45977330000000",
+      "calldataHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:gas:Guardian",
+      "actor": "owner",
+      "hash": "0xd5a9d006a45755e21bd84d736f795b1bdfb685f0bca450b4ead9ee22e0ca758b",
+      "blockNumber": "277101787",
+      "gasUsed": "21000",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:mint:Guardian",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0x1f8d223fa21d5cec89061ef5a40e8d658437517dffddb305bed59d1d0224fafe",
+      "nonce": 119,
+      "gas": "56577",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0x0af76ce798b3604e88146d55790b31ebdb258e4a7d0cfdcb4bf0cb16468823c5"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:mint:Guardian",
+      "actor": "owner",
+      "hash": "0x1f8d223fa21d5cec89061ef5a40e8d658437517dffddb305bed59d1d0224fafe",
+      "blockNumber": "277101799",
+      "gasUsed": "33947",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:depositApproval:Guardian",
+      "actor": "Guardian",
+      "from": "0xc410cE4092eB91E89792F5AB731D64d544932B47",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0xef3968017fea73eaf4ee00b6ffce1c53d2f99bfdf2462e178c50d80b0040bea9",
+      "nonce": 8,
+      "gas": "76535",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0x32f76d94519b421001ebc72a6cb91556439ac89ab710cc349de70a76ddfeaa6d"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:depositApproval:Guardian",
+      "actor": "Guardian",
+      "hash": "0xef3968017fea73eaf4ee00b6ffce1c53d2f99bfdf2462e178c50d80b0040bea9",
+      "blockNumber": "277101812",
+      "gasUsed": "45921",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:gas:FeeAnalyst",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x50ef16734f1443c97c37e29F31F8AA0aa045bf51",
+      "hash": "0x96247363b7c5044c97185c35a9a6021d030b656a394b3022f9dc53b8d5ae260b",
+      "nonce": 120,
+      "gas": "35000",
+      "gasPrice": "70000000",
+      "value": "46028990000000",
+      "calldataHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:gas:FeeAnalyst",
+      "actor": "owner",
+      "hash": "0x96247363b7c5044c97185c35a9a6021d030b656a394b3022f9dc53b8d5ae260b",
+      "blockNumber": "277101826",
+      "gasUsed": "21000",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:mint:FeeAnalyst",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0xb2fc20f122a7be581853d17ae02c8d1adbd92da336602e482918700e94749d2d",
+      "nonce": 121,
+      "gas": "56577",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0xad8a3079b4bb205910a81379e1afc1ad97e11595060a001ac44ed4cd73af2337"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:mint:FeeAnalyst",
+      "actor": "owner",
+      "hash": "0xb2fc20f122a7be581853d17ae02c8d1adbd92da336602e482918700e94749d2d",
+      "blockNumber": "277101837",
+      "gasUsed": "33947",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:depositApproval:FeeAnalyst",
+      "actor": "FeeAnalyst",
+      "from": "0x50ef16734f1443c97c37e29F31F8AA0aa045bf51",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0x98dd45d9cca697833ac72bb92d45d303699c0f81e73ca54615e6c63c01348c20",
+      "nonce": 5,
+      "gas": "76535",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0x32f76d94519b421001ebc72a6cb91556439ac89ab710cc349de70a76ddfeaa6d"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:depositApproval:FeeAnalyst",
+      "actor": "FeeAnalyst",
+      "hash": "0x98dd45d9cca697833ac72bb92d45d303699c0f81e73ca54615e6c63c01348c20",
+      "blockNumber": "277101849",
+      "gasUsed": "45921",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:gas:StressAnalyst",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x949A277347a18c984c13D5228e0acE60cD2D99E6",
+      "hash": "0x5160e212a33f77837ad303bf56e6f8e930ec7442655aa52b0c651af7cffc4a2b",
+      "nonce": 122,
+      "gas": "35000",
+      "gasPrice": "70000000",
+      "value": "48603940000000",
+      "calldataHash": "0xc5d2460186f7233c927e7db2dcc703c0e500b653ca82273b7bfad8045d85a470"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:gas:StressAnalyst",
+      "actor": "owner",
+      "hash": "0x5160e212a33f77837ad303bf56e6f8e930ec7442655aa52b0c651af7cffc4a2b",
+      "blockNumber": "277101863",
+      "gasUsed": "21000",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:mint:StressAnalyst",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0x7378f3d0b0f2021a647166fe1d9b9919989ad2193e25692abb86e754485cce15",
+      "nonce": 123,
+      "gas": "56577",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0xff833241b472841b456cf4b3a81657631595c9ff371e02d2958ed058f63eaa6b"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:mint:StressAnalyst",
+      "actor": "owner",
+      "hash": "0x7378f3d0b0f2021a647166fe1d9b9919989ad2193e25692abb86e754485cce15",
+      "blockNumber": "277101876",
+      "gasUsed": "33947",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:depositApproval:StressAnalyst",
+      "actor": "StressAnalyst",
+      "from": "0x949A277347a18c984c13D5228e0acE60cD2D99E6",
+      "to": "0x8be4b1fdedadcd0269ee3f5b9820e88f557b915c",
+      "hash": "0xfbd20dd55f237a9121420348a33e0ceac1d659de4967e152c273cb532a87f72d",
+      "nonce": 5,
+      "gas": "76535",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0x32f76d94519b421001ebc72a6cb91556439ac89ab710cc349de70a76ddfeaa6d"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:depositApproval:StressAnalyst",
+      "actor": "StressAnalyst",
+      "hash": "0xfbd20dd55f237a9121420348a33e0ceac1d659de4967e152c273cb532a87f72d",
+      "blockNumber": "277101888",
+      "gasUsed": "45921",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared-actors",
+      "roundId": "4"
+    },
+    {
+      "stage": "actors",
+      "actors": {
+        "owner": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+        "Conservative": "0x5613C60B04Fa16363C3a388AA4545073fb440345",
+        "Balanced": "0xcBF919ed9A28Da19786d97e1282C92B186500Cb8",
+        "Momentum": "0x8B6aF0B1738b941c0C7dd4deeC6fabEe3447888F",
+        "HighBeta": "0x1Ba3C5bf69b1Dd2077d7550Ee4f479bB35B5EA0a",
+        "Quant": "0x954362D2D831fC9430122d95F79c2eE3841E975D",
+        "Guardian": "0xc410cE4092eB91E89792F5AB731D64d544932B47",
+        "FeeAnalyst": "0x50ef16734f1443c97c37e29F31F8AA0aa045bf51",
+        "StressAnalyst": "0x949A277347a18c984c13D5228e0acE60cD2D99E6"
+      }
+    },
+    {
+      "stage": "snapshot",
+      "snapshot": {
+        "chainId": 1313161555,
+        "roundId": "4",
+        "safe": "0x781430393ec48f5c2af78be63ae273875b180ad1",
+        "engine": "0x825b31dbc1af25b230d31caf5210c2b5a8fe22af",
+        "portfolio": {
+          "stableBalance": "1094400091",
+          "assetBalance": "428886426777995925",
+          "currentAllocationBps": 4430
+        },
+        "blockNumber": "277101984"
+      },
+      "market": {
+        "source": "external-unverified",
+        "asOf": 1794334000,
+        "stableUsdX18": "1000000000000000000",
+        "history": [
+          {
+            "timestamp": 1794330600,
+            "assetUsdX18": "2017200000000000000000"
+          },
+          {
+            "timestamp": 1794330900,
+            "assetUsdX18": "2020900000000000000000"
+          },
+          {
+            "timestamp": 1794331200,
+            "assetUsdX18": "2025150000000000000000"
+          },
+          {
+            "timestamp": 1794331500,
+            "assetUsdX18": "2020960000000000000000"
+          },
+          {
+            "timestamp": 1794331800,
+            "assetUsdX18": "2022970000000000000000"
+          },
+          {
+            "timestamp": 1794332100,
+            "assetUsdX18": "2025600000000000000000"
+          },
+          {
+            "timestamp": 1794332400,
+            "assetUsdX18": "2015540000000000000000"
+          },
+          {
+            "timestamp": 1794332700,
+            "assetUsdX18": "2018700000000000000000"
+          },
+          {
+            "timestamp": 1794333000,
+            "assetUsdX18": "2023550000000000000000"
+          },
+          {
+            "timestamp": 1794333300,
+            "assetUsdX18": "2026850000000000000000"
+          },
+          {
+            "timestamp": 1794333600,
+            "assetUsdX18": "2026750000000000000000"
+          },
+          {
+            "timestamp": 1794333900,
+            "assetUsdX18": "2026960000000000000000"
+          },
+          {
+            "timestamp": 1794334000,
+            "assetUsdX18": "2029580000000000000000"
+          }
+        ],
+        "features": {
+          "lookbackReturnBps": 61,
+          "maxDrawdownBps": 49,
+          "largestStepBps": 49
+        },
+        "warning": "External research data is unverified and cannot settle the contract.",
+        "evidenceId": "market-b6bca8b5c69f100a",
+        "provenance": {
+          "provider": "Coinbase public REST",
+          "retrievedAt": 1794334001,
+          "ethObservationAt": 1794334000,
+          "stableObservationAt": null,
+          "stableTimestampMeaning": "retrieval only; upstream spot response has no publication timestamp",
+          "settlementEligible": false,
+          "warning": "Single-provider research data, not a cryptographically verified settlement oracle."
+        }
+      }
+    },
+    {
+      "stage": "inference-request",
+      "request": 1,
+      "inputBytes": 2451,
+      "reservedNanoUsd": 2483710
+    },
+    {
+      "stage": "agent-record",
+      "record": {
+        "name": "Conservative",
+        "role": "proposer",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "e269ecf113006594ac529177723928b373d55ab19ebd4102dbd962d43649eaa3",
+        "outputHash": "7f31787280265418f1815dacec0d86d1c476c3a8a37dfc5e3ef3b3b6881a59d2",
+        "decision": {
+          "allocationBps": 500,
+          "confidenceBps": 2000,
+          "rationale": "Conservative mandate requires low exposure. Recent price action shows minor volatility with a slight upward drift (+61 bps). Reducing allocation from current 4430 bps to 500 bps prioritizes capital preservation while maintaining minimal asset exposure as permitted by the 0-2000 bps range.",
+          "risks": [
+            "External data unverified",
+            "Asset price may decline further",
+            "Liquidity constraints"
+          ],
+          "evidenceIds": [
+            "market-b6bca8b5c69f100a"
+          ]
+        },
+        "usage": {
+          "inputTokens": 1028,
+          "outputTokens": 169
+        },
+        "timestamp": "2026-11-10T18:06:45.057Z"
+      }
+    },
+    {
+      "stage": "inference-request",
+      "request": 2,
+      "inputBytes": 2462,
+      "reservedNanoUsd": 4969290
+    },
+    {
+      "stage": "agent-record",
+      "record": {
+        "name": "Balanced",
+        "role": "proposer",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "daa6c42d6f54919e148a0b30653912fba14c5feac23c9f246e501972ca6fd2c4",
+        "outputHash": "dc78b24f33761b428d37db928bc87cc5b92afbfdddca698ef9fd6e08aad99185",
+        "decision": {
+          "allocationBps": 4430,
+          "confidenceBps": 2500,
+          "rationale": "Current allocation is within the 3500-5000 bps mandate. Recent price action shows slight upward momentum (+61 bps lookback) with low volatility (max drawdown 49 bps). Maintaining current exposure balances the mandate constraints with observed stability.",
+          "risks": [
+            "External data is unverified",
+            "Market volatility may increase beyond historical max drawdown",
+            "Router fees impact net returns on rebalancing"
+          ],
+          "evidenceIds": [
+            "market-b6bca8b5c69f100a"
+          ]
+        },
+        "usage": {
+          "inputTokens": 1034,
+          "outputTokens": 172
+        },
+        "timestamp": "2026-11-10T18:06:47.797Z"
+      }
+    },
+    {
+      "stage": "inference-request",
+      "request": 3,
+      "inputBytes": 2452,
+      "reservedNanoUsd": 7453170
+    },
+    {
+      "stage": "agent-record",
+      "record": {
+        "name": "Momentum",
+        "role": "proposer",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "6a83972fbd059e1e8e24abeab618b6be8e5c50aa8ee871930a5c316aaffffc4e",
+        "outputHash": "8a8a1eec9e8bc7d1fe62d3ff044512cd566dae9abe739c086e644003da433eca",
+        "decision": {
+          "allocationBps": 7500,
+          "confidenceBps": 2000,
+          "rationale": "Momentum policy mandates high growth exposure (6500-8000 bps). Recent 180s trend is positive (+61 bps) with price holding near recent highs, supporting the upper end of the mandate. Low confidence due to unverified external data source and volatility risk.",
+          "risks": [
+            "External data unverified",
+            "Recent intraday volatility (max drawdown 49 bps)",
+            "Potential mean reversion after short-term gain"
+          ],
+          "evidenceIds": [
+            "market-b6bca8b5c69f100a"
+          ]
+        },
+        "usage": {
+          "inputTokens": 1032,
+          "outputTokens": 178
+        },
+        "timestamp": "2026-11-10T18:06:52.601Z"
+      }
+    },
+    {
+      "stage": "inference-request",
+      "request": 4,
+      "inputBytes": 2472,
+      "reservedNanoUsd": 9940450
+    },
+    {
+      "stage": "agent-record",
+      "record": {
+        "name": "HighBeta",
+        "role": "proposer",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "7479e47c3bef1594ebabea17ed33e10176957af732a304c9803298a3c1b7efc1",
+        "outputHash": "8cd48395b3d7a4d0c053a70dc3c643d7ed98d0dd02dffbcd9bf19cd05be74bd7",
+        "decision": {
+          "allocationBps": 9500,
+          "confidenceBps": 2500,
+          "rationale": "Mandate requires high exposure (90-100%). Recent price action shows resilience with a +61bps lookback return and only 49bps max drawdown. Current 44.3% allocation is far below the 90% floor, necessitating a massive rebalance to the upper end of the allowed range to comply with the high-beta mandate.",
+          "risks": [
+            "External data is unverified and may not reflect true market state.",
+            "High volatility asset may experience sudden downside reversal.",
+            "Liquidity constraints could impede large rebalancing trades."
+          ],
+          "evidenceIds": [
+            "market-b6bca8b5c69f100a"
+          ]
+        },
+        "usage": {
+          "inputTokens": 1037,
+          "outputTokens": 200
+        },
+        "timestamp": "2026-11-10T18:06:55.740Z"
+      }
+    },
+    {
+      "stage": "inference-request",
+      "request": 5,
+      "inputBytes": 3645,
+      "reservedNanoUsd": 12627140
+    },
+    {
+      "stage": "agent-record",
+      "record": {
+        "name": "Quant",
+        "role": "forecaster",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "cdad638f7ee46d0cf560c6ba9f80403f1169535480d0bf62719b4a9c84f5b794",
+        "outputHash": "f2c236f424904559734843ccd12e642d353d13b4664f79d28c1219a16db6fe90",
+        "decision": {
+          "forecasts": [
+            {
+              "proposalId": 0,
+              "expectedReturnBps": 6,
+              "confidenceBps": 2000,
+              "rationale": "Hold preserves current 44.3% exposure. Low trend momentum suggests minimal drift.",
+              "risks": [
+                "Missed upside if asset rallies."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 1,
+              "expectedReturnBps": -1170,
+              "confidenceBps": 3000,
+              "rationale": "Drastic cut to 5% allocation incurs high fees. Weak trend makes this loss-inevitable.",
+              "risks": [
+                "High slippage on large sell order."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 2,
+              "expectedReturnBps": 6,
+              "confidenceBps": 2000,
+              "rationale": "Same allocation as hold. No fee or turnover. Identical expected return to proposal 0.",
+              "risks": [
+                "Redundant strategy with no benefit."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 3,
+              "expectedReturnBps": -800,
+              "confidenceBps": 2500,
+              "rationale": "Increase to 75% incurs fees. Current weak trend does not justify higher exposure cost.",
+              "risks": [
+                "Asset pullback increases loss."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 4,
+              "expectedReturnBps": -1400,
+              "confidenceBps": 2500,
+              "rationale": "Aggressive 95% allocation with high fees. Weak trend makes fee drag dominant.",
+              "risks": [
+                "Maximum drawdown risk if asset drops."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            }
+          ]
+        },
+        "usage": {
+          "inputTokens": 1383,
+          "outputTokens": 608
+        },
+        "timestamp": "2026-11-10T18:07:03.074Z"
+      }
+    },
+    {
+      "stage": "inference-request",
+      "request": 6,
+      "inputBytes": 3633,
+      "reservedNanoUsd": 15311790
+    },
+    {
+      "stage": "agent-record",
+      "record": {
+        "name": "Guardian",
+        "role": "forecaster",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "5059db30b3177156744eb6dfd62a9adb429ee0cc435d61f8535ddeae9ebcf255",
+        "outputHash": "72d29024e41889e82fca45690c7fe2bac2b7793ef98a3843840a5be561085c82",
+        "decision": {
+          "forecasts": [
+            {
+              "proposalId": 0,
+              "expectedReturnBps": 61,
+              "confidenceBps": 2000,
+              "rationale": "Hold preserves current 44.3% exposure to recent uptrend.",
+              "risks": [
+                "Market volatility reversal"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 1,
+              "expectedReturnBps": -1179,
+              "confidenceBps": 1000,
+              "rationale": "High fee on large rebalance to 5% asset exposure.",
+              "risks": [
+                "Fee exceeds potential alpha"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 2,
+              "expectedReturnBps": 61,
+              "confidenceBps": 2000,
+              "rationale": "Identical to Hold, zero cost, same market exposure.",
+              "risks": [
+                "Redundant strategy"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 3,
+              "expectedReturnBps": -860,
+              "confidenceBps": 1000,
+              "rationale": "Fee likely outweighs marginal gain from 75% exposure.",
+              "risks": [
+                "Slippage on large swap"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 4,
+              "expectedReturnBps": -1460,
+              "confidenceBps": 1000,
+              "rationale": "Highest fee on 95% exposure, high downside risk.",
+              "risks": [
+                "Depeg and slippage"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            }
+          ]
+        },
+        "usage": {
+          "inputTokens": 1380,
+          "outputTokens": 568
+        },
+        "timestamp": "2026-11-10T18:07:08.412Z"
+      }
+    },
+    {
+      "stage": "inference-request",
+      "request": 7,
+      "inputBytes": 3661,
+      "reservedNanoUsd": 18001200
+    },
+    {
+      "stage": "agent-record",
+      "record": {
+        "name": "FeeAnalyst",
+        "role": "forecaster",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "3bd10d689a9a44dbf4a624381b74401bbdba3ad4a602fdf78c070d4fb759289e",
+        "outputHash": "c53d55dc6b9c1a72c3d34fbfc41c5b25c1968401721fe674af20781da5ca4085",
+        "decision": {
+          "forecasts": [
+            {
+              "proposalId": 0,
+              "expectedReturnBps": 0,
+              "confidenceBps": 100,
+              "rationale": "Hold avoids fees. No edge to trade.",
+              "risks": [
+                "Opportunity cost if trend continues"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 1,
+              "expectedReturnBps": -12,
+              "confidenceBps": 50,
+              "rationale": "High turnover fee exceeds likely 180s move.",
+              "risks": [
+                "Slippage increases cost"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 2,
+              "expectedReturnBps": 0,
+              "confidenceBps": 100,
+              "rationale": "Same allocation as hold, no action.",
+              "risks": [
+                "Redundant proposal"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 3,
+              "expectedReturnBps": -9,
+              "confidenceBps": 50,
+              "rationale": "Fee likely exceeds 180s alpha.",
+              "risks": [
+                "Execution cost > return"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 4,
+              "expectedReturnBps": -15,
+              "confidenceBps": 50,
+              "rationale": "Highest fee, low probability of covering cost.",
+              "risks": [
+                "High slippage risk"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            }
+          ]
+        },
+        "usage": {
+          "inputTokens": 1386,
+          "outputTokens": 473
+        },
+        "timestamp": "2026-11-10T18:07:13.308Z"
+      }
+    },
+    {
+      "stage": "inference-request",
+      "request": 8,
+      "inputBytes": 3647,
+      "reservedNanoUsd": 20688230
+    },
+    {
+      "stage": "agent-record",
+      "record": {
+        "name": "StressAnalyst",
+        "role": "forecaster",
+        "provider": "near-ai",
+        "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+        "attestationVerified": false,
+        "inputHash": "e323d00f28b2755c138ce2a8983aca1f486138701c9bf6e0cb40d01e9be9596d",
+        "outputHash": "24ad4da8b7e218d20675a970ff01d62cf454d0a492713951db53ac0fb378f12d",
+        "decision": {
+          "forecasts": [
+            {
+              "proposalId": 0,
+              "expectedReturnBps": 5,
+              "confidenceBps": 2000,
+              "rationale": "Hold preserves capital. Minimal exposure to asset volatility over 180s horizon.",
+              "risks": [
+                "Missed upside if asset rallies."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 1,
+              "expectedReturnBps": -1200,
+              "confidenceBps": 3000,
+              "rationale": "High turnover fee (11.79 bps) outweighs likely small price movement. Heavy rebalance into underweight asset.",
+              "risks": [
+                "Slippage on large swap."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 2,
+              "expectedReturnBps": 5,
+              "confidenceBps": 2000,
+              "rationale": "Identical to Hold. No fee, no exposure change. Safe baseline.",
+              "risks": [
+                "Opportunity cost."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 3,
+              "expectedReturnBps": 45,
+              "confidenceBps": 2500,
+              "rationale": "Increases asset exposure to 75%. Benefits from recent uptrend momentum. Fee is manageable.",
+              "risks": [
+                "Reversal of recent 61bps gain."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            {
+              "proposalId": 4,
+              "expectedReturnBps": 80,
+              "confidenceBps": 2000,
+              "rationale": "Max exposure (95%). Highest potential gain if trend continues. High fee and slippage risk.",
+              "risks": [
+                "Large drawdown if asset drops."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            }
+          ]
+        },
+        "usage": {
+          "inputTokens": 1383,
+          "outputTokens": 604
+        },
+        "timestamp": "2026-11-10T18:07:19.257Z"
+      }
+    },
+    {
+      "stage": "plan",
+      "plan": {
+        "schemaVersion": 2,
+        "profile": "diverse-v1",
+        "kind": "live-model",
+        "chainId": 1313161555,
+        "roundId": "4",
+        "safe": "0x781430393ec48f5c2af78be63ae273875b180ad1",
+        "engine": "0x825b31dbc1af25b230d31caf5210c2b5a8fe22af",
+        "snapshot": {
+          "chainId": 1313161555,
+          "roundId": "4",
+          "safe": "0x781430393ec48f5c2af78be63ae273875b180ad1",
+          "engine": "0x825b31dbc1af25b230d31caf5210c2b5a8fe22af",
+          "portfolio": {
+            "stableBalance": "1094400091",
+            "assetBalance": "428886426777995925",
+            "currentAllocationBps": 4430
+          },
+          "blockNumber": "277101984"
+        },
+        "createdAt": 1794334002,
+        "market": {
+          "source": "external-unverified",
+          "asOf": 1794334000,
+          "stableUsdX18": "1000000000000000000",
+          "history": [
+            {
+              "timestamp": 1794330600,
+              "assetUsdX18": "2017200000000000000000"
+            },
+            {
+              "timestamp": 1794330900,
+              "assetUsdX18": "2020900000000000000000"
+            },
+            {
+              "timestamp": 1794331200,
+              "assetUsdX18": "2025150000000000000000"
+            },
+            {
+              "timestamp": 1794331500,
+              "assetUsdX18": "2020960000000000000000"
+            },
+            {
+              "timestamp": 1794331800,
+              "assetUsdX18": "2022970000000000000000"
+            },
+            {
+              "timestamp": 1794332100,
+              "assetUsdX18": "2025600000000000000000"
+            },
+            {
+              "timestamp": 1794332400,
+              "assetUsdX18": "2015540000000000000000"
+            },
+            {
+              "timestamp": 1794332700,
+              "assetUsdX18": "2018700000000000000000"
+            },
+            {
+              "timestamp": 1794333000,
+              "assetUsdX18": "2023550000000000000000"
+            },
+            {
+              "timestamp": 1794333300,
+              "assetUsdX18": "2026850000000000000000"
+            },
+            {
+              "timestamp": 1794333600,
+              "assetUsdX18": "2026750000000000000000"
+            },
+            {
+              "timestamp": 1794333900,
+              "assetUsdX18": "2026960000000000000000"
+            },
+            {
+              "timestamp": 1794334000,
+              "assetUsdX18": "2029580000000000000000"
+            }
+          ],
+          "features": {
+            "lookbackReturnBps": 61,
+            "maxDrawdownBps": 49,
+            "largestStepBps": 49
+          },
+          "warning": "External research data is unverified and cannot settle the contract.",
+          "evidenceId": "market-b6bca8b5c69f100a"
+        },
+        "proposals": [
+          {
+            "id": 0,
+            "name": "Hold",
+            "allocationBps": 4430,
+            "rationale": "Preserve current token quantities."
+          },
+          {
+            "id": 1,
+            "name": "Conservative",
+            "allocationBps": 500,
+            "confidenceBps": 2000,
+            "rationale": "Conservative mandate requires low exposure. Recent price action shows minor volatility with a slight upward drift (+61 bps). Reducing allocation from current 4430 bps to 500 bps prioritizes capital preservation while maintaining minimal asset exposure as permitted by the 0-2000 bps range.",
+            "risks": [
+              "External data unverified",
+              "Asset price may decline further",
+              "Liquidity constraints"
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "id": 2,
+            "name": "Balanced",
+            "allocationBps": 4430,
+            "confidenceBps": 2500,
+            "rationale": "Current allocation is within the 3500-5000 bps mandate. Recent price action shows slight upward momentum (+61 bps lookback) with low volatility (max drawdown 49 bps). Maintaining current exposure balances the mandate constraints with observed stability.",
+            "risks": [
+              "External data is unverified",
+              "Market volatility may increase beyond historical max drawdown",
+              "Router fees impact net returns on rebalancing"
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "id": 3,
+            "name": "Momentum",
+            "allocationBps": 7500,
+            "confidenceBps": 2000,
+            "rationale": "Momentum policy mandates high growth exposure (6500-8000 bps). Recent 180s trend is positive (+61 bps) with price holding near recent highs, supporting the upper end of the mandate. Low confidence due to unverified external data source and volatility risk.",
+            "risks": [
+              "External data unverified",
+              "Recent intraday volatility (max drawdown 49 bps)",
+              "Potential mean reversion after short-term gain"
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          },
+          {
+            "id": 4,
+            "name": "HighBeta",
+            "allocationBps": 9500,
+            "confidenceBps": 2500,
+            "rationale": "Mandate requires high exposure (90-100%). Recent price action shows resilience with a +61bps lookback return and only 49bps max drawdown. Current 44.3% allocation is far below the 90% floor, necessitating a massive rebalance to the upper end of the allowed range to comply with the high-beta mandate.",
+            "risks": [
+              "External data is unverified and may not reflect true market state.",
+              "High volatility asset may experience sudden downside reversal.",
+              "Liquidity constraints could impede large rebalancing trades."
+            ],
+            "evidenceIds": [
+              "market-b6bca8b5c69f100a"
+            ]
+          }
+        ],
+        "forecasts": [
+          {
+            "name": "Quant",
+            "forecasts": [
+              {
+                "proposalId": 0,
+                "expectedReturnBps": 6,
+                "confidenceBps": 2000,
+                "rationale": "Hold preserves current 44.3% exposure. Low trend momentum suggests minimal drift.",
+                "risks": [
+                  "Missed upside if asset rallies."
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 1,
+                "expectedReturnBps": -1170,
+                "confidenceBps": 3000,
+                "rationale": "Drastic cut to 5% allocation incurs high fees. Weak trend makes this loss-inevitable.",
+                "risks": [
+                  "High slippage on large sell order."
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 2,
+                "expectedReturnBps": 6,
+                "confidenceBps": 2000,
+                "rationale": "Same allocation as hold. No fee or turnover. Identical expected return to proposal 0.",
+                "risks": [
+                  "Redundant strategy with no benefit."
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 3,
+                "expectedReturnBps": -800,
+                "confidenceBps": 2500,
+                "rationale": "Increase to 75% incurs fees. Current weak trend does not justify higher exposure cost.",
+                "risks": [
+                  "Asset pullback increases loss."
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 4,
+                "expectedReturnBps": -1400,
+                "confidenceBps": 2500,
+                "rationale": "Aggressive 95% allocation with high fees. Weak trend makes fee drag dominant.",
+                "risks": [
+                  "Maximum drawdown risk if asset drops."
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Guardian",
+            "forecasts": [
+              {
+                "proposalId": 0,
+                "expectedReturnBps": 61,
+                "confidenceBps": 2000,
+                "rationale": "Hold preserves current 44.3% exposure to recent uptrend.",
+                "risks": [
+                  "Market volatility reversal"
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 1,
+                "expectedReturnBps": -1179,
+                "confidenceBps": 1000,
+                "rationale": "High fee on large rebalance to 5% asset exposure.",
+                "risks": [
+                  "Fee exceeds potential alpha"
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 2,
+                "expectedReturnBps": 61,
+                "confidenceBps": 2000,
+                "rationale": "Identical to Hold, zero cost, same market exposure.",
+                "risks": [
+                  "Redundant strategy"
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 3,
+                "expectedReturnBps": -860,
+                "confidenceBps": 1000,
+                "rationale": "Fee likely outweighs marginal gain from 75% exposure.",
+                "risks": [
+                  "Slippage on large swap"
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 4,
+                "expectedReturnBps": -1460,
+                "confidenceBps": 1000,
+                "rationale": "Highest fee on 95% exposure, high downside risk.",
+                "risks": [
+                  "Depeg and slippage"
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "FeeAnalyst",
+            "forecasts": [
+              {
+                "proposalId": 0,
+                "expectedReturnBps": 0,
+                "confidenceBps": 100,
+                "rationale": "Hold avoids fees. No edge to trade.",
+                "risks": [
+                  "Opportunity cost if trend continues"
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 1,
+                "expectedReturnBps": -12,
+                "confidenceBps": 50,
+                "rationale": "High turnover fee exceeds likely 180s move.",
+                "risks": [
+                  "Slippage increases cost"
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 2,
+                "expectedReturnBps": 0,
+                "confidenceBps": 100,
+                "rationale": "Same allocation as hold, no action.",
+                "risks": [
+                  "Redundant proposal"
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 3,
+                "expectedReturnBps": -9,
+                "confidenceBps": 50,
+                "rationale": "Fee likely exceeds 180s alpha.",
+                "risks": [
+                  "Execution cost > return"
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 4,
+                "expectedReturnBps": -15,
+                "confidenceBps": 50,
+                "rationale": "Highest fee, low probability of covering cost.",
+                "risks": [
+                  "High slippage risk"
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "StressAnalyst",
+            "forecasts": [
+              {
+                "proposalId": 0,
+                "expectedReturnBps": 5,
+                "confidenceBps": 2000,
+                "rationale": "Hold preserves capital. Minimal exposure to asset volatility over 180s horizon.",
+                "risks": [
+                  "Missed upside if asset rallies."
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 1,
+                "expectedReturnBps": -1200,
+                "confidenceBps": 3000,
+                "rationale": "High turnover fee (11.79 bps) outweighs likely small price movement. Heavy rebalance into underweight asset.",
+                "risks": [
+                  "Slippage on large swap."
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 2,
+                "expectedReturnBps": 5,
+                "confidenceBps": 2000,
+                "rationale": "Identical to Hold. No fee, no exposure change. Safe baseline.",
+                "risks": [
+                  "Opportunity cost."
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 3,
+                "expectedReturnBps": 45,
+                "confidenceBps": 2500,
+                "rationale": "Increases asset exposure to 75%. Benefits from recent uptrend momentum. Fee is manageable.",
+                "risks": [
+                  "Reversal of recent 61bps gain."
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              },
+              {
+                "proposalId": 4,
+                "expectedReturnBps": 80,
+                "confidenceBps": 2000,
+                "rationale": "Max exposure (95%). Highest potential gain if trend continues. High fee and slippage risk.",
+                "risks": [
+                  "Large drawdown if asset drops."
+                ],
+                "evidenceIds": [
+                  "market-b6bca8b5c69f100a"
+                ]
+              }
+            ]
+          }
+        ],
+        "records": [
+          {
+            "name": "Conservative",
+            "role": "proposer",
+            "provider": "near-ai",
+            "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+            "attestationVerified": false,
+            "inputHash": "e269ecf113006594ac529177723928b373d55ab19ebd4102dbd962d43649eaa3",
+            "outputHash": "7f31787280265418f1815dacec0d86d1c476c3a8a37dfc5e3ef3b3b6881a59d2",
+            "decision": {
+              "allocationBps": 500,
+              "confidenceBps": 2000,
+              "rationale": "Conservative mandate requires low exposure. Recent price action shows minor volatility with a slight upward drift (+61 bps). Reducing allocation from current 4430 bps to 500 bps prioritizes capital preservation while maintaining minimal asset exposure as permitted by the 0-2000 bps range.",
+              "risks": [
+                "External data unverified",
+                "Asset price may decline further",
+                "Liquidity constraints"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            "usage": {
+              "inputTokens": 1028,
+              "outputTokens": 169
+            },
+            "timestamp": "2026-11-10T18:06:45.057Z"
+          },
+          {
+            "name": "Balanced",
+            "role": "proposer",
+            "provider": "near-ai",
+            "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+            "attestationVerified": false,
+            "inputHash": "daa6c42d6f54919e148a0b30653912fba14c5feac23c9f246e501972ca6fd2c4",
+            "outputHash": "dc78b24f33761b428d37db928bc87cc5b92afbfdddca698ef9fd6e08aad99185",
+            "decision": {
+              "allocationBps": 4430,
+              "confidenceBps": 2500,
+              "rationale": "Current allocation is within the 3500-5000 bps mandate. Recent price action shows slight upward momentum (+61 bps lookback) with low volatility (max drawdown 49 bps). Maintaining current exposure balances the mandate constraints with observed stability.",
+              "risks": [
+                "External data is unverified",
+                "Market volatility may increase beyond historical max drawdown",
+                "Router fees impact net returns on rebalancing"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            "usage": {
+              "inputTokens": 1034,
+              "outputTokens": 172
+            },
+            "timestamp": "2026-11-10T18:06:47.797Z"
+          },
+          {
+            "name": "Momentum",
+            "role": "proposer",
+            "provider": "near-ai",
+            "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+            "attestationVerified": false,
+            "inputHash": "6a83972fbd059e1e8e24abeab618b6be8e5c50aa8ee871930a5c316aaffffc4e",
+            "outputHash": "8a8a1eec9e8bc7d1fe62d3ff044512cd566dae9abe739c086e644003da433eca",
+            "decision": {
+              "allocationBps": 7500,
+              "confidenceBps": 2000,
+              "rationale": "Momentum policy mandates high growth exposure (6500-8000 bps). Recent 180s trend is positive (+61 bps) with price holding near recent highs, supporting the upper end of the mandate. Low confidence due to unverified external data source and volatility risk.",
+              "risks": [
+                "External data unverified",
+                "Recent intraday volatility (max drawdown 49 bps)",
+                "Potential mean reversion after short-term gain"
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            "usage": {
+              "inputTokens": 1032,
+              "outputTokens": 178
+            },
+            "timestamp": "2026-11-10T18:06:52.601Z"
+          },
+          {
+            "name": "HighBeta",
+            "role": "proposer",
+            "provider": "near-ai",
+            "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+            "attestationVerified": false,
+            "inputHash": "7479e47c3bef1594ebabea17ed33e10176957af732a304c9803298a3c1b7efc1",
+            "outputHash": "8cd48395b3d7a4d0c053a70dc3c643d7ed98d0dd02dffbcd9bf19cd05be74bd7",
+            "decision": {
+              "allocationBps": 9500,
+              "confidenceBps": 2500,
+              "rationale": "Mandate requires high exposure (90-100%). Recent price action shows resilience with a +61bps lookback return and only 49bps max drawdown. Current 44.3% allocation is far below the 90% floor, necessitating a massive rebalance to the upper end of the allowed range to comply with the high-beta mandate.",
+              "risks": [
+                "External data is unverified and may not reflect true market state.",
+                "High volatility asset may experience sudden downside reversal.",
+                "Liquidity constraints could impede large rebalancing trades."
+              ],
+              "evidenceIds": [
+                "market-b6bca8b5c69f100a"
+              ]
+            },
+            "usage": {
+              "inputTokens": 1037,
+              "outputTokens": 200
+            },
+            "timestamp": "2026-11-10T18:06:55.740Z"
+          },
+          {
+            "name": "Quant",
+            "role": "forecaster",
+            "provider": "near-ai",
+            "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+            "attestationVerified": false,
+            "inputHash": "cdad638f7ee46d0cf560c6ba9f80403f1169535480d0bf62719b4a9c84f5b794",
+            "outputHash": "f2c236f424904559734843ccd12e642d353d13b4664f79d28c1219a16db6fe90",
+            "decision": {
+              "forecasts": [
+                {
+                  "proposalId": 0,
+                  "expectedReturnBps": 6,
+                  "confidenceBps": 2000,
+                  "rationale": "Hold preserves current 44.3% exposure. Low trend momentum suggests minimal drift.",
+                  "risks": [
+                    "Missed upside if asset rallies."
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 1,
+                  "expectedReturnBps": -1170,
+                  "confidenceBps": 3000,
+                  "rationale": "Drastic cut to 5% allocation incurs high fees. Weak trend makes this loss-inevitable.",
+                  "risks": [
+                    "High slippage on large sell order."
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 2,
+                  "expectedReturnBps": 6,
+                  "confidenceBps": 2000,
+                  "rationale": "Same allocation as hold. No fee or turnover. Identical expected return to proposal 0.",
+                  "risks": [
+                    "Redundant strategy with no benefit."
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 3,
+                  "expectedReturnBps": -800,
+                  "confidenceBps": 2500,
+                  "rationale": "Increase to 75% incurs fees. Current weak trend does not justify higher exposure cost.",
+                  "risks": [
+                    "Asset pullback increases loss."
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 4,
+                  "expectedReturnBps": -1400,
+                  "confidenceBps": 2500,
+                  "rationale": "Aggressive 95% allocation with high fees. Weak trend makes fee drag dominant.",
+                  "risks": [
+                    "Maximum drawdown risk if asset drops."
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                }
+              ]
+            },
+            "usage": {
+              "inputTokens": 1383,
+              "outputTokens": 608
+            },
+            "timestamp": "2026-11-10T18:07:03.074Z"
+          },
+          {
+            "name": "Guardian",
+            "role": "forecaster",
+            "provider": "near-ai",
+            "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+            "attestationVerified": false,
+            "inputHash": "5059db30b3177156744eb6dfd62a9adb429ee0cc435d61f8535ddeae9ebcf255",
+            "outputHash": "72d29024e41889e82fca45690c7fe2bac2b7793ef98a3843840a5be561085c82",
+            "decision": {
+              "forecasts": [
+                {
+                  "proposalId": 0,
+                  "expectedReturnBps": 61,
+                  "confidenceBps": 2000,
+                  "rationale": "Hold preserves current 44.3% exposure to recent uptrend.",
+                  "risks": [
+                    "Market volatility reversal"
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 1,
+                  "expectedReturnBps": -1179,
+                  "confidenceBps": 1000,
+                  "rationale": "High fee on large rebalance to 5% asset exposure.",
+                  "risks": [
+                    "Fee exceeds potential alpha"
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 2,
+                  "expectedReturnBps": 61,
+                  "confidenceBps": 2000,
+                  "rationale": "Identical to Hold, zero cost, same market exposure.",
+                  "risks": [
+                    "Redundant strategy"
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 3,
+                  "expectedReturnBps": -860,
+                  "confidenceBps": 1000,
+                  "rationale": "Fee likely outweighs marginal gain from 75% exposure.",
+                  "risks": [
+                    "Slippage on large swap"
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 4,
+                  "expectedReturnBps": -1460,
+                  "confidenceBps": 1000,
+                  "rationale": "Highest fee on 95% exposure, high downside risk.",
+                  "risks": [
+                    "Depeg and slippage"
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                }
+              ]
+            },
+            "usage": {
+              "inputTokens": 1380,
+              "outputTokens": 568
+            },
+            "timestamp": "2026-11-10T18:07:08.412Z"
+          },
+          {
+            "name": "FeeAnalyst",
+            "role": "forecaster",
+            "provider": "near-ai",
+            "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+            "attestationVerified": false,
+            "inputHash": "3bd10d689a9a44dbf4a624381b74401bbdba3ad4a602fdf78c070d4fb759289e",
+            "outputHash": "c53d55dc6b9c1a72c3d34fbfc41c5b25c1968401721fe674af20781da5ca4085",
+            "decision": {
+              "forecasts": [
+                {
+                  "proposalId": 0,
+                  "expectedReturnBps": 0,
+                  "confidenceBps": 100,
+                  "rationale": "Hold avoids fees. No edge to trade.",
+                  "risks": [
+                    "Opportunity cost if trend continues"
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 1,
+                  "expectedReturnBps": -12,
+                  "confidenceBps": 50,
+                  "rationale": "High turnover fee exceeds likely 180s move.",
+                  "risks": [
+                    "Slippage increases cost"
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 2,
+                  "expectedReturnBps": 0,
+                  "confidenceBps": 100,
+                  "rationale": "Same allocation as hold, no action.",
+                  "risks": [
+                    "Redundant proposal"
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 3,
+                  "expectedReturnBps": -9,
+                  "confidenceBps": 50,
+                  "rationale": "Fee likely exceeds 180s alpha.",
+                  "risks": [
+                    "Execution cost > return"
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 4,
+                  "expectedReturnBps": -15,
+                  "confidenceBps": 50,
+                  "rationale": "Highest fee, low probability of covering cost.",
+                  "risks": [
+                    "High slippage risk"
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                }
+              ]
+            },
+            "usage": {
+              "inputTokens": 1386,
+              "outputTokens": 473
+            },
+            "timestamp": "2026-11-10T18:07:13.308Z"
+          },
+          {
+            "name": "StressAnalyst",
+            "role": "forecaster",
+            "provider": "near-ai",
+            "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+            "attestationVerified": false,
+            "inputHash": "e323d00f28b2755c138ce2a8983aca1f486138701c9bf6e0cb40d01e9be9596d",
+            "outputHash": "24ad4da8b7e218d20675a970ff01d62cf454d0a492713951db53ac0fb378f12d",
+            "decision": {
+              "forecasts": [
+                {
+                  "proposalId": 0,
+                  "expectedReturnBps": 5,
+                  "confidenceBps": 2000,
+                  "rationale": "Hold preserves capital. Minimal exposure to asset volatility over 180s horizon.",
+                  "risks": [
+                    "Missed upside if asset rallies."
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 1,
+                  "expectedReturnBps": -1200,
+                  "confidenceBps": 3000,
+                  "rationale": "High turnover fee (11.79 bps) outweighs likely small price movement. Heavy rebalance into underweight asset.",
+                  "risks": [
+                    "Slippage on large swap."
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 2,
+                  "expectedReturnBps": 5,
+                  "confidenceBps": 2000,
+                  "rationale": "Identical to Hold. No fee, no exposure change. Safe baseline.",
+                  "risks": [
+                    "Opportunity cost."
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 3,
+                  "expectedReturnBps": 45,
+                  "confidenceBps": 2500,
+                  "rationale": "Increases asset exposure to 75%. Benefits from recent uptrend momentum. Fee is manageable.",
+                  "risks": [
+                    "Reversal of recent 61bps gain."
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                },
+                {
+                  "proposalId": 4,
+                  "expectedReturnBps": 80,
+                  "confidenceBps": 2000,
+                  "rationale": "Max exposure (95%). Highest potential gain if trend continues. High fee and slippage risk.",
+                  "risks": [
+                    "Large drawdown if asset drops."
+                  ],
+                  "evidenceIds": [
+                    "market-b6bca8b5c69f100a"
+                  ]
+                }
+              ]
+            },
+            "usage": {
+              "inputTokens": 1383,
+              "outputTokens": 604
+            },
+            "timestamp": "2026-11-10T18:07:19.257Z"
+          }
+        ],
+        "provider": {
+          "mode": "near-ai",
+          "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+          "attestationVerified": false
+        },
+        "attestationVerified": false
+      }
+    },
+    {
+      "stage": "actors",
+      "actors": {
+        "owner": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+        "Conservative": "0x5613C60B04Fa16363C3a388AA4545073fb440345",
+        "Balanced": "0xcBF919ed9A28Da19786d97e1282C92B186500Cb8",
+        "Momentum": "0x8B6aF0B1738b941c0C7dd4deeC6fabEe3447888F",
+        "HighBeta": "0x1Ba3C5bf69b1Dd2077d7550Ee4f479bB35B5EA0a",
+        "Quant": "0x954362D2D831fC9430122d95F79c2eE3841E975D",
+        "Guardian": "0xc410cE4092eB91E89792F5AB731D64d544932B47",
+        "FeeAnalyst": "0x50ef16734f1443c97c37e29F31F8AA0aa045bf51",
+        "StressAnalyst": "0x949A277347a18c984c13D5228e0acE60cD2D99E6"
+      }
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:oracle:open",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x4c92a21c56b5fcb453ec7c5ffd0117768dca5e46",
+      "hash": "0xeb691aae4d78cb4285d1661df9ef903601070a4d695981a46c9e9601ed4d8a28",
+      "nonce": 124,
+      "gas": "704911",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0x1e04802d49fd172e3b6da9b7c8fe1f633f514904d051fdfba6513ebb6455b805"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:oracle:open",
+      "actor": "owner",
+      "hash": "0xeb691aae4d78cb4285d1661df9ef903601070a4d695981a46c9e9601ed4d8a28",
+      "blockNumber": "277102104",
+      "gasUsed": "422947",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "oracle",
+      "label": "round4:oracle:open",
+      "values": [
+        "999787500000000000",
+        "2027450000000000000000",
+        "1794334060"
+      ],
+      "proofHash": "0x78a822317f0e4bb94e96220d2cbf2e451aa555ba060690e686878db7ccf7e478",
+      "timestampsMs": [
+        "1794334060122",
+        "1794334060122"
+      ]
+    },
+    {
+      "stage": "schedule",
+      "roundId": "4",
+      "tradingEnd": "1794334433",
+      "evaluationEnd": "1794334613",
+      "executionDeadline": "1794334533"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:authorize",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x781430393ec48f5c2af78be63ae273875b180ad1",
+      "hash": "0x065e50cec161083c37a1fbe6f0f6e7e0eaa344bd6fddca84f18fdd1197c136a4",
+      "nonce": 125,
+      "gas": "369987",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0x7da5db7c15211fec391f793cee4ee75d1a9c764044fce6f93b02b4a6650d5deb"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:authorize",
+      "actor": "owner",
+      "hash": "0x065e50cec161083c37a1fbe6f0f6e7e0eaa344bd6fddca84f18fdd1197c136a4",
+      "blockNumber": "277102118",
+      "gasUsed": "221993",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:open",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x825b31dbc1af25b230d31caf5210c2b5a8fe22af",
+      "hash": "0xaac94cabefe780c94d07a8b1326df246defc520a3bb72db6ea90a5d55033eb9c",
+      "nonce": 126,
+      "gas": "2956342",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0x6e94af819dfc41577091c44b081bc4af5d4175ebf8359a5c086bf59721b96aa8"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:open",
+      "actor": "owner",
+      "hash": "0xaac94cabefe780c94d07a8b1326df246defc520a3bb72db6ea90a5d55033eb9c",
+      "blockNumber": "277102130",
+      "gasUsed": "1773806",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:propose:Conservative",
+      "actor": "Conservative",
+      "from": "0x5613C60B04Fa16363C3a388AA4545073fb440345",
+      "to": "0x825b31dbc1af25b230d31caf5210c2b5a8fe22af",
+      "hash": "0x6bce0e156deeca26c7bdd26fb947b1db72ea673b7ea0d99d5d725e6826305f10",
+      "nonce": 6,
+      "gas": "3054702",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0x27d8f7acc53b9ad61064df4d1c1baa658d1e05a2004fc73aac8f1b1b84c08864"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:propose:Conservative",
+      "actor": "Conservative",
+      "hash": "0x6bce0e156deeca26c7bdd26fb947b1db72ea673b7ea0d99d5d725e6826305f10",
+      "blockNumber": "277102142",
+      "gasUsed": "1832822",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:propose:Balanced",
+      "actor": "Balanced",
+      "from": "0xcBF919ed9A28Da19786d97e1282C92B186500Cb8",
+      "to": "0x825b31dbc1af25b230d31caf5210c2b5a8fe22af",
+      "hash": "0x54f19b04dbb8c81b6c6ebab09c05b2fe1320e9c8f0ae7663f6d7ef5f05e98317",
+      "nonce": 4,
+      "gas": "2988071",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0xf9ad4a1a4cbb58329bf7b1b78577557d85f1c096078496962911d86c443d9be6"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:propose:Balanced",
+      "actor": "Balanced",
+      "hash": "0x54f19b04dbb8c81b6c6ebab09c05b2fe1320e9c8f0ae7663f6d7ef5f05e98317",
+      "blockNumber": "277102158",
+      "gasUsed": "1792843",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:propose:Momentum",
+      "actor": "Momentum",
+      "from": "0x8B6aF0B1738b941c0C7dd4deeC6fabEe3447888F",
+      "to": "0x825b31dbc1af25b230d31caf5210c2b5a8fe22af",
+      "hash": "0xbb825c15c090b09333f9eac4ead8b116528fccfb35a4a0256c988bcb3d7d1c6a",
+      "nonce": 6,
+      "gas": "2987896",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0xe3a4ae769dc302fe9cea16e871400517580683070f0079971366837c106b3b2e"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:propose:Momentum",
+      "actor": "Momentum",
+      "hash": "0xbb825c15c090b09333f9eac4ead8b116528fccfb35a4a0256c988bcb3d7d1c6a",
+      "blockNumber": "277102170",
+      "gasUsed": "1792738",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "propose:HighBeta",
+      "status": "failed",
+      "errorName": "EstimateGasExecutionError",
+      "reason": "HTTP request failed."
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:collapse",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0x825b31dbc1af25b230d31caf5210c2b5a8fe22af",
+      "hash": "0xca4103d6ce0a9021cdb6d6a3e69643af29334bfba901e9ecac9200123f2f1064",
+      "nonce": 127,
+      "gas": "1974660",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0x4c63f6ce30359fc79366c3360c57298c08b810952eb6c124f75ef8ff2812f58f"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:collapse",
+      "actor": "owner",
+      "hash": "0xca4103d6ce0a9021cdb6d6a3e69643af29334bfba901e9ecac9200123f2f1064",
+      "blockNumber": "277102733",
+      "gasUsed": "1184796",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "prepared",
+      "label": "round4:abortExpired",
+      "actor": "owner",
+      "from": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "to": "0xae4645fcfbd5dc04cd92cc15c46cabc08ee548bb",
+      "hash": "0xe5e9352679851913727c87173f6812089b5cfe8dafea8f126db977e726736fc9",
+      "nonce": 128,
+      "gas": "148192",
+      "gasPrice": "70000000",
+      "value": "0",
+      "calldataHash": "0x842a332541c47db5446e4f774c1a7d5c971454018050626a144d2fbb6af9bd0c"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round4:abortExpired",
+      "actor": "owner",
+      "hash": "0xe5e9352679851913727c87173f6812089b5cfe8dafea8f126db977e726736fc9",
+      "blockNumber": "277102902",
+      "gasUsed": "88916",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "recovered",
+      "roundId": "4",
+      "status": "cancelled",
+      "round": {
+        "tradingStart": "1794334087",
+        "tradingEnd": "1794334433",
+        "evaluationEnd": "1794334613",
+        "twapWindow": "90",
+        "rMin": "950000000000000000",
+        "rMax": "1050000000000000000",
+        "status": 4,
+        "proposalCount": 4,
+        "winnerId": 0,
+        "seedReleased": true,
+        "realisedReturn": "0",
+        "pi": "0",
+        "totalDeposits": "0",
+        "depositsOutstanding": "0",
+        "escrow": "5000000",
+        "totalPaid": "0"
+      },
+      "reserve": "100300427",
+      "treasuryBefore": [
+        "1094400091",
+        "428886426777995925"
+      ],
+      "treasuryAfter": [
+        "1094400091",
+        "428886426777995925"
+      ],
+      "reason": "Interrupted operator round; no investment execution claimed."
+    }
+  ],
+  "completed": false,
+  "modelUsage": {
+    "inputTokens": 9663,
+    "outputTokens": 2972,
+    "estimatedUsd": 0.00491191
+  },
+  "recovery": {
+    "stage": "recovered",
+    "roundId": "4",
+    "status": "cancelled",
+    "round": {
+      "tradingStart": "1794334087",
+      "tradingEnd": "1794334433",
+      "evaluationEnd": "1794334613",
+      "twapWindow": "90",
+      "rMin": "950000000000000000",
+      "rMax": "1050000000000000000",
+      "status": 4,
+      "proposalCount": 4,
+      "winnerId": 0,
+      "seedReleased": true,
+      "realisedReturn": "0",
+      "pi": "0",
+      "totalDeposits": "0",
+      "depositsOutstanding": "0",
+      "escrow": "5000000",
+      "totalPaid": "0"
+    },
+    "reserve": "100300427",
+    "treasuryBefore": [
+      "1094400091",
+      "428886426777995925"
+    ],
+    "treasuryAfter": [
+      "1094400091",
+      "428886426777995925"
+    ],
+    "reason": "Interrupted operator round; no investment execution claimed."
+  }
+}

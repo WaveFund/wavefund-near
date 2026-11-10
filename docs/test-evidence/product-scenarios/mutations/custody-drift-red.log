@@ -1,0 +1,62 @@
+TAP version 13
+# Subtest: deliberate profile has four distinct mandates, four forecasters and explicit fixture provenance
+ok 1 - deliberate profile has four distinct mandates, four forecasters and explicit fixture provenance
+  ---
+  duration_ms: 3.677563
+  type: 'test'
+  ...
+# Subtest: forecasters receive anonymous allocations and correct zero Hold fee
+ok 2 - forecasters receive anonymous allocations and correct zero Hold fee
+  ---
+  duration_ms: 0.519426
+  type: 'test'
+  ...
+# Subtest: live profile preserves decisions and separate forecaster inputs without fixture substitution
+ok 3 - live profile preserves decisions and separate forecaster inputs without fixture substitution
+  ---
+  duration_ms: 0.812764
+  type: 'test'
+  ...
+# Subtest: wrong mandate output halts before forecasters and never rewrites or regenerates it
+ok 4 - wrong mandate output halts before forecasters and never rewrites or regenerates it
+  ---
+  duration_ms: 0.563552
+  type: 'test'
+  ...
+# Subtest: duplicate, altered and secret-bearing plans are rejected
+ok 5 - duplicate, altered and secret-bearing plans are rejected
+  ---
+  duration_ms: 1.415567
+  type: 'test'
+  ...
+# Subtest: mark-price weight drift does not masquerade as a custody change
+not ok 6 - mark-price weight drift does not masquerade as a custody change
+  ---
+  duration_ms: 0.293547
+  type: 'test'
+  location: '/tmp/mut-runtime/test/strategy-team.test.mjs:52:1'
+  failureType: 'testCodeFailure'
+  error: 'Expanded treasury changed'
+  code: 'ERR_TEST_FAILURE'
+  stack: |-
+    check (file:///tmp/mut-runtime/agents/strategy-team.mjs:20:63)
+    validateStrategyPlan (file:///tmp/mut-runtime/agents/strategy-team.mjs:82:3)
+    TestContext.<anonymous> (file:///tmp/mut-runtime/test/strategy-team.test.mjs:55:16)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: explicit expanded budget admits eight requests and rejects the ninth
+ok 7 - explicit expanded budget admits eight requests and rejects the ninth
+  ---
+  duration_ms: 21.447997
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 6
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 71.784622

@@ -1,0 +1,21 @@
+<jemalloc>: MADV_DONTNEED does not work (memset will be used instead)
+<jemalloc>: (This is the expected behaviour if you are running under QEMU)
+No files changed, compilation skipped
+
+Ran 13 tests for test/ProductScenarios.t.sol:ProductScenariosTest
+[PASS] testDisableAfterExecutionDoesNotBlockSettlement() (gas: 4207137)
+[PASS] testDisabledUnexecutedRoundCancelsAtPar() (gas: 2235108)
+[PASS] testFullRoundSeparatesInvestmentCapitalAndForecastPayouts() (gas: 4316958)
+[PASS] testOwnerWithdrawalAndDonationDoNotRewriteStrategyReturn() (gas: 4240684)
+[PASS] testProductBothSidesInteriorLossAndSolvency() (gas: 10412910)
+[PASS] testProductDepositEntitlementIsPerWorldButSpendingDoesNotResetClaimCap() (gas: 10701776)
+[PASS] testProductFailedInvestmentSlippageIsAtomicThenCancelsAtPar() (gas: 9980978)
+[PASS] testProductFourStrategiesBothSidesInteriorGainAndSolvency() (gas: 10412844)
+[PASS] testProductPreDeadlineSettlementObservationFailsWithoutPoisoningRecovery() (gas: 10423902)
+[PASS] testProductRealEngineMixedPortfolioSellsAssetToSelectedQuarterWeight() (gas: 10435951)
+[PASS] testProductReturnAboveUpperBoundPaysLongInFull() (gas: 10412646)
+[PASS] testProductReturnBelowLowerBoundPaysShortInFull() (gas: 10393002)
+[PASS] testSafeRejectsKeeperChangingAuthorizedPayoutBounds() (gas: 345964)
+Suite result: ok. 13 passed; 0 failed; 0 skipped; finished in 266.98ms (361.99ms CPU time)
+
+Ran 1 test suite in 303.92ms (266.98ms CPU time): 13 tests passed, 0 failed, 0 skipped (13 total tests)

@@ -1,0 +1,15 @@
+<jemalloc>: MADV_DONTNEED does not work (memset will be used instead)
+<jemalloc>: (This is the expected behaviour if you are running under QEMU)
+No files changed, compilation skipped
+
+Ran 7 tests for test/WaveHook.Gating.t.sol:WaveHookGatingTest
+[PASS] test_BeforeTradingStart_NothingAllowed_ExactlyStartAllowed() (gas: 671381)
+[PASS] test_EndBoundary_ClosedForTradingOpenForRemoval() (gas: 760502)
+[PASS] test_HookLevelOrdering_LongIsCurrency0() (gas: 738773)
+[PASS] test_HookLevelOrdering_LongIsCurrency1() (gas: 737284)
+[PASS] test_LiquidityDeltaSignsAndPositionTicksAreValidated() (gas: 625337)
+[PASS] test_SwapStoppingExactlyAtTickBoundIsAccepted() (gas: 982608)
+[PASS] test_SwapThroughTickBoundaryRevertsInAfterSwap() (gas: 1354390)
+Suite result: ok. 7 passed; 0 failed; 0 skipped; finished in 122.97ms (92.49ms CPU time)
+
+Ran 1 test suite in 158.72ms (122.97ms CPU time): 7 tests passed, 0 failed, 0 skipped (7 total tests)

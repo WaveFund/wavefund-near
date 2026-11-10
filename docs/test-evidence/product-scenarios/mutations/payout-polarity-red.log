@@ -1,0 +1,34 @@
+<jemalloc>: MADV_DONTNEED does not work (memset will be used instead)
+<jemalloc>: (This is the expected behaviour if you are running under QEMU)
+Compiling 17 files with Solc 0.8.26
+Compiling 134 files with Solc 0.8.26
+Solc 0.8.26 finished in 2.12s
+Solc 0.8.26 finished in 165.81s
+Compiler run successful!
+
+Ran 8 tests for test/ProductScenarios.t.sol:ProductScenariosTest
+[FAIL: assertion failed: 10042033 != 8176479] testProductBothSidesInteriorLossAndSolvency() (gas: 11611208)
+[FAIL: assertion failed: 8176479 != 10042033] testProductDepositEntitlementIsPerWorldButSpendingDoesNotResetClaimCap() (gas: 11911755)
+[PASS] testProductFailedInvestmentSlippageIsAtomicThenCancelsAtPar() (gas: 9980978)
+[FAIL: assertion failed: 8176479 != 10042033] testProductFourStrategiesBothSidesInteriorGainAndSolvency() (gas: 11611142)
+[FAIL: assertion failed: 8176479 != 10042033] testProductPreDeadlineSettlementObservationFailsWithoutPoisoningRecovery() (gas: 11622677)
+[FAIL: assertion failed: 8487405 != 9731108] testProductRealEngineMixedPortfolioSellsAssetToSelectedQuarterWeight() (gas: 11634251)
+[FAIL: assertion failed: 6000000 != 12218513] testProductReturnAboveUpperBoundPaysLongInFull() (gas: 11610944)
+[FAIL: assertion failed: 12218513 != 6000000] testProductReturnBelowLowerBoundPaysShortInFull() (gas: 11591300)
+Suite result: FAILED. 1 passed; 7 failed; 0 skipped; finished in 228.72ms (318.03ms CPU time)
+
+Ran 1 test suite in 267.24ms (228.72ms CPU time): 1 tests passed, 7 failed, 0 skipped (8 total tests)
+
+Failing tests:
+Encountered 7 failing tests in test/ProductScenarios.t.sol:ProductScenariosTest
+[FAIL: assertion failed: 10042033 != 8176479] testProductBothSidesInteriorLossAndSolvency() (gas: 11611208)
+[FAIL: assertion failed: 8176479 != 10042033] testProductDepositEntitlementIsPerWorldButSpendingDoesNotResetClaimCap() (gas: 11911755)
+[FAIL: assertion failed: 8176479 != 10042033] testProductFourStrategiesBothSidesInteriorGainAndSolvency() (gas: 11611142)
+[FAIL: assertion failed: 8176479 != 10042033] testProductPreDeadlineSettlementObservationFailsWithoutPoisoningRecovery() (gas: 11622677)
+[FAIL: assertion failed: 8487405 != 9731108] testProductRealEngineMixedPortfolioSellsAssetToSelectedQuarterWeight() (gas: 11634251)
+[FAIL: assertion failed: 6000000 != 12218513] testProductReturnAboveUpperBoundPaysLongInFull() (gas: 11610944)
+[FAIL: assertion failed: 12218513 != 6000000] testProductReturnBelowLowerBoundPaysShortInFull() (gas: 11591300)
+
+Encountered a total of 7 failing tests, 1 tests succeeded
+
+Tip: Run `forge test --rerun` to retry only the 7 failed tests

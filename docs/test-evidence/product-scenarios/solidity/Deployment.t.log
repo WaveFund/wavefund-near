@@ -1,0 +1,13 @@
+<jemalloc>: MADV_DONTNEED does not work (memset will be used instead)
+<jemalloc>: (This is the expected behaviour if you are running under QEMU)
+No files changed, compilation skipped
+
+Ran 5 tests for test/Deployment.t.sol:DeploymentTest
+[PASS] testDeployWiresActualHookAndTransfersAdministration() (gas: 41860167)
+[PASS] testExistingPoolManagerPath() (gas: 132613472)
+[PASS] testInvalidOracleBlocksDeployment() (gas: 37252)
+[PASS] testLocalDeploymentEntryRejectsPublicNetwork() (gas: 20008)
+[PASS] testMissingPoolManagerRejected() (gas: 32838)
+Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 4.04s (5.08s CPU time)
+
+Ran 1 test suite in 4.08s (4.04s CPU time): 5 tests passed, 0 failed, 0 skipped (5 total tests)

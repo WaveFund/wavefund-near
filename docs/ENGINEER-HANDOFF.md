@@ -1,5 +1,9 @@
 # Engineer handoff — 10 November 2026
 
+**Publication boundary:** expanded round-runner/host-bridge edits remain local pending full live-agent validation; use the published planner/tests/verifier, not the experimental CLI workflow.
+
+**Latest testing:** [product test report](PRODUCT-TESTING.md): scripted public round 3 completed four forecasts, LONG/SHORT, an actual Safe asset sale and independently verified payouts; 432 Solidity / 60 Node / 8 Python passed. The separate eight-call model experiment was interrupted by RPC failure before forecasting; no live model-directed trade is claimed.
+
 **Agent milestone:** [real NEAR AI round 2](AURORA-AGENTS.md) completed with four distinct agent wallets and four model calls (~$0.00202 estimated). Both forecasters abstained; Hold settled and both deposits returned. Frontend/read-only developer-owned files were not edited.
 
 **Latest:** [genuine Aurora Safe round completed](AURORA-SAFE-ROUND.md), with actual Trisolaris execution, authenticated Supra observations and forecaster redemption. Use `deployments/aurora-testnet.json` for that fresh stack. The earlier forecasting-only mock-controller proof remains separate. The completion below supersedes the corresponding pending gates in this historical handoff; The real-agent abstention path is now verified; a live model-directed forecasting trade remains a separate gate.

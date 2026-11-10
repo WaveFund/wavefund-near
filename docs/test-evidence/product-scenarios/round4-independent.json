@@ -1,0 +1,14 @@
+{
+  "chainId": 1313161555,
+  "roundId": "4",
+  "status": "cancelled",
+  "cancellationHash": "0xe5e9352679851913727c87173f6812089b5cfe8dafea8f126db977e726736fc9",
+  "cancellationBlock": "277102902",
+  "quantities": [
+    "1094400091",
+    "428886426777995925"
+  ],
+  "reserve": "100300427",
+  "noInvestmentExecution": true,
+  "passed": true
+}

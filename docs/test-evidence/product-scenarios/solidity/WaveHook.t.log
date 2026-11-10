@@ -1,0 +1,25 @@
+<jemalloc>: MADV_DONTNEED does not work (memset will be used instead)
+<jemalloc>: (This is the expected behaviour if you are running under QEMU)
+No files changed, compilation skipped
+
+Ran 17 tests for test/WaveHook.t.sol:WaveHookTest
+[PASS] test_ConstructorRejectsZeroAdapter() (gas: 22673)
+[PASS] test_ConstructorRejectsZeroPoolManager() (gas: 22932)
+[PASS] test_DirectHookCallbacksByNonPoolManagerRevert() (gas: 34787)
+[PASS] test_HookConstants() (gas: 20092)
+[PASS] test_HookRejectsAddressWithWrongFlags() (gas: 24577)
+[PASS] test_OffchainMinerProducesValidHookAddress() (gas: 57886805)
+[PASS] test_RegisterPool_DuplicateReverts() (gas: 172656)
+[PASS] test_RegisterPool_OnlyAdapter() (gas: 29051)
+[PASS] test_RegisterPool_RejectsBadKeyAndLongToken() (gas: 78776)
+[PASS] test_RegisterPool_RejectsBadWindows() (gas: 779436)
+[PASS] test_RegisterPool_RejectsOutOfBoundProbabilityAndAcceptsEdges() (gas: 207771)
+[PASS] test_RegisterPool_StoresMetadataAndEmits() (gas: 182471)
+[PASS] test_RegisteredButUninitialisedPoolReadRevertsPriceOutOfRange() (gas: 170980)
+[PASS] test_SwapAndLiquidityBySomeoneOtherThanAdapterRevert() (gas: 1453841)
+[PASS] test_UnregisteredPoolViewsRevert() (gas: 27299)
+[PASS] test_UnregisteredPoolWithHookAddressIsRejected_AdapterSender() (gas: 102798)
+[PASS] test_UnregisteredPoolWithHookAddressIsRejected_NonAdapterSender() (gas: 79737)
+Suite result: ok. 17 passed; 0 failed; 0 skipped; finished in 2.44s (2.40s CPU time)
+
+Ran 1 test suite in 2.47s (2.44s CPU time): 17 tests passed, 0 failed, 0 skipped (17 total tests)

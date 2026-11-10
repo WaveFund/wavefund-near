@@ -4,7 +4,7 @@
 
 Solidity implementation targeting Aurora testnet (chain 1313161555). A [genuine public Safe round](docs/AURORA-SAFE-ROUND.md) completed v4 forecasting, an actual Trisolaris swap, Supra-authenticated settlement and forecaster redemption. This is a single-operator rehearsal with freely minted test assets, not an audited or production-approved deployment.
 
-Supra supplies authenticated public-testnet observations without a gateway key. [RedStone access](docs/REDSTONE-PROOF.md) remains an alternative, not a blocker for the completed round. Current runtime checks: **53 Node tests and 6 Python safety tests passed**. Solidity is unchanged from the **419 passing tests** in the preceding milestone.
+Supra supplies authenticated public-testnet observations without a gateway key. [RedStone access](docs/REDSTONE-PROOF.md) remains an alternative, not a blocker for the completed round. Current verification: **432 Solidity executions, 60 Node tests and 8 Python safety tests passed**. See [deliberate product testing](docs/PRODUCT-TESTING.md) for scripted LONG/SHORT coverage, real-model limitations and recovery evidence.
 
 [Local full-stack demo](docs/LOCAL-DEMO.md): real local Safe/v4 transactions, a Node orchestration API and a Next.js dashboard. Run `npm run demo:local` after isolated dependency setup. Prices and agents are explicitly simulated.
 

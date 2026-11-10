@@ -1,0 +1,13 @@
+<jemalloc>: MADV_DONTNEED does not work (memset will be used instead)
+<jemalloc>: (This is the expected behaviour if you are running under QEMU)
+No files changed, compilation skipped
+
+Ran 5 tests for test/SafeEndToEnd.t.sol:SafeEndToEndTest
+[PASS] testDisableAfterExecutionDoesNotBlockSettlement() (gas: 4206934)
+[PASS] testDisabledUnexecutedRoundCancelsAtPar() (gas: 2235024)
+[PASS] testFullRoundSeparatesInvestmentCapitalAndForecastPayouts() (gas: 4316803)
+[PASS] testOwnerWithdrawalAndDonationDoNotRewriteStrategyReturn() (gas: 4240604)
+[PASS] testSafeRejectsKeeperChangingAuthorizedPayoutBounds() (gas: 345914)
+Suite result: ok. 5 passed; 0 failed; 0 skipped; finished in 107.29ms (76.41ms CPU time)
+
+Ran 1 test suite in 142.75ms (107.29ms CPU time): 5 tests passed, 0 failed, 0 skipped (5 total tests)

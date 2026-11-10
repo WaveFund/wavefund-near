@@ -1,5 +1,7 @@
 # Real NEAR AI agents on Aurora — 10 November 2026
 
+**Later experiment:** [expanded product testing](PRODUCT-TESTING.md) adds four proposer mandates and four forecasters, scripted public execution and a separately recorded eight-call model attempt. The round-2 account below remains historical evidence.
+
 Four real NEAR AI responses completed a public Aurora testnet round using four separate agent wallets. Both proposers recommended cash. Both forecasters reported confidence below the 50% trading gate and abstained. Hold won; the module recorded its unchanged holdings, the tracker settled normally using fresh Supra observations, and both forecasters redeemed their full deposits.
 
 **This proves the real-inference/abstention path.** It does not prove a live model-directed forecasting trade or a model-selected investment swap. The [preceding genuine round](AURORA-SAFE-ROUND.md) separately proves actual v4 trading and an actual Trisolaris investment fill. Do not combine those two experiments into a claim that a model caused that earlier swap.
