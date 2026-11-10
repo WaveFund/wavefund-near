@@ -28,7 +28,9 @@ export type DemoState = {
     rationale: string;
     proposer?: string;
   }>;
-  agents: Array<{ name: string; role: string; rationale: string; action?: string }>;
+  inference?: { mode: string; model: string | null; status: string; evidenceSource?: string; attestationVerified: boolean };
+  agentRecords?: Array<{ name: string; role: string; provider: string; model: string; inputHash: string; outputHash: string }>;
+  agents: Array<{ name: string; role: string; rationale: string; action?: string; risks?: string[]; evidenceIds?: string[]; forecasts?: Array<{ proposalId: number; expectedReturnBps: number; confidenceBps: number; rationale: string; risks: string[] }> }>;
   receipts: Receipt[];
   round?: {
     status?: string | number;

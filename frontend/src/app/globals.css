@@ -10,3 +10,5 @@
 
 /* Keep the explanatory text legible on a full-size dashboard. */
 .hero-description{font-size:14px}.capital-card>p{font-size:12px}.rationale,.agent-row p{font-size:12px}.panel-empty{font-size:12px}.proposal-description{font-size:11px}table{font-size:12px}th{font-size:9px}.card-kicker{font-size:9px}.section-label{font-size:9px}.outcome-detail{font-size:12px}.forecaster-result{font-size:12px}
+
+.agent-evidence{margin-top:12px;font-size:11px;line-height:1.7;overflow-wrap:anywhere}.agent-evidence summary{cursor:pointer;color:var(--accent,#c0cf9d)}.agent-evidence>div{margin:12px 0}.agent-evidence small{opacity:.65}.agent-evidence code{font-size:10px}
