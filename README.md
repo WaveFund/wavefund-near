@@ -8,6 +8,8 @@ Current follow-up: [RedStone signature proof and remaining live-data gate](docs/
 
 [Agent layer and private key setup](docs/AGENT-LAYER.md): model proposals, independent forecasts, entry-quote and budget checks. Provider HTTP integration is tested with mocks; real inference is pending key configuration.
 
+[Manager console, research collector, receipt recovery and Aurora monitoring](docs/OPERATOR-WORKFLOWS.md). Local manager console: `http://127.0.0.1:3000/manager`. Public network monitoring is read-only and requires a real verified deployment manifest.
+
 ## Model
 
 Manager-owned Safe assets are independent of forecaster escrow. A manager authorizes exact round timing, payout bounds and averaging window. Forecasters trade conditional claims; the selected allocation executes through a CALL-only module. Proposal 0 means Hold actual quantities. Other proposals specify the investment asset weight in basis points. All eligible Safe capital is available, with no extra mandatory 50% cap.
@@ -75,3 +77,7 @@ Engine administration goes to the Safe. Token-factory and registry role administ
 ## Attribution
 
 Forecasting code and associated tests derive from https://github.com/advaitrane98/wavefund at commit 8629c21f2c7b93591afbf27c2a858a9008f9350e. Original MIT copyright is retained in LICENSE. New execution/oracle/integration code is identified in docs/BUILD-REPORT.md. Dependency commits/checksums are in docs/dependency-pins.json. Uniswap and RedStone dependencies contain their own per-file licenses; the root MIT license does not relicense them.
+
+## Hackathon baseline and new work
+
+This adapts an existing Wavefund project; reused forecasting contracts are baseline regardless of their import date. The upstream reference is the commit listed under Attribution. Local import checkpoint: `f8c0177`. New work includes the Aurora-targeted Safe module, valuation and oracle adapters, bounded model orchestration, operator workflows and dashboard. Inspect the local change set with `git diff f8c0177..HEAD -- src script test runtime frontend scripts`. Public deployment evidence is still pending; local and unsigned RPC proofs must not be presented as a completed Aurora transaction cycle.

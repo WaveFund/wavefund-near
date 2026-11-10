@@ -1,0 +1,10 @@
+{
+  "chainId": 1313161555,
+  "blockNumber": "277035137",
+  "timestamp": "1794294719",
+  "invalidOpcodeRejected": true,
+  "transientStorage": true,
+  "mcopy": true,
+  "transactionsSent": 0,
+  "note": "Unsigned ephemeral eth_call proof only; not a deployed Safe/v4 lifecycle."
+}

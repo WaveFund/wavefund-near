@@ -1,0 +1,133 @@
+TAP version 13
+# Subtest: research normalization preserves decimal precision and USDC deviations
+ok 1 - research normalization preserves decimal precision and USDC deviations
+  ---
+  duration_ms: 1.578159
+  type: 'test'
+  ...
+# Subtest: research rejects stale prices, wrong pairs, duplicate and malformed candles
+ok 2 - research rejects stale prices, wrong pairs, duplicate and malformed candles
+  ---
+  duration_ms: 0.39279
+  type: 'test'
+  ...
+# Subtest: unfinished candle data cannot leak a future close into research
+ok 3 - unfinished candle data cannot leak a future close into research
+  ---
+  duration_ms: 0.179916
+  type: 'test'
+  ...
+# Subtest: collector requests only the three fixed public sources without authorization
+ok 4 - collector requests only the three fixed public sources without authorization
+  ---
+  duration_ms: 12.59881
+  type: 'test'
+  ...
+# Subtest: research snapshots report missing and stale data instead of inventing live values
+ok 5 - research snapshots report missing and stale data instead of inventing live values
+  ---
+  duration_ms: 26.077781
+  type: 'test'
+  ...
+# Subtest: read-only RPC rejects signing, broadcasting and arbitrary endpoints
+not ok 6 - read-only RPC rejects signing, broadcasting and arbitrary endpoints
+  ---
+  duration_ms: 1.585451
+  type: 'test'
+  location: '/work/.run/operator-mutants/rpc-write-denial/runtime/test/operator.test.mjs:36:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /read-only/. Input:
+    
+    'Error: Must not call'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: 'Must not call'
+  stack: |-
+    fetchImpl (file:///work/.run/operator-mutants/rpc-write-denial/runtime/test/operator.test.mjs:37:84)
+    Object.request (file:///work/.run/operator-mutants/rpc-write-denial/runtime/operator/readonly-rpc.mjs:12:28)
+    TestContext.<anonymous> (file:///work/.run/operator-mutants/rpc-write-denial/runtime/test/operator.test.mjs:38:151)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  operator: 'rejects'
+  stack: |-
+    async TestContext.<anonymous> (file:///work/.run/operator-mutants/rpc-write-denial/runtime/test/operator.test.mjs:38:126)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: Aurora probe requires both positive opcodes and a rejecting negative control
+ok 7 - Aurora probe requires both positive opcodes and a rejecting negative control
+  ---
+  duration_ms: 2.189197
+  type: 'test'
+  ...
+# Subtest: receipt audit resolves a known hash by chain evidence without rewriting or retrying
+ok 8 - receipt audit resolves a known hash by chain evidence without rewriting or retrying
+  ---
+  duration_ms: 0.270749
+  type: 'test'
+  ...
+# Subtest: missing receipts, nonce mismatch and block mismatch require manual review
+ok 9 - missing receipts, nonce mismatch and block mismatch require manual review
+  ---
+  duration_ms: 0.43229
+  type: 'test'
+  ...
+# Subtest: generic transaction success never substitutes for Safe internal success
+ok 10 - generic transaction success never substitutes for Safe internal success
+  ---
+  duration_ms: 0.373498
+  type: 'test'
+  ...
+# Subtest: receipt audit bypasses cached block height
+ok 11 - receipt audit bypasses cached block height
+  ---
+  duration_ms: 0.180207
+  type: 'test'
+  ...
+# Subtest: manager validates bindings and does not expose arbitrary call parameters
+ok 12 - manager validates bindings and does not expose arbitrary call parameters
+  ---
+  duration_ms: 1.554409
+  type: 'test'
+  ...
+# Subtest: manager sponsor amounts cannot exceed Safe capital or unallocated seed
+ok 13 - manager sponsor amounts cannot exceed Safe capital or unallocated seed
+  ---
+  duration_ms: 6.984714
+  type: 'test'
+  ...
+# Subtest: pending or active rounds block sponsor changes and policy changes
+ok 14 - pending or active rounds block sponsor changes and policy changes
+  ---
+  duration_ms: 3.86573
+  type: 'test'
+  ...
+# Subtest: manager refuses stale oracle round authorization
+ok 15 - manager refuses stale oracle round authorization
+  ---
+  duration_ms: 0.432664
+  type: 'test'
+  ...
+# Subtest: Aurora manifests reject mainnet, missing and duplicate contracts and discard extra fields
+ok 16 - Aurora manifests reject mainnet, missing and duplicate contracts and discard extra fields
+  ---
+  duration_ms: 0.288165
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 15
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 235.595944

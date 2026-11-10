@@ -1,0 +1,26 @@
+[
+  {
+    "name": "safe-capital-budget",
+    "killed": true
+  },
+  {
+    "name": "pending-funding",
+    "killed": true
+  },
+  {
+    "name": "forecast-bindings",
+    "killed": true
+  },
+  {
+    "name": "rpc-write-denial",
+    "killed": true
+  },
+  {
+    "name": "receipt-nonce",
+    "killed": true
+  },
+  {
+    "name": "fresh-head",
+    "killed": true
+  }
+]

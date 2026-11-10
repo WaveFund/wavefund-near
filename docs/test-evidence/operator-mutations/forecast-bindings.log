@@ -1,0 +1,117 @@
+TAP version 13
+# Subtest: research normalization preserves decimal precision and USDC deviations
+ok 1 - research normalization preserves decimal precision and USDC deviations
+  ---
+  duration_ms: 1.376368
+  type: 'test'
+  ...
+# Subtest: research rejects stale prices, wrong pairs, duplicate and malformed candles
+ok 2 - research rejects stale prices, wrong pairs, duplicate and malformed candles
+  ---
+  duration_ms: 0.393623
+  type: 'test'
+  ...
+# Subtest: unfinished candle data cannot leak a future close into research
+ok 3 - unfinished candle data cannot leak a future close into research
+  ---
+  duration_ms: 0.144832
+  type: 'test'
+  ...
+# Subtest: collector requests only the three fixed public sources without authorization
+ok 4 - collector requests only the three fixed public sources without authorization
+  ---
+  duration_ms: 14.071718
+  type: 'test'
+  ...
+# Subtest: research snapshots report missing and stale data instead of inventing live values
+ok 5 - research snapshots report missing and stale data instead of inventing live values
+  ---
+  duration_ms: 15.09813
+  type: 'test'
+  ...
+# Subtest: read-only RPC rejects signing, broadcasting and arbitrary endpoints
+ok 6 - read-only RPC rejects signing, broadcasting and arbitrary endpoints
+  ---
+  duration_ms: 0.427831
+  type: 'test'
+  ...
+# Subtest: Aurora probe requires both positive opcodes and a rejecting negative control
+ok 7 - Aurora probe requires both positive opcodes and a rejecting negative control
+  ---
+  duration_ms: 2.14503
+  type: 'test'
+  ...
+# Subtest: receipt audit resolves a known hash by chain evidence without rewriting or retrying
+ok 8 - receipt audit resolves a known hash by chain evidence without rewriting or retrying
+  ---
+  duration_ms: 0.270207
+  type: 'test'
+  ...
+# Subtest: missing receipts, nonce mismatch and block mismatch require manual review
+ok 9 - missing receipts, nonce mismatch and block mismatch require manual review
+  ---
+  duration_ms: 0.439331
+  type: 'test'
+  ...
+# Subtest: generic transaction success never substitutes for Safe internal success
+ok 10 - generic transaction success never substitutes for Safe internal success
+  ---
+  duration_ms: 0.395748
+  type: 'test'
+  ...
+# Subtest: receipt audit bypasses cached block height
+ok 11 - receipt audit bypasses cached block height
+  ---
+  duration_ms: 0.19479
+  type: 'test'
+  ...
+# Subtest: manager validates bindings and does not expose arbitrary call parameters
+not ok 12 - manager validates bindings and does not expose arbitrary call parameters
+  ---
+  duration_ms: 1.560617
+  type: 'test'
+  location: '/work/.run/operator-mutants/forecast-bindings/runtime/test/operator.test.mjs:93:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected rejection.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'rejects'
+  stack: |-
+    async TestContext.<anonymous> (file:///work/.run/operator-mutants/forecast-bindings/runtime/test/operator.test.mjs:96:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: manager sponsor amounts cannot exceed Safe capital or unallocated seed
+ok 13 - manager sponsor amounts cannot exceed Safe capital or unallocated seed
+  ---
+  duration_ms: 4.8556
+  type: 'test'
+  ...
+# Subtest: pending or active rounds block sponsor changes and policy changes
+ok 14 - pending or active rounds block sponsor changes and policy changes
+  ---
+  duration_ms: 1.183452
+  type: 'test'
+  ...
+# Subtest: manager refuses stale oracle round authorization
+ok 15 - manager refuses stale oracle round authorization
+  ---
+  duration_ms: 4.099937
+  type: 'test'
+  ...
+# Subtest: Aurora manifests reject mainnet, missing and duplicate contracts and discard extra fields
+ok 16 - Aurora manifests reject mainnet, missing and duplicate contracts and discard extra fields
+  ---
+  duration_ms: 0.348081
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 15
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 236.794897

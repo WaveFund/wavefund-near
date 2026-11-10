@@ -1,0 +1,50 @@
+{
+  "date": "2026-11-10",
+  "scope": "operator-workflows",
+  "runtimeTests": {
+    "passed": 39,
+    "failed": 0,
+    "skipped": 0
+  },
+  "localIntegration": {
+    "checks": 9,
+    "passed": true,
+    "scope": "Actual Safe/v4 on Anvil; monitoring interface uses explicit local-chain data double, not public deployment"
+  },
+  "mutations": {
+    "killed": 6,
+    "survived": 0
+  },
+  "frontend": {
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "routes": [
+      "/",
+      "/manager"
+    ]
+  },
+  "liveReadonly": {
+    "research": "actual public Coinbase requests passed; not an authenticated settlement oracle",
+    "aurora": "actual testnet chain/opcode probes passed; unsigned eth_call only",
+    "signedPublicTransactions": 0
+  },
+  "previousContractBaseline": {
+    "passed": 400,
+    "rerunThisMilestone": false,
+    "reason": "No Solidity source changes"
+  },
+  "stillUnverified": [
+    "real model inference with user credential",
+    "fresh authenticated settlement data",
+    "deployed Wavefund stack on Aurora and complete signed testnet cycle",
+    "real investment venue fill",
+    "public hosting and independent production security review"
+  ],
+  "browser": {
+    "managerConsole": "verified against preserved local Safe",
+    "unsignedPolicyPreview": "verified",
+    "unsignedJSONDownload": "verified",
+    "walletSignatureRequested": false,
+    "screenshot": "operator-manager-review.jpg"
+  }
+}

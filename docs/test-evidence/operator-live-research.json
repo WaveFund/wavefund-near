@@ -1,0 +1,75 @@
+{
+  "source": "external-unverified",
+  "asOf": 1794294718,
+  "stableUsdX18": "1000000000000000000",
+  "history": [
+    {
+      "timestamp": 1794291300,
+      "assetUsdX18": "2115310000000000000000"
+    },
+    {
+      "timestamp": 1794291600,
+      "assetUsdX18": "2113930000000000000000"
+    },
+    {
+      "timestamp": 1794291900,
+      "assetUsdX18": "2117120000000000000000"
+    },
+    {
+      "timestamp": 1794292200,
+      "assetUsdX18": "2116410000000000000000"
+    },
+    {
+      "timestamp": 1794292500,
+      "assetUsdX18": "2115920000000000000000"
+    },
+    {
+      "timestamp": 1794292800,
+      "assetUsdX18": "2113560000000000000000"
+    },
+    {
+      "timestamp": 1794293100,
+      "assetUsdX18": "2115010000000000000000"
+    },
+    {
+      "timestamp": 1794293400,
+      "assetUsdX18": "2115340000000000000000"
+    },
+    {
+      "timestamp": 1794293700,
+      "assetUsdX18": "2115440000000000000000"
+    },
+    {
+      "timestamp": 1794294000,
+      "assetUsdX18": "2114870000000000000000"
+    },
+    {
+      "timestamp": 1794294300,
+      "assetUsdX18": "2117790000000000000000"
+    },
+    {
+      "timestamp": 1794294600,
+      "assetUsdX18": "2116480000000000000000"
+    },
+    {
+      "timestamp": 1794294718,
+      "assetUsdX18": "2113690000000000000000"
+    }
+  ],
+  "features": {
+    "lookbackReturnBps": -7,
+    "maxDrawdownBps": 19,
+    "largestStepBps": 15
+  },
+  "warning": "External research data is unverified and cannot settle the contract.",
+  "evidenceId": "market-26f677841614740a",
+  "provenance": {
+    "provider": "Coinbase public REST",
+    "retrievedAt": 1794294720,
+    "ethObservationAt": 1794294718,
+    "stableObservationAt": null,
+    "stableTimestampMeaning": "retrieval only; upstream spot response has no publication timestamp",
+    "settlementEligible": false,
+    "warning": "Single-provider research data, not a cryptographically verified settlement oracle."
+  }
+}
