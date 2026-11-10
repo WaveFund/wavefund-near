@@ -3,8 +3,14 @@ cache/
 .env
 .env.*
 !.env.example
-lib/
+/lib/
 test-results/
 broadcast/
 __pycache__/
 *.pyc
+node_modules/
+frontend/.next/
+frontend/next-env.d.ts
+frontend/*.tsbuildinfo
+.run/
+deployments/local.json

@@ -1,0 +1,26 @@
+{
+  "name": "wavefund-near",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.9"
+  },
+  "workspaces": [
+    "frontend"
+  ],
+  "scripts": {
+    "demo:local": "node scripts/local-demo.mjs",
+    "dev:api": "node runtime/server.mjs",
+    "test:runtime": "node --test runtime/test/*.test.mjs",
+    "frontend:build": "npm run build --workspace @wavefund/frontend",
+    "frontend:typecheck": "npm run typecheck --workspace @wavefund/frontend",
+    "demo:scenario": "node runtime/scenario.mjs"
+  },
+  "dependencies": {
+    "viem": "2.57.17"
+  },
+  "devDependencies": {
+    "playwright": "1.65.0"
+  }
+}
