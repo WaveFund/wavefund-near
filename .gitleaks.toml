@@ -11,3 +11,11 @@ condition = "AND"
 regexTarget = "line"
 paths = ['''(?:^|/)docs/test-evidence/operator-integration\.json$''']
 regexes = ['''^\s*"tokens":\s*"0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",?\s*$''']
+
+# Verified public Aurora testnet factory address, not a credential.
+[[allowlists]]
+description = "Public Aurora ProposalTokens factory in the dedicated test proof"
+condition = "AND"
+regexTarget = "line"
+paths = ['''(?:^|/)(?:deployments/aurora-forecast-proof|docs/test-evidence/aurora-forecast-bootstrap)\.json$''']
+regexes = ['''^\s*"ProposalTokens":\s*"0x67bb278f3ec57188e7b3e2700186cc7fe1667e23",?\s*$''']

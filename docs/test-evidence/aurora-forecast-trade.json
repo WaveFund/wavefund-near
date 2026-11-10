@@ -1,0 +1,186 @@
+[
+  {
+    "stage": "deploy-INSECURE-TEST-controller",
+    "status": "submitted",
+    "hash": "0xc6461b42f38a6d9819b902ab414993cf378e87360d363fe0c5de659bb8dc2d04"
+  },
+  {
+    "stage": "deploy-INSECURE-TEST-controller",
+    "status": "confirmed",
+    "hash": "0xc6461b42f38a6d9819b902ab414993cf378e87360d363fe0c5de659bb8dc2d04",
+    "contractAddress": "0x7a2c138d46969cac26f5946cbfb4edfc50da900d",
+    "block": "277057139",
+    "gasUsed": "1101110"
+  },
+  {
+    "stage": "test-controller",
+    "address": "0x7a2c138d46969cac26f5946cbfb4edfc50da900d",
+    "warning": "Unrestricted test double. No USDC collateral, real investor money or actual QuantumRound. Dedicated proof adapter only."
+  },
+  {
+    "stage": "controller-market",
+    "status": "submitted",
+    "hash": "0x0aee3b9090bd2f2c55fda532ffa76db0f13ab684366ebd08e03e9012f5e986dd"
+  },
+  {
+    "stage": "controller-market",
+    "status": "confirmed",
+    "hash": "0x0aee3b9090bd2f2c55fda532ffa76db0f13ab684366ebd08e03e9012f5e986dd",
+    "contractAddress": null,
+    "block": "277057149",
+    "gasUsed": "26930"
+  },
+  {
+    "stage": "credit-decimals",
+    "status": "submitted",
+    "hash": "0x4ec3490cb0a5bf0817943b87047cb0816d1ef3baa7e66f79e692a9ad1c38dd30"
+  },
+  {
+    "stage": "credit-decimals",
+    "status": "confirmed",
+    "hash": "0x4ec3490cb0a5bf0817943b87047cb0816d1ef3baa7e66f79e692a9ad1c38dd30",
+    "contractAddress": null,
+    "block": "277057158",
+    "gasUsed": "29778"
+  },
+  {
+    "stage": "controller-token-role",
+    "status": "submitted",
+    "hash": "0x3f1f81499050614238421b9f1ad807724a2c874428564e12a5edadb40e12dfe7"
+  },
+  {
+    "stage": "controller-token-role",
+    "status": "confirmed",
+    "hash": "0x3f1f81499050614238421b9f1ad807724a2c874428564e12a5edadb40e12dfe7",
+    "contractAddress": null,
+    "block": "277057169",
+    "gasUsed": "51166"
+  },
+  {
+    "stage": "bind-test-controller",
+    "status": "submitted",
+    "hash": "0x748fe0440e714a0163b9811176128470f416f1a216083667ff0a740ae5444246"
+  },
+  {
+    "stage": "bind-test-controller",
+    "status": "confirmed",
+    "hash": "0x748fe0440e714a0163b9811176128470f416f1a216083667ff0a740ae5444246",
+    "contractAddress": null,
+    "block": "277057178",
+    "gasUsed": "60615"
+  },
+  {
+    "stage": "short-test-window",
+    "status": "submitted",
+    "hash": "0xfda3fec2cb2d887f73e8041eed5e4177c5c6bb4154637580a081ac708244f9f0"
+  },
+  {
+    "stage": "short-test-window",
+    "status": "confirmed",
+    "hash": "0xfda3fec2cb2d887f73e8041eed5e4177c5c6bb4154637580a081ac708244f9f0",
+    "contractAddress": null,
+    "block": "277057190",
+    "gasUsed": "32049"
+  },
+  {
+    "stage": "open-test-market",
+    "status": "submitted",
+    "hash": "0xf6541aca060b09cc1889df5b154e167cacb420724a6fad487d58e3972218d819"
+  },
+  {
+    "stage": "open-test-market",
+    "status": "confirmed",
+    "hash": "0xf6541aca060b09cc1889df5b154e167cacb420724a6fad487d58e3972218d819",
+    "contractAddress": null,
+    "block": "277057198",
+    "gasUsed": "1384605"
+  },
+  {
+    "stage": "mint-TEST-credits",
+    "status": "submitted",
+    "hash": "0x51adf0fa030bb8c6de8845b9e99cafca30446562e3a36710121a21f23014fd03"
+  },
+  {
+    "stage": "mint-TEST-credits",
+    "status": "confirmed",
+    "hash": "0x51adf0fa030bb8c6de8845b9e99cafca30446562e3a36710121a21f23014fd03",
+    "contractAddress": null,
+    "block": "277057207",
+    "gasUsed": "85154"
+  },
+  {
+    "stage": "actual-v4-buy",
+    "status": "submitted",
+    "hash": "0x40c2fd86e6e5a6797494ba2c747bd2ef072fd5d78e1e3a254ae1560fd3cbe280"
+  },
+  {
+    "stage": "actual-v4-buy",
+    "status": "confirmed",
+    "hash": "0x40c2fd86e6e5a6797494ba2c747bd2ef072fd5d78e1e3a254ae1560fd3cbe280",
+    "contractAddress": null,
+    "block": "277057216",
+    "gasUsed": "323949"
+  },
+  {
+    "stage": "trade-verified",
+    "controller": "0x7a2c138d46969cac26f5946cbfb4edfc50da900d",
+    "start": "1794307684",
+    "end": "1794307804",
+    "probabilityBefore": "500000000000000000",
+    "probabilityAfter": "547376157918720426",
+    "longBalance": "1906610893880149131",
+    "quote": "1906610893880149131",
+    "minimum": "1887544784941347639",
+    "hash": "0x40c2fd86e6e5a6797494ba2c747bd2ef072fd5d78e1e3a254ae1560fd3cbe280"
+  },
+  {
+    "stage": "wait-for-real-testnet-time",
+    "secondsRemaining": "107"
+  },
+  {
+    "stage": "wait-for-real-testnet-time",
+    "secondsRemaining": "83"
+  },
+  {
+    "stage": "wait-for-real-testnet-time",
+    "secondsRemaining": "60"
+  },
+  {
+    "stage": "wait-for-real-testnet-time",
+    "secondsRemaining": "36"
+  },
+  {
+    "stage": "wait-for-real-testnet-time",
+    "status": "failed",
+    "errorName": "TimeoutError"
+  },
+  {
+    "stage": "close-real-TWAP",
+    "status": "submitted",
+    "hash": "0xcc7c4a3a13067e85984b05fe470638f7e16d649b8fb3df7fc790c5b1f79baed9"
+  },
+  {
+    "stage": "close-real-TWAP",
+    "status": "confirmed",
+    "hash": "0xcc7c4a3a13067e85984b05fe470638f7e16d649b8fb3df7fc790c5b1f79baed9",
+    "block": "277057473",
+    "gasUsed": "118155"
+  },
+  {
+    "stage": "finalize-test-pool",
+    "status": "submitted",
+    "hash": "0x748a72e9e1c3364995e7715cce6f99bae5c9db21fe79236556bc8e0b284b4c7a"
+  },
+  {
+    "stage": "finalize-test-pool",
+    "status": "confirmed",
+    "hash": "0x748a72e9e1c3364995e7715cce6f99bae5c9db21fe79236556bc8e0b284b4c7a",
+    "block": "277057483",
+    "gasUsed": "209270"
+  },
+  {
+    "stage": "forecast-runtime-proof-passed",
+    "finalTwap": "543033343442837720",
+    "scope": "Actual testnet v4 trade/TWAP/finalization with an unrestricted test controller; no financial settlement."
+  }
+]

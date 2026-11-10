@@ -1,12 +1,12 @@
 # Wavefund NEAR — trading Safe contracts v1
 
-Local Solidity implementation targeting Aurora testnet (chain 1313161555). This is a prototype, not an audited or production-approved deployment. No live deployment has been performed.
+Local Solidity implementation targeting Aurora testnet (chain 1313161555). This is a prototype, not an audited or production-approved deployment. A partial Aurora testnet forecasting proof is now deployed; it is not a complete Safe strategy deployment. See [testnet proof](docs/AURORA-TESTNET-PROOF.md).
 
 Current follow-up: [RedStone signature proof and remaining live-data gate](docs/REDSTONE-PROOF.md). The latest full suite has **400 passed / 0 failed / 0 skipped**.
 
 [Local full-stack demo](docs/LOCAL-DEMO.md): real local Safe/v4 transactions, a Node orchestration API and a Next.js dashboard. Run `npm run demo:local` after isolated dependency setup. Prices and agents are explicitly simulated.
 
-[Agent layer and private key setup](docs/AGENT-LAYER.md): model proposals, independent forecasts, entry-quote and budget checks. Provider HTTP integration is tested with mocks; real inference is pending key configuration.
+[Agent layer and private key setup](docs/AGENT-LAYER.md): model proposals, independent forecasts, entry-quote and budget checks. Provider HTTP integration is tested with mocks, and one approved real NEAR AI smoke request passed. Complete live strategy inference remains pending.
 
 [Manager console, research collector, receipt recovery and Aurora monitoring](docs/OPERATOR-WORKFLOWS.md). Local manager console: `http://127.0.0.1:3000/manager`. Public network monitoring is read-only and requires a real verified deployment manifest.
 
@@ -62,7 +62,7 @@ The first successful observation inside the configured window settles. Both feed
 - DIA's documented testnet contract had stale ETH/USD and USDC/USD observations in 9 November 2026 RPC checks. It must not be used as a live price source.
 - AggregatorV3 compatibility is an ABI format, not evidence that Chainlink operates a suitable Aurora deployment.
 - RedStone signature verification now passes local tests and read-only Aurora runtime probes using historical production data. Fresh gateway delivery remains unverified without API access; no historical-data fallback exists.
-- Local v4 tests do not prove a canonical Aurora v4 deployment, Aurora gas limits, or live hook execution.
+- The dedicated self-deployed Aurora testnet proof now demonstrates actual v4 liquidity, WaveHook trading and TWAP closure with an unrestricted test controller. It is not a canonical deployment or a complete collateralized Safe round; see docs/AURORA-TESTNET-PROOF.md.
 - Investment router tests use a clearly named test fixture. Real token identity, pool liquidity, quote/slippage and Safe fills remain deployment gates.
 - Forecasters must verify the instance bytecode and oracle implementation/feed identity; arbitrary manager-supplied oracle contracts are not trustworthy merely because they implement an interface. Oracle inputs must match the approved assets. Nonstandard fee/rebasing tokens are outside v1.
 

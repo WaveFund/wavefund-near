@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "chainId": 1313161555,
+  "deploymentKind": "forecast-runtime-test-only",
+  "productionReady": false,
+  "controllerKind": "UNRESTRICTED_TEST_DOUBLE_NO_REAL_FUNDS",
+  "contracts": {
+    "poolManager": "0xfaf156a5a6c36b1b280f64d420869b06e4c98f80",
+    "ProposalTokens": "0x67bb278f3ec57188e7b3e2700186cc7fe1667e23",
+    "WaveV4ProposalMarket": "0x2dbbcb13841f336c5e84e632ddf4b3670ade2cb3",
+    "HookDeployer": "0xcdfe26b5b6d41ff513385aea7217380401240154",
+    "WaveHook": "0x6161F5b70641a560eD784F6a038333FE22f2CAc0",
+    "testController": "0x7a2c138d46969cac26f5946cbfb4edfc50da900d"
+  },
+  "hookSalt": "0x0000000000000000000000000000000000000000000000000000000000004ea5",
+  "hookPermissionBits": 2752,
+  "fullWavefundStack": false,
+  "verifiedOperations": [
+    "pool-liquidity-add",
+    "long-buy",
+    "hook-price-observation",
+    "final-twap-close",
+    "pool-liquidity-remove"
+  ],
+  "finalProbabilityTwapX18": "543033343442837720"
+}
