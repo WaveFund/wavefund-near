@@ -1,0 +1,25 @@
+No files changed, compilation skipped
+
+Ran 3 tests for test/WaveMarket.Gas.t.sol:WaveMarketGasTest
+[PASS] test_Gas_BuyAndSell() (gas: 2528041)
+Logs:
+  [local] tradeBuyLong  gas (1 USDC): 132063
+  [local] tradeBuyShort gas (1 USDC): 139294
+  [local] tradeSellLong  gas (bisection+swap): 502069
+  [local] consumeSellSettlement gas: 67667
+  [local] tradeSellShort gas (bisection+swap): 485759
+  [local] finalizeProposal gas: 96691
+
+[PASS] test_Gas_SeedIndependentOfSeedSize() (gas: 2754874)
+Logs:
+  [local] seedLiquidity gas (0.001 USDC): 675218
+  [local] seedLiquidity gas (50 USDC)   : 658117
+
+[PASS] test_Gas_SeedLiquidityBelowTarget() (gas: 2755574)
+Logs:
+  [local] seedLiquidity gas (5 USDC seed): 675465
+  [local] seedLiquidity gas (2nd proposal): 658152
+
+Suite result: ok. 3 passed; 0 failed; 0 skipped; finished in 4.02ms (4.12ms CPU time)
+
+Ran 1 test suite in 4.49ms (4.02ms CPU time): 3 tests passed, 0 failed, 0 skipped (3 total tests)

@@ -1,0 +1,43 @@
+{
+  "date": "2026-11-10",
+  "product": "Wavefund",
+  "scope": "local-simulation",
+  "solidity": {
+    "passed": 400,
+    "failed": 0,
+    "skipped": 0,
+    "testFiles": 24,
+    "logs": "local-demo-regression/"
+  },
+  "runtime": {
+    "passed": 6,
+    "failed": 0,
+    "scratchMutantsKilled": [
+      "indexed-safe-event",
+      "local-rpc-guard",
+      "http-origin-check"
+    ]
+  },
+  "frontend": {
+    "typecheck": "passed",
+    "productionBuild": "passed",
+    "browserTitle": "Wavefund \u2014 local decision market",
+    "browserReadback": "completed round, separate balances, 27 receipts"
+  },
+  "launcher": {
+    "tested": true,
+    "uiHttp": 200,
+    "startHttp": 202,
+    "duplicateStartHttp": 409,
+    "scenario": "completed",
+    "receipts": 27,
+    "evidence": "local-launcher-e2e.json"
+  },
+  "boundaries": [
+    "real local Safe and Uniswap v4",
+    "simulated tokens, prices and investment venue",
+    "deterministic agents, no live inference",
+    "no public deployment, push or real funds",
+    "fresh RedStone gateway access pending"
+  ]
+}

@@ -1,0 +1,40 @@
+No files changed, compilation skipped
+
+Ran 26 tests for test/WaveV4ProposalMarket.t.sol:WaveV4ProposalMarketTest
+[PASS] test_CloseTwapWindow_RequiresEndSnapshotsAndIsIdempotent() (gas: 1640027)
+[PASS] test_ConstructorRejectsZeroAddresses() (gas: 174050)
+[PASS] test_ConsumeEmitsEventAndPaysDust() (gas: 2766618)
+[PASS] test_ConsumeRejectsZeroSeller() (gas: 1398863)
+[PASS] test_FinalizeEmitsReturnedAmounts() (gas: 1317046)
+[PASS] test_FinalizeOnlyAfterTradingEnd() (gas: 1301804)
+[PASS] test_FinalizeRemovesAllLiquidityAndReturnsEverythingToRound() (gas: 2493198)
+Logs:
+  round received LONG: 5175467004868436051
+  round received SHORT: 4836302437174708627
+
+[PASS] test_HarnessWiring_OwnershipMovedToQuantumRound() (gas: 29626)
+[PASS] test_OnlyQuantumRound_GatesEveryStateChangingEntryPoint() (gas: 1408750)
+[PASS] test_OwnershipMovesOnlyAfterBothWires_HookFirst() (gas: 5226455)
+[PASS] test_OwnershipMovesOnlyAfterBothWires_RoundFirst() (gas: 5227256)
+[PASS] test_OwnershipTransferAndRenounceDisabled() (gas: 4166222)
+[PASS] test_PendingSettlementRules() (gas: 2124425)
+[PASS] test_SeedLeavesIdleSetsInAdapter() (gas: 1415532)
+Logs:
+  idle LONG sets (raw/1e18): 0.503864777653711524
+  idle / L  (x1e18): 0.100772955530742304
+
+[PASS] test_SeedRegistersInitialisesAndAddsOnePosition() (gas: 1441352)
+[PASS] test_SeedRequiresCompleteWiring() (gas: 5183562)
+[PASS] test_SeedRevertsOnZeroAmountMissingTokensAndSecondSeed() (gas: 1448306)
+[PASS] test_SetQuantumRound_RejectsContractWithoutMarketGetter() (gas: 4163901)
+[PASS] test_SetQuantumRound_RejectsControllerBoundToAnotherMarket() (gas: 5177240)
+[PASS] test_SetQuantumRound_RejectsEoaAndLeavesWiringOpen() (gas: 5201374)
+[PASS] test_SetQuantumRound_Reverts() (gas: 5192811)
+[PASS] test_SetWaveHook_Reverts() (gas: 4226713)
+[PASS] test_UnlockCallbackRejectsOutsiders() (gas: 20340)
+[PASS] test_ViewsAtSeedPrice() (gas: 1421990)
+[PASS] test_ViewsRevertBeforeSeed() (gas: 655768)
+[PASS] test_WiringIsOneWayAfterHandoff() (gas: 29198)
+Suite result: ok. 26 passed; 0 failed; 0 skipped; finished in 8.53ms (12.65ms CPU time)
+
+Ran 1 test suite in 9.33ms (8.53ms CPU time): 26 tests passed, 0 failed, 0 skipped (26 total tests)

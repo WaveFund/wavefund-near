@@ -1,0 +1,15 @@
+No files changed, compilation skipped
+
+Ran 9 tests for test/LocalDemo.t.sol:LocalDemoTest
+[PASS] testBootstrapFundsSeparateSafeAndForecastSeed() (gas: 84865)
+[PASS] testLocalFixturesRejectWritesOnPublicChain() (gas: 19869)
+[PASS] testLocalRunRejectsPublicNetworkBeforeUsingDisposableKeys() (gas: 6002)
+[PASS] testMockOracleCannotBeChangedByForecaster() (gas: 11461)
+[PASS] testMockTokenCannotBeMintedByForecaster() (gas: 11559)
+[PASS] testRealForecastSafeExecutionAndMeasuredFeeAdjustedReturn() (gas: 4145493)
+[PASS] testSimulatedOracleActuallyExpires() (gas: 12899)
+[PASS] testVenueFailsWhenReserveIsInsufficient() (gas: 649876)
+[PASS] testVenueTransfersRealReservesAndChargesFee() (gas: 104886)
+Suite result: ok. 9 passed; 0 failed; 0 skipped; finished in 119.08ms (1.82ms CPU time)
+
+Ran 1 test suite in 119.46ms (119.08ms CPU time): 9 tests passed, 0 failed, 0 skipped (9 total tests)

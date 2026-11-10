@@ -1,8 +1,10 @@
-# Wayfund NEAR — trading Safe contracts v1
+# Wavefund NEAR — trading Safe contracts v1
 
 Local Solidity implementation targeting Aurora testnet (chain 1313161555). This is a prototype, not an audited or production-approved deployment. No live deployment has been performed.
 
-Current follow-up: [RedStone signature proof and remaining live-data gate](docs/REDSTONE-PROOF.md). The latest full suite has **391 passed / 0 failed / 0 skipped**.
+Current follow-up: [RedStone signature proof and remaining live-data gate](docs/REDSTONE-PROOF.md). The latest full suite has **400 passed / 0 failed / 0 skipped**.
+
+[Local full-stack demo](docs/LOCAL-DEMO.md): real local Safe/v4 transactions, a Node orchestration API and a Next.js dashboard. Run `npm run demo:local` after isolated dependency setup. Prices and agents are explicitly simulated.
 
 ## Model
 

@@ -1,0 +1,509 @@
+{
+  "mode": "local-simulation",
+  "chainId": 31337,
+  "chain": {
+    "id": 31337,
+    "blockNumber": "68",
+    "timestamp": "1794287515"
+  },
+  "running": false,
+  "stage": "completed",
+  "roundId": "1",
+  "safe": {
+    "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+    "stableBalance": "0",
+    "assetBalance": "997000000000000000",
+    "valueUsdX18": "2093700000000000000000"
+  },
+  "forecast": {
+    "escrow": "0",
+    "committedEscrow": "25000000",
+    "deposits": "20000000",
+    "participants": [
+      {
+        "address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+        "name": "Quant",
+        "stableBalance": "102448755",
+        "initialStableBalance": "100000000",
+        "deposit": "10000000",
+        "payout": "12448755",
+        "profitLoss": "2448755"
+      },
+      {
+        "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+        "name": "Guardian",
+        "stableBalance": "100151998",
+        "initialStableBalance": "100000000",
+        "deposit": "10000000",
+        "payout": "10151998",
+        "profitLoss": "151998"
+      }
+    ],
+    "payouts": [
+      {
+        "address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+        "amount": "12448755"
+      },
+      {
+        "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+        "amount": "10151998"
+      }
+    ]
+  },
+  "sponsor": {
+    "reserve": "97399247"
+  },
+  "round": {
+    "status": 3,
+    "tradingEnd": "1794287335",
+    "evaluationEnd": "1794287515",
+    "realisedReturnX18": "1046850000000000000",
+    "piX18": "968500000000000000",
+    "winnerId": 1
+  },
+  "oracle": {
+    "stableUsdX18": "1000000000000000000",
+    "assetUsdX18": "2100000000000000000000",
+    "publishedAt": "1794287515",
+    "simulated": true
+  },
+  "proposals": [
+    {
+      "id": "0",
+      "label": "Hold current assets",
+      "allocationBps": 0,
+      "probabilityX18": "500000000000000000",
+      "twapX18": "500000000000000000",
+      "rationale": "",
+      "proposer": "0x0000000000000000000000000000000000000000"
+    },
+    {
+      "id": "1",
+      "label": "100% approved asset",
+      "allocationBps": 10000,
+      "probabilityX18": "851628913633849393",
+      "twapX18": "851628913633849393",
+      "rationale": "SIMULATED AGENT: Simulated bullish outlook: propose full approved-asset exposure.",
+      "proposer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+    },
+    {
+      "id": "2",
+      "label": "50% approved asset",
+      "allocationBps": 5000,
+      "probabilityX18": "338221600519811424",
+      "twapX18": "338221600519811424",
+      "rationale": "SIMULATED AGENT: Independent capital-preservation policy: retain half in the stablecoin.",
+      "proposer": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65"
+    }
+  ],
+  "agents": [
+    {
+      "name": "Momentum",
+      "role": "proposer",
+      "rationale": "Simulated bullish outlook: propose full approved-asset exposure.",
+      "action": "100% asset allocation"
+    },
+    {
+      "name": "Conservative",
+      "role": "proposer",
+      "rationale": "Independent capital-preservation policy: retain half in the stablecoin.",
+      "action": "50% asset allocation"
+    },
+    {
+      "name": "Quant",
+      "role": "forecaster",
+      "rationale": "Deterministic rehearsal policy favors the higher-exposure proposal and buys LONG.",
+      "action": "LONG full-exposure proposal"
+    },
+    {
+      "name": "Guardian",
+      "role": "forecaster",
+      "rationale": "Starts with a bearish risk scenario, then responds to an explicitly simulated positive evidence update.",
+      "action": "SHORT mixed proposal, then LONG full exposure"
+    }
+  ],
+  "receipts": [
+    {
+      "id": 1,
+      "label": "Refresh simulated oracle: ETH 2000 USD",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "to": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      "functionName": "setPrices",
+      "nonce": 38,
+      "status": "success",
+      "hash": "0x0d87dda55a8849720aa4d2736279f3f0df9a9c80a089f8021c06e35d7db157f6",
+      "blockNumber": "39",
+      "blockHash": "0xa25cf9299341df22f9c319e1004512f2e30db47fda167cc449e7b22edca2e2ef"
+    },
+    {
+      "id": 2,
+      "label": "Safe authorizes round 1 policy",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "to": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+      "functionName": "execTransaction",
+      "nonce": 39,
+      "status": "success",
+      "hash": "0x17abc55c927166a2df8282393153cfc86e1f666df01bffda4c4c1da65b1e0169",
+      "blockNumber": "40",
+      "blockHash": "0x8c5a1c272d0c2c595798ab0fdc16004975154445fbab4f19b8c5a863117c14dc"
+    },
+    {
+      "id": 3,
+      "label": "Keeper opens forecasting round",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      "functionName": "openRound",
+      "nonce": 40,
+      "status": "success",
+      "hash": "0x0f9a382525c11b36220985c1a9016df5b25e51a41289bf07ffb3e6a55dcc4481",
+      "blockNumber": "41",
+      "blockHash": "0x373869c7b28a3cf59dba625f5a1d88be264306e93d6e0d974a515f726257225b"
+    },
+    {
+      "id": 4,
+      "label": "Momentum registers",
+      "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "to": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+      "functionName": "registerAgent",
+      "nonce": 0,
+      "status": "success",
+      "hash": "0x53d555a348b8310b94d5f21955dde8e9230bd4377a9c8a69e507485b20f2f7ec",
+      "blockNumber": "42",
+      "blockHash": "0x1ad6152f35a2509e8ec4a4454c936300596051b776bf4e855d234f78a8c42e50"
+    },
+    {
+      "id": 5,
+      "label": "Momentum approves refundable proposal bond",
+      "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      "functionName": "approve",
+      "nonce": 1,
+      "status": "success",
+      "hash": "0x5c1411d13b38305f128056ee2413190dd74c436c0506660d16195f34e8d1c3bf",
+      "blockNumber": "43",
+      "blockHash": "0x2c821af1ac45a695b1f03afd311cd665c054f95113231765de54cea58fdf766d"
+    },
+    {
+      "id": 6,
+      "label": "Momentum proposes 100% asset exposure",
+      "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+      "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      "functionName": "propose",
+      "nonce": 2,
+      "status": "success",
+      "hash": "0x8ad8ab7456c4122a664d18e58e4810cffb432abb04a085789183cc7c8863ae1f",
+      "blockNumber": "44",
+      "blockHash": "0xea18fdbb7e71c20f09f8ca40d6d93da60e38b550b35d7343c403d8640071fafd"
+    },
+    {
+      "id": 7,
+      "label": "Conservative registers",
+      "from": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+      "to": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+      "functionName": "registerAgent",
+      "nonce": 0,
+      "status": "success",
+      "hash": "0xb0bbf07af99e9ce5c02c97c52154bb635b27755e88b3a754cefb871d17d599b4",
+      "blockNumber": "45",
+      "blockHash": "0x12845e3501e2a6a2ddc2631f1b0d965403d03a15b346fefd18500fdb5ad9e711"
+    },
+    {
+      "id": 8,
+      "label": "Conservative approves refundable proposal bond",
+      "from": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+      "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      "functionName": "approve",
+      "nonce": 1,
+      "status": "success",
+      "hash": "0x690cc658e5e4a03a7f9e7d9dfdce3db865beb6488f3a6a8c030a78f9f941a3e3",
+      "blockNumber": "46",
+      "blockHash": "0xa1c1ed9278fc594a13be0dd27595337bb1901a4a781e35bfc74a7a175cc4eb58"
+    },
+    {
+      "id": 9,
+      "label": "Conservative proposes 50% asset exposure",
+      "from": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+      "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      "functionName": "propose",
+      "nonce": 2,
+      "status": "success",
+      "hash": "0xa6420bd316231dcf6272ca15ed6f8773a77cf909850c210cbbfaaf3ab889da71",
+      "blockNumber": "47",
+      "blockHash": "0x4cbe36a6fa72c94df263cd0fa2cdfcedd3f03b363b0046cb85d738cc75eefe63"
+    },
+    {
+      "id": 10,
+      "label": "Quant approves forecast collateral",
+      "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      "functionName": "approve",
+      "nonce": 0,
+      "status": "success",
+      "hash": "0x9e2672e20d0b5e0e2ae8fa267bee8b89ba245b22450b2ea4490d4c6d52d86fa4",
+      "blockNumber": "48",
+      "blockHash": "0x950821e548a352d8df67081abbbeb4c3cb706637497f5c9e123ada04d239e5d8"
+    },
+    {
+      "id": 11,
+      "label": "Quant deposits 10 simulated USDC",
+      "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      "functionName": "deposit",
+      "nonce": 1,
+      "status": "success",
+      "hash": "0xa1180db4d7811fa4b0fed0408a84895a854e55116b5539a499d5be82b6f34cda",
+      "blockNumber": "49",
+      "blockHash": "0x08eff5a82453e720e694247f90681909a2f3bac78c306718722ab687c38b190d"
+    },
+    {
+      "id": 12,
+      "label": "Guardian approves forecast collateral",
+      "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+      "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+      "functionName": "approve",
+      "nonce": 0,
+      "status": "success",
+      "hash": "0xb65ff027ccad1dc306d6dbe91018fa186add752fe3c9b5d81727aacd72fbb72e",
+      "blockNumber": "50",
+      "blockHash": "0x5a2521b837a5031cfafce786620b224a1c458d63ff84d1a428b8a4447d8fb469"
+    },
+    {
+      "id": 13,
+      "label": "Guardian deposits 10 simulated USDC",
+      "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+      "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      "functionName": "deposit",
+      "nonce": 1,
+      "status": "success",
+      "hash": "0xc42e905cf4db429c31b146aedce333e1b832cca5e94344e788521d6fbb670d52",
+      "blockNumber": "51",
+      "blockHash": "0x6c259754efd352347a6cf9b88d0b1584c1bd20986c5d0ea1f6d370721d424dfb"
+    },
+    {
+      "id": 14,
+      "label": "Quant claims conditional full-exposure credits",
+      "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      "functionName": "claimCredits",
+      "nonce": 2,
+      "status": "success",
+      "hash": "0x5dc5f396f5233ac211b28cd7faff5cd48b40d4898bbacfe088b6fa24738b30af",
+      "blockNumber": "52",
+      "blockHash": "0x748829e1a8be231c037378442b956e00197a5184832b2719dc51d30d040da450"
+    },
+    {
+      "id": 15,
+      "label": "Guardian claims conditional mixed-allocation credits",
+      "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+      "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      "functionName": "claimCredits",
+      "nonce": 2,
+      "status": "success",
+      "hash": "0x05d201dc5d3bb86b06c10cdea16d827201c758f4655a6ad2421de4db29bec6c5",
+      "blockNumber": "53",
+      "blockHash": "0x8b19dbe56700c74bd9bd80383358f59c85f14c0a36acfb2165e303198d4e0f7d"
+    },
+    {
+      "id": 16,
+      "label": "Quant buys LONG on full exposure",
+      "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      "functionName": "buyLong",
+      "nonce": 3,
+      "status": "success",
+      "hash": "0x510ac6a422e42595249c4d2a61a1b7dd2281c7e993fdd55dd6122c5629c8c8a7",
+      "blockNumber": "55",
+      "blockHash": "0xd367b13d234651f55e0aef31601ac2e99e0553d0b3f3dca60802e863ba31b2ad"
+    },
+    {
+      "id": 17,
+      "label": "Guardian buys SHORT on mixed exposure",
+      "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+      "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      "functionName": "buyShort",
+      "nonce": 3,
+      "status": "success",
+      "hash": "0xb63477826b28f06881e2f5af296cdebabc2e5b5e6001c288460f26fec9db9946",
+      "blockNumber": "56",
+      "blockHash": "0x543ec505ea97200c272021a0bb1278f1402934f12faaca329c06c741c1c30e7c"
+    },
+    {
+      "id": 18,
+      "label": "Quant reacts to simulated evidence with another LONG trade",
+      "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      "functionName": "buyLong",
+      "nonce": 4,
+      "status": "success",
+      "hash": "0x0e8694f9181bd78ee943fd3f5198e4c39157ca2248d41b0b848e661cb2487692",
+      "blockNumber": "57",
+      "blockHash": "0x58377c643b772f36720e5c3f0565d4b8a881080efa61495180ea4f352b1cfd7c"
+    },
+    {
+      "id": 19,
+      "label": "Guardian claims the same deposit entitlement in the alternative world",
+      "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+      "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      "functionName": "claimCredits",
+      "nonce": 4,
+      "status": "success",
+      "hash": "0x269ce993d7f3896d34a5dde69683caecc174252c42ae23726d8714f2138e746d",
+      "blockNumber": "58",
+      "blockHash": "0x07a345b9af27145e258c69348a6d4f98127203e00be0480c4572621a83f18527"
+    },
+    {
+      "id": 20,
+      "label": "Guardian responds to simulated new evidence with LONG on full exposure",
+      "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+      "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      "functionName": "buyLong",
+      "nonce": 5,
+      "status": "success",
+      "hash": "0x8cbe435b463699df12ae288df33c169fe18024f52919c33e5a19a7420444244e",
+      "blockNumber": "59",
+      "blockHash": "0xfb258f1416e86981efafc2c8f91437ba7a7625db4f2257d46cb9364bceef5d82"
+    },
+    {
+      "id": 21,
+      "label": "Collapse forecasting markets",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      "functionName": "collapse",
+      "nonce": 41,
+      "status": "success",
+      "hash": "0x125ae4a93ac99356805ef38ed52990b82d60b35ab94db2b9bcb66f953236a6db",
+      "blockNumber": "61",
+      "blockHash": "0x95c9008a523c7e5406c8308fda7ad7f4508c3a2d4a6ecd5616216016355771ca"
+    },
+    {
+      "id": 22,
+      "label": "Refresh simulated oracle: ETH 2000 USD",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "to": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      "functionName": "setPrices",
+      "nonce": 42,
+      "status": "success",
+      "hash": "0x1ca82aa14adbe28e2fcd06e058985d286c0479d9a1aab1953eb13280a46c44a7",
+      "blockNumber": "62",
+      "blockHash": "0xdc01a0d0c727d7fc8c77278cfc07278616bddace30f0101bcd1787f60d438732"
+    },
+    {
+      "id": 23,
+      "label": "Execute canonical winner through Safe",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "to": "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d",
+      "functionName": "execute",
+      "nonce": 43,
+      "status": "success",
+      "hash": "0x8315c90007e58c96f5e5de04119640790ed11c3dbc806f63ef23399d710b8153",
+      "blockNumber": "63",
+      "blockHash": "0x2f53e68c6b76aa4d15b0dd4442b8e36e684b01ef2d1ae30c61b0a341b1e40aad"
+    },
+    {
+      "id": 24,
+      "label": "Refresh simulated oracle: ETH 2100 USD",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "to": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+      "functionName": "setPrices",
+      "nonce": 44,
+      "status": "success",
+      "hash": "0xb09119726c2f5a3b8b6d82e821cdcfec901eaee96d63bd639ded54969281ce69",
+      "blockNumber": "65",
+      "blockHash": "0x3b888bbb2fac1fbea28d51bab665e55df5ed7f942863ff035b3830aa30535b5c"
+    },
+    {
+      "id": 25,
+      "label": "Settle measured portfolio return",
+      "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      "to": "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
+      "functionName": "settle",
+      "nonce": 45,
+      "status": "success",
+      "hash": "0x343674addf5385cba230f0aa8412a471f347712498d79ca833a7b784e054a30e",
+      "blockNumber": "66",
+      "blockHash": "0x78d4b33bcf6d6157577b0fef0e593feb2e51267faac9231a68742974e96645b6"
+    },
+    {
+      "id": 26,
+      "label": "Quant redeems winning-world balance",
+      "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+      "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      "functionName": "redeem",
+      "nonce": 5,
+      "status": "success",
+      "hash": "0x3f20691ad1d9e5b2873c3796b04778ca62e51a7cc5e6a2b38804a91d5fd7b6ae",
+      "blockNumber": "67",
+      "blockHash": "0x20c22c3320c4aea961734fb151f653da47ae11186a2706a06bb8a913315a8fc5"
+    },
+    {
+      "id": 27,
+      "label": "Guardian redeems winning-world balance",
+      "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+      "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+      "functionName": "redeem",
+      "nonce": 6,
+      "status": "success",
+      "hash": "0xb74da252b880bc2fd7290ec2d98b8eb77e7c8143c59b71bf674512b2315ab56d",
+      "blockNumber": "68",
+      "blockHash": "0x01dc0d7d417faa508662842ec5b076636d1de893f43c36ff111f6f675575b2d6"
+    }
+  ],
+  "messages": [
+    {
+      "timestamp": "2026-11-10T05:08:17.185Z",
+      "stage": "opening",
+      "message": "Owner approves exact policy terms. All investment capital stays in the trading Safe."
+    },
+    {
+      "timestamp": "2026-11-10T05:08:17.222Z",
+      "stage": "proposing",
+      "message": "Two deterministic agents submit different approved allocation strategies."
+    },
+    {
+      "timestamp": "2026-11-10T05:08:17.279Z",
+      "stage": "forecasting",
+      "message": "Quant and Guardian deposit separate forecast collateral, then disagree through actual v4 trades."
+    },
+    {
+      "timestamp": "2026-11-10T05:08:17.336Z",
+      "stage": "forecasting",
+      "message": "New evidence is a deterministic simulation fixture, not a live AI/data-provider response. Quant strengthens its view; Guardian revises its risk scenario."
+    },
+    {
+      "timestamp": "2026-11-10T05:08:17.361Z",
+      "stage": "selecting",
+      "message": "Anvil advances the local clock; final-window scores select the canonical winner."
+    },
+    {
+      "timestamp": "2026-11-10T05:08:17.376Z",
+      "stage": "selecting",
+      "message": "Onchain selected proposal 1 with target 10000 bps. No caller supplies the winning target."
+    },
+    {
+      "timestamp": "2026-11-10T05:08:17.376Z",
+      "stage": "executing",
+      "message": "The restricted module reads the winner and executes the approved allocation through the Safe."
+    },
+    {
+      "timestamp": "2026-11-10T05:08:17.389Z",
+      "stage": "evaluating",
+      "message": "Record actual holdings and advance the local evaluation horizon. Prices remain explicit simulation fixtures."
+    },
+    {
+      "timestamp": "2026-11-10T05:08:17.396Z",
+      "stage": "settling",
+      "message": "The tracker computes return from recorded quantities and simulated prices, including actual fixture-router fees."
+    },
+    {
+      "timestamp": "2026-11-10T05:08:17.403Z",
+      "stage": "redeeming",
+      "message": "Forecasters redeem only winning-world claims; Safe investment balances are not used for payouts."
+    },
+    {
+      "timestamp": "2026-11-10T05:08:17.416Z",
+      "stage": "completed",
+      "message": "Local onchain rehearsal completed. Real Safe/v4 contracts; simulated assets, prices and deterministic agents."
+    }
+  ],
+  "error": null
+}

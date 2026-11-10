@@ -1,0 +1,10 @@
+No files changed, compilation skipped
+
+Ran 4 tests for test/WaveMarket.Fuzz.t.sol:WaveMarketFuzzTest
+[PASS] testFuzz_BisectionSanity_NoWholeCreditLeftInDust(uint256,uint256,uint256,uint8) (runs: 256, μ: 1966369, ~: 1887733)
+[PASS] testFuzz_QuotesMatchExecution_Buy(uint256,uint256,uint256,uint8) (runs: 256, μ: 1773641, ~: 1773676)
+[PASS] testFuzz_QuotesMatchExecution_Sell(uint256,uint256,uint256,uint8) (runs: 256, μ: 2103492, ~: 2134391)
+[PASS] testFuzz_RoundTripsNeverExtractValueAndStayBacked(uint256,uint256,uint8) (runs: 256, μ: 6788052, ~: 6862509)
+Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 3.19s (6.77s CPU time)
+
+Ran 1 test suite in 3.19s (3.19s CPU time): 4 tests passed, 0 failed, 0 skipped (4 total tests)

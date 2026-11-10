@@ -1,0 +1,16 @@
+No files changed, compilation skipped
+
+Ran 10 tests for test/WaveV4ProposalMarket.Hardening.t.sol:WaveV4ProposalMarketHardeningTest
+[PASS] test_Seed_DecimalsGuardRunsBeforeMarketLookup() (gas: 6965469)
+[PASS] test_Seed_MisconfiguredDecimalsCannotBeFixedAfterTokensExist() (gas: 7633773)
+[PASS] test_Seed_RevertsCreditDecimalsMismatch_WhenDecimalsLeftAtDefault18() (gas: 7645180)
+[PASS] test_Seed_RevertsForEveryDecimalsValueExceptSix() (gas: 146433612)
+[PASS] test_Seed_SucceedsWithSixDecimalsInBaseHarness() (gas: 1409805)
+[PASS] test_Seed_ZeroAmountAndWiringChecksPrecedeDecimalsGuard() (gas: 12108786)
+[PASS] test_SetWaveHook_AdapterBindingIsCheckedBeforePoolManager() (gas: 7650791)
+[PASS] test_SetWaveHook_MismatchDoesNotBlockCompletingWiring() (gas: 8737973)
+[PASS] test_SetWaveHook_MismatchStillOwnerGated() (gas: 7650906)
+[PASS] test_SetWaveHook_RevertsWhenHookUsesDifferentPoolManager() (gas: 7711419)
+Suite result: ok. 10 passed; 0 failed; 0 skipped; finished in 9.67ms (10.53ms CPU time)
+
+Ran 1 test suite in 10.01ms (9.67ms CPU time): 10 tests passed, 0 failed, 0 skipped (10 total tests)
