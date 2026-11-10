@@ -1,0 +1,126 @@
+{
+  "solidity": {
+    "files": 26,
+    "passed": 419,
+    "failed": 0,
+    "skipped": 0,
+    "suites": [
+      {
+        "file": "AuroraTestToken.t.log",
+        "passed": 3
+      },
+      {
+        "file": "Deployment.t.log",
+        "passed": 5
+      },
+      {
+        "file": "LocalDemo.t.log",
+        "passed": 9
+      },
+      {
+        "file": "OracleTracker.t.log",
+        "passed": 30
+      },
+      {
+        "file": "ProposalTokens.t.log",
+        "passed": 36
+      },
+      {
+        "file": "ProposerRegistry.Blocklist.t.log",
+        "passed": 12
+      },
+      {
+        "file": "ProposerRegistry.Invariant.t.log",
+        "passed": 4
+      },
+      {
+        "file": "ProposerRegistry.t.log",
+        "passed": 49
+      },
+      {
+        "file": "RedstoneOracle.t.log",
+        "passed": 21
+      },
+      {
+        "file": "RoundIntegration.t.log",
+        "passed": 29
+      },
+      {
+        "file": "SafeEndToEnd.t.log",
+        "passed": 5
+      },
+      {
+        "file": "SafeModule.t.log",
+        "passed": 40
+      },
+      {
+        "file": "SupraOracle.t.log",
+        "passed": 16
+      },
+      {
+        "file": "WaveHook.Gating.t.log",
+        "passed": 7
+      },
+      {
+        "file": "WaveHook.Twap.t.log",
+        "passed": 24
+      },
+      {
+        "file": "WaveHook.t.log",
+        "passed": 17
+      },
+      {
+        "file": "WaveMarket.Fuzz.t.log",
+        "passed": 4
+      },
+      {
+        "file": "WaveMarket.Gas.t.log",
+        "passed": 3
+      },
+      {
+        "file": "WaveMarket.Invariant.t.log",
+        "passed": 7
+      },
+      {
+        "file": "WaveV4ProposalMarket.Economics.t.log",
+        "passed": 16
+      },
+      {
+        "file": "WaveV4ProposalMarket.ErrorArgs.t.log",
+        "passed": 8
+      },
+      {
+        "file": "WaveV4ProposalMarket.Funding.t.log",
+        "passed": 16
+      },
+      {
+        "file": "WaveV4ProposalMarket.Hardening.t.log",
+        "passed": 10
+      },
+      {
+        "file": "WaveV4ProposalMarket.Quotes.t.log",
+        "passed": 13
+      },
+      {
+        "file": "WaveV4ProposalMarket.Solver.t.log",
+        "passed": 9
+      },
+      {
+        "file": "WaveV4ProposalMarket.t.log",
+        "passed": 26
+      }
+    ]
+  },
+  "node": {
+    "passed": 45,
+    "failed": 0,
+    "skipped": 0
+  },
+  "pythonBridge": {
+    "passed": 2,
+    "failed": 0
+  },
+  "mutations": "Oracle age, REST normalization, operator-only mint and exclusive signer lock each observed RED, restored GREEN",
+  "finalSource": "Pinned formatter check and 19 final-source tests pass; bytecode identical to deployed artifacts",
+  "frontend": "Unchanged; earlier typecheck/build not rerun"
+}

@@ -1,0 +1,26 @@
+<jemalloc>: MADV_DONTNEED does not work (memset will be used instead)
+<jemalloc>: (This is the expected behaviour if you are running under QEMU)
+Compiling 1 files with Solc 0.8.26
+Solc 0.8.26 finished in 45.16s
+Compiler run successful with warnings:
+Warning (2018): Function state mutability can be restricted to view
+  --> test/WaveMarket.Fuzz.t.sol:23:5:
+   |
+23 |     function _tryQuoteBuy(uint256 p, uint256 credits, bool long_) internal returns (bool ok, uint256 q) {
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+Warning (2018): Function state mutability can be restricted to view
+  --> test/WaveMarket.Fuzz.t.sol:33:5:
+   |
+33 |     function _tryQuoteSell(uint256 p, uint256 amount, bool long_)
+   |     ^ (Relevant source part starts here and spans across multiple lines).
+
+
+Ran 4 tests for test/WaveMarket.Fuzz.t.sol:WaveMarketFuzzTest
+[PASS] testFuzz_BisectionSanity_NoWholeCreditLeftInDust(uint256,uint256,uint256,uint8) (runs: 256, μ: 1974515, ~: 1894928)
+[PASS] testFuzz_QuotesMatchExecution_Buy(uint256,uint256,uint256,uint8) (runs: 256, μ: 1771418, ~: 1773578)
+[PASS] testFuzz_QuotesMatchExecution_Sell(uint256,uint256,uint256,uint8) (runs: 256, μ: 2065261, ~: 2010725)
+[PASS] testFuzz_RoundTripsNeverExtractValueAndStayBacked(uint256,uint256,uint8) (runs: 256, μ: 6909837, ~: 6862179)
+Suite result: ok. 4 passed; 0 failed; 0 skipped; finished in 29.77s (63.01s CPU time)
+
+Ran 1 test suite in 29.82s (29.77s CPU time): 4 tests passed, 0 failed, 0 skipped (4 total tests)

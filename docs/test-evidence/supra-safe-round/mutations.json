@@ -1,0 +1,25 @@
+{
+  "oracleFreshness": {
+    "mutation": "Disable maxAge rejection in scratch consumer",
+    "test": "testMillisecondAgeBoundaryAndReadExpiry",
+    "mutant": "FAIL: next call did not revert as expected",
+    "restored": "16 tests passed, 0 failed"
+  },
+  "transportPrefix": {
+    "mutation": "Return bare REST hex without required prefix",
+    "mutant": "1 failed, 2 passed",
+    "restored": "3 passed"
+  },
+  "scope": "Mutations were executed only in disposable container copies; deployed and repository source retained validation.",
+  "testTokenMintAuthorization": {
+    "mutation": "Disable OnlyOperator mint restriction in separate scratch tree",
+    "test": "testMintOnlyOperatorWithExpectedPrecision",
+    "mutant": "FAIL: next call did not revert as expected",
+    "restored": "3 tests passed, 0 failed"
+  },
+  "bridgeSignerLock": {
+    "mutation": "Disable exclusive journal lock only in disposable Python container",
+    "mutant": "test_concurrent_signer_blocked_before_credentials FAILED",
+    "restored": "2 tests passed"
+  }
+}

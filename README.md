@@ -2,9 +2,9 @@
 
 **Team starting point:** [Engineer handoff, current blockers and verified evidence](docs/ENGINEER-HANDOFF.md).
 
-Local Solidity implementation targeting Aurora testnet (chain 1313161555). This is a prototype, not an audited or production-approved deployment. A partial Aurora testnet forecasting proof is now deployed; it is not a complete Safe strategy deployment. See [testnet proof](docs/AURORA-TESTNET-PROOF.md).
+Solidity implementation targeting Aurora testnet (chain 1313161555). A [genuine public Safe round](docs/AURORA-SAFE-ROUND.md) completed v4 forecasting, an actual Trisolaris swap, Supra-authenticated settlement and forecaster redemption. This is a single-operator rehearsal with freely minted test assets, not an audited or production-approved deployment.
 
-Current follow-up: [RedStone signature proof and remaining live-data gate](docs/REDSTONE-PROOF.md). The latest full suite has **400 passed / 0 failed / 0 skipped**.
+Supra supplies authenticated public-testnet observations without a gateway key. [RedStone access](docs/REDSTONE-PROOF.md) remains an alternative, not a blocker for the completed round. Current checks: **419 Solidity tests, 45 Node tests and 2 Python safety tests passed**, with zero failures or skips.
 
 [Local full-stack demo](docs/LOCAL-DEMO.md): real local Safe/v4 transactions, a Node orchestration API and a Next.js dashboard. Run `npm run demo:local` after isolated dependency setup. Prices and agents are explicitly simulated.
 
@@ -46,6 +46,7 @@ Run untrusted code in your isolated environment. The development verification us
 | FeedPortfolioOracle | Validates AggregatorV3-format feed prices, freshness and decimal normalization |
 | RedstonePortfolioOracle | Permissionless signature-verified USDC/ETH price cache; live gateway access still pending |
 | DiaPortfolioOracle | Equivalent validated DIA-format consumer; documented live testnet feed is stale |
+| SupraPortfolioOracle | Permissionless authenticated ETH/USD + USDC/USD cache; used in the completed public round |
 
 Detailed flow and custody boundaries: [architecture](docs/ARCHITECTURE.md).
 
@@ -64,8 +65,8 @@ The first successful observation inside the configured window settles. Both feed
 - DIA's documented testnet contract had stale ETH/USD and USDC/USD observations in 9 November 2026 RPC checks. It must not be used as a live price source.
 - AggregatorV3 compatibility is an ABI format, not evidence that Chainlink operates a suitable Aurora deployment.
 - RedStone signature verification now passes local tests and read-only Aurora runtime probes using historical production data. Fresh gateway delivery remains unverified without API access; no historical-data fallback exists.
-- The dedicated self-deployed Aurora testnet proof now demonstrates actual v4 liquidity, WaveHook trading and TWAP closure with an unrestricted test controller. It is not a canonical deployment or a complete collateralized Safe round; see docs/AURORA-TESTNET-PROOF.md.
-- Investment router tests use a clearly named test fixture. Real token identity, pool liquidity, quote/slippage and Safe fills remain deployment gates.
+- The historical forecasting-only proof used an unrestricted test controller. The fresh genuine stack now completes collateralized forecasting and a Safe round; see [public round evidence](docs/AURORA-SAFE-ROUND.md).
+- Actual Trisolaris execution is verified for our self-seeded test-token pair. Production asset identity, organic liquidity and production-grade execution remain separate gates.
 - Forecasters must verify the instance bytecode and oracle implementation/feed identity; arbitrary manager-supplied oracle contracts are not trustworthy merely because they implement an interface. Oracle inputs must match the approved assets. Nonstandard fee/rebasing tokens are outside v1.
 
 ## Deployment
@@ -82,10 +83,10 @@ Forecasting code and associated tests derive from https://github.com/advaitrane9
 
 ## Hackathon baseline and new work
 
-This adapts an existing Wavefund project; reused forecasting contracts are baseline regardless of their import date. The upstream reference is the commit listed under Attribution. Local import checkpoint: `f8c0177`. New work includes the Aurora-targeted Safe module, valuation and oracle adapters, bounded model orchestration, operator workflows and dashboard. Inspect the local change set with `git diff f8c0177..HEAD -- src script test runtime frontend scripts`. Public deployment evidence is still pending; local and unsigned RPC proofs must not be presented as a completed Aurora transaction cycle.
+This adapts an existing Wavefund project; reused forecasting contracts are baseline regardless of import date. The upstream reference is listed under Attribution. Local import checkpoint: `f8c0177`. New work includes the Aurora Safe module, valuation/oracle adapters, bounded model orchestration, operator workflows and dashboard. Inspect changes with `git diff f8c0177..HEAD -- src script test runtime frontend scripts`. The completed public cycle is documented separately from local fixtures and the historical mock-controller experiment.
 
 ## Current execution and funding model
 
-Uniswap v4 pools and the WaveHook serve forecasting LONG/SHORT claims; they are not an order book for the manager's investment trades. The Safe module reads the canonical winner, computes the two-asset rebalance and calls a fixed exact-input router with oracle/slippage and balance checks. The current investment venue is a prefunded local test fixture. Trisolaris is an Aurora candidate, not a verified live integration. The next execution milestone is an actual testnet AMM swap through the Safe, using a verified existing pool or a clearly labelled test-token pool if necessary. A separate general-purpose swap interface is not required.
+Uniswap v4 pools and WaveHook serve forecasting LONG/SHORT claims. The Safe module reads the canonical winner and calls a fixed exact-input investment router with oracle/slippage and balance checks. The local demo retains its prefunded fixture. The public testnet stack uses the existing Trisolaris router with our self-seeded test-token pair; an actual Safe swap is verified.
 
 Managers supply their own investment capital. Forecasters supply separate collateral. A customer, protocol or sponsor must explicitly supply forecasting seed liquidity; that seed can lose money funding rewards and is not the manager's investment return. Operating costs also include transaction gas, model inference, data access and hosting. The demo's $2,000 capital/$100 sponsor reserve are fixtures, not production minimums.

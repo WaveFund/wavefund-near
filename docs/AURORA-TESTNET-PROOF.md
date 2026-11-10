@@ -1,5 +1,7 @@
 # Aurora forecasting runtime proof
 
+Historical component proof. The later [genuine Safe round](AURORA-SAFE-ROUND.md) completes investment execution, settlement and redemption using a fresh collateralized stack. Addresses below remain a separate mock-controller experiment.
+
 10 November 2026. Chain **1313161555**; official RPC `https://testnet.aurora.dev`.
 
 This is a self-deployed Uniswap v4 forecasting-component experiment, not an official Uniswap deployment or a complete Wavefund trading Safe. The proposal adapter is permanently bound to an **unrestricted MockQuantumRound test controller**. Its CREDIT/LONG/SHORT tokens are test claims with no USDC collateral. Never deposit real money or use this controller as treasury authorization. A real Wavefund engine needs a fresh proposal adapter/token factory and production wiring; the generic PoolManager may be reused after verification.

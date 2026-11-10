@@ -1,5 +1,7 @@
 # Engineer handoff — 10 November 2026
 
+**Latest:** [genuine Aurora Safe round completed](AURORA-SAFE-ROUND.md), with actual Trisolaris execution, authenticated Supra observations and forecaster redemption. Use `deployments/aurora-testnet.json` for that fresh stack. The earlier forecasting-only mock-controller proof remains separate. The completion below supersedes the corresponding pending gates in this historical handoff; real-agent coordination remains pending.
+
 Product: **Wavefund**. Target: Aurora testnet, chain **1313161555**. This is a prototype, not an audited or production-approved system. Read this file before changing adapters or using deployed addresses.
 
 ## Start here
@@ -16,26 +18,26 @@ Use a feature branch from current `main`. Restore pinned dependencies with insta
 
 | Area | Evidence and limit |
 |---|---|
-| Solidity | Earlier full baseline: 400 passed, zero failed/skipped. Solidity source was unchanged in the latest increment; that baseline was not rerun. |
-| Runtime/frontend | Latest 42 runtime tests, TypeScript checks and production build passed. Nonce-validation mutation failed as intended; restored implementation passed. |
+| Solidity | 419 passed, zero failed/skipped across all 26 suites. Final oracle/token sources also recompiled and passed 19 tests; initcode exactly matches deployed artifacts. |
+| Runtime/frontend | Current 45 Node tests and 2 Python bridge safety tests passed. Earlier frontend typecheck/build remain valid prior evidence; frontend source was not changed here. Critical oracle, transport, mint and signer-lock mutations failed as intended and restored green. |
 | Local lifecycle | Actual local Safe and v4 interactions; investment router, prices and fixture agents are simulated. |
 | NEAR AI | One approved real Qwen/Qwen3.6-35B-A3B-FP8 response challenge passed. No verified attestation or full live model-driven strategy round. |
-| Aurora forecasting | Real deployed v4 liquidity, LONG trade, hook observations, final TWAP close and liquidity removal passed using an unrestricted test controller and uncollateralized test credits. |
-| Supra oracle | Public testnet REST delivered ETH/USD (19) and USDC/USD (89) proofs. Aurora `eth_call` accepted `verifyOracleProofV2`; corrupted proof reverted with `MerkleProof: invalid multiproof`. No cache write, consumer deployment or settlement was performed. |
+| Aurora forecasting | Fresh collateralized QuantumRound/v4/WaveHook stack completed the genuine Safe round. Historical unrestricted test-controller proof remains separate. |
+| Supra oracle | Authenticated consumer deployed and updated onchain; actual entry and post-deadline settlement observations accepted. Exact feed IDs 19/89, milliseconds/freshness/skew/replay checks tested. |
 
 See [runtime summary](test-evidence/provider-smoke-summary.json), [AI smoke](test-evidence/live-ai-smoke.json), [Supra verification](test-evidence/supra-readonly-verification.json) and [Supra code checks](test-evidence/supra-code-check.json).
 
 ## Critical deployment boundary
 
-`deployments/aurora-forecast-proof.json` is **NOT** a complete trading Safe manifest. Its adapter/token factory are bound to an unrestricted test controller. Do not deposit real funds, reuse them as the genuine treasury engine, or rename that manifest to `aurora-testnet.json`. A genuine public Safe/engine/module/tracker stack requires fresh proper wiring and verification. The generic deployed PoolManager can be considered for reuse after identity and configuration checks.
+`deployments/aurora-forecast-proof.json` is **NOT** a complete trading Safe manifest. Its adapter/token factory are bound to an unrestricted test controller. Do not deposit real funds, reuse them as the genuine treasury engine, or rename that manifest to `aurora-testnet.json`. That fresh stack is now recorded in `deployments/aurora-testnet.json`; its bindings and completed cycle were verified. The generic PoolManager was reused after a code-hash check.
 
 Investment capital stays in the manager's Safe. Forecaster collateral and sponsor seed are separate; Safe profits do not fund forecasting redemption. The +/-5% payout bounds are not stop-loss protection.
 
 ## Next implementation gate
 
-1. Validate a minimal Supra consumer in scratch: exact feed IDs, positive prices, timestamp units, freshness, maximum feed skew, replay rules, decimal scaling, invalid-proof failures and out-of-order updates. Returned timestamps in the successful probe were **milliseconds**, while Solidity `block.timestamp` is seconds. Do not substitute ETH/USDT for ETH/USD or assume USDC is $1.
-2. Verify a real investment AMM route for the approved two assets: router/factory identity, token decimals, executable quote, liquidity, slippage and actual Safe receipt/balance changes. Existing local router tests are not a real venue fill.
-3. Deploy and verify a fresh genuine Safe/QuantumRound/module/tracker stack with a usable oracle. Run one full round through performance settlement and forecaster redemption. Keep owner review, bounded authority and journal recovery intact.
+1. **Completed:** Supra consumer validation, real proof updates and measured settlement. See [round proof](AURORA-SAFE-ROUND.md).
+2. **Completed for test assets:** existing Trisolaris factory/router, self-seeded pool, executable quote, actual Safe fill, output/allowance postconditions.
+3. **Completed:** genuine Safe/engine/module/tracker wiring, full normal settlement and forecaster redemption. Dedicated testnet wallet/test assets only.
 4. Run complete real-agent coordination separately with an explicit inference budget. Provider configuration is remote-disabled by default; the earlier approval covered only one smoke request.
 
 No private key, API key, real funding, mainnet deployment or paid service use is authorized by this handoff alone. Use dedicated testnet accounts and agree on scope before broadcasting.

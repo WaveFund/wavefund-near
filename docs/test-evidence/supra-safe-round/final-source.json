@@ -1,0 +1,16 @@
+{
+  "compiler": "0.8.26",
+  "foundry": "1.5.1",
+  "finalTests": "19 passed, 0 failed, 0 skipped",
+  "contracts": {
+    "SupraPortfolioOracle": {
+      "initcodeIdenticalToDeployedArtifact": true,
+      "sourceSha256": "dc781e708c4d325f12c506d8e2aade9b62befbe3e003923e84c88b1370e5c5a9"
+    },
+    "AuroraTestToken": {
+      "initcodeIdenticalToDeployedArtifact": true,
+      "sourceSha256": "0bdd41e77c1dede9295991be57a252ea351d0018f2a9a4e38346cb59e41ce9b7"
+    }
+  },
+  "formatting": "Pinned Foundry 1.5.1 fmt --check passed on final sources"
+}

@@ -19,3 +19,11 @@ condition = "AND"
 regexTarget = "line"
 paths = ['''(?:^|/)(?:deployments/aurora-forecast-proof|docs/test-evidence/aurora-forecast-bootstrap)\.json$''']
 regexes = ['''^\s*"ProposalTokens":\s*"0x67bb278f3ec57188e7b3e2700186cc7fe1667e23",?\s*$''']
+
+# Exact public contract deployed by the genuine Safe round, not an API token.
+[[allowlists]]
+description = "Verified public Aurora Safe-round ProposalTokens factory"
+condition = "AND"
+regexTarget = "line"
+paths = ['''(?:^|/)(?:deployments/aurora-testnet|docs/test-evidence/aurora-safe-round|docs/test-evidence/aurora-safe-inspection)\.json$''']
+regexes = ['''^\s*"tokens":\s*"0x82e41de47afd11895ded60d00a7c0aa8bb4321bc",?\s*$''']

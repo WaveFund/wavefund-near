@@ -1,0 +1,24 @@
+<jemalloc>: MADV_DONTNEED does not work (memset will be used instead)
+<jemalloc>: (This is the expected behaviour if you are running under QEMU)
+No files changed, compilation skipped
+
+Ran 16 tests for test/SupraOracle.t.sol:SupraOracleTest
+[PASS] testBadPricesDecimalsAndRoundsFail() (gas: 201608)
+[PASS] testBadProofCannotPopulateCache() (gas: 23264)
+[PASS] testDifferentFeedDecimalsAreNormalizedIndependently() (gas: 221456)
+[PASS] testEveryMalformedArrayFails() (gas: 185999)
+[PASS] testExactFeedMappingScalingAndOldestTimestamp() (gas: 198622)
+[PASS] testMillisecondAgeBoundaryAndReadExpiry() (gas: 244311)
+[PASS] testReadBeforeVerificationFails() (gas: 10909)
+[PASS] testRejectedUpdatePreservesAcceptedCache() (gas: 224905)
+[PASS] testRejectsFutureAndZeroTimes() (gas: 100128)
+[PASS] testRejectsInvalidVerifierAndBounds() (gas: 236328)
+[PASS] testRejectsSecondsInsteadOfMilliseconds() (gas: 76580)
+[PASS] testReplayFailsAndOneUnchangedFeedCanAdvance() (gas: 247607)
+[PASS] testReverseOrderIsAcceptedWithoutSwappingAssetMeaning() (gas: 227936)
+[PASS] testSkewIsCheckedInMilliseconds() (gas: 76188)
+[PASS] testTimestampAndRoundRollbackFail() (gas: 255667)
+[PASS] testWrongOrDuplicateFeedFails() (gas: 104032)
+Suite result: ok. 16 passed; 0 failed; 0 skipped; finished in 79.24ms (52.03ms CPU time)
+
+Ran 1 test suite in 134.37ms (79.24ms CPU time): 16 tests passed, 0 failed, 0 skipped (16 total tests)

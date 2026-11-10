@@ -1,0 +1,58 @@
+<jemalloc>: MADV_DONTNEED does not work (memset will be used instead)
+<jemalloc>: (This is the expected behaviour if you are running under QEMU)
+Compiling 1 files with Solc 0.8.26
+Solc 0.8.26 finished in 63.28s
+Compiler run successful!
+
+Ran 16 tests for test/WaveV4ProposalMarket.Funding.t.sol:WaveV4ProposalMarketFundingTest
+[PASS] testFuzz_Donation_BuyNeverSpendsIdleInventory(uint256,uint256,uint256,bool,uint8) (runs: 256, μ: 186316, ~: 173607)
+[PASS] testFuzz_Donation_SellNeverSpendsIdleInventory(uint256,uint256,bool,uint8) (runs: 256, μ: 354998, ~: 171265)
+[PASS] testFuzz_IdleSeedInventoryIdenticalAcrossAnySequenceOfFundedTrades(uint256,uint8) (runs: 256, μ: 3796436, ~: 3806862)
+[PASS] test_AccountingViolation_WhenBalanceFallsBelowAccountedInventory() (gas: 336084)
+[PASS] test_AccountingViolation_WhenPoolManagerDoesNotDeliverTheSwapOutput() (gas: 241744)
+[PASS] test_ConsumeLeavesAccountedEqualToBalanceWhenNothingUnsolicited() (gas: 869886)
+[PASS] test_Donation_FundsOnlyWhatWasDonated_NeverIdleInventory() (gas: 1080432)
+[PASS] test_FundedTradesBehaveExactlyAsBefore() (gas: 4629806)
+[PASS] test_FundingCheckComesAfterCheapValidationsAndBeforeQuoteLogic() (gas: 1224379)
+[PASS] test_Gas_SeedBuySellWithAccounting() (gas: 2551067)
+Logs:
+  [funding] seedLiquidity gas: 675473
+  [funding] tradeBuyLong  gas (1 USDC): 132083
+  [funding] tradeBuyShort gas (1 USDC): 139302
+  [funding] tradeSellLong  gas: 502080
+  [funding] tradeSellShort gas: 485768
+  [funding] consumeSellSettlement gas (long sale): 67717
+  [funding] consumeSellSettlement gas (short sale): 23973
+  [funding] finalizeProposal gas: 96703
+
+[PASS] test_IdleSeedInventoryIdentical_ScriptedSequenceHitsEveryAction() (gas: 5701458)
+Logs:
+  Bound result 150000
+  Bound result 90000
+  Bound result 1800
+  Bound result 4793137264421164
+  Bound result 16549171746288000
+  Bound result 7
+  Bound result 3600
+  Bound result 1
+  Bound result 255
+  Bound result 200000
+  Bound result 150000
+  Bound result 90000
+  Bound result 1800
+  Bound result 4793137264421164
+  Bound result 16549171746288000
+  Bound result 7
+  Bound result 3600
+  Bound result 1
+  Bound result 255
+  Bound result 200000
+
+[PASS] test_PendingRemainderIsProtected() (gas: 6560368)
+[PASS] test_UnderFundedBuy_RevertsAndSeedInventoryUnchanged() (gas: 4216172)
+[PASS] test_UnderFundedSeed_Reverts() (gas: 5084950)
+[PASS] test_UnderFundedSell_RevertsAndSeedInventoryUnchanged() (gas: 12785340)
+[PASS] test_UnsolicitedTokensAreIgnoredAndReturnedAtFinalize() (gas: 7793107)
+Suite result: ok. 16 passed; 0 failed; 0 skipped; finished in 19.70s (24.08s CPU time)
+
+Ran 1 test suite in 19.76s (19.70s CPU time): 16 tests passed, 0 failed, 0 skipped (16 total tests)
