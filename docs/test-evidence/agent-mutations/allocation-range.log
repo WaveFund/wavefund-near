@@ -1,0 +1,130 @@
+TAP version 13
+# Subtest: proposals permit full capital and reject forbidden fields, allocations, types and citations
+not ok 1 - proposals permit full capital and reject forbidden fields, allocations, types and citations
+  ---
+  duration_ms: 0.907314
+  type: 'test'
+  location: '/work/.run/agent-mutations/allocation-range/runtime/test/agents.test.mjs:14:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///work/.run/agent-mutations/allocation-range/runtime/test/agents.test.mjs:16:220)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: forecasters must cover each supplied proposal exactly once
+ok 2 - forecasters must cover each supplied proposal exactly once
+  ---
+  duration_ms: 0.341692
+  type: 'test'
+  ...
+# Subtest: continuous payout interpolation uses signed performance, with clipped endpoints
+ok 3 - continuous payout interpolation uses signed performance, with clipped endpoints
+  ---
+  duration_ms: 0.092048
+  type: 'test'
+  ...
+# Subtest: entry quote determines profitability and can cause abstention
+ok 4 - entry quote determines profitability and can cause abstention
+  ---
+  duration_ms: 0.197847
+  type: 'test'
+  ...
+# Subtest: low confidence, zero edge and insufficient budget cannot force a trade
+ok 5 - low confidence, zero edge and insufficient budget cannot force a trade
+  ---
+  duration_ms: 0.177429
+  type: 'test'
+  ...
+# Subtest: research evidence rejects stale, future and unordered observations
+ok 6 - research evidence rejects stale, future and unordered observations
+  ---
+  duration_ms: 0.535204
+  type: 'test'
+  ...
+# Subtest: provider config requires explicit remote enablement and confines local endpoints
+ok 7 - provider config requires explicit remote enablement and confines local endpoints
+  ---
+  duration_ms: 0.191055
+  type: 'test'
+  ...
+# Subtest: actual HTTP adapter parses JSON, counts calls and never reflects secrets in metadata
+ok 8 - actual HTTP adapter parses JSON, counts calls and never reflects secrets in metadata
+  ---
+  duration_ms: 24.250397
+  type: 'test'
+  ...
+# Subtest: HTTP failures do not retry or leak provider error bodies
+ok 9 - HTTP failures do not retry or leak provider error bodies
+  ---
+  duration_ms: 3.795063
+  type: 'test'
+  ...
+# Subtest: truncated answers, tool calls, markdown and oversize responses fail closed
+ok 10 - truncated answers, tool calls, markdown and oversize responses fail closed
+  ---
+  duration_ms: 18.153295
+  type: 'test'
+  ...
+# Subtest: inference timeout is bounded and does not retry
+ok 11 - inference timeout is bounded and does not retry
+  ---
+  duration_ms: 25.303888
+  type: 'test'
+  ...
+# Subtest: four independent HTTP decisions are validated, hashed and reflect changed inputs
+ok 12 - four independent HTTP decisions are validated, hashed and reflect changed inputs
+  ---
+  duration_ms: 9.033894
+  type: 'test'
+  ...
+# Subtest: malicious model output halts the team before any forecasting decision
+not ok 13 - malicious model output halts the team before any forecasting decision
+  ---
+  duration_ms: 0.508786
+  type: 'test'
+  location: '/work/.run/agent-mutations/allocation-range/runtime/test/agents.test.mjs:118:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The input did not match the regular expression /allocation/. Input:
+    
+    'Error: Unknown or missing evidence citation'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  actual:
+  error: 'Unknown or missing evidence citation'
+  stack: |-
+    explanation (file:///work/.run/agent-mutations/allocation-range/runtime/agents/policy.mjs:28:231)
+    validateProposal (file:///work/.run/agent-mutations/allocation-range/runtime/agents/policy.mjs:33:177)
+    file:///work/.run/agent-mutations/allocation-range/runtime/agents/team.mjs:25:71
+    ask (file:///work/.run/agent-mutations/allocation-range/runtime/agents/team.mjs:20:26)
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async Object.plan (file:///work/.run/agent-mutations/allocation-range/runtime/agents/team.mjs:25:26)
+    async waitForActual (node:assert:644:5)
+    async Function.rejects (node:assert:767:25)
+    async TestContext.<anonymous> (file:///work/.run/agent-mutations/allocation-range/runtime/test/agents.test.mjs:121:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+  operator: 'rejects'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    async TestContext.<anonymous> (file:///work/.run/agent-mutations/allocation-range/runtime/test/agents.test.mjs:121:3)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..13
+# tests 13
+# suites 0
+# pass 11
+# fail 2
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 192.243589

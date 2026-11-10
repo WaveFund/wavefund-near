@@ -1,0 +1,45 @@
+{
+  "date": "2026-11-10",
+  "scope": "agent-layer-local-only",
+  "unit": {
+    "passed": 23,
+    "failed": 0,
+    "skipped": 0,
+    "log": "agent-unit.log"
+  },
+  "integration": {
+    "passed": 4,
+    "failed": 0,
+    "provider": "scripted HTTP test responder, not an LLM",
+    "cases": [
+      "invalid output submits zero transactions",
+      "abstention preserves Hold",
+      "65% model allocation reaches Safe execution",
+      "changed output selects and executes 80% allocation"
+    ],
+    "evidence": "agent-integration.json"
+  },
+  "mutations": {
+    "killed": 4,
+    "survived": 0,
+    "gates": [
+      "allocation range",
+      "forecast trade budget",
+      "positive quoted edge",
+      "research evidence freshness"
+    ]
+  },
+  "frontend": {
+    "typecheck": "passed",
+    "productionBuild": "passed"
+  },
+  "liveInference": false,
+  "attestationVerified": false,
+  "solidityChanges": false,
+  "previousContractBaseline": {
+    "passed": 400,
+    "note": "Unchanged contracts; full suite last run for preceding local-demo milestone."
+  },
+  "publicDeployment": false,
+  "realFunds": false
+}

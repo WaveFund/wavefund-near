@@ -1,0 +1,2240 @@
+{
+  "kind": "mock-http-integration-not-live-inference",
+  "cases": [
+    {
+      "name": "invalid-output-no-transactions",
+      "passed": true,
+      "receipts": 0
+    },
+    {
+      "name": "abstention-preserves-hold",
+      "passed": true,
+      "state": {
+        "mode": "local-simulation",
+        "chainId": 31337,
+        "chain": {
+          "id": 31337,
+          "blockNumber": "61",
+          "timestamp": "1794289026"
+        },
+        "running": false,
+        "stage": "completed",
+        "roundId": "1",
+        "safe": {
+          "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+          "stableBalance": "2000000000",
+          "assetBalance": "0",
+          "valueUsdX18": "2000000000000000000000"
+        },
+        "forecast": {
+          "escrow": "0",
+          "committedEscrow": "25000000",
+          "deposits": "20000000",
+          "participants": [
+            {
+              "address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+              "name": "Quant",
+              "stableBalance": "100000000",
+              "initialStableBalance": "100000000",
+              "deposit": "10000000",
+              "payout": "10000000",
+              "profitLoss": "0"
+            },
+            {
+              "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+              "name": "Guardian",
+              "stableBalance": "100000000",
+              "initialStableBalance": "100000000",
+              "deposit": "10000000",
+              "payout": "10000000",
+              "profitLoss": "0"
+            }
+          ],
+          "payouts": [
+            {
+              "address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+              "amount": "10000000"
+            },
+            {
+              "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+              "amount": "10000000"
+            }
+          ]
+        },
+        "sponsor": {
+          "reserve": "100000000"
+        },
+        "round": {
+          "status": 3,
+          "tradingEnd": "1794288846",
+          "evaluationEnd": "1794289026",
+          "realisedReturnX18": "1000000000000000000",
+          "piX18": "500000000000000000",
+          "winnerId": 0
+        },
+        "oracle": {
+          "stableUsdX18": "1000000000000000000",
+          "assetUsdX18": "2100000000000000000000",
+          "publishedAt": "1794289026",
+          "simulated": true
+        },
+        "proposals": [
+          {
+            "id": "0",
+            "label": "Hold current assets",
+            "allocationBps": 0,
+            "probabilityX18": "500000000000000000",
+            "twapX18": "500000000000000000",
+            "rationale": "",
+            "proposer": "0x0000000000000000000000000000000000000000"
+          },
+          {
+            "id": "1",
+            "label": "65% approved asset",
+            "allocationBps": 6500,
+            "probabilityX18": "500000000000000000",
+            "twapX18": "500000000000000000",
+            "rationale": "MODEL SUMMARY (test-fixture; synthetic assets): Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "proposer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+          },
+          {
+            "id": "2",
+            "label": "25% approved asset",
+            "allocationBps": 2500,
+            "probabilityX18": "500000000000000000",
+            "twapX18": "500000000000000000",
+            "rationale": "MODEL SUMMARY (test-fixture; synthetic assets): Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "proposer": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65"
+          }
+        ],
+        "inference": {
+          "mode": "test-fixture",
+          "model": "scripted-http-fixture",
+          "status": "complete",
+          "attestationVerified": false,
+          "evidenceSource": "fixture"
+        },
+        "agentRecords": [
+          {
+            "name": "Momentum",
+            "role": "proposer",
+            "provider": "test-fixture",
+            "model": "scripted-http-fixture",
+            "attestationVerified": false,
+            "inputHash": "27dcc03d60c390650d060588980bb0acf6b8eb33aa3be90c732e94a7342f020d",
+            "outputHash": "2ff4da563b366c1eb4c99779760f0dbc322e01db7dff3316597c54937bca7f7e",
+            "decision": {
+              "allocationBps": 6500,
+              "confidenceBps": 0,
+              "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+              "risks": [
+                "Synthetic observations do not establish a profitable real strategy."
+              ],
+              "evidenceIds": [
+                "market-670af0fd1d7d1496"
+              ]
+            },
+            "usage": {
+              "inputTokens": 100,
+              "outputTokens": 100
+            },
+            "timestamp": "2026-11-10T05:33:06.046Z"
+          },
+          {
+            "name": "Conservative",
+            "role": "proposer",
+            "provider": "test-fixture",
+            "model": "scripted-http-fixture",
+            "attestationVerified": false,
+            "inputHash": "3a86487247427e250c83bfebe46ffad32cb816e1488fb760ebdf30a73f23268b",
+            "outputHash": "2eb73aa11ba2ceed7e4f95fe4514b5be6646069aff5b0ff43b7c4a12c3fa2301",
+            "decision": {
+              "allocationBps": 2500,
+              "confidenceBps": 0,
+              "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+              "risks": [
+                "Synthetic observations do not establish a profitable real strategy."
+              ],
+              "evidenceIds": [
+                "market-670af0fd1d7d1496"
+              ]
+            },
+            "usage": {
+              "inputTokens": 100,
+              "outputTokens": 100
+            },
+            "timestamp": "2026-11-10T05:33:06.046Z"
+          },
+          {
+            "name": "Quant",
+            "role": "forecaster",
+            "provider": "test-fixture",
+            "model": "scripted-http-fixture",
+            "attestationVerified": false,
+            "inputHash": "8f8c2ff7efe8c7d4e605b9fbc2721a7ad3e8497eea375f87c33550dac2cc2714",
+            "outputHash": "b88a92a097fc08c7769b9859fee6b490f85fb4e468ffcd199e3645b85e511ced",
+            "decision": {
+              "forecasts": [
+                {
+                  "proposalId": 0,
+                  "expectedReturnBps": 0,
+                  "confidenceBps": 0,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                },
+                {
+                  "proposalId": 1,
+                  "expectedReturnBps": 500,
+                  "confidenceBps": 0,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                },
+                {
+                  "proposalId": 2,
+                  "expectedReturnBps": 0,
+                  "confidenceBps": 0,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                }
+              ]
+            },
+            "usage": {
+              "inputTokens": 100,
+              "outputTokens": 100
+            },
+            "timestamp": "2026-11-10T05:33:06.047Z"
+          },
+          {
+            "name": "Guardian",
+            "role": "forecaster",
+            "provider": "test-fixture",
+            "model": "scripted-http-fixture",
+            "attestationVerified": false,
+            "inputHash": "c91be5414d2d503dccdc47a0b9b88ff69b5d607fa982eeddb9f58c37e845d09c",
+            "outputHash": "b88a92a097fc08c7769b9859fee6b490f85fb4e468ffcd199e3645b85e511ced",
+            "decision": {
+              "forecasts": [
+                {
+                  "proposalId": 0,
+                  "expectedReturnBps": 0,
+                  "confidenceBps": 0,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                },
+                {
+                  "proposalId": 1,
+                  "expectedReturnBps": 500,
+                  "confidenceBps": 0,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                },
+                {
+                  "proposalId": 2,
+                  "expectedReturnBps": 0,
+                  "confidenceBps": 0,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                }
+              ]
+            },
+            "usage": {
+              "inputTokens": 100,
+              "outputTokens": 100
+            },
+            "timestamp": "2026-11-10T05:33:06.048Z"
+          }
+        ],
+        "tradeDecisions": [
+          {
+            "agent": "Quant",
+            "action": "abstain"
+          },
+          {
+            "agent": "Guardian",
+            "action": "abstain"
+          }
+        ],
+        "agents": [
+          {
+            "name": "Momentum",
+            "role": "proposer",
+            "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "action": "65% asset allocation",
+            "risks": [
+              "Synthetic observations do not establish a profitable real strategy."
+            ],
+            "evidenceIds": [
+              "market-670af0fd1d7d1496"
+            ]
+          },
+          {
+            "name": "Conservative",
+            "role": "proposer",
+            "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "action": "25% asset allocation",
+            "risks": [
+              "Synthetic observations do not establish a profitable real strategy."
+            ],
+            "evidenceIds": [
+              "market-670af0fd1d7d1496"
+            ]
+          },
+          {
+            "name": "Quant",
+            "role": "forecaster",
+            "rationale": "Independent forecasts recorded for every proposal; entry quotes determine whether to trade.",
+            "action": "Abstained: no sufficiently confident forecast with a positive quoted edge",
+            "forecasts": [
+              {
+                "proposalId": 0,
+                "expectedReturnBps": 0,
+                "confidenceBps": 0,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              },
+              {
+                "proposalId": 1,
+                "expectedReturnBps": 500,
+                "confidenceBps": 0,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              },
+              {
+                "proposalId": 2,
+                "expectedReturnBps": 0,
+                "confidenceBps": 0,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Guardian",
+            "role": "forecaster",
+            "rationale": "Independent forecasts recorded for every proposal; entry quotes determine whether to trade.",
+            "action": "Abstained: no sufficiently confident forecast with a positive quoted edge",
+            "forecasts": [
+              {
+                "proposalId": 0,
+                "expectedReturnBps": 0,
+                "confidenceBps": 0,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              },
+              {
+                "proposalId": 1,
+                "expectedReturnBps": 500,
+                "confidenceBps": 0,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              },
+              {
+                "proposalId": 2,
+                "expectedReturnBps": 0,
+                "confidenceBps": 0,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              }
+            ]
+          }
+        ],
+        "receipts": [
+          {
+            "id": 1,
+            "label": "Refresh simulated oracle: ETH 2000 USD",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+            "functionName": "setPrices",
+            "nonce": 38,
+            "status": "success",
+            "hash": "0x0d87dda55a8849720aa4d2736279f3f0df9a9c80a089f8021c06e35d7db157f6",
+            "blockNumber": "39",
+            "blockHash": "0x655a115fe6809c68050411600f7a9cea54156a237d2c281391b0a2d9ac5e9a1d"
+          },
+          {
+            "id": 2,
+            "label": "Safe authorizes round 1 policy",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+            "functionName": "execTransaction",
+            "nonce": 39,
+            "status": "success",
+            "hash": "0x89c4c439b70416c8dc606e88962f630674694355bd11cb0257e95cc49e26dfa8",
+            "blockNumber": "40",
+            "blockHash": "0xd38b276c1e658682c72777197004f4eb2f38b6128d4f6a9e6ad13029aa8bb85a"
+          },
+          {
+            "id": 3,
+            "label": "Keeper opens forecasting round",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "openRound",
+            "nonce": 40,
+            "status": "success",
+            "hash": "0x2eb90de2cffdaffaa0a56cc259a311f467407d323d8052ddeb5d17f5ff0157bd",
+            "blockNumber": "41",
+            "blockHash": "0xcc31ce156a189814bde449b7ca65dc9bdd569426793b141b928fb41ba103a9c8"
+          },
+          {
+            "id": 4,
+            "label": "Momentum registers",
+            "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+            "to": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+            "functionName": "registerAgent",
+            "nonce": 0,
+            "status": "success",
+            "hash": "0x53d555a348b8310b94d5f21955dde8e9230bd4377a9c8a69e507485b20f2f7ec",
+            "blockNumber": "42",
+            "blockHash": "0x96db7575d37673c39517726ccb721325475d6773da55e943fb78fe96d50a882d"
+          },
+          {
+            "id": 5,
+            "label": "Momentum approves refundable proposal bond",
+            "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+            "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            "functionName": "approve",
+            "nonce": 1,
+            "status": "success",
+            "hash": "0x5c1411d13b38305f128056ee2413190dd74c436c0506660d16195f34e8d1c3bf",
+            "blockNumber": "43",
+            "blockHash": "0x0462a7c90ad215d3e70f16091a0ef3270928423b57db7a3653daf2bfc6a0f884"
+          },
+          {
+            "id": 6,
+            "label": "Momentum proposes 65% asset exposure",
+            "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "propose",
+            "nonce": 2,
+            "status": "success",
+            "hash": "0xe19c6bce8a7f7fc8d650bae5312ace5dab9c9b0d9bdb19ea0e405605fd5674a7",
+            "blockNumber": "44",
+            "blockHash": "0x337b622895186d7357513e883833c958f9337d61db74179ea808919f295efafc"
+          },
+          {
+            "id": 7,
+            "label": "Conservative registers",
+            "from": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+            "to": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+            "functionName": "registerAgent",
+            "nonce": 0,
+            "status": "success",
+            "hash": "0xb0bbf07af99e9ce5c02c97c52154bb635b27755e88b3a754cefb871d17d599b4",
+            "blockNumber": "45",
+            "blockHash": "0x1ab7e11a818fb7ff0ea37dfa6687e34c12e889433688a40044eb2097a8634179"
+          },
+          {
+            "id": 8,
+            "label": "Conservative approves refundable proposal bond",
+            "from": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+            "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            "functionName": "approve",
+            "nonce": 1,
+            "status": "success",
+            "hash": "0xab7d8e7fd303d484e92cee12b68fbf092fc87d8dabc2fe75b6166f9ff6504dab",
+            "blockNumber": "46",
+            "blockHash": "0xfc6f774c447edf4bd20821cfa0e6ba9261f79a3ceff923e62ccde28e6525b6f3"
+          },
+          {
+            "id": 9,
+            "label": "Conservative proposes 25% asset exposure",
+            "from": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "propose",
+            "nonce": 2,
+            "status": "success",
+            "hash": "0x4e304669e06c0f1276661c7cc4f5b41af45bd20f0100b601f82f2c10d20bdb20",
+            "blockNumber": "47",
+            "blockHash": "0x78ae409995fb93b87ccd3dc6f40f4c0cf56e56a3b05690b1df9bd39e8c733312"
+          },
+          {
+            "id": 10,
+            "label": "Quant approves forecast collateral",
+            "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            "functionName": "approve",
+            "nonce": 0,
+            "status": "success",
+            "hash": "0x29b543c8d8807514e5dff9fe48e418bacaa7cdb90080a602505363597ed80e73",
+            "blockNumber": "48",
+            "blockHash": "0x2f683d5845434bc49bb54961e0e6bd0552faa81b6b6a47aeb5113c690b023a73"
+          },
+          {
+            "id": 11,
+            "label": "Quant deposits 10 simulated USDC",
+            "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "deposit",
+            "nonce": 1,
+            "status": "success",
+            "hash": "0xef881ed4cb954cd901392120f9e46f581b790ec741b2e89bc835e85211acef82",
+            "blockNumber": "49",
+            "blockHash": "0xd79422f7d5c84bf51937c7a96ab89d569d1d0f2d5fb82bf0aa1b611027b721b7"
+          },
+          {
+            "id": 12,
+            "label": "Guardian approves forecast collateral",
+            "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+            "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            "functionName": "approve",
+            "nonce": 0,
+            "status": "success",
+            "hash": "0xb855412c3bd1e7ce669b834da40a6af1c7dc1bda2cff7e96f72d5dd3ebe7ae71",
+            "blockNumber": "50",
+            "blockHash": "0xa71fe1b5c71e36ead7df83a9dacb5d17effb6575a5007f55e18dfe90fb29acf8"
+          },
+          {
+            "id": 13,
+            "label": "Guardian deposits 10 simulated USDC",
+            "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "deposit",
+            "nonce": 1,
+            "status": "success",
+            "hash": "0xc927f5720f15e78f6c4671ab1a3fe2d818b8e9a9d6d77f40defcddcbcd692d38",
+            "blockNumber": "51",
+            "blockHash": "0xc0438aad57906ae7a208deec24f59adaf6ae3a3c38ed01373938ab837736c8ef"
+          },
+          {
+            "id": 14,
+            "label": "Collapse forecasting markets",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "collapse",
+            "nonce": 41,
+            "status": "success",
+            "hash": "0xe7cdfb6f95ca3c2c52bd4ce4dec4ea7abd78a1f35498cbbd3ca4cbf8c647a5b2",
+            "blockNumber": "54",
+            "blockHash": "0x61003ed0fb9edf83120b371547516088be3e12bc909393fc5ea67bb67c3e64ff"
+          },
+          {
+            "id": 15,
+            "label": "Refresh simulated oracle: ETH 2000 USD",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+            "functionName": "setPrices",
+            "nonce": 42,
+            "status": "success",
+            "hash": "0x6bf6e27eb99883f5fa691b59d59fbecebfe63cf53b6bacfe3f6b33891ba17b63",
+            "blockNumber": "55",
+            "blockHash": "0xe2b5068da3670ff0fa8245912af34b218ed90027fa3913e8a02cd5852ef87811"
+          },
+          {
+            "id": 16,
+            "label": "Execute canonical winner through Safe",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d",
+            "functionName": "execute",
+            "nonce": 43,
+            "status": "success",
+            "hash": "0x7d82f7e3bbd6ec4c585c933e88e6c3bcd87ddab28d161efe0f252fe1819ae21c",
+            "blockNumber": "56",
+            "blockHash": "0x248b987475f30858fead2fa66ec695bb7be80f02e9addf10c7240cfe4785b693"
+          },
+          {
+            "id": 17,
+            "label": "Refresh simulated oracle: ETH 2100 USD",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+            "functionName": "setPrices",
+            "nonce": 44,
+            "status": "success",
+            "hash": "0xe2b0b88bfc80168c34a14be9f489361cd6c556d6bbe0b53a51901fb443a482ea",
+            "blockNumber": "58",
+            "blockHash": "0x510eb5a244bb2eaf501b7bd1bab0d867686f0ae447bd0454dd249b093002c869"
+          },
+          {
+            "id": 18,
+            "label": "Settle measured portfolio return",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
+            "functionName": "settle",
+            "nonce": 45,
+            "status": "success",
+            "hash": "0x25a8447f9be679be98fbf4ec758a93ecc57c6a18353c0669cbef40aef3eed994",
+            "blockNumber": "59",
+            "blockHash": "0x9a63ee872c6a4b44067256a3e60092ec1cdad05008e174e074eef2268fd8e051"
+          },
+          {
+            "id": 19,
+            "label": "Quant redeems winning-world balance",
+            "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "redeem",
+            "nonce": 2,
+            "status": "success",
+            "hash": "0x1883f19bb33dfd9457b267244e0dbc873650079d5785f36a121e478069ba9e6f",
+            "blockNumber": "60",
+            "blockHash": "0x601e3f88c9781b0f2692d79223067e30b096a3406c94fe3b7fb0fc7d9366b334"
+          },
+          {
+            "id": 20,
+            "label": "Guardian redeems winning-world balance",
+            "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "redeem",
+            "nonce": 2,
+            "status": "success",
+            "hash": "0xe4b85946a9e36887fb4f2886a132bec676c091d48d8ffb6e73f142af71e23094",
+            "blockNumber": "61",
+            "blockHash": "0x5f19164917cfe2870874edb36fadfad651f33f46ae0ba7443173f81243144770"
+          }
+        ],
+        "messages": [
+          {
+            "timestamp": "2026-11-10T05:33:06.041Z",
+            "stage": "analysing",
+            "message": "Research agents independently assess evidence. No round authorization or forecasting deposit is submitted until all four decisions validate."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.048Z",
+            "stage": "opening",
+            "message": "Owner approves exact policy terms. All investment capital stays in the trading Safe."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.078Z",
+            "stage": "proposing",
+            "message": "Validated model allocations are submitted under the fixed owner-approved asset policy."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.123Z",
+            "stage": "forecasting",
+            "message": "Independent model forecasts are compared with actual v4 entry quotes; no qualifying edge means abstain."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.154Z",
+            "stage": "selecting",
+            "message": "Anvil advances the local clock; final-window scores select the canonical winner."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.170Z",
+            "stage": "selecting",
+            "message": "Onchain selected proposal 0 with target 0 bps. No caller supplies the winning target."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.171Z",
+            "stage": "executing",
+            "message": "The restricted module reads the winner and executes the approved allocation through the Safe."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.181Z",
+            "stage": "evaluating",
+            "message": "Record actual holdings and advance the local evaluation horizon. Prices remain explicit simulation fixtures."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.189Z",
+            "stage": "settling",
+            "message": "The tracker computes return from recorded quantities and simulated prices, including actual fixture-router fees."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.196Z",
+            "stage": "redeeming",
+            "message": "Forecasters redeem only winning-world claims; Safe investment balances are not used for payouts."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.211Z",
+            "stage": "completed",
+            "message": "Model-directed local round completed. Real Safe/v4 transactions; prices and assets remain simulated; inference attestation not verified."
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "model-allocation-6500-executes",
+      "passed": true,
+      "state": {
+        "mode": "local-simulation",
+        "chainId": 31337,
+        "chain": {
+          "id": 31337,
+          "blockNumber": "65",
+          "timestamp": "1794289025"
+        },
+        "running": false,
+        "stage": "completed",
+        "roundId": "1",
+        "safe": {
+          "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+          "stableBalance": "700000000",
+          "assetBalance": "648050000000000000",
+          "valueUsdX18": "2060905000000000000000"
+        },
+        "forecast": {
+          "escrow": "0",
+          "committedEscrow": "25000000",
+          "deposits": "20000000",
+          "participants": [
+            {
+              "address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+              "name": "Quant",
+              "stableBalance": "100755906",
+              "initialStableBalance": "100000000",
+              "deposit": "10000000",
+              "payout": "10755906",
+              "profitLoss": "755906"
+            },
+            {
+              "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+              "name": "Guardian",
+              "stableBalance": "100247043",
+              "initialStableBalance": "100000000",
+              "deposit": "10000000",
+              "payout": "10247043",
+              "profitLoss": "247043"
+            }
+          ],
+          "payouts": [
+            {
+              "address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+              "amount": "10755906"
+            },
+            {
+              "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+              "amount": "10247043"
+            }
+          ]
+        },
+        "sponsor": {
+          "reserve": "98997051"
+        },
+        "round": {
+          "status": 3,
+          "tradingEnd": "1794288845",
+          "evaluationEnd": "1794289025",
+          "realisedReturnX18": "1030452500000000000",
+          "piX18": "804525000000000000",
+          "winnerId": 1
+        },
+        "oracle": {
+          "stableUsdX18": "1000000000000000000",
+          "assetUsdX18": "2100000000000000000000",
+          "publishedAt": "1794289025",
+          "simulated": true
+        },
+        "proposals": [
+          {
+            "id": "0",
+            "label": "Hold current assets",
+            "allocationBps": 0,
+            "probabilityX18": "500000000000000000",
+            "twapX18": "500000000000000000",
+            "rationale": "",
+            "proposer": "0x0000000000000000000000000000000000000000"
+          },
+          {
+            "id": "1",
+            "label": "65% approved asset",
+            "allocationBps": 6500,
+            "probabilityX18": "763669685695050857",
+            "twapX18": "763669685695050857",
+            "rationale": "MODEL SUMMARY (test-fixture; synthetic assets): Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "proposer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+          },
+          {
+            "id": "2",
+            "label": "25% approved asset",
+            "allocationBps": 2500,
+            "probabilityX18": "500000000000000000",
+            "twapX18": "500000000000000000",
+            "rationale": "MODEL SUMMARY (test-fixture; synthetic assets): Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "proposer": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65"
+          }
+        ],
+        "inference": {
+          "mode": "test-fixture",
+          "model": "scripted-http-fixture",
+          "status": "complete",
+          "attestationVerified": false,
+          "evidenceSource": "fixture"
+        },
+        "agentRecords": [
+          {
+            "name": "Momentum",
+            "role": "proposer",
+            "provider": "test-fixture",
+            "model": "scripted-http-fixture",
+            "attestationVerified": false,
+            "inputHash": "27dcc03d60c390650d060588980bb0acf6b8eb33aa3be90c732e94a7342f020d",
+            "outputHash": "467a071726f50b3dd6eabd812b098b58249bee8a8c7dc0fbf9f973d7e03d671c",
+            "decision": {
+              "allocationBps": 6500,
+              "confidenceBps": 8500,
+              "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+              "risks": [
+                "Synthetic observations do not establish a profitable real strategy."
+              ],
+              "evidenceIds": [
+                "market-670af0fd1d7d1496"
+              ]
+            },
+            "usage": {
+              "inputTokens": 100,
+              "outputTokens": 100
+            },
+            "timestamp": "2026-11-10T05:33:06.339Z"
+          },
+          {
+            "name": "Conservative",
+            "role": "proposer",
+            "provider": "test-fixture",
+            "model": "scripted-http-fixture",
+            "attestationVerified": false,
+            "inputHash": "3a86487247427e250c83bfebe46ffad32cb816e1488fb760ebdf30a73f23268b",
+            "outputHash": "563b1f6b2398d267adb11d105d2ceaf0462e6578aa4d5f3444f95ba2f40f62a0",
+            "decision": {
+              "allocationBps": 2500,
+              "confidenceBps": 8500,
+              "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+              "risks": [
+                "Synthetic observations do not establish a profitable real strategy."
+              ],
+              "evidenceIds": [
+                "market-670af0fd1d7d1496"
+              ]
+            },
+            "usage": {
+              "inputTokens": 100,
+              "outputTokens": 100
+            },
+            "timestamp": "2026-11-10T05:33:06.339Z"
+          },
+          {
+            "name": "Quant",
+            "role": "forecaster",
+            "provider": "test-fixture",
+            "model": "scripted-http-fixture",
+            "attestationVerified": false,
+            "inputHash": "8f8c2ff7efe8c7d4e605b9fbc2721a7ad3e8497eea375f87c33550dac2cc2714",
+            "outputHash": "ddd9ec9dbb89ad9132442ce0a15627f4ac2d1185cae88eca17b222d728530d2d",
+            "decision": {
+              "forecasts": [
+                {
+                  "proposalId": 0,
+                  "expectedReturnBps": 0,
+                  "confidenceBps": 8500,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                },
+                {
+                  "proposalId": 1,
+                  "expectedReturnBps": 500,
+                  "confidenceBps": 8500,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                },
+                {
+                  "proposalId": 2,
+                  "expectedReturnBps": 0,
+                  "confidenceBps": 8500,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                }
+              ]
+            },
+            "usage": {
+              "inputTokens": 100,
+              "outputTokens": 100
+            },
+            "timestamp": "2026-11-10T05:33:06.340Z"
+          },
+          {
+            "name": "Guardian",
+            "role": "forecaster",
+            "provider": "test-fixture",
+            "model": "scripted-http-fixture",
+            "attestationVerified": false,
+            "inputHash": "c91be5414d2d503dccdc47a0b9b88ff69b5d607fa982eeddb9f58c37e845d09c",
+            "outputHash": "ddd9ec9dbb89ad9132442ce0a15627f4ac2d1185cae88eca17b222d728530d2d",
+            "decision": {
+              "forecasts": [
+                {
+                  "proposalId": 0,
+                  "expectedReturnBps": 0,
+                  "confidenceBps": 8500,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                },
+                {
+                  "proposalId": 1,
+                  "expectedReturnBps": 500,
+                  "confidenceBps": 8500,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                },
+                {
+                  "proposalId": 2,
+                  "expectedReturnBps": 0,
+                  "confidenceBps": 8500,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                }
+              ]
+            },
+            "usage": {
+              "inputTokens": 100,
+              "outputTokens": 100
+            },
+            "timestamp": "2026-11-10T05:33:06.341Z"
+          }
+        ],
+        "tradeDecisions": [
+          {
+            "agent": "Quant",
+            "action": "buy",
+            "proposalId": 1,
+            "side": "long",
+            "creditAmount": "2000000",
+            "quotedOutcomes": "3425507577923934801",
+            "minimumOutcomes": "3408380040034315126",
+            "expectedValue": "3425507",
+            "expectedProfit": "1425507"
+          },
+          {
+            "agent": "Guardian",
+            "action": "buy",
+            "proposalId": 1,
+            "side": "long",
+            "creditAmount": "2000000",
+            "quotedOutcomes": "2793005995729825768",
+            "minimumOutcomes": "2779040965751176639",
+            "expectedValue": "2793005",
+            "expectedProfit": "793005"
+          }
+        ],
+        "agents": [
+          {
+            "name": "Momentum",
+            "role": "proposer",
+            "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "action": "65% asset allocation",
+            "risks": [
+              "Synthetic observations do not establish a profitable real strategy."
+            ],
+            "evidenceIds": [
+              "market-670af0fd1d7d1496"
+            ]
+          },
+          {
+            "name": "Conservative",
+            "role": "proposer",
+            "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "action": "25% asset allocation",
+            "risks": [
+              "Synthetic observations do not establish a profitable real strategy."
+            ],
+            "evidenceIds": [
+              "market-670af0fd1d7d1496"
+            ]
+          },
+          {
+            "name": "Quant",
+            "role": "forecaster",
+            "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "action": "LONG proposal 1: 2 test USDC, expected value 3425507 micro-USDC (forecast, not a guarantee)",
+            "forecasts": [
+              {
+                "proposalId": 0,
+                "expectedReturnBps": 0,
+                "confidenceBps": 8500,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              },
+              {
+                "proposalId": 1,
+                "expectedReturnBps": 500,
+                "confidenceBps": 8500,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              },
+              {
+                "proposalId": 2,
+                "expectedReturnBps": 0,
+                "confidenceBps": 8500,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              }
+            ],
+            "risks": [
+              "Synthetic observations do not establish a profitable real strategy."
+            ],
+            "evidenceIds": [
+              "market-670af0fd1d7d1496"
+            ]
+          },
+          {
+            "name": "Guardian",
+            "role": "forecaster",
+            "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "action": "LONG proposal 1: 2 test USDC, expected value 2793005 micro-USDC (forecast, not a guarantee)",
+            "forecasts": [
+              {
+                "proposalId": 0,
+                "expectedReturnBps": 0,
+                "confidenceBps": 8500,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              },
+              {
+                "proposalId": 1,
+                "expectedReturnBps": 500,
+                "confidenceBps": 8500,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              },
+              {
+                "proposalId": 2,
+                "expectedReturnBps": 0,
+                "confidenceBps": 8500,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              }
+            ],
+            "risks": [
+              "Synthetic observations do not establish a profitable real strategy."
+            ],
+            "evidenceIds": [
+              "market-670af0fd1d7d1496"
+            ]
+          }
+        ],
+        "receipts": [
+          {
+            "id": 1,
+            "label": "Refresh simulated oracle: ETH 2000 USD",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+            "functionName": "setPrices",
+            "nonce": 38,
+            "status": "success",
+            "hash": "0x33a02e5b21ebb846804a78ceac82272abf19f0fd53098ff774b4e6b8c70fca2d",
+            "blockNumber": "39",
+            "blockHash": "0x4b46b9a841c3a76be8e14cc05e859772b482b636b156fcfaf963748d0191131f"
+          },
+          {
+            "id": 2,
+            "label": "Safe authorizes round 1 policy",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+            "functionName": "execTransaction",
+            "nonce": 39,
+            "status": "success",
+            "hash": "0xd0952ad4740274c5e6aa14965e09d2224ac6e676ff73edf4a2e73188f6577cd7",
+            "blockNumber": "40",
+            "blockHash": "0x063e568792190ff81706d6c1926ce46f5bbd7d13b71c0df8e547265e92841b91"
+          },
+          {
+            "id": 3,
+            "label": "Keeper opens forecasting round",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "openRound",
+            "nonce": 40,
+            "status": "success",
+            "hash": "0xa45b7dd4b83cb527abe6d6369d94c890470f66f25279c8bff2b4c4226f5200d4",
+            "blockNumber": "41",
+            "blockHash": "0x0e8d6cd71eee404ccb7f44afc0df45cc524f66582508220fd1364e4db42d90ef"
+          },
+          {
+            "id": 4,
+            "label": "Momentum registers",
+            "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+            "to": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+            "functionName": "registerAgent",
+            "nonce": 0,
+            "status": "success",
+            "hash": "0x0add01b351b023414c1356869952d833033947342b142ab9a4bfaa6113621538",
+            "blockNumber": "42",
+            "blockHash": "0x7175db88c880d824df31de0e767b9521e1ff6c933d117f0bdaa8e57085f78649"
+          },
+          {
+            "id": 5,
+            "label": "Momentum approves refundable proposal bond",
+            "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+            "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            "functionName": "approve",
+            "nonce": 1,
+            "status": "success",
+            "hash": "0xa1f4416eef274852005421096e326c52211637c546426495dbc7d3c58208b99b",
+            "blockNumber": "43",
+            "blockHash": "0x103125d8762ba4eb2eadbeb5881632ebd65c5ecf78c8dfd34c86f0674ae1c1ce"
+          },
+          {
+            "id": 6,
+            "label": "Momentum proposes 65% asset exposure",
+            "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "propose",
+            "nonce": 2,
+            "status": "success",
+            "hash": "0x97a05c5b53a535249f8a799712e256cc0b86be1402e27f008e39fbcd23486c6f",
+            "blockNumber": "44",
+            "blockHash": "0x3e9e65544c3ad5a838b45197289219bf846b5210b427e3c4fa4401463efb887f"
+          },
+          {
+            "id": 7,
+            "label": "Conservative registers",
+            "from": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+            "to": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+            "functionName": "registerAgent",
+            "nonce": 0,
+            "status": "success",
+            "hash": "0x1967706643b3fa0653662beb00bc1537fca06eabef350bfde61ec9e1ef22341e",
+            "blockNumber": "45",
+            "blockHash": "0x55eb809b89a100bf26c35c9b30a9a52220df5eeba317b48f359a347cc2c49d17"
+          },
+          {
+            "id": 8,
+            "label": "Conservative approves refundable proposal bond",
+            "from": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+            "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            "functionName": "approve",
+            "nonce": 1,
+            "status": "success",
+            "hash": "0xcbde191df59ecd4680903ffcecc68940c4b21cdd6d7820e6d0a485ee86353a9a",
+            "blockNumber": "46",
+            "blockHash": "0x4a3e7935f143755b10c377e3085fcf8710e7ca9bd9028d09deb839da0f7107a0"
+          },
+          {
+            "id": 9,
+            "label": "Conservative proposes 25% asset exposure",
+            "from": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "propose",
+            "nonce": 2,
+            "status": "success",
+            "hash": "0x889096274589df336034b076637bd6f5549dd78a8b945661388d515a42c03d84",
+            "blockNumber": "47",
+            "blockHash": "0x312481df0c3615ea6af17763c649d22ba1895d4ecbe6492fae17030214e9ae33"
+          },
+          {
+            "id": 10,
+            "label": "Quant approves forecast collateral",
+            "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            "functionName": "approve",
+            "nonce": 0,
+            "status": "success",
+            "hash": "0x61cc9a4d0a23b0c3e8963720d059a4dbfb005612eac6815e0f59c0e207a3ced3",
+            "blockNumber": "48",
+            "blockHash": "0xad395f2e3891e8758cce0111c780140d56e66adf0289e816099ceb778a73b05d"
+          },
+          {
+            "id": 11,
+            "label": "Quant deposits 10 simulated USDC",
+            "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "deposit",
+            "nonce": 1,
+            "status": "success",
+            "hash": "0xd802b828e7d46ead9297aa004d7713b289deac0c1aacd8a03f6aadd8b241c8bb",
+            "blockNumber": "49",
+            "blockHash": "0xf3a956e67ebdaf8d2d64b38a7e8a1fd80c0d7eb3325f6cdd3a80d81a2506aea8"
+          },
+          {
+            "id": 12,
+            "label": "Guardian approves forecast collateral",
+            "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+            "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            "functionName": "approve",
+            "nonce": 0,
+            "status": "success",
+            "hash": "0x672586a4bdffd503b5d2aa7db05c104932a0c742079c8f33317bb21611b04abd",
+            "blockNumber": "50",
+            "blockHash": "0x4153227eb2ce23d087095274dd641c0b67d8a4c6071953de4b037000e1df7b60"
+          },
+          {
+            "id": 13,
+            "label": "Guardian deposits 10 simulated USDC",
+            "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "deposit",
+            "nonce": 1,
+            "status": "success",
+            "hash": "0x5fbf560ac15019b748cb043ee06f2473b918084dd2d7510540b0c16dde0aa121",
+            "blockNumber": "51",
+            "blockHash": "0x58e8d491e75f8a2bcd66f802ec46d262a5941506b58642254e975a084e533d7e"
+          },
+          {
+            "id": 14,
+            "label": "Quant claims credits for proposal 1",
+            "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "claimCredits",
+            "nonce": 2,
+            "status": "success",
+            "hash": "0x1c2feb15f1fe79e25ffe4b0cfbf8710f5dbd0d4baff9547fac3198b39a6a0481",
+            "blockNumber": "53",
+            "blockHash": "0x47317ec4da076c98d2fb89c5e007a53bc5b619b32cbfdf6c17dcfdfe5853b8de"
+          },
+          {
+            "id": 15,
+            "label": "Quant buys LONG after forecast, quote and budget validation",
+            "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "buyLong",
+            "nonce": 3,
+            "status": "success",
+            "hash": "0xddc064274b0e170f46829b654f85479adb1c2c9be4e9cd354238eb7fb512fd5a",
+            "blockNumber": "54",
+            "blockHash": "0x75c55492497b74eef460100a3b32db4b2c435fc16c9f19223e883fe7b865c4e4"
+          },
+          {
+            "id": 16,
+            "label": "Guardian claims credits for proposal 1",
+            "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "claimCredits",
+            "nonce": 2,
+            "status": "success",
+            "hash": "0xc26cf60dd8cca22e45867033a65a02cba50a217806ce8ef57534c496e2532d1e",
+            "blockNumber": "55",
+            "blockHash": "0x91e24f06841120dc8015aefe3c2636202a196822e2505dd2a4cbbb8bd11f293d"
+          },
+          {
+            "id": 17,
+            "label": "Guardian buys LONG after forecast, quote and budget validation",
+            "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "buyLong",
+            "nonce": 3,
+            "status": "success",
+            "hash": "0x0a1250a502cd301da504f329c2ae1b006b2ed8d7f83060294b68672a0683fba3",
+            "blockNumber": "56",
+            "blockHash": "0x674311878cbae619a3d4f6618d2b53dd3dde081e5e3cf199f671e24cacbefe3a"
+          },
+          {
+            "id": 18,
+            "label": "Collapse forecasting markets",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "collapse",
+            "nonce": 41,
+            "status": "success",
+            "hash": "0x2224a568bdd812ec682d3c37b966f4fc608d1fe6f2d626c9db56aea25c77ca7d",
+            "blockNumber": "58",
+            "blockHash": "0x22e2edf5e422894d79d58801fa49b31166746ba4ae4fe601902edc2271dc637f"
+          },
+          {
+            "id": 19,
+            "label": "Refresh simulated oracle: ETH 2000 USD",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+            "functionName": "setPrices",
+            "nonce": 42,
+            "status": "success",
+            "hash": "0x1dd5cc6da983f9dfca4b8441040b1971ac49abd7157c349d8ba1760953949ee8",
+            "blockNumber": "59",
+            "blockHash": "0xcd7b5e183f79a4e6183cc822504697579dc955c22e90b9953dbd5865769319f8"
+          },
+          {
+            "id": 20,
+            "label": "Execute canonical winner through Safe",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d",
+            "functionName": "execute",
+            "nonce": 43,
+            "status": "success",
+            "hash": "0x51ea2ec5149bc1bb4c16767c0b1f94f7f3466f2237f05294fc83133ccf6e9b6b",
+            "blockNumber": "60",
+            "blockHash": "0xd66c5e4433b3f58f3c09d569ba500f85e36973848402f8702039fee3c61bbc98"
+          },
+          {
+            "id": 21,
+            "label": "Refresh simulated oracle: ETH 2100 USD",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+            "functionName": "setPrices",
+            "nonce": 44,
+            "status": "success",
+            "hash": "0xc7844d1762f8c0471696720e974edcf381bd33d654b784af281484ac99a68067",
+            "blockNumber": "62",
+            "blockHash": "0x203a160532c2aa1132f2746a8a15dfefcd3180dda582a07c0235915e3c4d339f"
+          },
+          {
+            "id": 22,
+            "label": "Settle measured portfolio return",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
+            "functionName": "settle",
+            "nonce": 45,
+            "status": "success",
+            "hash": "0x7b42311c52b4701ebf261eeb5bf38fa99c369c9001b67a0ee8fd32b83bb65709",
+            "blockNumber": "63",
+            "blockHash": "0xac212c6ee8625c13d1112d06e496bc402bdf7623d72ad3da2931f36a7474b52c"
+          },
+          {
+            "id": 23,
+            "label": "Quant redeems winning-world balance",
+            "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "redeem",
+            "nonce": 4,
+            "status": "success",
+            "hash": "0x78fbb481432adf047cfdc4de936d0356a1ec09854de0fa44e1af002864f16ccf",
+            "blockNumber": "64",
+            "blockHash": "0xbd29d2574744912558c8bf13f046f4e0b6bc7c9e219cb2bff8d6c5c90e23ec56"
+          },
+          {
+            "id": 24,
+            "label": "Guardian redeems winning-world balance",
+            "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "redeem",
+            "nonce": 4,
+            "status": "success",
+            "hash": "0x70dea800f16fe154448d2b5eded4cee1d6baa2bc0f510c4a91ea90383a452024",
+            "blockNumber": "65",
+            "blockHash": "0x0312e92831fc74de7e3b35ebca21487bfe87a51ee7e04c243447e2adfb26a38a"
+          }
+        ],
+        "messages": [
+          {
+            "timestamp": "2026-11-10T05:33:06.336Z",
+            "stage": "analysing",
+            "message": "Research agents independently assess evidence. No round authorization or forecasting deposit is submitted until all four decisions validate."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.350Z",
+            "stage": "opening",
+            "message": "Owner approves exact policy terms. All investment capital stays in the trading Safe."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.375Z",
+            "stage": "proposing",
+            "message": "Validated model allocations are submitted under the fixed owner-approved asset policy."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.421Z",
+            "stage": "forecasting",
+            "message": "Independent model forecasts are compared with actual v4 entry quotes; no qualifying edge means abstain."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.483Z",
+            "stage": "selecting",
+            "message": "Anvil advances the local clock; final-window scores select the canonical winner."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.499Z",
+            "stage": "selecting",
+            "message": "Onchain selected proposal 1 with target 6500 bps. No caller supplies the winning target."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.499Z",
+            "stage": "executing",
+            "message": "The restricted module reads the winner and executes the approved allocation through the Safe."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.511Z",
+            "stage": "evaluating",
+            "message": "Record actual holdings and advance the local evaluation horizon. Prices remain explicit simulation fixtures."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.518Z",
+            "stage": "settling",
+            "message": "The tracker computes return from recorded quantities and simulated prices, including actual fixture-router fees."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.523Z",
+            "stage": "redeeming",
+            "message": "Forecasters redeem only winning-world claims; Safe investment balances are not used for payouts."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.535Z",
+            "stage": "completed",
+            "message": "Model-directed local round completed. Real Safe/v4 transactions; prices and assets remain simulated; inference attestation not verified."
+          }
+        ],
+        "error": null
+      }
+    },
+    {
+      "name": "changed-model-output-changes-execution",
+      "passed": true,
+      "state": {
+        "mode": "local-simulation",
+        "chainId": 31337,
+        "chain": {
+          "id": 31337,
+          "blockNumber": "65",
+          "timestamp": "1794289025"
+        },
+        "running": false,
+        "stage": "completed",
+        "roundId": "1",
+        "safe": {
+          "address": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+          "stableBalance": "400000000",
+          "assetBalance": "797600000000000000",
+          "valueUsdX18": "2074960000000000000000"
+        },
+        "forecast": {
+          "escrow": "0",
+          "committedEscrow": "25000000",
+          "deposits": "20000000",
+          "participants": [
+            {
+              "address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+              "name": "Quant",
+              "stableBalance": "100996634",
+              "initialStableBalance": "100000000",
+              "deposit": "10000000",
+              "payout": "10996634",
+              "profitLoss": "996634"
+            },
+            {
+              "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+              "name": "Guardian",
+              "stableBalance": "100443321",
+              "initialStableBalance": "100000000",
+              "deposit": "10000000",
+              "payout": "10443321",
+              "profitLoss": "443321"
+            }
+          ],
+          "payouts": [
+            {
+              "address": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+              "amount": "10996634"
+            },
+            {
+              "address": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+              "amount": "10443321"
+            }
+          ]
+        },
+        "sponsor": {
+          "reserve": "98560045"
+        },
+        "round": {
+          "status": 3,
+          "tradingEnd": "1794288845",
+          "evaluationEnd": "1794289025",
+          "realisedReturnX18": "1037480000000000000",
+          "piX18": "874800000000000000",
+          "winnerId": 2
+        },
+        "oracle": {
+          "stableUsdX18": "1000000000000000000",
+          "assetUsdX18": "2100000000000000000000",
+          "publishedAt": "1794289025",
+          "simulated": true
+        },
+        "proposals": [
+          {
+            "id": "0",
+            "label": "Hold current assets",
+            "allocationBps": 0,
+            "probabilityX18": "500000000000000000",
+            "twapX18": "500000000000000000",
+            "rationale": "",
+            "proposer": "0x0000000000000000000000000000000000000000"
+          },
+          {
+            "id": "1",
+            "label": "20% approved asset",
+            "allocationBps": 2000,
+            "probabilityX18": "500000000000000000",
+            "twapX18": "500000000000000000",
+            "rationale": "MODEL SUMMARY (test-fixture; synthetic assets): Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "proposer": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
+          },
+          {
+            "id": "2",
+            "label": "80% approved asset",
+            "allocationBps": 8000,
+            "probabilityX18": "763669685695050857",
+            "twapX18": "763669685695050857",
+            "rationale": "MODEL SUMMARY (test-fixture; synthetic assets): Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "proposer": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65"
+          }
+        ],
+        "inference": {
+          "mode": "test-fixture",
+          "model": "scripted-http-fixture",
+          "status": "complete",
+          "attestationVerified": false,
+          "evidenceSource": "fixture"
+        },
+        "agentRecords": [
+          {
+            "name": "Momentum",
+            "role": "proposer",
+            "provider": "test-fixture",
+            "model": "scripted-http-fixture",
+            "attestationVerified": false,
+            "inputHash": "27dcc03d60c390650d060588980bb0acf6b8eb33aa3be90c732e94a7342f020d",
+            "outputHash": "228d96c8470867e033439e8d5a1cc1118c178d9e809987c4cce22d33362a785a",
+            "decision": {
+              "allocationBps": 2000,
+              "confidenceBps": 8500,
+              "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+              "risks": [
+                "Synthetic observations do not establish a profitable real strategy."
+              ],
+              "evidenceIds": [
+                "market-670af0fd1d7d1496"
+              ]
+            },
+            "usage": {
+              "inputTokens": 100,
+              "outputTokens": 100
+            },
+            "timestamp": "2026-11-10T05:33:06.657Z"
+          },
+          {
+            "name": "Conservative",
+            "role": "proposer",
+            "provider": "test-fixture",
+            "model": "scripted-http-fixture",
+            "attestationVerified": false,
+            "inputHash": "3a86487247427e250c83bfebe46ffad32cb816e1488fb760ebdf30a73f23268b",
+            "outputHash": "7b8bad1857fb3d56da1bff064f16b95d6350749184b140d9c844144ef60f79a8",
+            "decision": {
+              "allocationBps": 8000,
+              "confidenceBps": 8500,
+              "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+              "risks": [
+                "Synthetic observations do not establish a profitable real strategy."
+              ],
+              "evidenceIds": [
+                "market-670af0fd1d7d1496"
+              ]
+            },
+            "usage": {
+              "inputTokens": 100,
+              "outputTokens": 100
+            },
+            "timestamp": "2026-11-10T05:33:06.658Z"
+          },
+          {
+            "name": "Quant",
+            "role": "forecaster",
+            "provider": "test-fixture",
+            "model": "scripted-http-fixture",
+            "attestationVerified": false,
+            "inputHash": "3d0653537747107b5ea6bac3e5e2ebbfc43a494f6ec8734bb15de158b875594e",
+            "outputHash": "337b52384eab843f540f017dce93f0e12297035e6012286b3b8906fcc96ab906",
+            "decision": {
+              "forecasts": [
+                {
+                  "proposalId": 0,
+                  "expectedReturnBps": 0,
+                  "confidenceBps": 8500,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                },
+                {
+                  "proposalId": 1,
+                  "expectedReturnBps": 0,
+                  "confidenceBps": 8500,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                },
+                {
+                  "proposalId": 2,
+                  "expectedReturnBps": 500,
+                  "confidenceBps": 8500,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                }
+              ]
+            },
+            "usage": {
+              "inputTokens": 100,
+              "outputTokens": 100
+            },
+            "timestamp": "2026-11-10T05:33:06.658Z"
+          },
+          {
+            "name": "Guardian",
+            "role": "forecaster",
+            "provider": "test-fixture",
+            "model": "scripted-http-fixture",
+            "attestationVerified": false,
+            "inputHash": "68ba1db01db5c434569421e2c3d14e4a0381b5563503510fe0c4af61879cd683",
+            "outputHash": "337b52384eab843f540f017dce93f0e12297035e6012286b3b8906fcc96ab906",
+            "decision": {
+              "forecasts": [
+                {
+                  "proposalId": 0,
+                  "expectedReturnBps": 0,
+                  "confidenceBps": 8500,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                },
+                {
+                  "proposalId": 1,
+                  "expectedReturnBps": 0,
+                  "confidenceBps": 8500,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                },
+                {
+                  "proposalId": 2,
+                  "expectedReturnBps": 500,
+                  "confidenceBps": 8500,
+                  "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                  "risks": [
+                    "Synthetic observations do not establish a profitable real strategy."
+                  ],
+                  "evidenceIds": [
+                    "market-670af0fd1d7d1496"
+                  ]
+                }
+              ]
+            },
+            "usage": {
+              "inputTokens": 100,
+              "outputTokens": 100
+            },
+            "timestamp": "2026-11-10T05:33:06.658Z"
+          }
+        ],
+        "tradeDecisions": [
+          {
+            "agent": "Quant",
+            "action": "buy",
+            "proposalId": 2,
+            "side": "long",
+            "creditAmount": "2000000",
+            "quotedOutcomes": "3425507577923934801",
+            "minimumOutcomes": "3408380040034315126",
+            "expectedValue": "3425507",
+            "expectedProfit": "1425507"
+          },
+          {
+            "agent": "Guardian",
+            "action": "buy",
+            "proposalId": 2,
+            "side": "long",
+            "creditAmount": "2000000",
+            "quotedOutcomes": "2793005995729825768",
+            "minimumOutcomes": "2779040965751176639",
+            "expectedValue": "2793005",
+            "expectedProfit": "793005"
+          }
+        ],
+        "agents": [
+          {
+            "name": "Momentum",
+            "role": "proposer",
+            "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "action": "20% asset allocation",
+            "risks": [
+              "Synthetic observations do not establish a profitable real strategy."
+            ],
+            "evidenceIds": [
+              "market-670af0fd1d7d1496"
+            ]
+          },
+          {
+            "name": "Conservative",
+            "role": "proposer",
+            "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "action": "80% asset allocation",
+            "risks": [
+              "Synthetic observations do not establish a profitable real strategy."
+            ],
+            "evidenceIds": [
+              "market-670af0fd1d7d1496"
+            ]
+          },
+          {
+            "name": "Quant",
+            "role": "forecaster",
+            "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "action": "LONG proposal 2: 2 test USDC, expected value 3425507 micro-USDC (forecast, not a guarantee)",
+            "forecasts": [
+              {
+                "proposalId": 0,
+                "expectedReturnBps": 0,
+                "confidenceBps": 8500,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              },
+              {
+                "proposalId": 1,
+                "expectedReturnBps": 0,
+                "confidenceBps": 8500,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              },
+              {
+                "proposalId": 2,
+                "expectedReturnBps": 500,
+                "confidenceBps": 8500,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              }
+            ],
+            "risks": [
+              "Synthetic observations do not establish a profitable real strategy."
+            ],
+            "evidenceIds": [
+              "market-670af0fd1d7d1496"
+            ]
+          },
+          {
+            "name": "Guardian",
+            "role": "forecaster",
+            "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+            "action": "LONG proposal 2: 2 test USDC, expected value 2793005 micro-USDC (forecast, not a guarantee)",
+            "forecasts": [
+              {
+                "proposalId": 0,
+                "expectedReturnBps": 0,
+                "confidenceBps": 8500,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              },
+              {
+                "proposalId": 1,
+                "expectedReturnBps": 0,
+                "confidenceBps": 8500,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              },
+              {
+                "proposalId": 2,
+                "expectedReturnBps": 500,
+                "confidenceBps": 8500,
+                "rationale": "Scripted HTTP test response based on synthetic evidence; not real inference.",
+                "risks": [
+                  "Synthetic observations do not establish a profitable real strategy."
+                ],
+                "evidenceIds": [
+                  "market-670af0fd1d7d1496"
+                ]
+              }
+            ],
+            "risks": [
+              "Synthetic observations do not establish a profitable real strategy."
+            ],
+            "evidenceIds": [
+              "market-670af0fd1d7d1496"
+            ]
+          }
+        ],
+        "receipts": [
+          {
+            "id": 1,
+            "label": "Refresh simulated oracle: ETH 2000 USD",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+            "functionName": "setPrices",
+            "nonce": 38,
+            "status": "success",
+            "hash": "0x33a02e5b21ebb846804a78ceac82272abf19f0fd53098ff774b4e6b8c70fca2d",
+            "blockNumber": "39",
+            "blockHash": "0x28a9e9b029b15e212895ee9c6923354241c85fff8e6c3253bb8448b25e51ba0a"
+          },
+          {
+            "id": 2,
+            "label": "Safe authorizes round 1 policy",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0x5FC8d32690cc91D4c39d9d3abcBD16989F875707",
+            "functionName": "execTransaction",
+            "nonce": 39,
+            "status": "success",
+            "hash": "0xb47d9966142f7fd66b2eb4542b3fd8fb6e734e9a9c2c1576301ec7c35e9e79da",
+            "blockNumber": "40",
+            "blockHash": "0x120104d9e3605457a85415a9723042f758fcaa4960a80d59191b5ba9346dc722"
+          },
+          {
+            "id": 3,
+            "label": "Keeper opens forecasting round",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "openRound",
+            "nonce": 40,
+            "status": "success",
+            "hash": "0x2e2c46b57b916b6f9b2131642dec6c7727208fc2e596aa0ab28e483019b0cb59",
+            "blockNumber": "41",
+            "blockHash": "0xa30ebe6480f6ed0da498ff93622ce947c9206ab8af608ee6a3f36947895744a9"
+          },
+          {
+            "id": 4,
+            "label": "Momentum registers",
+            "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+            "to": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+            "functionName": "registerAgent",
+            "nonce": 0,
+            "status": "success",
+            "hash": "0x94185e9b6d71cee19feb6aac3476bec052d33d22987c4c8e75273ea9b054e6db",
+            "blockNumber": "42",
+            "blockHash": "0x7b9b0a8b9ddbdce61fc98b7cf8823b79d056da471307a61066775e4994624787"
+          },
+          {
+            "id": 5,
+            "label": "Momentum approves refundable proposal bond",
+            "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+            "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            "functionName": "approve",
+            "nonce": 1,
+            "status": "success",
+            "hash": "0xad15ebb32a598cdde34bebba0f8dfed5fd02c79aad8141ed9eedd86179efd0c2",
+            "blockNumber": "43",
+            "blockHash": "0x4ec373ac703436244763ed280e28177d94bd7a7336c2e49dc8b16f0c133ca1b8"
+          },
+          {
+            "id": 6,
+            "label": "Momentum proposes 20% asset exposure",
+            "from": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "propose",
+            "nonce": 2,
+            "status": "success",
+            "hash": "0x311a33393df255b62fef4e2dfc122d12668552f6303992ab999e40184fb16997",
+            "blockNumber": "44",
+            "blockHash": "0x2524191a0bda0ae7cf0311573a3307af8ec65eeeca709ab3bc77c171b623e4d5"
+          },
+          {
+            "id": 7,
+            "label": "Conservative registers",
+            "from": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+            "to": "0x610178dA211FEF7D417bC0e6FeD39F05609AD788",
+            "functionName": "registerAgent",
+            "nonce": 0,
+            "status": "success",
+            "hash": "0x22159221ba480a5dc55fb12cfa44b400c6e3cf18f462ea4aba6fc584fcea6b54",
+            "blockNumber": "45",
+            "blockHash": "0x64cf0e0c027b732d0496983db6cfbacc33441e9923059f91674dec56067ee816"
+          },
+          {
+            "id": 8,
+            "label": "Conservative approves refundable proposal bond",
+            "from": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+            "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            "functionName": "approve",
+            "nonce": 1,
+            "status": "success",
+            "hash": "0x522ab9c2a583eb699147467a45584499a3af9ca9ed0a7723ca71dc7052268c87",
+            "blockNumber": "46",
+            "blockHash": "0x0d2f2f937a0d9ae88c0f70e72b2e22be550c27929467464cfb6831a3427a5465"
+          },
+          {
+            "id": 9,
+            "label": "Conservative proposes 80% asset exposure",
+            "from": "0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "propose",
+            "nonce": 2,
+            "status": "success",
+            "hash": "0x43e00690241d2887f669237a7e968f47d2822bae72dcdd51722d415f925b4fe3",
+            "blockNumber": "47",
+            "blockHash": "0x2ae62466600b536aecfc75a25dc22dfcd1e6ec7493398a4783f966799155bce6"
+          },
+          {
+            "id": 10,
+            "label": "Quant approves forecast collateral",
+            "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            "functionName": "approve",
+            "nonce": 0,
+            "status": "success",
+            "hash": "0x12e0c227b288f032b1f338af6541ceee1426c392547b33a1e6aeff361e819cd1",
+            "blockNumber": "48",
+            "blockHash": "0xfd86dfd88d7df905b001150c01abaf344421092dbf6c643f15f8bb4c26bb0676"
+          },
+          {
+            "id": 11,
+            "label": "Quant deposits 10 simulated USDC",
+            "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "deposit",
+            "nonce": 1,
+            "status": "success",
+            "hash": "0x78838eb55c8e1fe7d97a1625643bc9d99d17e70afd60cfae1ea928bb01f6790b",
+            "blockNumber": "49",
+            "blockHash": "0xba90476a3a10915e8e5fbd87409e8f87ac525e66b3419c908c1470926faf2296"
+          },
+          {
+            "id": 12,
+            "label": "Guardian approves forecast collateral",
+            "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+            "to": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+            "functionName": "approve",
+            "nonce": 0,
+            "status": "success",
+            "hash": "0x7c0205237eaa992a76c67ac9d78ee31bdbfff902bbc63e5cc131ee0a5a4ded66",
+            "blockNumber": "50",
+            "blockHash": "0x84291183055b575a2eb67bcb4886e95fd78dafbb950dfe73fbe23b2cc0d8d0d7"
+          },
+          {
+            "id": 13,
+            "label": "Guardian deposits 10 simulated USDC",
+            "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "deposit",
+            "nonce": 1,
+            "status": "success",
+            "hash": "0x27b3bad8cd60e61eb587a5bf9c37ddc85257d38396603953d7c7f00392ba1e0c",
+            "blockNumber": "51",
+            "blockHash": "0x243b210b05fda23cf856e1e65d314f46e4f567646523b61b7d1865c21835feef"
+          },
+          {
+            "id": 14,
+            "label": "Quant claims credits for proposal 2",
+            "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "claimCredits",
+            "nonce": 2,
+            "status": "success",
+            "hash": "0xd4a7d2051eb04aaf04e1c0645aa9c9460f4e4fe28c4b4d42da8814214fefbe01",
+            "blockNumber": "53",
+            "blockHash": "0xcd449698401ea01f0c7d745c50196c5bb720aeb34b2d05cb4d1ceec450fc047b"
+          },
+          {
+            "id": 15,
+            "label": "Quant buys LONG after forecast, quote and budget validation",
+            "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "buyLong",
+            "nonce": 3,
+            "status": "success",
+            "hash": "0x4861aa0060ee18965b585cff20c37200adb8ab40a01a59676cf40faf8556a892",
+            "blockNumber": "54",
+            "blockHash": "0x33f63d797022019902e997f565c27cda1ad0938210ea7aa6bc5b83a9166238b0"
+          },
+          {
+            "id": 16,
+            "label": "Guardian claims credits for proposal 2",
+            "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "claimCredits",
+            "nonce": 2,
+            "status": "success",
+            "hash": "0xd8ed9115ed0421c48533e8bddcd341f6d385eea3209df1c8a98c6900b5995fc1",
+            "blockNumber": "55",
+            "blockHash": "0x3beb1f90eb8ca3418e17abd91434d7d9c994f3727650ef0630819c04bb2ac12f"
+          },
+          {
+            "id": 17,
+            "label": "Guardian buys LONG after forecast, quote and budget validation",
+            "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "buyLong",
+            "nonce": 3,
+            "status": "success",
+            "hash": "0xf47862518f0491928fe52d0025ec72d4f65eb0f12fb416defcb638d704f328de",
+            "blockNumber": "56",
+            "blockHash": "0xf6cc474b93eb5db0cc95e159e01354f799899d00b850156a2aec75d7e655e176"
+          },
+          {
+            "id": 18,
+            "label": "Collapse forecasting markets",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "collapse",
+            "nonce": 41,
+            "status": "success",
+            "hash": "0x377b3e7734387b07771353d8908bec24e511be50f386d166011df1c271ca2c5e",
+            "blockNumber": "58",
+            "blockHash": "0x23d60edd51f7442159be0d4c3bd4451c3da90f7d410669a30706cb2b04b1f7e5"
+          },
+          {
+            "id": 19,
+            "label": "Refresh simulated oracle: ETH 2000 USD",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+            "functionName": "setPrices",
+            "nonce": 42,
+            "status": "success",
+            "hash": "0x6652d8a53e12515e5209f09cfe73c0f55a9b9a19fba647fe9f1eb69e36626fc0",
+            "blockNumber": "59",
+            "blockHash": "0x018d963d1e99846887d10580b613b25d4de630e99f59bb27c4a7bc04e731e142"
+          },
+          {
+            "id": 20,
+            "label": "Execute canonical winner through Safe",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0xc6e7DF5E7b4f2A278906862b61205850344D4e7d",
+            "functionName": "execute",
+            "nonce": 43,
+            "status": "success",
+            "hash": "0x85392154b76089db666036b3385a465d7e291826839295e32dcc223b5e86a1ac",
+            "blockNumber": "60",
+            "blockHash": "0x93368d2101a214b48187927b9978ae08d44e91cf3e96721fa13fe2c014de331b"
+          },
+          {
+            "id": 21,
+            "label": "Refresh simulated oracle: ETH 2100 USD",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0",
+            "functionName": "setPrices",
+            "nonce": 44,
+            "status": "success",
+            "hash": "0xbc57637c40d1c6253becb9d93c6d7782ff08f7ad6bb5ec38d4a8e382bc45f695",
+            "blockNumber": "62",
+            "blockHash": "0x80e17c0091bcd91973e14b7d053083ed4595edbd772793c4fcd9ebf9e56de425"
+          },
+          {
+            "id": 22,
+            "label": "Settle measured portfolio return",
+            "from": "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+            "to": "0x3Aa5ebB10DC797CAC828524e59A333d0A371443c",
+            "functionName": "settle",
+            "nonce": 45,
+            "status": "success",
+            "hash": "0x1804e45af99c2c09ab7cfffddbf573df17523738025d1cf569be1288de7eabfa",
+            "blockNumber": "63",
+            "blockHash": "0x343d12fafe3b5bd57279319822df2d6ff3379836d6cf381ca685027f0090ff8e"
+          },
+          {
+            "id": 23,
+            "label": "Quant redeems winning-world balance",
+            "from": "0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "redeem",
+            "nonce": 4,
+            "status": "success",
+            "hash": "0x7205698813cb728b86bb7a4ecc8ad5537f013daef33a1376ec66466ad2dcf45a",
+            "blockNumber": "64",
+            "blockHash": "0x3618cd10eff2c0fc2d7396a42f7852db72b3e0c50886d4dbb37cce718888cfde"
+          },
+          {
+            "id": 24,
+            "label": "Guardian redeems winning-world balance",
+            "from": "0x90F79bf6EB2c4f870365E785982E1f101E93b906",
+            "to": "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
+            "functionName": "redeem",
+            "nonce": 4,
+            "status": "success",
+            "hash": "0x415af9dbc80def24d2fe146a5c587f1be81ddad5ae13fab984603472be899a3a",
+            "blockNumber": "65",
+            "blockHash": "0x3c8974c756cb0f5b214a2fd1195a6cf57769c22b240a10fb355593e5ca809461"
+          }
+        ],
+        "messages": [
+          {
+            "timestamp": "2026-11-10T05:33:06.654Z",
+            "stage": "analysing",
+            "message": "Research agents independently assess evidence. No round authorization or forecasting deposit is submitted until all four decisions validate."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.659Z",
+            "stage": "opening",
+            "message": "Owner approves exact policy terms. All investment capital stays in the trading Safe."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.681Z",
+            "stage": "proposing",
+            "message": "Validated model allocations are submitted under the fixed owner-approved asset policy."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.723Z",
+            "stage": "forecasting",
+            "message": "Independent model forecasts are compared with actual v4 entry quotes; no qualifying edge means abstain."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.783Z",
+            "stage": "selecting",
+            "message": "Anvil advances the local clock; final-window scores select the canonical winner."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.796Z",
+            "stage": "selecting",
+            "message": "Onchain selected proposal 2 with target 8000 bps. No caller supplies the winning target."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.797Z",
+            "stage": "executing",
+            "message": "The restricted module reads the winner and executes the approved allocation through the Safe."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.807Z",
+            "stage": "evaluating",
+            "message": "Record actual holdings and advance the local evaluation horizon. Prices remain explicit simulation fixtures."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.812Z",
+            "stage": "settling",
+            "message": "The tracker computes return from recorded quantities and simulated prices, including actual fixture-router fees."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.817Z",
+            "stage": "redeeming",
+            "message": "Forecasters redeem only winning-world claims; Safe investment balances are not used for payouts."
+          },
+          {
+            "timestamp": "2026-11-10T05:33:06.833Z",
+            "stage": "completed",
+            "message": "Model-directed local round completed. Real Safe/v4 transactions; prices and assets remain simulated; inference attestation not verified."
+          }
+        ],
+        "error": null
+      }
+    }
+  ]
+}

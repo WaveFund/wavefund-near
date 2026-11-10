@@ -1,0 +1,148 @@
+TAP version 13
+# Subtest: proposals permit full capital and reject forbidden fields, allocations, types and citations
+ok 1 - proposals permit full capital and reject forbidden fields, allocations, types and citations
+  ---
+  duration_ms: 0.956556
+  type: 'test'
+  ...
+# Subtest: forecasters must cover each supplied proposal exactly once
+ok 2 - forecasters must cover each supplied proposal exactly once
+  ---
+  duration_ms: 0.343532
+  type: 'test'
+  ...
+# Subtest: continuous payout interpolation uses signed performance, with clipped endpoints
+ok 3 - continuous payout interpolation uses signed performance, with clipped endpoints
+  ---
+  duration_ms: 0.088539
+  type: 'test'
+  ...
+# Subtest: entry quote determines profitability and can cause abstention
+ok 4 - entry quote determines profitability and can cause abstention
+  ---
+  duration_ms: 0.142287
+  type: 'test'
+  ...
+# Subtest: low confidence, zero edge and insufficient budget cannot force a trade
+ok 5 - low confidence, zero edge and insufficient budget cannot force a trade
+  ---
+  duration_ms: 0.223744
+  type: 'test'
+  ...
+# Subtest: research evidence rejects stale, future and unordered observations
+ok 6 - research evidence rejects stale, future and unordered observations
+  ---
+  duration_ms: 0.494611
+  type: 'test'
+  ...
+# Subtest: provider config requires explicit remote enablement and confines local endpoints
+ok 7 - provider config requires explicit remote enablement and confines local endpoints
+  ---
+  duration_ms: 0.291242
+  type: 'test'
+  ...
+# Subtest: actual HTTP adapter parses JSON, counts calls and never reflects secrets in metadata
+ok 8 - actual HTTP adapter parses JSON, counts calls and never reflects secrets in metadata
+  ---
+  duration_ms: 38.992441
+  type: 'test'
+  ...
+# Subtest: HTTP failures do not retry or leak provider error bodies
+ok 9 - HTTP failures do not retry or leak provider error bodies
+  ---
+  duration_ms: 4.518206
+  type: 'test'
+  ...
+# Subtest: truncated answers, tool calls, markdown and oversize responses fail closed
+ok 10 - truncated answers, tool calls, markdown and oversize responses fail closed
+  ---
+  duration_ms: 21.493726
+  type: 'test'
+  ...
+# Subtest: inference timeout is bounded and does not retry
+ok 11 - inference timeout is bounded and does not retry
+  ---
+  duration_ms: 22.859063
+  type: 'test'
+  ...
+# Subtest: four independent HTTP decisions are validated, hashed and reflect changed inputs
+ok 12 - four independent HTTP decisions are validated, hashed and reflect changed inputs
+  ---
+  duration_ms: 14.345928
+  type: 'test'
+  ...
+# Subtest: malicious model output halts the team before any forecasting decision
+ok 13 - malicious model output halts the team before any forecasting decision
+  ---
+  duration_ms: 0.233785
+  type: 'test'
+  ...
+# Subtest: configuration check reports readiness without printing a key or enabling remote calls
+ok 14 - configuration check reports readiness without printing a key or enabling remote calls
+  ---
+  duration_ms: 46.329026
+  type: 'test'
+  ...
+# Subtest: inference credential is withheld from non-API child processes
+ok 15 - inference credential is withheld from non-API child processes
+  ---
+  duration_ms: 0.268118
+  type: 'test'
+  ...
+# Subtest: launcher rejects disabled remote inference before touching the workspace or starting tools
+ok 16 - launcher rejects disabled remote inference before touching the workspace or starting tools
+  ---
+  duration_ms: 153.03293
+  type: 'test'
+  ...
+# Subtest: changing provider configuration cannot relabel an old scripted round as model inference
+ok 17 - changing provider configuration cannot relabel an old scripted round as model inference
+  ---
+  duration_ms: 135.082021
+  type: 'test'
+  ...
+# Subtest: RPC accepts loopback and rejects public, credential and query URLs
+ok 18 - RPC accepts loopback and rejects public, credential and query URLs
+  ---
+  duration_ms: 0.561984
+  type: 'test'
+  ...
+# Subtest: Host validation distinguishes local and hostile names
+ok 19 - Host validation distinguishes local and hostile names
+  ---
+  duration_ms: 0.077289
+  type: 'test'
+  ...
+# Subtest: bigint amounts serialize exactly
+ok 20 - bigint amounts serialize exactly
+  ---
+  duration_ms: 0.063373
+  type: 'test'
+  ...
+# Subtest: journal lock and interruption prevent automatic replay
+ok 21 - journal lock and interruption prevent automatic replay
+  ---
+  duration_ms: 13.614783
+  type: 'test'
+  ...
+# Subtest: HTTP rejects hostile origins and caller-supplied transaction parameters
+ok 22 - HTTP rejects hostile origins and caller-supplied transaction parameters
+  ---
+  duration_ms: 17.599337
+  type: 'test'
+  ...
+# Subtest: Safe receipt schema decodes the indexed execution hash
+ok 23 - Safe receipt schema decodes the indexed execution hash
+  ---
+  duration_ms: 1.885405
+  type: 'test'
+  ...
+1..23
+# tests 23
+# suites 0
+# pass 23
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 723.931651
