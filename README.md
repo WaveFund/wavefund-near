@@ -81,3 +81,9 @@ Forecasting code and associated tests derive from https://github.com/advaitrane9
 ## Hackathon baseline and new work
 
 This adapts an existing Wavefund project; reused forecasting contracts are baseline regardless of their import date. The upstream reference is the commit listed under Attribution. Local import checkpoint: `f8c0177`. New work includes the Aurora-targeted Safe module, valuation and oracle adapters, bounded model orchestration, operator workflows and dashboard. Inspect the local change set with `git diff f8c0177..HEAD -- src script test runtime frontend scripts`. Public deployment evidence is still pending; local and unsigned RPC proofs must not be presented as a completed Aurora transaction cycle.
+
+## Current execution and funding model
+
+Uniswap v4 pools and the WaveHook serve forecasting LONG/SHORT claims; they are not an order book for the manager's investment trades. The Safe module reads the canonical winner, computes the two-asset rebalance and calls a fixed exact-input router with oracle/slippage and balance checks. The current investment venue is a prefunded local test fixture. Trisolaris is an Aurora candidate, not a verified live integration. The next execution milestone is an actual testnet AMM swap through the Safe, using a verified existing pool or a clearly labelled test-token pool if necessary. A separate general-purpose swap interface is not required.
+
+Managers supply their own investment capital. Forecasters supply separate collateral. A customer, protocol or sponsor must explicitly supply forecasting seed liquidity; that seed can lose money funding rewards and is not the manager's investment return. Operating costs also include transaction gas, model inference, data access and hosting. The demo's $2,000 capital/$100 sponsor reserve are fixtures, not production minimums.
