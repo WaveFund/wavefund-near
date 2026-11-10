@@ -1,6 +1,6 @@
 # Wavefund agent layer
 
-The local round now supports validated model-generated proposals and independent performance forecasts. A NEAR AI Cloud adapter and a local chat-completions adapter are implemented. Neither a real model nor a billable provider has been called during verification. Tests use an explicitly labelled scripted HTTP responder. Tokens, investment venue and price history remain simulated.
+The local round now supports validated model-generated proposals and independent performance forecasts. A NEAR AI Cloud adapter and a local chat-completions adapter are implemented. The original milestone used mocked HTTP; one explicitly approved real provider smoke request has now passed (see the dated section below). A complete live model-driven strategy round is still pending. Tests use an explicitly labelled scripted HTTP responder. Tokens, investment venue and price history remain simulated.
 
 ## Set up your NEAR AI key
 
@@ -69,3 +69,9 @@ WAVEFUND_AGENT_INTEGRATION=1 node runtime/test/agent-round.integration.mjs
 It uses local HTTP test responses, not inference. Cases prove that invalid output submits zero transactions, abstention keeps Hold, a 65% allocation actually executes, and changing the model output selects/executes an 80% allocation. Scratch snapshots keep these cases separate. Evidence is written under `.run/agent-integration/`.
 
 Official protocol references checked 10 November 2026: [NEAR AI quickstart](https://docs.near.ai/cloud/quickstart), [model catalog](https://cloud.near.ai/models), [Ollama chat-completions compatibility](https://docs.ollama.com/api/openai-compatibility). Provider compatibility is verified with HTTP tests; current real-provider availability awaits the user's key and a deliberately authorized call.
+
+## Provider smoke check — 10 November 2026
+
+`npm run agents:smoke` is a dry run and sends no request. To deliberately perform one provider-only check, select a valid model, enable remote inference explicitly, and run `npm run agents:smoke -- --run`. It sends one fresh nonce challenge through the existing bounded provider (20 seconds, 1,800 output-token ceiling, no retry), rejects stale or malformed answers, and never touches a wallet or submits a trade. Output contains only model, validation status and token counts, never credentials or raw provider text. Hardware attestation is not verified.
+
+One explicitly approved real request to `Qwen/Qwen3.6-35B-A3B-FP8` passed: 80 input tokens and 832 output tokens. See [sanitized evidence](test-evidence/live-ai-smoke.json). This establishes provider connectivity and JSON response validation, not a complete live strategy round. The private configuration remains remote-disabled; no always-on inference was enabled.

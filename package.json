@@ -17,6 +17,7 @@
     "frontend:typecheck": "npm run typecheck --workspace @wavefund/frontend",
     "demo:scenario": "node runtime/scenario.mjs",
     "agents:check": "node --env-file-if-exists=.env.agents runtime/agents/check.mjs",
+    "agents:smoke": "node --env-file-if-exists=.env.agents scripts/agent-smoke.mjs",
     "demo:agents": "node --env-file=.env.agents scripts/local-demo.mjs",
     "research:collect": "node scripts/collect-research.mjs",
     "aurora:check": "node scripts/aurora-check.mjs",

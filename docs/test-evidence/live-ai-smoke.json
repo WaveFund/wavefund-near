@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "provider": "near-ai",
+  "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+  "requestsSent": 1,
+  "responseValidated": true,
+  "attestationVerified": false,
+  "tradesSubmitted": 0,
+  "usage": {
+    "inputTokens": 80,
+    "outputTokens": 832
+  },
+  "scope": "One real provider response challenge only; not a strategy round or attestation verification."
+}

@@ -1,0 +1,11 @@
+{
+  "runtimeTests": 42,
+  "failed": 0,
+  "skipped": 0,
+  "frontendTypecheck": "passed",
+  "frontendProductionBuild": "passed",
+  "newSmokeTests": 3,
+  "mutation": "Nonce validation removed in scratch copy: test failed with Missing expected rejection; restored copy passed 3/3.",
+  "solidity": "No Solidity source changes; prior 400-test baseline not rerun in this increment.",
+  "liveProvider": "One approved real NEAR AI smoke call passed; not attestation verification or full strategy inference."
+}
