@@ -12,7 +12,7 @@
   "scripts": {
     "demo:local": "node scripts/local-demo.mjs",
     "dev:api": "node runtime/server.mjs",
-    "test:runtime": "node --test runtime/test/*.test.mjs",
+    "test:runtime": "node --test runtime/test/*.test.mjs scripts/lib/*.test.mjs",
     "frontend:build": "npm run build --workspace @wavefund/frontend",
     "frontend:typecheck": "npm run typecheck --workspace @wavefund/frontend",
     "demo:scenario": "node runtime/scenario.mjs",
