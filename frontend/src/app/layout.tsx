@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Wavefund — local decision market",
-  description: "A local simulation of market-guided decisions for a manager-owned trading Safe.",
+  title: "Wavefund — treasury decision markets",
+  description: "Market-guided decisions for a manager-owned trading Safe. Local rehearsal and read-only Aurora testnet monitoring.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

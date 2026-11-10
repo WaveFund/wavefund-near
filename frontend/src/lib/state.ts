@@ -46,8 +46,8 @@ export type DemoState = {
 export function decodeState(value: unknown): DemoState {
   if (!value || typeof value !== "object") throw new Error("The local API returned an invalid snapshot.");
   const item = value as Partial<DemoState>;
-  if (item.chainId !== 31337 || item.mode !== "local-simulation") {
-    throw new Error("The dashboard only accepts the local simulation on Anvil chain 31337.");
+  if (!((item.chainId === 31337 && item.mode === "local-simulation") || (item.chainId === 1313161555 && item.mode === "aurora-testnet-readonly"))) {
+    throw new Error("The dashboard only accepts local Anvil or verified Aurora testnet monitoring.");
   }
   if (!item.safe || !item.forecast || !item.sponsor || !Array.isArray(item.proposals) || !Array.isArray(item.agents) || !Array.isArray(item.receipts)) {
     throw new Error("The local API snapshot is incomplete. No balances have been assumed.");
