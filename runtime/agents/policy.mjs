@@ -67,6 +67,7 @@ export function chooseTrade({ forecasts, quotes, creditAmount = 2000000n, maxSpe
       const quote = quotes.find((q) => q.proposalId === forecast.proposalId && q.side === side);
       if (!quote || typeof quote.outcomeAmount !== 'bigint' || quote.outcomeAmount <= 0n) continue;
       const payout = side === 'long' ? pi : ONE - pi;
+      // Point-forecast payout proxy, not an expectation integrated over a return distribution.
       const expectedValue = quote.outcomeAmount * payout / ONE / CREDIT_SCALE;
       const edge = expectedValue - creditAmount;
       if (edge * 10000n <= creditAmount * BigInt(minEdgeBps)) continue;

@@ -149,3 +149,13 @@ test('launcher rejects disabled remote inference before touching the workspace o
     assert.equal(result.status, 1); assert.match(result.stderr, /Remote inference requires explicit/); assert.deepEqual(await readdir(dir), []);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });
+
+test('changing provider configuration cannot relabel an old scripted round as model inference', async () => {
+  const { inferenceSnapshot } = await import('../demo.mjs');
+  const info = { mode: 'near-ai', model: 'test/model' };
+  assert.equal(inferenceSnapshot({ stage: 'completed' }, info).mode, 'fixture');
+  assert.equal(inferenceSnapshot({ stage: 'completed' }, info).model, null);
+  assert.equal(inferenceSnapshot({ stage: 'idle' }, info).status, 'not-started');
+  const stored = { mode: 'local', model: 'historical-model', status: 'complete' };
+  assert.deepEqual(inferenceSnapshot({ stage: 'completed', inference: stored }, info), stored);
+});

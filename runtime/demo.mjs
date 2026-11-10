@@ -6,6 +6,12 @@ import { loadManifest, safeError } from './config.mjs';
 import { acquireLock, openJournal } from './journal.mjs';
 import { connectChain, namedOutputs } from './chain.mjs';
 
+export function inferenceSnapshot(data, info) {
+  if (data.inference) return data.inference;
+  // Older completed journals were scripted. Changing provider configuration cannot relabel them as AI output.
+  const fresh = data.stage === 'idle';
+  return { mode: fresh ? (info?.mode ?? 'fixture') : 'fixture', model: fresh ? (info?.model ?? null) : null, status: fresh ? 'not-started' : 'fixture', attestationVerified: false };
+}
 const ONE = 10n ** 18n;
 const roles = [
   { name: 'Momentum', role: 'proposer', rationale: 'Simulated bullish outlook: propose full approved-asset exposure.', action: '100% asset allocation' },
@@ -102,7 +108,7 @@ export async function createRuntime({ rpcUrl, manifestPath = 'deployments/local.
             journal.data.tradeDecisions.push({ agent: forecast.name, action: 'abstain' }); await journal.save(); continue;
           }
           agent.rationale = trade.forecast.rationale; agent.risks = trade.forecast.risks; agent.evidenceIds = trade.forecast.evidenceIds;
-          agent.action = `${trade.side.toUpperCase()} proposal ${trade.proposalId}: 2 test USDC, expected value ${trade.expectedValue} micro-USDC (forecast, not a guarantee)`;
+          agent.action = `${trade.side.toUpperCase()} proposal ${trade.proposalId}: 2 test USDC, point-estimate payout value ${trade.expectedValue} micro-USDC (forecast, not a guarantee)`;
           const record = { agent: forecast.name, action: 'buy', proposalId: trade.proposalId, side: trade.side, creditAmount: amount.toString(), quotedOutcomes: trade.quotedOutcomes.toString(), minimumOutcomes: trade.minimumOutcomes.toString(), expectedValue: trade.expectedValue.toString(), expectedProfit: trade.expectedProfit.toString() };
           journal.data.tradeDecisions.push(record); await journal.save();
           await tx(forecast.accountIndex, 'engine', 'claimCredits', [roundId, BigInt(trade.proposalId), 10000000n], `${forecast.name} claims credits for proposal ${trade.proposalId}`);
@@ -186,7 +192,7 @@ export async function createRuntime({ rpcUrl, manifestPath = 'deployments/local.
         forecast: { escrow: (engineStable >= reserve ? engineStable - reserve : 0n).toString(), committedEscrow: round?.escrow?.toString() ?? '0', deposits: round?.totalDeposits?.toString() ?? '0', participants, payouts: Object.entries(journal.data.payouts).map(([address, amount]) => ({ address, amount })) }, sponsor: { reserve: reserve.toString() },
         round: round ? { status: Number(round.status), tradingEnd: round.tradingEnd.toString(), evaluationEnd: round.evaluationEnd.toString(), realisedReturnX18: round.realisedReturn.toString(), piX18: round.pi.toString(), winnerId: Number(round.winnerId) } : null,
         oracle: prices ? { stableUsdX18: prices[0].toString(), assetUsdX18: prices[1].toString(), publishedAt: prices[2].toString(), simulated: true } : { simulated: true, error: 'Simulation oracle unavailable/stale' },
-        proposals, inference: journal.data.inference ?? { mode: team?.info.mode ?? 'fixture', model: team?.info.model ?? null, status: 'not-started', attestationVerified: false }, agentRecords: journal.data.agentRecords ?? [], tradeDecisions: journal.data.tradeDecisions ?? [], agents: journal.data.agents.length ? journal.data.agents : (team ? [] : roles), receipts: journal.data.actions.map((action) => ({ ...action })), messages: journal.data.messages.slice(-30), error: journal.data.error,
+        proposals, inference: inferenceSnapshot(journal.data, team?.info), agentRecords: journal.data.agentRecords ?? [], tradeDecisions: journal.data.tradeDecisions ?? [], agents: journal.data.agents.length ? journal.data.agents : (team ? [] : roles), receipts: journal.data.actions.map((action) => ({ ...action })), messages: journal.data.messages.slice(-30), error: journal.data.error,
       };
       lastAt = Date.now(); return lastState;
     })();
