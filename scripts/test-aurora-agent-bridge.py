@@ -1,0 +1,58 @@
+"""Offline tests: no real wallet, model request or Docker daemon."""
+import fcntl
+import json
+from pathlib import Path
+import subprocess
+import sys
+import tempfile
+import unittest
+
+
+class AgentBridgeSafety(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.command = [sys.executable, str(Path(__file__).with_name('run-aurora-agents.py')),
+                        '--phase', 'plan', '--directory', str(self.root)]
+
+    def run_bridge(self, *args):
+        return subprocess.run(self.command + list(args), capture_output=True, text=True, timeout=10)
+
+    def test_explicit_paid_flag_required_before_reading_credentials(self):
+        result = self.run_bridge()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('explicitly spend credits', result.stderr)
+        # With the flag it reaches public snapshot loading, not the paid-flag error.
+        result = self.run_bridge('--run-inference')
+        self.assertNotIn('explicitly spend credits', result.stderr)
+        self.assertIn('snapshot.json', result.stderr)
+
+    def test_paid_inference_is_not_automatically_repeated(self):
+        journal = self.root / 'journal.jsonl'
+        journal.write_text(json.dumps({'stage': 'inference-request', 'request': 1}) + '\n')
+        result = self.run_bridge('--run-inference')
+        self.assertIn('Inference already attempted', result.stderr)
+        self.assertNotIn('snapshot.json', result.stderr)
+        journal.write_text('')
+        self.assertIn('snapshot.json', self.run_bridge('--run-inference').stderr)
+
+    def test_unknown_broadcast_blocks_all_other_phases(self):
+        journal = self.root / 'journal.jsonl'
+        pending = {'stage': 'prepared', 'hash': '0xabc', 'label': 'fixture'}
+        journal.write_text(json.dumps(pending) + '\n')
+        self.assertIn('Unresolved transaction', self.run_bridge('--run-inference').stderr)
+        journal.write_text(json.dumps(pending) + '\n' + json.dumps({'stage': 'confirmed', 'hash': '0xabc'}) + '\n')
+        result = self.run_bridge('--run-inference')
+        self.assertNotIn('Unresolved transaction', result.stderr)
+        self.assertIn('snapshot.json', result.stderr)
+
+    def test_concurrent_operator_is_blocked(self):
+        with (self.root / 'operator.lock').open('a+') as lock:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            self.assertIn('no concurrent signing or inference', self.run_bridge('--run-inference').stderr)
+        self.assertIn('snapshot.json', self.run_bridge('--run-inference').stderr)
+
+
+if __name__ == '__main__':
+    unittest.main()
