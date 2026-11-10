@@ -70,7 +70,7 @@ contract DeployTradingSafe is Script {
         address hookDeployer
     );
 
-    function run() external returns (Stack memory stack) {
+    function run() external virtual returns (Stack memory stack) {
         _requireNetwork();
         Config memory c = Config({
             safe: vm.envAddress("TRADING_SAFE"),
