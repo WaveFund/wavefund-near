@@ -1,0 +1,13 @@
+title = "Wavefund secret scanning"
+
+[extend]
+useDefault = true
+
+# This one public local-EVM contract address is not an API credential.
+# Match only its exact field, value and evidence file; all default rules remain enabled.
+[[allowlists]]
+description = "Local ProposalTokens address in recorded manager evidence"
+condition = "AND"
+regexTarget = "line"
+paths = ['''(?:^|/)docs/test-evidence/operator-integration\.json$''']
+regexes = ['''^\s*"tokens":\s*"0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",?\s*$''']
