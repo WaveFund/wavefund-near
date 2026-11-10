@@ -17,7 +17,11 @@
     "frontend:typecheck": "npm run typecheck --workspace @wavefund/frontend",
     "demo:scenario": "node runtime/scenario.mjs",
     "agents:check": "node --env-file-if-exists=.env.agents runtime/agents/check.mjs",
-    "demo:agents": "node --env-file=.env.agents scripts/local-demo.mjs"
+    "demo:agents": "node --env-file=.env.agents scripts/local-demo.mjs",
+    "research:collect": "node scripts/collect-research.mjs",
+    "aurora:check": "node scripts/aurora-check.mjs",
+    "journal:audit": "node scripts/journal-audit.mjs",
+    "monitor:aurora": "WAVEFUND_NETWORK=aurora-testnet node runtime/server.mjs"
   },
   "dependencies": {
     "viem": "2.57.17"

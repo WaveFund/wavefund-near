@@ -1,6 +1,9 @@
 import { readFile } from 'node:fs/promises';
 import { configuredTeam } from './agents/team.mjs';
 import { localResearchFixture, validateMarket } from './agents/market.mjs';
+import { createManagerService } from './operator/manager.mjs';
+import { auditReceipts } from './operator/recovery.mjs';
+import { researchStatus } from './operator/research.mjs';
 import { chooseTrade } from './agents/policy.mjs';
 import { loadManifest, safeError } from './config.mjs';
 import { acquireLock, openJournal } from './journal.mjs';
@@ -34,6 +37,7 @@ export async function createRuntime({ rpcUrl, manifestPath = 'deployments/local.
     team = agentTeam ?? configuredTeam({ env: agentEnv, onRecord: async (record) => { journal.data.agentRecords ??= []; journal.data.agentRecords.push(record); await journal.save(); } });
   } catch (error) { await release(); throw error; }
   const { read, tx, ownerCall, advanceTo, publicClient, accounts, abis } = chain;
+  const manager = createManagerService({ publicClient, contracts: manifest.contracts, abis });
   let runPromise = null;
   let lastState = null;
   let lastAt = 0;
@@ -208,7 +212,7 @@ export async function createRuntime({ rpcUrl, manifestPath = 'deployments/local.
   }
   let closed = false;
   async function close() { if (closed) return; closed = true; control.stopping = true; await runPromise?.catch(() => {}); await release(); }
-  return { state, start, close, journal, get running() { return journal.data.running; } };
+  return { state, start, close, journal, manager, research: () => researchStatus('.run/research/latest.json'), recovery: () => auditReceipts({ publicClient, journal: journal.data, contracts: manifest.contracts }), get running() { return journal.data.running; } };
 }
 
 export async function runDemo(options = {}) {
