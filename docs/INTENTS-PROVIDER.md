@@ -8,9 +8,14 @@ This is not cross-chain execution of winning strategies. The existing Trisolaris
 
 **Status (2026-11-11):**
 
-- **B1 (route feasibility):** a route is verified up to a **provider-signed dry quote**. No delivery has been observed, because none is authorized.
+- **B1 (route feasibility): BLOCKED, provider clarification required.**
+  - One route reached a provider-signed dry quote at 10:09–10:16 UTC.
+  - From 10:42 UTC, **every EVM-origin dry quote** (Ethereum and Base) returns `400 Quoting for this pair is not available`. This includes the earlier-working Ethereum → NEAR control. NEAR-origin quotes, including ones to `aurora`, still succeed (`fixtures/intents/live/probes/route-recheck.json`).
+  - No delivery has been observed, because none is authorized.
+  - **Recommendation:** keep the route `liveVerified: false` in production `approved-routes.json` until both the provider confirms availability and a delivery is observed.
 - **B2 (provider client):** implemented.
 - **B3 (delivery verifier):** implemented.
+- **Shared funding interface:** `verifyQuote`, `verifyDelivery` and `verifyRefund` adapters are implemented against `runtime/funding/README.md` at `11b9e56` (see "Shared funding interface").
 - **No executable quote was requested.** No deposit, signature or transfer was made.
 
 ## B1: route feasibility
@@ -43,6 +48,17 @@ The probes are recorded in `probes/dry-quote-probes.json`. Every one used `dry: 
 | C4 | EVM address as `recipient` | 400 `recipient is not valid` |
 | D | Control route: same origin to a NEAR account | 201, with identical amounts |
 
+### Recheck: EVM-origin quoting unavailable (2026-11-11, from the isolated container)
+
+| Time (UTC) | Request | Result |
+|---|---|---|
+| 10:42:37–10:43:17 | Funding shape (lowercase and checksummed addresses, twice), Ethereum → NEAR control, Ethereum USDC → Ethereum USDT | all `400 Quoting for this pair is not available` |
+| 10:43:39 | wNEAR → USDT on NEAR | 201 |
+| 10:43:40 | NEAR USDC → `aurora` virtual recipient | 201 |
+| 10:43:41 | Base USDC (listed asset `nep141:base-0x8335…omft.near`) → `aurora` virtual recipient | `400 Quoting for this pair is not available` |
+
+Both route assets are still listed with unchanged decimals and contracts, and the token list still has no `aurora` chain. The cause has not been established: it could be a temporary EVM-origin outage, solver availability, or rate limiting of unauthenticated callers. The client maps this message to the retryable `QUOTING_UNAVAILABLE` code and never retries it automatically.
+
 ### Docs vs. API discrepancy
 
 - The [Supported Chains](https://docs.near-intents.org/resources/chain-support) page lists **Aurora** under EVM networks.
@@ -52,6 +68,7 @@ The probes are recorded in `probes/dry-quote-probes.json`. Every one used `dry: 
 
 ### What is NOT established (provider clarification requested)
 
+0. **EVM-origin quoting.** Why do EVM-origin dry quotes now return `Quoting for this pair is not available` when the assets are still listed? Is it temporary, or does it apply only to unauthenticated callers?
 1. **Completed delivery.** No funded transfer has been made or observed, so delivery of the ERC-20 into a **Safe contract** at the `virtualChainRecipient` address is unproven end to end. The engine mapping only shows which ERC-20 the engine would mint.
 2. **Official support.** Is `recipient: aurora` + `virtualChainRecipient` the supported way to reach Aurora mainnet? Is it covered by the same SLA and refund guarantees?
 3. **Destination transaction hashes.** For virtual-chain deliveries, which hashes appear in `swapDetails.destinationChainTxHashes`: the Aurora EVM transaction hash, or a NEAR receipt? The delivery verifier links the Aurora receipt only through this list.
@@ -163,6 +180,36 @@ verifyFundingDelivery({ quote, status, statusError, sourceReceipts, destinationR
 
    `trustless` is always `false`. 1Click supplies the linkage between legs, and the chains only confirm each leg.
 
+## Shared funding interface (`runtime/funding/README.md` @ `11b9e56`)
+
+`runtime/intents/funding-adapter.mjs` provides the trusted server-side adapters that Developer A's `createFundingService` expects:
+
+```js
+import { createIntentsClient, createFundingVerifiers, createFundingEvidenceArchive, toProviderFundingRequest } from './runtime/intents/index.mjs';
+const archive = createFundingEvidenceArchive('.run/funding-evidence/<deployment>');   // private, write-once
+const { verifyQuote, verifyDelivery, verifyRefund } = createFundingVerifiers({ client, archive, chainReaders: { 1: ethPublicClient, 1313161554: auroraPublicClient } });
+// C's preview: client.previewOrder(toProviderFundingRequest(sharedRequest))  — never creates a record
+```
+
+- **`toProviderFundingRequest(request, { slippageBps = 100 })`** maps a shared `FundingRequestV1` to this client's input. Unix-second `expiresAt` becomes canonical ISO. **`slippageBps` is not in the shared schema**, so the server chooses it, and `verifyQuote` bounds it with `maxSlippageBps` (default 100). The signed `minAmountOut ≥ request.minAmountOut` is the binding protection. *Schema decision for A:* should slippage become a route field?
+- **`verifyQuote(providerQuote, request)`** takes this client's `EXECUTION_QUOTE` (from `prepareOrder`). It rejects dry quotes. It then re-verifies:
+  - the signature;
+  - an exact echo of every request-derived field (assets, amount, `aurora` recipient, Safe as `virtualChainRecipient`, refund = manager, deadline = `expiresAt`);
+  - no redirection fields;
+  - slippage within bounds;
+  - amount, minimum output and deposit target (a memo-free EVM address on the source chain);
+  - quote freshness.
+
+  It archives the full normalized quote, with the raw signed payload and fee evidence, **before** returning exactly `{requestHash, reference, depositAddress, amountIn, minAmountOut, expiresAt, evidenceQuality}`. Here `reference` is `1click:<correlationId>`, and `expiresAt` is `min(request.expiresAt, provider deadline)`.
+- **`verifyDelivery(evidence, record)` and `verifyRefund(evidence, record)`.** `evidence` must be exactly `{ transactionHash }` (the Aurora delivery or source-chain refund transaction). Everything else is read by the adapter itself:
+  - the archived signed quote, checked against the record;
+  - live provider status, through `client.getExecutionStatus`, which re-verifies the embedded signature and binding;
+  - both receipts, through trusted chain readers whose chain id is authenticated on every call.
+
+  A receipt counts only if it is in the **canonical** chain (its block hash equals the canonical hash at that height). Confirmations are computed from the latest block (defaults: Ethereum 12, Aurora 1), and the core also enforces `route.minimumConfirmations`. The source deposit must be an ERC-20 `Transfer` **from the manager**. These verifiers return A's exact 11-field shape only for outcome `delivered` (or `refunded`) with evidence quality `provider-linked-both-legs`. The refund amount returned is the **observed on-chain refund**. Any other result throws `DELIVERY_NOT_PROVEN` or `EVIDENCE_UNAVAILABLE`, which A's core turns into `needs_review` for deliveries. A provider timeout never yields a refund.
+- **Evidence quality.** `live-verified` requires all three of: the pinned production key (no injected verifier), a quote produced by the built-in live transport (`mocked: false`, `source: 'live-provider'`), and, for delivery and refund, a live provider status and a `live-verified` record. Every test produces `fixture`, and A's `prepareRound` correctly refuses fixture evidence.
+- **Archive.** One private (0700/0600) file per reference, created exclusively. An identical retry is idempotent; different content under the same reference is a conflict. It is not tamper-proof against its OS owner.
+
 ## Signature mechanism
 
 The docs ([Verify Quote Signatures](https://docs.near-intents.org/integration/distribution-channels/1click-api/verify-quote-signature)) specify `base58(sha256(json-stable-stringify({...quoteRequest, ...quote, timestamp})))`. The field selection and the manager key `ed25519:reYaWhvwu8Jzo3WUM3zhn6VrhuMEF4eADL17qtRVifc` come from `@defuse-protocol/one-click-sdk-typescript@0.1.26` (the latest release, ISC licence, NEAR Foundation). The client re-implements the scheme with `node:crypto`.
@@ -176,9 +223,9 @@ No dependency was added. EIP-55 checksum validation uses `viem`, which is alread
 ## Tests and isolation
 
 - **Tests:**
-  - `runtime/test/intents-provider.test.mjs`: 17 tests.
-  - `runtime/test/intents-delivery.test.mjs`: 11 tests.
-  - Full runtime suite: 88/88.
+  - `runtime/test/intents-provider.test.mjs`: 22 tests.
+  - `runtime/test/intents-delivery.test.mjs`: 18 tests, including an end-to-end run through A's real `createFundingService` and `createFundingStore` (quoted → submitted → delivered) and review paths.
+  - Full runtime and funding suite (`runtime/test`, `runtime/funding`, `scripts/lib`): **130/130** (40 of them Intents tests).
 - **Container:** run in Docker image `node:22.11.0-bookworm-slim` (`node@sha256:f035ba7f…12da`) with `--network none --read-only --cap-drop ALL --security-opt no-new-privileges`, as user `node`, with no host environment variables. Dependencies were installed with `npm ci --ignore-scripts` in a separate, networked step before the tests ran.
 - **Mutation check:** 20 mutants, all killed:
   - echo binding;
@@ -201,4 +248,11 @@ No dependency was added. EIP-55 checksum validation uses `viem`, which is alread
   - the `SUCCESS`-plus-refund conflict;
   - the minimum-output check;
   - status binding.
+- **Shared-adapter mutation check:** 24 further mutants, plus a no-op baseline that correctly survives. 23 are killed:
+  - dry-quote rejection; quote signature; request echo; slippage bound; minimum output; quote age;
+  - forced `live-verified`; skipped archive retention; archive overwrite; canonical-chain check; reader chain id; manager-sender check;
+  - delivery requiring both legs; delivery outcome gate; full delivery gate removal; full refund gate removal; record-vs-archive mismatch;
+  - loose confirmation defaults; delivery-level sender filter; `QUOTING_UNAVAILABLE` mapping.
+
+  One mutant is equivalent and survives: returning the provider-reported refund instead of the observed refund. The verifier already requires the two to be equal.
 - **Fixtures:** `fixtures/intents/live/` holds unmodified production captures. `fixtures/intents/mocked/` and every receipt built in the tests are synthetic. See `fixtures/intents/README.md`.
