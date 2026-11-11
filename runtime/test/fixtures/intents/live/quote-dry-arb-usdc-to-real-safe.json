@@ -1,0 +1,126 @@
+{
+  "summary": {
+    "capturedAt": "2026-11-11T16:18:03.886Z",
+    "destinationLabel": "ACTUAL Wavefund Aurora-mainnet Safe (supplied by the team)",
+    "safeChecksumValid": true,
+    "managerChecksumValid": true,
+    "auroraRpc": {
+      "chainId": "0x4e454152",
+      "safeCodeBytes": 171,
+      "safeVersion": "1.4.1"
+    },
+    "sharedRequest": {
+      "fundingId": "real-safe-dry-1usdc",
+      "routeId": "arb-usdc-to-aurora-usdc",
+      "configurationHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "manager": "0x37f91aa1e24aafc7b3843e281650aa884a6651e2",
+      "safe": "0xe7889338fdc4962f5d1280e0e4267a0566e05d06",
+      "source": {
+        "chainId": 42161,
+        "assetId": "nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near",
+        "token": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+        "decimals": 6
+      },
+      "destination": {
+        "chainId": 1313161554,
+        "assetId": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "token": "0x368ebb46aca6b8d0787c96b2b20bd3cc3f2c45f7",
+        "decimals": 6
+      },
+      "amountIn": "1000000",
+      "minAmountOut": "980000",
+      "refundRecipient": "0x37f91aa1e24aafc7b3843e281650aa884a6651e2",
+      "expiresAt": 1794415682
+    },
+    "prepareOrder": "EXECUTION_QUOTES_DISABLED",
+    "kind": "DRY_QUOTE",
+    "dry": true,
+    "funded": false,
+    "mocked": false,
+    "source": "live-provider",
+    "signatureVerified": true,
+    "signed": {
+      "dry": true,
+      "originAsset": "nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near",
+      "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "amount": "1000000",
+      "recipient": "aurora",
+      "recipientType": "DESTINATION_CHAIN",
+      "virtualChainRecipient": "0xe7889338fdc4962f5d1280e0e4267a0566e05d06",
+      "refundTo": "0x37f91aa1e24aafc7b3843e281650aa884a6651e2",
+      "refundType": "ORIGIN_CHAIN",
+      "depositType": "ORIGIN_CHAIN",
+      "slippageTolerance": 100,
+      "deadline": "2026-11-11T16:48:02.000Z"
+    },
+    "signature": "ed25519:32oTMD4UbPkTvEHGQE1amJQ2j6Eh7i14Qud5K2gHMQksjM7B7gFPVFVGQzHKJCYFqor68haTbB5D4nstAqFbiu9Y",
+    "timestamp": "2026-11-11T16:18:03.162Z",
+    "correlationId": "4fd9b16f-c6f0-44a9-ba3c-af5ce2978239",
+    "amounts": {
+      "amountIn": "1000000",
+      "minAmountIn": "1000000",
+      "amountOut": "999798",
+      "minAmountOut": "989800",
+      "requestMinAmountOut": "980000",
+      "amountInDisplay": "1",
+      "amountOutDisplay": "0.999798",
+      "minAmountOutDisplay": "0.9898"
+    },
+    "fees": {
+      "refundFee": "5300",
+      "withdrawFee": "0",
+      "feesSigned": false,
+      "appFees": [
+        {
+          "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+          "fee": 1
+        }
+      ],
+      "appFeesSigned": false
+    },
+    "timeEstimateSeconds": 25
+  },
+  "providerPayload": {
+    "quote": {
+      "amountIn": "1000000",
+      "amountInFormatted": "1.0",
+      "amountInUsd": "0.999595000000",
+      "minAmountIn": "1000000",
+      "amountOut": "999798",
+      "amountOutFormatted": "0.999798",
+      "amountOutUsd": "0.999393081810",
+      "minAmountOut": "989800",
+      "timeEstimate": 25,
+      "refundFee": "5300",
+      "withdrawFee": "0"
+    },
+    "quoteRequest": {
+      "dry": true,
+      "depositMode": "SIMPLE",
+      "swapType": "EXACT_INPUT",
+      "slippageTolerance": 100,
+      "originAsset": "nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near",
+      "depositType": "ORIGIN_CHAIN",
+      "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "amount": "1000000",
+      "refundTo": "0x37f91aa1e24aafc7b3843e281650aa884a6651e2",
+      "refundType": "ORIGIN_CHAIN",
+      "recipient": "aurora",
+      "virtualChainRecipient": "0xe7889338fdc4962f5d1280e0e4267a0566e05d06",
+      "recipientType": "DESTINATION_CHAIN",
+      "deadline": "2026-11-11T16:48:02.000Z",
+      "confidentiality": "public",
+      "quoteWaitingTimeMs": 0,
+      "insured": false,
+      "appFees": [
+        {
+          "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+          "fee": 1
+        }
+      ]
+    },
+    "signature": "ed25519:32oTMD4UbPkTvEHGQE1amJQ2j6Eh7i14Qud5K2gHMQksjM7B7gFPVFVGQzHKJCYFqor68haTbB5D4nstAqFbiu9Y",
+    "timestamp": "2026-11-11T16:18:03.162Z",
+    "correlationId": "4fd9b16f-c6f0-44a9-ba3c-af5ce2978239"
+  }
+}

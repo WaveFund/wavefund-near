@@ -19,7 +19,51 @@ This is not cross-chain execution of winning strategies. The existing Trisolaris
 - **Shared funding interface:** `verifyQuote`, `verifyDelivery` and `verifyRefund` adapters are implemented against `runtime/funding/README.md` at `11b9e56` (see "Shared funding interface").
 - **No executable quote was requested.** No deposit, signature or transfer was made.
 
-## B1: route feasibility
+## Approved happy path: Arbitrum One native USDC → Aurora mainnet Safe (`arb-usdc-to-aurora-usdc`)
+
+This is the **only** approved route. The Ethereum USDC route below is retained as historical evidence and is no longer approved in `routes.mjs`.
+
+| Item | Exact value |
+|---|---|
+| Source chain | Arbitrum One, EVM chain id `42161`, 1Click blockchain `arb` |
+| Source asset id | `nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near` |
+| Source ERC-20 | `0xaf88d065e77c8cc2239327c5edb3a432268e5831`, 6 decimals. The live `/v0/tokens` entry matches (`fixtures/intents/live/arb-identity-and-minimum.json`). |
+| Destination asset id | `nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1` |
+| 1Click recipient | `aurora`, with `virtualChainRecipient` = the Safe |
+| Aurora token | `0x368ebb46aca6b8d0787c96b2b20bd3cc3f2c45f7` (chain `1313161554`, 6 decimals) |
+| Manager / refund wallet | `0x37f91aa1e24AaFc7B3843E281650AA884A6651E2` (EIP-55 checksum verified). It is sent and signed lowercase, as `FundingRequestV1` normalizes it. |
+| Observed minimum | `1` unit is rejected with `Amount is too low for bridge, try at least 5301` (15:17 UTC). `routes.mjs` uses `minimumAmountIn: '5301'` as a local floor, and the provider still enforces its current one. |
+| Source confirmations | **64 Arbitrum blocks** (`DEFAULT_MIN_CONFIRMATIONS[42161]`), counted on the canonical chain. This is sequencer soft-confirmation (~16 s), **not** L1 finality. Raise it via `minConfirmations` if L1 finality is required. Verification fails closed if the policy lacks either route chain. |
+
+**Live signed dry quote (15:19 UTC, `fixtures/intents/live/quote-dry-arb-usdc-to-aurora.json`).** This used an **EXAMPLE destination**: `virtualChainRecipient` is `0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c`, an OpenAPI example address, **not the Wavefund Safe**. A shared `FundingRequestV1` went through `toProviderFundingRequest` and `previewOrder` with the built-in live transport and pinned key:
+
+- **Signed fields** (signature verified):
+  - `originAsset` and `destinationAsset` as above;
+  - `amount` `10000000`;
+  - `recipient` `aurora`;
+  - `virtualChainRecipient` `0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c`;
+  - `refundTo` `0x37f91aa1e24aafc7b3843e281650aa884a6651e2`;
+  - `deadline` `2026-11-11T15:49:11.000Z`.
+- **Signed amounts:** `amountOut` `9999341`, `minAmountOut` `9899347` (≥ the requested `9800000`).
+- **Unsigned:** `refundFee` `5300` (0.0053 USDC) and `appFees` 1 bp.
+- **Executable quotes:** `prepareOrder` was refused with `EXECUTION_QUOTES_DISABLED`.
+
+**Interface changes (this route switch):**
+
+- `VERIFIED_FUNDING_ROUTES[0]` is now `arb-usdc-to-aurora-usdc` (source `chain: 'arb'`, `chainId: 42161`).
+- `toProviderFundingRequest` derives the provider chain name from the approved route for `request.source.chainId`; nothing is hard-coded to Ethereum. Any other source chain throws `UNSUPPORTED_ROUTE`.
+- `DEFAULT_MIN_CONFIRMATIONS` gains `42161: 64`. The adapter rejects any policy missing either route chain (`EVIDENCE_UNAVAILABLE`) before reading the archive, status or receipts.
+
+**Still required before any funding:**
+
+1. The real Aurora Safe address, followed by a **fresh signed dry quote for that exact Safe**.
+2. A reviewed mainnet deployment manifest, and a production route entry in A's `approved-routes.json`. The route stays `liveVerified: false` until a delivery is observed.
+3. Trusted Arbitrum and Aurora RPC readers for `chainReaders`.
+4. Explicit authorization before `allowExecutionQuotes` is enabled or any funds move.
+
+Delivery stays **unproven** (`deliveryProven: false`).
+
+## B1: route feasibility (historical: Ethereum USDC)
 
 ### Verified route `eth-usdc-to-aurora-usdc`
 
@@ -262,9 +306,9 @@ No dependency was added. EIP-55 checksum validation uses `viem`, which is alread
 ## Tests and isolation
 
 - **Tests:**
-  - `runtime/test/intents-provider.test.mjs`: 25 tests.
-  - `runtime/test/intents-delivery.test.mjs`: 21 tests, including an end-to-end run through A's real `createFundingService` and `createFundingStore` (quoted → submitted → delivered) and review paths.
-  - Full runtime and funding suite (`runtime/test`, `runtime/funding`, `scripts/lib`): **136/136** (46 of them Intents tests).
+  - `runtime/test/intents-provider.test.mjs`: 26 tests.
+  - `runtime/test/intents-delivery.test.mjs`: 23 tests, including an end-to-end run through A's real `createFundingService` and `createFundingStore` (quoted → submitted → delivered) and review paths.
+  - Full runtime and funding suite (`runtime/test`, `runtime/funding`, `scripts/lib`): **139/139** (49 of them Intents tests).
 - **Container:** run in Docker image `node:22.11.0-bookworm-slim` (`node@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da`) with `--network none --read-only --cap-drop ALL --security-opt no-new-privileges`, as user `node`, with no host environment variables. Dependencies were installed with `npm ci --ignore-scripts` in a separate, networked step before the tests ran.
 - **Mutation check:** 20 mutants, all killed:
   - echo binding;
@@ -298,5 +342,6 @@ No dependency was added. EIP-55 checksum validation uses `viem`, which is alread
   - Both regressions failed before the fix and pass after it.
   - Guard mutation check: 6 mutants, all killed, with a no-op baseline that survives: guard removed, over-deposit allowed, under-deposit allowed, any amount allowed, and `pending` instead of review.
   - One equivalent mutant (`both-legs` quality based on source presence) survives, because the guard has already returned for any non-exact source.
+- **Arbitrum route mutation check:** 6 mutants, all killed, with a no-op baseline that survives: Arbitrum policy removed, policy set to 1, policy set to 63, provider chain hard-coded to `eth`, missing-policy guard removed, and the wrong source chain id in the route.
 - **Evidence and gating mutation check:** 4 mutants, all killed, with a no-op baseline that survives: marking the route `deliveryProven: true`, enabling executable quotes by default, altering the signed `virtualChainRecipient` in the index, and flipping the index's `deliveryProven` flag.
 - **Fixtures:** `fixtures/intents/live/` holds unmodified production captures. `fixtures/intents/mocked/` and every receipt built in the tests are synthetic. See `fixtures/intents/README.md`.

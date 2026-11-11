@@ -1,0 +1,137 @@
+{
+  "summary": {
+    "capturedAt": "2026-11-11T15:19:13.374Z",
+    "destinationLabel": "EXAMPLE destination (OpenAPI example address), not the Wavefund Safe",
+    "managerChecksumValid": true,
+    "sharedRequest": {
+      "fundingId": "arb-happy-path-dry-1",
+      "routeId": "arb-usdc-to-aurora-usdc",
+      "configurationHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "manager": "0x37f91aa1e24aafc7b3843e281650aa884a6651e2",
+      "safe": "0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c",
+      "source": {
+        "chainId": 42161,
+        "assetId": "nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near",
+        "token": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+        "decimals": 6
+      },
+      "destination": {
+        "chainId": 1313161554,
+        "assetId": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "token": "0x368ebb46aca6b8d0787c96b2b20bd3cc3f2c45f7",
+        "decimals": 6
+      },
+      "amountIn": "10000000",
+      "minAmountOut": "9800000",
+      "refundRecipient": "0x37f91aa1e24aafc7b3843e281650aa884a6651e2",
+      "expiresAt": 1794412151
+    },
+    "kind": "DRY_QUOTE",
+    "dry": true,
+    "funded": false,
+    "mocked": false,
+    "source": "live-provider",
+    "signatureVerified": true,
+    "routeId": "arb-usdc-to-aurora-usdc",
+    "signed": {
+      "originAsset": "nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near",
+      "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "recipient": "aurora",
+      "virtualChainRecipient": "0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c",
+      "refundTo": "0x37f91aa1e24aafc7b3843e281650aa884a6651e2",
+      "amount": "10000000",
+      "deadline": "2026-11-11T15:49:11.000Z"
+    },
+    "route": {
+      "origin": {
+        "chain": "arb",
+        "chainId": 42161,
+        "assetId": "nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near",
+        "tokenAddress": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+        "decimals": 6
+      },
+      "destination": {
+        "network": "aurora-mainnet",
+        "chainId": 1313161554,
+        "virtualChainAccount": "aurora",
+        "assetId": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "tokenAddress": "0x368ebb46aca6b8d0787c96b2b20bd3cc3f2c45f7",
+        "decimals": 6
+      }
+    },
+    "amounts": {
+      "amountIn": "10000000",
+      "minAmountIn": "10000000",
+      "amountOut": "9999341",
+      "minAmountOut": "9899347",
+      "requestMinAmountOut": "9800000",
+      "amountInDisplay": "10",
+      "amountOutDisplay": "9.999341",
+      "minAmountOutDisplay": "9.899347"
+    },
+    "fees": {
+      "refundFee": "5300",
+      "withdrawFee": "0",
+      "feesSigned": false,
+      "appFees": [
+        {
+          "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+          "fee": 1
+        }
+      ],
+      "appFeesSigned": false
+    },
+    "expiry": {
+      "requestExpiresAt": "2026-11-11T15:49:11.000Z",
+      "quoteDeadline": null,
+      "timeWhenInactive": null,
+      "effectiveExpiresAt": "2026-11-11T15:49:11.000Z",
+      "quotedAt": "2026-11-11T15:19:12.520Z"
+    },
+    "correlationId": "93fb4512-4882-43fd-98c7-c72dc762ffc4",
+    "prepareOrder": "EXECUTION_QUOTES_DISABLED"
+  },
+  "providerPayload": {
+    "quote": {
+      "amountIn": "10000000",
+      "amountInFormatted": "10.0",
+      "amountInUsd": "9.995850000000",
+      "minAmountIn": "10000000",
+      "amountOut": "9999341",
+      "amountOutFormatted": "9.999341",
+      "amountOutUsd": "9.995191273485",
+      "minAmountOut": "9899347",
+      "timeEstimate": 25,
+      "refundFee": "5300",
+      "withdrawFee": "0"
+    },
+    "quoteRequest": {
+      "dry": true,
+      "depositMode": "SIMPLE",
+      "swapType": "EXACT_INPUT",
+      "slippageTolerance": 100,
+      "originAsset": "nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near",
+      "depositType": "ORIGIN_CHAIN",
+      "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "amount": "10000000",
+      "refundTo": "0x37f91aa1e24aafc7b3843e281650aa884a6651e2",
+      "refundType": "ORIGIN_CHAIN",
+      "recipient": "aurora",
+      "virtualChainRecipient": "0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c",
+      "recipientType": "DESTINATION_CHAIN",
+      "deadline": "2026-11-11T15:49:11.000Z",
+      "confidentiality": "public",
+      "quoteWaitingTimeMs": 0,
+      "insured": false,
+      "appFees": [
+        {
+          "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+          "fee": 1
+        }
+      ]
+    },
+    "signature": "ed25519:45x8ya1MDdAjhrSV6WdCAsyKpbFY7RUcEeHaLihpr9Pisph6TvSGpRVaL14bz1MtdEr2oBq1TDDw4ELbaBiLe9Fj",
+    "timestamp": "2026-11-11T15:19:12.520Z",
+    "correlationId": "93fb4512-4882-43fd-98c7-c72dc762ffc4"
+  }
+}
