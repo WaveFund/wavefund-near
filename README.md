@@ -4,7 +4,7 @@
 
 Solidity implementation targeting Aurora testnet (chain 1313161555). A [genuine public Safe round](docs/AURORA-SAFE-ROUND.md) completed v4 forecasting, an actual Trisolaris swap, Supra-authenticated settlement and forecaster redemption. This is a single-operator rehearsal with freely minted test assets, not an audited or production-approved deployment.
 
-Supra supplies authenticated public-testnet observations without a gateway key. [RedStone access](docs/REDSTONE-PROOF.md) remains an alternative, not a blocker for the completed round. Current verification: **432 Solidity executions, 60 Node tests and 8 Python safety tests passed**. See [deliberate product testing](docs/PRODUCT-TESTING.md) for scripted LONG/SHORT coverage, real-model limitations and recovery evidence.
+Supra supplies authenticated public-testnet observations without a gateway key. [RedStone access](docs/REDSTONE-PROOF.md) remains an alternative, not a blocker for the completed round. Current verification: **432 Solidity executions, 60 Node tests and 6 published Python safety tests passed**. See [deliberate product testing](docs/PRODUCT-TESTING.md) for scripted LONG/SHORT coverage, real-model limitations and recovery evidence.
 
 [Local full-stack demo](docs/LOCAL-DEMO.md): real local Safe/v4 transactions, a Node orchestration API and a Next.js dashboard. Run `npm run demo:local` after isolated dependency setup. Prices and agents are explicitly simulated.
 
@@ -18,9 +18,52 @@ Manager-owned Safe assets are independent of forecaster escrow. A manager author
 
 One instance supports one Safe, a six-decimal stablecoin, an eighteen-decimal investment asset, a fixed direct-pair router and immutable price source. Independently settling Safes require independent collateral and seed. No WAVE share token is issued.
 
-## Start
+## Judge quickstart: do this, see this
 
-Requirements: Python 3.12+; Foundry 1.5.1 or compatible; Solidity 0.8.26. Fetch source archives without running dependency scripts:
+Use a clean isolated development environment. Requirements: Node 22+, Python 3.12+, Foundry 1.5.1 and Solidity 0.8.26. No wallet connection or API key is required for the local fixture demo.
+
+1. Install the official Foundry version manager following [Foundry installation](https://www.getfoundry.sh/introduction/installation), then select the tested toolchain:
+
+   ```sh
+   foundryup --install 1.5.1
+   forge --version
+   anvil --version
+   ```
+
+   Expected: both executables are available and report version 1.5.1. If either command is missing, fix the isolated environment's PATH before launching the demo.
+
+2. Restore pinned Solidity sources and npm dependencies with lifecycle scripts disabled:
+
+   ```sh
+   python3 scripts/fetch-deps.py
+   npm ci --ignore-scripts --no-audit --no-fund
+   ```
+
+   Expected: dependencies are available; no credentials are read or transactions submitted. Network access is needed for this setup step.
+
+3. Verify the published runtime and bridge controls:
+
+   ```sh
+   npm run test:runtime
+   python3 scripts/test-aurora-agent-bridge.py
+   python3 scripts/test-aurora-bridge.py
+   ```
+
+   Expected baseline: 60 Node tests and 6 Python tests pass. The Solidity verification command is below; its saved baseline is 432 executions across 27 test files.
+
+4. With ports 8545, 3001 and 3000 free and no previous `.run/local-demo` journal, start:
+
+   ```sh
+   npm run demo:local
+   ```
+
+   Open `http://127.0.0.1:3000` and choose **Run local round**. Expected: proposals, LONG/SHORT trades, selected allocation, local Safe execution, settlement and redemption become visible. This uses simulated prices, investment venue and agent decisions; it does not call NEAR AI or Intents. See [exact reference results and explicit session reset](docs/LOCAL-DEMO.md).
+
+5. Compare the separate [public Aurora Safe evidence](docs/AURORA-SAFE-ROUND.md) and [agent/product evidence](docs/PRODUCT-TESTING.md). These are historical testnet records, not activity created by opening the page. Stop the local launcher with Ctrl+C.
+
+## Solidity verification
+
+Run in the isolated environment after dependency setup:
 
 ```sh
 python3 scripts/fetch-deps.py
@@ -86,6 +129,8 @@ Forecasting code and associated tests derive from https://github.com/advaitrane9
 This adapts an existing Wavefund project; reused forecasting contracts are baseline regardless of import date. The upstream reference is listed under Attribution. Local import checkpoint: `f8c0177`. New work includes the Aurora Safe module, valuation/oracle adapters, bounded model orchestration, operator workflows and dashboard. Inspect changes with `git diff f8c0177..HEAD -- src script test runtime frontend scripts`. The completed public cycle is documented separately from local fixtures and the historical mock-controller experiment.
 
 ## Current execution and funding model
+
+The next integration is manager-owned capital funding an Aurora Safe through NEAR Intents **before** a forecasting round starts. It is planned, not implemented in this checkout. A live Intents route targets mainnet; it cannot fund the existing Aurora testnet deployment. Funding and strategy evidence must retain their real network identities. The existing strategy executor remains the direct Trisolaris path.
 
 Uniswap v4 pools and WaveHook serve forecasting LONG/SHORT claims. The Safe module reads the canonical winner and calls a fixed exact-input investment router with oracle/slippage and balance checks. The local demo retains its prefunded fixture. The public testnet stack uses the existing Trisolaris router with our self-seeded test-token pair; an actual Safe swap is verified.
 

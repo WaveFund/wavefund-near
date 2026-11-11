@@ -2,7 +2,7 @@
 
 **Publication boundary:** expanded round-runner/host-bridge edits remain local pending full live-agent validation; use the published planner/tests/verifier, not the experimental CLI workflow.
 
-**Latest testing:** [product test report](PRODUCT-TESTING.md): scripted public round 3 completed four forecasts, LONG/SHORT, an actual Safe asset sale and independently verified payouts; 432 Solidity / 60 Node / 8 Python passed. The separate eight-call model experiment was interrupted by RPC failure before forecasting; no live model-directed trade is claimed.
+**Latest testing:** [product test report](PRODUCT-TESTING.md): scripted public round 3 completed four forecasts, LONG/SHORT, an actual Safe asset sale and independently verified payouts; 432 Solidity / 60 Node / 6 published Python tests passed. Two additional Python safety tests belong to the local unpublished runner experiment. The separate eight-call model experiment was interrupted by RPC failure before forecasting; no live model-directed trade is claimed.
 
 **Agent milestone:** [real NEAR AI round 2](AURORA-AGENTS.md) completed with four distinct agent wallets and four model calls (~$0.00202 estimated). Both forecasters abstained; Hold settled and both deposits returned. Frontend/read-only developer-owned files were not edited.
 
@@ -24,8 +24,8 @@ Use a feature branch from current `main`. Restore pinned dependencies with insta
 
 | Area | Evidence and limit |
 |---|---|
-| Solidity | 419 passed, zero failed/skipped across all 26 suites. Final oracle/token sources also recompiled and passed 19 tests; initcode exactly matches deployed artifacts. |
-| Runtime/frontend | Current 53 Node tests and 6 Python bridge safety tests passed. Earlier frontend typecheck/build remain valid prior evidence; frontend source was not changed here. Critical oracle, transport, mint and signer-lock mutations failed as intended and restored green. |
+| Solidity | Current saved baseline: 432 passing executions across 27 files, zero failed/skipped. The earlier 419-test milestone and deployed bytecode checks remain historical evidence; test-only additions do not change deployed contracts. |
+| Runtime/frontend | Current published baseline: 60 Node tests and 6 Python bridge safety tests passed. Earlier frontend typecheck/build remain valid prior evidence; frontend source was not changed here. Critical oracle, transport, mint and signer-lock mutations failed as intended and restored green. |
 | Local lifecycle | Actual local Safe and v4 interactions; investment router, prices and fixture agents are simulated. |
 | NEAR AI | Four real Qwen calls and distinct agent wallets completed round 2, including agent proposals, guarded abstentions, Hold execution, measured settlement and principal redemption. No verified attestation or live model-directed trade. |
 | Aurora forecasting | Fresh collateralized QuantumRound/v4/WaveHook stack completed the genuine Safe round. Historical unrestricted test-controller proof remains separate. |

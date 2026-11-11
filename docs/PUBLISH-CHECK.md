@@ -17,4 +17,4 @@ Repeat scans with a trusted installation:
 gitleaks git --config .gitleaks.toml --log-opts=--all --ignore-gitleaks-allow --redact=100 .
 ```
 
-Current implementation status and remaining live-swap requirements are in README and OPERATOR-WORKFLOWS.md. Investment swaps still use the local fixture; a real Aurora testnet router/pool cycle remains to be verified. Publishing source does not deploy contracts or spend funds.
+Current implementation status and remaining live-swap requirements are in README and OPERATOR-WORKFLOWS.md. The local demo uses a fixture investment venue. Separately, the public Aurora testnet Safe completed actual Trisolaris swaps with operator-seeded test tokens; see AURORA-SAFE-ROUND.md and PRODUCT-TESTING.md. Production asset routes and live Intents funding remain unverified. Publishing source does not deploy contracts or spend funds.

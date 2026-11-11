@@ -73,7 +73,7 @@ All **432 Solidity test executions across 27 files passed** (zero failed/skipped
 
 Local tests use the genuine Safe/v4/module/engine/tracker, but fixture prices and a minting fixed-price investment router. Actual investment-venue evidence is the separate public round.
 
-**60 Node tests and 8 Python bridge safety tests passed** in network-disabled containers. Recovery/fixture controls include no paid-call replay, unresolved broadcasts blocking all phases, exclusive operator locks and explicit live/fixture provenance.
+**60 Node tests and 8 local Python bridge safety tests passed** (6 Python tests are included in the published checkout) in network-disabled containers. Recovery/fixture controls include no paid-call replay, unresolved broadcasts blocking all phases, exclusive operator locks and explicit live/fixture provenance.
 
 A real orchestration bug was fixed: token quantities are the custody invariant, not marked allocation weight. Price moves can change a mixed portfolio's weight without anyone moving funds. A regression accepts 50% → 50.73% weight drift with identical quantities and rejects a one-unit custody change. Frozen on-chain preparation quantities are checked again before deposits.
 
@@ -84,9 +84,9 @@ Mutation checks used disposable container copies only:
 
 Logs: [Solidity suites](test-evidence/product-scenarios/solidity/), [runtime](test-evidence/product-scenarios/runtime.log), [mutations](test-evidence/product-scenarios/mutations/summary.json).
 
-## Operator workflow and remaining gates
+## Historical unpublished workflow and remaining gates
 
-The expanded profile is `--profile diverse`; fixture generation also requires `--scenario fixture`. Planning fixtures reads no model key. Live planning requires explicit `--run-inference` and current permission. Use a new session directory, prepare actors, snapshot, plan, then run. Never rerun a started timed round as a new run.
+The following describes the historical local experiment, not an executable workflow in the published checkout. Its runner remains on a local WIP branch. The expanded profile was `--profile diverse`; fixture generation also requires `--scenario fixture`. Planning fixtures reads no model key. Live planning requires explicit `--run-inference` and current permission. Use a new session directory, prepare actors, snapshot, plan, then run. Never rerun a started timed round as a new run.
 
 For an interrupted **unexecuted** journaled round, `--phase recover-cancel` waits for trading end, collapses, waits past the committed execution deadline, then invokes abortExpired and redeems recorded deposits. It refuses unresolved broadcasts and executed rounds. It verifies unchanged Safe quantities and cleared liabilities. It does not retry inference or make a missed strategy execute late.
 
