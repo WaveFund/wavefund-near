@@ -1,0 +1,48 @@
+[
+  {
+    "stage": "prepared",
+    "phase": "deploy",
+    "hash": "0xc168c7af1a65d5398b235100a8fae7fd472c02cbdf35465d77002794d04369c3",
+    "nonce": 187,
+    "to": null,
+    "gas": "806975",
+    "gasPrice": "70000000",
+    "calldataHash": "0xf226a369ace9dc81abddd3b6a9567e7cca27e2f1ffbc9fc0d155131058a31188"
+  },
+  {
+    "stage": "confirmed",
+    "phase": "deploy",
+    "hash": "0xc168c7af1a65d5398b235100a8fae7fd472c02cbdf35465d77002794d04369c3",
+    "blockNumber": "277266066",
+    "reputation": "0xac9c56f1c032f74a9e84703602894315df2d9488",
+    "gasUsed": "484185",
+    "gasPrice": "70000000"
+  },
+  {
+    "stage": "prepared",
+    "phase": "record7",
+    "hash": "0x0a2be8476e8527709b049a84ab2ac9ccc33d6674060835badd39f6805b7dfe04",
+    "nonce": 193,
+    "to": "0xac9c56f1c032f74a9e84703602894315df2d9488",
+    "gas": "266556",
+    "gasPrice": "70000000",
+    "calldataHash": "0xeb12b1137ddffb6ba5a90656dbfc13b439690b48a9993b0157d6abdcbb5092cb"
+  },
+  {
+    "stage": "confirmed",
+    "phase": "record7",
+    "hash": "0x0a2be8476e8527709b049a84ab2ac9ccc33d6674060835badd39f6805b7dfe04",
+    "blockNumber": "277266787",
+    "reputation": "0xac9c56f1c032f74a9e84703602894315df2d9488",
+    "gasUsed": "159934",
+    "gasPrice": "70000000",
+    "agent": "0x8B6aF0B1738b941c0C7dd4deeC6fabEe3447888F",
+    "score": "-1",
+    "statistics": [
+      "1",
+      "0",
+      "1",
+      "0"
+    ]
+  }
+]

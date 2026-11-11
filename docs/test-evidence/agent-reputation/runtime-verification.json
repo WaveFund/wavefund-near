@@ -1,0 +1,9 @@
+{
+  "chainId": 1313161555,
+  "address": "0xac9c56f1c032f74a9e84703602894315df2d9488",
+  "engine": "0x825b31dbc1af25b230d31caf5210c2b5a8fe22af",
+  "tracker": "0x8177b10d6607305657bab678e03711f414399672",
+  "runtimeHash": "0xee8bb1f9466e63d4a340386698a1c6671b7536a648f97f41ed492530bcaddf56",
+  "immutableMaskedRuntimeMatches": true,
+  "method": "Fresh public RPC code/read verification; runtime immutable slots masked against the clean final compiled template, then immutable getter identities checked. Trusted RPC, not a light-client proof."
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "chainId": 1313161555,
+  "scope": "Additive testnet absolute-performance points; not lending creditworthiness",
+  "contracts": {
+    "reputation": "0xac9c56f1c032f74a9e84703602894315df2d9488",
+    "engine": "0x825b31dbc1af25b230d31caf5210c2b5a8fe22af",
+    "tracker": "0x8177b10d6607305657bab678e03711f414399672"
+  },
+  "deploymentTransactionHash": "0xc168c7af1a65d5398b235100a8fae7fd472c02cbdf35465d77002794d04369c3",
+  "deploymentBlock": "277266066",
+  "runtimeHash": "0xee8bb1f9466e63d4a340386698a1c6671b7536a648f97f41ed492530bcaddf56",
+  "immutableMaskedRuntimeMatches": true,
+  "investmentContractsReplaced": false,
+  "historicalRoundsRecorded": [
+    {
+      "roundId": "7",
+      "transactionHash": "0x0a2be8476e8527709b049a84ab2ac9ccc33d6674060835badd39f6805b7dfe04",
+      "blockNumber": "277266787",
+      "agent": "0x8B6aF0B1738b941c0C7dd4deeC6fabEe3447888F",
+      "score": "-1",
+      "samples": "1",
+      "positive": "0",
+      "negative": "1",
+      "flat": "0"
+    }
+  ]
+}
