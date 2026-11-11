@@ -30,7 +30,7 @@ function decodeTransfers(receipt) {
 }
 
 // observation: { txHash, chainId, confirmations, receipt } as returned by eth_getTransactionReceipt plus reader metadata.
-function readObservation(observation, { label, expectedChainId, token, to, minConfirmations, linkedHashes }) {
+function readObservation(observation, { label, expectedChainId, token, to, from = null, minConfirmations, linkedHashes }) {
   const base = { label, txHash: observation?.txHash ?? null, linked: false, amount: 0n, usable: false, issues: [] };
   if (!isObject(observation) || typeof observation.txHash !== 'string' || !HASH.test(observation.txHash)) return { ...base, issues: ['malformed observation'] };
   const r = observation.receipt;
@@ -41,8 +41,10 @@ function readObservation(observation, { label, expectedChainId, token, to, minCo
   let transfers;
   try { transfers = decodeTransfers(r); } catch (error) { return { ...base, issues: [error.message] }; }
   const relevant = transfers.filter((t) => t.to === to.toLowerCase());
-  const matching = relevant.filter((t) => t.token === token.toLowerCase());
-  if (relevant.length && !matching.length) return { ...base, issues: ['transfer to the expected recipient used the wrong token'] };
+  const tokenMatches = relevant.filter((t) => t.token === token.toLowerCase());
+  if (relevant.length && !tokenMatches.length) return { ...base, issues: ['transfer to the expected recipient used the wrong token'] };
+  const matching = from ? tokenMatches.filter((t) => t.from === from.toLowerCase()) : tokenMatches;
+  if (tokenMatches.length && !matching.length) return { ...base, issues: ['transfer was not sent by the expected manager address'] };
   if (!matching.length) return { ...base, issues: ['no matching ERC-20 transfer to the expected recipient (unrelated transaction)'] };
   const amount = matching.reduce((sum, t) => sum + t.value, 0n);
   const confirmed = Number.isSafeInteger(observation.confirmations) && observation.confirmations >= minConfirmations;
@@ -53,6 +55,7 @@ export function verifyFundingDelivery({
   quote, status = null, statusError = null,
   sourceReceipts = [], destinationReceipts = [], refundReceipts = [],
   verifySignature = createQuoteSignatureVerifier(), minConfirmations = DEFAULT_MIN_CONFIRMATIONS,
+  expectedSender = null, // when set, a source deposit counts only if the ERC-20 Transfer is from this address (the manager)
 } = {}) {
   const checks = []; const reasons = [];
   const check = (name, ok, detail = null) => { checks.push({ name, result: ok ? 'pass' : 'fail', detail }); return ok; };
@@ -95,7 +98,7 @@ export function verifyFundingDelivery({
   const allHashes = new Set([...originHashes, ...destinationHashes]);
   const confirmationsFor = (chainId) => minConfirmations[chainId] ?? Number.POSITIVE_INFINITY;
 
-  const src = sourceReceipts.map((o) => readObservation(o, { label: 'source deposit', expectedChainId: route.source.chainId, token: route.source.tokenAddress, to: quote.deposit.address, minConfirmations: confirmationsFor(route.source.chainId), linkedHashes: originHashes }));
+  const src = sourceReceipts.map((o) => readObservation(o, { label: 'source deposit', expectedChainId: route.source.chainId, token: route.source.tokenAddress, to: quote.deposit.address, from: expectedSender, minConfirmations: confirmationsFor(route.source.chainId), linkedHashes: originHashes }));
   const dst = destinationReceipts.map((o) => readObservation(o, { label: 'destination delivery', expectedChainId: route.destination.chainId, token: route.destination.tokenAddress, to: quote.funding.safeAddress, minConfirmations: confirmationsFor(route.destination.chainId), linkedHashes: destinationHashes }));
   const ref = refundReceipts.map((o) => readObservation(o, { label: 'refund', expectedChainId: route.source.chainId, token: route.source.tokenAddress, to: quote.funding.refundAddress, minConfirmations: confirmationsFor(route.source.chainId), linkedHashes: allHashes }));
   for (const o of [...src, ...dst, ...ref]) check(`${o.label} ${o.txHash ?? '(invalid)'}`, o.usable && o.linked && o.confirmed, [...o.issues, ...(o.usable && !o.linked ? ['not linked by provider status; not counted'] : [])].join('; ') || null);
@@ -144,6 +147,7 @@ export function verifyFundingDelivery({
       const observed = sumOf(ref);
       if (observed !== reportedRefund) { check('refund amount', false, `observed ${observed}, provider reported ${reportedRefund}`); reasons.push('Observed refund differs from the provider-reported refund'); return result('ambiguous', 'provider-linked-one-leg', { amounts: refundAmounts }); }
       check('refund amount', true, `observed ${observed} equals provider report`);
+      refundAmounts.observedRefund = observed.toString();
     }
     if (shortfall !== null && BigInt(shortfall) > 0n) reasons.push(`Refund returned ${reportedRefund} of ${deposited} deposited; ${shortfall} was not returned`);
     const quality = refOk.length ? (srcOk.length ? 'provider-linked-both-legs' : 'provider-linked-one-leg') : (srcOk.length ? 'provider-linked-one-leg' : 'provider-claim-only');

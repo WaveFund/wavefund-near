@@ -7,6 +7,11 @@ import {
   IntentsError, ERROR_CODES, EXECUTION_STATUSES, ONE_CLICK_BASE_URL, VERIFIED_FUNDING_ROUTES, AURORA_MAINNET_CHAIN_ID,
 } from '../intents/index.mjs';
 import { base58Encode } from '../intents/signature.mjs';
+import { mkdtempSync, rmSync, readdirSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { createFundingVerifiers, createFundingEvidenceArchive, toProviderFundingRequest } from '../intents/index.mjs';
+import { fundingHash } from '../funding/index.mjs';
 
 const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/intents/${name}`, import.meta.url), 'utf8'));
 // LIVE evidence (real provider data) vs MOCKED templates are loaded from separate directories.
@@ -297,4 +302,82 @@ test('only the allowlisted endpoint is used and the surface stays quote/read onl
   for (const call of transport.calls) { assert.ok(call.url.startsWith(`${ONE_CLICK_BASE_URL}/v0/`)); assert.equal(call.headers['X-API-Key'], 'jwt-test-only'); }
   assert.equal(JSON.stringify(quote).includes('jwt-test-only'), false);
   assert.deepEqual(Object.keys(client).sort(), ['getExecutionStatus', 'getSupportedAssets', 'prepareOrder', 'previewOrder']);
+});
+
+// ------------------------------------------------------------------ shared funding interface: verifyQuote (MOCKED)
+
+
+const MANAGER = MOCK_EXEC.quoteRequest.refundTo; // the shared schema requires refund recipient === manager
+const sharedRequest = (overrides = {}) => ({
+  fundingId: 'fund-1', routeId: 'eth-usdc-to-aurora-usdc', configurationHash: `0x${'c'.repeat(64)}`,
+  manager: MANAGER, safe: MOCK_EXEC.quoteRequest.virtualChainRecipient,
+  source: { chainId: 1, assetId: ROUTE.source.assetId, token: ROUTE.source.tokenAddress, decimals: 6 },
+  destination: { chainId: AURORA_MAINNET_CHAIN_ID, assetId: ROUTE.destination.assetId, token: ROUTE.destination.tokenAddress, decimals: 6 },
+  amountIn: '250000000', minAmountOut: '247000000', refundRecipient: MANAGER, expiresAt: Date.parse('2026-11-11T12:30:00.000Z') / 1000, ...overrides,
+});
+function adapterSetup(t, { quote = signWith(MOCK_EXEC), verifierOptions = {} } = {}) {
+  const dir = mkdtempSync(join(tmpdir(), 'wavefund-intents-evidence-')); t.after(() => rmSync(dir, { recursive: true, force: true }));
+  const archive = createFundingEvidenceArchive(join(dir, 'evidence'));
+  const { client } = mockClient({ quote });
+  const verifiers = createFundingVerifiers({ client, archive, chainReaders: {}, verifySignature: testVerifier, clock: () => Date.parse(MOCK_CLOCK) / 1000, ...verifierOptions });
+  return { client, archive, verifiers, dir };
+}
+
+test('shared request maps exactly to the provider request (Unix seconds -> canonical ISO, no strategy fields)', () => {
+  const mapped = toProviderFundingRequest(sharedRequest());
+  assert.equal(mapped.expiresAt, '2026-11-11T12:30:00.000Z'); assert.equal(mapped.destination.virtualChainAccount, 'aurora');
+  assert.equal(mapped.destination.safeAddress, sharedRequest().safe); assert.equal(mapped.refundAddress, MANAGER); assert.equal(mapped.slippageBps, 100);
+  assert.throws(() => toProviderFundingRequest(sharedRequest({ expiresAt: '2026-11-11T12:30:00.000Z' })), (e) => e.code === ERROR_CODES.INVALID_ORDER);
+  assert.throws(() => toProviderFundingRequest(sharedRequest({ destination: { ...sharedRequest().destination, decimals: 18 } })), (e) => e.code === ERROR_CODES.UNSUPPORTED_ROUTE);
+  assert.throws(() => toProviderFundingRequest(sharedRequest({ source: { ...sharedRequest().source, token: '0xdac17f958d2ee523a2206206994597c13d831ec7' } })), (e) => e.code === ERROR_CODES.UNSUPPORTED_ROUTE);
+});
+
+test('verifyQuote returns exactly the shared shape, archives the signed quote first, and stays fixture-quality when mocked', async (t) => {
+  const { client, verifiers, dir } = adapterSetup(t);
+  const providerQuote = await client.prepareOrder(toProviderFundingRequest(sharedRequest()));
+  const result = await verifiers.verifyQuote(providerQuote, sharedRequest());
+  assert.deepEqual(Object.keys(result).sort(), ['amountIn', 'depositAddress', 'evidenceQuality', 'expiresAt', 'minAmountOut', 'reference', 'requestHash']);
+  assert.equal(result.requestHash, fundingHash(sharedRequest())); assert.equal(result.reference, `1click:${MOCK_EXEC.correlationId}`);
+  assert.equal(result.depositAddress, MOCK_EXEC.quote.depositAddress); assert.equal(result.minAmountOut, '247473624');
+  assert.equal(result.expiresAt, Date.parse('2026-11-11T12:30:00.000Z') / 1000); assert.equal(result.evidenceQuality, 'fixture');
+  assert.equal(readdirSync(join(dir, 'evidence')).length, 1, 'signed quote retained before returning');
+  assert.deepEqual(await verifiers.verifyQuote(providerQuote, sharedRequest()), result, 'identical retry is idempotent');
+});
+
+test('verifyQuote rejects dry, tampered, mismatched, expired and over-slippage quotes', async (t) => {
+  const { client, verifiers } = adapterSetup(t);
+  const good = await client.prepareOrder(toProviderFundingRequest(sharedRequest()));
+  const dry = await adapterSetup(t, { quote: signWith(asDry(MOCK_EXEC)) }).client.previewOrder(toProviderFundingRequest(sharedRequest()));
+  await rejectsCode(verifiers.verifyQuote(dry, sharedRequest()), ERROR_CODES.INVALID_ORDER);
+  const tampered = structuredClone(good); tampered.providerPayload.quote.minAmountOut = '247473625';
+  await rejectsCode(verifiers.verifyQuote(tampered, sharedRequest()), ERROR_CODES.SIGNATURE_INVALID);
+  for (const [overrides, code] of [
+    [{ safe: '0x000000000000000000000000000000000000dead' }, ERROR_CODES.ORDER_MISMATCH],
+    [{ refundRecipient: '0x000000000000000000000000000000000000dead', manager: '0x000000000000000000000000000000000000dead' }, ERROR_CODES.ORDER_MISMATCH],
+    [{ amountIn: '250000001' }, ERROR_CODES.ORDER_MISMATCH],
+    [{ minAmountOut: '247473625' }, ERROR_CODES.QUOTE_BELOW_MINIMUM],
+    [{ expiresAt: Date.parse('2026-11-11T12:29:59.000Z') / 1000 }, ERROR_CODES.ORDER_MISMATCH],
+    [{ destination: { ...sharedRequest().destination, chainId: 1313161555 } }, ERROR_CODES.UNSUPPORTED_ROUTE],
+  ]) await rejectsCode(verifiers.verifyQuote(good, sharedRequest(overrides)), code);
+  const wideSlippage = await adapterSetup(t, { quote: signWith({ ...MOCK_EXEC, quoteRequest: { ...MOCK_EXEC.quoteRequest, slippageTolerance: 300 } }) });
+  const wide = await wideSlippage.client.prepareOrder(toProviderFundingRequest(sharedRequest(), { slippageBps: 300 }));
+  await rejectsCode(wideSlippage.verifiers.verifyQuote(wide, sharedRequest()), ERROR_CODES.ORDER_MISMATCH);
+  const late = adapterSetup(t, { verifierOptions: { clock: () => Date.parse('2026-11-11T12:03:00.000Z') / 1000 } });
+  await rejectsCode(late.verifiers.verifyQuote(await late.client.prepareOrder(toProviderFundingRequest(sharedRequest())), sharedRequest()), ERROR_CODES.QUOTE_EXPIRED);
+});
+
+test('evidence archive is private and write-once', async (t) => {
+  const { client, verifiers, archive } = adapterSetup(t);
+  const providerQuote = await client.prepareOrder(toProviderFundingRequest(sharedRequest()));
+  await verifiers.verifyQuote(providerQuote, sharedRequest());
+  const reference = `1click:${MOCK_EXEC.correlationId}`;
+  assert.equal(archive.read(reference).requestHash, fundingHash(sharedRequest()));
+  assert.throws(() => archive.retain({ reference, requestHash: `0x${'0'.repeat(64)}`, quote: providerQuote, retainedAt: 1 }), (e) => e.code === ERROR_CODES.EVIDENCE_UNAVAILABLE);
+  assert.throws(() => archive.read('1click:unknown'), (e) => e.code === ERROR_CODES.EVIDENCE_UNAVAILABLE);
+  assert.throws(() => archive.read('../escape'), (e) => e.code === ERROR_CODES.EVIDENCE_UNAVAILABLE);
+});
+
+test('QUOTING_UNAVAILABLE (observed live for EVM origins) maps to a retryable code, never a quote', async () => {
+  await assert.rejects(liveClient(json(400, { message: 'Quoting for this pair is not available' })).client.previewOrder(fundingRequest(LIVE_FUNDING_DRY)),
+    (e) => e.code === ERROR_CODES.QUOTING_UNAVAILABLE && e.retryable === true);
 });

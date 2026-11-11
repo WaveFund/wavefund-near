@@ -3,3 +3,4 @@ export { VERIFIED_FUNDING_ROUTES, AURORA_MAINNET_CHAIN_ID, findFundingRoute } fr
 export { verifyFundingDelivery, OUTCOMES, EVIDENCE_QUALITY, ERC20_TRANSFER_TOPIC, DEFAULT_MIN_CONFIRMATIONS } from './delivery.mjs';
 export { createQuoteSignatureVerifier, ONE_CLICK_MANAGER_PUBLIC_KEY, quoteMessage, stableStringify } from './signature.mjs';
 export { IntentsError, ERROR_CODES } from './errors.mjs';
+export { createFundingVerifiers, createFundingEvidenceArchive, toProviderFundingRequest } from './funding-adapter.mjs';

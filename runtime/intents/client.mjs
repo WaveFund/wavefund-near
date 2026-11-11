@@ -100,7 +100,7 @@ export function validateFundingRequest(request, { now = Date.now() } = {}) {
 
 // Exact provider request. Aurora is a NEAR "virtual chain": deliver the NEP-141 to the engine account and
 // name the EVM recipient via virtualChainRecipient (signed by 1Click). No customRecipientMsg, appFees or referral.
-function quoteRequestFor(request, dry) {
+export function quoteRequestFor(request, dry) {
   return {
     dry, swapType: 'EXACT_INPUT', slippageTolerance: request.slippageBps,
     originAsset: request.source.assetId, depositType: 'ORIGIN_CHAIN', destinationAsset: request.destination.assetId,
@@ -143,6 +143,7 @@ function headerValue(headers, name) {
 function classifyRejection(message) {
   const text = message ?? '';
   if (/no liquidity/i.test(text)) return E.NO_LIQUIDITY;
+  if (/quoting for this pair is not available/i.test(text)) return E.QUOTING_UNAVAILABLE; // observed 2026-11-11 for EVM origins
   if (/too low|minimum swap amount/i.test(text)) return E.AMOUNT_TOO_LOW;
   if (/token(in|out) is not valid|not supported|unsupported|no route|virtual chain/i.test(text)) return E.UNSUPPORTED_ROUTE;
   return E.PROVIDER_REJECTED;
