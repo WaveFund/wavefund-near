@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "testnetOnly": true,
+  "official1Click": false,
+  "deliveryProven": true,
+  "method": "provider-linked canonical receipts from trusted RPCs; not a trustless bridge proof",
+  "source": {
+    "chainId": 421614,
+    "transactionHash": "0xb56675db59f1eda47a2b0998cb4ca28689a83a1e66f2723215aba29a31fd5a69",
+    "blockNumber": "328309683",
+    "amount": "200000000"
+  },
+  "destination": {
+    "chainId": 1313161555,
+    "transactionHash": "0x28999ced84c15e9a7bc53bfe0ea8d368d6a332455cfde3bd8e741d01ce51c45b",
+    "blockNumber": "277272331",
+    "safe": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11",
+    "amount": "199480000"
+  },
+  "token": "0x38d81431b9f76d9699af7517040d5221d9dea252",
+  "minAmountOut": "197485200",
+  "nearTransactionsReportedByProvider": [
+    "2chYKdXhsNVodLJuEHwL89ifkn1uxFXk8Tr8HrKWnv6f",
+    "EqWxCY4fYtP2yrS18oWY2CrFeTSRD9aEieGHxCSErGyM",
+    "93tnePQQPVsRDV4xFiQ4eeEYFUZWbQEr1YQXANatCVYC"
+  ],
+  "confirmationPolicy": "Testnet canonical receipts only; not Ethereum L1 finality",
+  "strategyExecuted": false,
+  "safeBalance": {
+    "before": "0",
+    "after": "199480000",
+    "delta": "199480000"
+  },
+  "status": {
+    "correlationId": "7cd8b853-a9e9-4500-96d2-3ad8939b2f7b",
+    "quoteResponse": {
+      "correlationId": "7cd8b853-a9e9-4500-96d2-3ad8939b2f7b",
+      "timestamp": "2026-11-11T21:41:22.324Z",
+      "quoteRequest": {
+        "dry": false,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:arb-0x38d81431b9f76d9699af7517040d5221d9dea252.tp-omft.testnet",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:aur-0x38d81431b9f76d9699af7517040d5221d9dea252.tp-omft.testnet",
+        "amount": "200000000",
+        "recipient": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11",
+        "recipientType": "DESTINATION_CHAIN",
+        "refundTo": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+        "refundType": "ORIGIN_CHAIN",
+        "deadline": "2026-11-11T21:51:21.000Z"
+      },
+      "quote": {
+        "amountIn": "200000000",
+        "amountInFormatted": "200",
+        "amountInUsd": "199.9108",
+        "minAmountIn": "200000000",
+        "amountOut": "199480000",
+        "amountOutFormatted": "199.48",
+        "amountOutUsd": "199.3910",
+        "minAmountOut": "197485200",
+        "timeEstimate": 60,
+        "depositAddress": "0x0e54Cf33cEBBB71c4531C762f14E27bC29753428",
+        "deadline": "2026-11-11T21:51:21.000Z",
+        "timeWhenInactive": "2026-11-11T21:51:21.000Z"
+      },
+      "signature": "ed25519:2nGG5Dwqtnycv8NPrtYME5nQyjjpEbLBrmkMTtydyTgJZDpLabGGAfC8Y4TQo4wt5HZit3uPSKGSVso1SjZKQgfw"
+    },
+    "status": "SUCCESS",
+    "updatedAt": "2026-11-11T21:46:25.555Z",
+    "swapDetails": {
+      "intentHashes": [
+        "4ARDJs7WBbvkWHdZpKXRtYZ6Ec9SSygkNTEFnwkSCCWy",
+        "7gYgjDmtTvWunrp2fNG6HVELRLqJVS6dYjgzyWAa8V16"
+      ],
+      "nearTxHashes": [
+        "2chYKdXhsNVodLJuEHwL89ifkn1uxFXk8Tr8HrKWnv6f",
+        "EqWxCY4fYtP2yrS18oWY2CrFeTSRD9aEieGHxCSErGyM",
+        "93tnePQQPVsRDV4xFiQ4eeEYFUZWbQEr1YQXANatCVYC"
+      ],
+      "originChainTxHashes": [
+        {
+          "hash": "0xb56675db59f1eda47a2b0998cb4ca28689a83a1e66f2723215aba29a31fd5a69",
+          "explorerUrl": "https://sepolia.arbiscan.io/tx/0xb56675db59f1eda47a2b0998cb4ca28689a83a1e66f2723215aba29a31fd5a69"
+        }
+      ],
+      "destinationChainTxHashes": [
+        {
+          "hash": "93tnePQQPVsRDV4xFiQ4eeEYFUZWbQEr1YQXANatCVYC",
+          "explorerUrl": "https://testnet.nearblocks.io/txns/93tnePQQPVsRDV4xFiQ4eeEYFUZWbQEr1YQXANatCVYC"
+        },
+        {
+          "hash": "0x28999ced84c15e9a7bc53bfe0ea8d368d6a332455cfde3bd8e741d01ce51c45b",
+          "explorerUrl": "https://testnet.aurorascan.dev/tx/0x28999ced84c15e9a7bc53bfe0ea8d368d6a332455cfde3bd8e741d01ce51c45b"
+        }
+      ],
+      "amountIn": "200000000",
+      "amountInFormatted": "200",
+      "amountInUsd": "199.9078",
+      "amountOut": "199480000",
+      "amountOutFormatted": "199.48",
+      "amountOutUsd": "199.3880",
+      "slippage": 0,
+      "depositedAmount": "200000000",
+      "depositedAmountFormatted": "200",
+      "depositedAmountUsd": "199.9078",
+      "withdrawFee": "0"
+    },
+    "tidepool": {
+      "explorer": [
+        {
+          "label": "sweep deposit address into vault (Arbitrum Sepolia)",
+          "url": "https://sepolia.arbiscan.io/tx/0xc03eb6baa75eea507686af4b4e47b5b56911262b3b26611efc4ce44bf8b5f5ea"
+        },
+        {
+          "label": "mint bridged USDC (Arbitrum Sepolia deposit)",
+          "url": "https://testnet.nearblocks.io/txns/2chYKdXhsNVodLJuEHwL89ifkn1uxFXk8Tr8HrKWnv6f"
+        },
+        {
+          "label": "credit deposit into verifier (ft_transfer_call)",
+          "url": "https://testnet.nearblocks.io/txns/EqWxCY4fYtP2yrS18oWY2CrFeTSRD9aEieGHxCSErGyM"
+        },
+        {
+          "label": "swap (execute_intents)",
+          "url": "https://testnet.nearblocks.io/txns/93tnePQQPVsRDV4xFiQ4eeEYFUZWbQEr1YQXANatCVYC"
+        },
+        {
+          "label": "swap payout on Aurora Testnet",
+          "url": "https://testnet.aurorascan.dev/tx/0x28999ced84c15e9a7bc53bfe0ea8d368d6a332455cfde3bd8e741d01ce51c45b"
+        }
+      ],
+      "intentsAccount": "03db6af66bd9bad4c0aa76abd61b8a0ac6cf2f722e3837c82402dbee2aa9cb6d"
+    }
+  }
+}

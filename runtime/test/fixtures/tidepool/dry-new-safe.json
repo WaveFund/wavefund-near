@@ -1,0 +1,36 @@
+{
+  "response": {
+    "correlationId": "8ff5a8cd-a8c2-4352-b404-b0628cdb85e2",
+    "timestamp": "2026-11-11T21:37:03.571Z",
+    "quoteRequest": {
+      "dry": true,
+      "swapType": "EXACT_INPUT",
+      "slippageTolerance": 100,
+      "originAsset": "nep141:arb-0x38d81431b9f76d9699af7517040d5221d9dea252.tp-omft.testnet",
+      "depositType": "ORIGIN_CHAIN",
+      "destinationAsset": "nep141:aur-0x38d81431b9f76d9699af7517040d5221d9dea252.tp-omft.testnet",
+      "amount": "200000000",
+      "recipient": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11",
+      "recipientType": "DESTINATION_CHAIN",
+      "refundTo": "0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9",
+      "refundType": "ORIGIN_CHAIN",
+      "deadline": "2026-11-11T21:47:02.000Z"
+    },
+    "quote": {
+      "amountIn": "200000000",
+      "amountInFormatted": "200",
+      "amountInUsd": "199.9134",
+      "minAmountIn": "200000000",
+      "amountOut": "199480000",
+      "amountOutFormatted": "199.48",
+      "amountOutUsd": "199.3936",
+      "minAmountOut": "197485200",
+      "timeEstimate": 60
+    },
+    "signature": "ed25519:5XTRptuwQeAfY8PChShvdikbUPZjLdaE1eqiHDJKdoqZc6Xxxzqv7Qb5bZSNkdBbcYdaakXHfJMznm5gCDBdKtJw"
+  },
+  "signatureVerified": true,
+  "testnetOnly": true,
+  "official1Click": false,
+  "expiresAt": 1794433622
+}
