@@ -12,6 +12,7 @@ This is not cross-chain execution of winning strategies. The existing Trisolaris
   - One route reached a provider-signed dry quote at 10:09–10:16 UTC.
   - From 10:42 UTC, **every EVM-origin dry quote** (Ethereum and Base) returns `400 Quoting for this pair is not available`. This includes the earlier-working Ethereum → NEAR control. NEAR-origin quotes, including ones to `aurora`, still succeed (`fixtures/intents/live/probes/route-recheck.json`).
   - No delivery has been observed, because none is authorized.
+  - **13:59 UTC: EVM-origin quoting is available again.** A live **dry** happy path ran through this client inside the container: a shared `FundingRequestV1` → `toProviderFundingRequest` → `previewOrder`, using the built-in live transport and the pinned key. The result was a signed quote that verified: Safe `0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c` signed as `virtualChainRecipient`, `recipient: aurora`, refund to the manager, `minAmountOut` 247471069 ≥ the requested 247000000, and `prepareOrder` still refused with `EXECUTION_QUOTES_DISABLED`. Evidence: `fixtures/intents/live/happy-path-dry-quote.json`. Availability has been intermittent (unavailable at 10:42 UTC, back at 13:59 UTC).
   - **Recommendation:** keep the route `liveVerified: false` in production `approved-routes.json` until both the provider confirms availability and a delivery is observed.
 - **B2 (provider client):** implemented.
 - **B3 (delivery verifier):** implemented.
@@ -261,9 +262,9 @@ No dependency was added. EIP-55 checksum validation uses `viem`, which is alread
 ## Tests and isolation
 
 - **Tests:**
-  - `runtime/test/intents-provider.test.mjs`: 24 tests.
+  - `runtime/test/intents-provider.test.mjs`: 25 tests.
   - `runtime/test/intents-delivery.test.mjs`: 21 tests, including an end-to-end run through A's real `createFundingService` and `createFundingStore` (quoted → submitted → delivered) and review paths.
-  - Full runtime and funding suite (`runtime/test`, `runtime/funding`, `scripts/lib`): **135/135** (45 of them Intents tests).
+  - Full runtime and funding suite (`runtime/test`, `runtime/funding`, `scripts/lib`): **136/136** (46 of them Intents tests).
 - **Container:** run in Docker image `node:22.11.0-bookworm-slim` (`node@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da`) with `--network none --read-only --cap-drop ALL --security-opt no-new-privileges`, as user `node`, with no host environment variables. Dependencies were installed with `npm ci --ignore-scripts` in a separate, networked step before the tests ran.
 - **Mutation check:** 20 mutants, all killed:
   - echo binding;

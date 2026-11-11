@@ -1,0 +1,91 @@
+{
+  "summary": {
+    "capturedAt": "2026-11-11T13:59:32.715Z",
+    "assetsFetched": 229,
+    "assetsSource": "live-provider",
+    "kind": "DRY_QUOTE",
+    "dry": true,
+    "funded": false,
+    "mocked": false,
+    "source": "live-provider",
+    "signatureVerified": true,
+    "routeId": "eth-usdc-to-aurora-usdc",
+    "safeSigned": "0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c",
+    "recipient": "aurora",
+    "refundSigned": "0x2527d02599ba641c19fea793cd0f167589a0f10d",
+    "amounts": {
+      "amountIn": "250000000",
+      "minAmountIn": "250000000",
+      "amountOut": "249970777",
+      "minAmountOut": "247471069",
+      "requestMinAmountOut": "247000000",
+      "amountInDisplay": "250",
+      "amountOutDisplay": "249.970777",
+      "minAmountOutDisplay": "247.471069"
+    },
+    "fees": {
+      "refundFee": "300000",
+      "withdrawFee": "0",
+      "feesSigned": false,
+      "appFees": [
+        {
+          "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+          "fee": 1
+        }
+      ],
+      "appFeesSigned": false
+    },
+    "expiry": {
+      "requestExpiresAt": "2026-11-11T14:29:31.000Z",
+      "quoteDeadline": null,
+      "timeWhenInactive": null,
+      "effectiveExpiresAt": "2026-11-11T14:29:31.000Z",
+      "quotedAt": "2026-11-11T13:59:31.979Z"
+    },
+    "correlationId": "3c1bb423-7da2-4d9f-84a4-67e356f92d01",
+    "prepareOrder": "EXECUTION_QUOTES_DISABLED"
+  },
+  "providerPayload": {
+    "quote": {
+      "amountIn": "250000000",
+      "amountInFormatted": "250.0",
+      "amountInUsd": "249.906000000000",
+      "minAmountIn": "250000000",
+      "amountOut": "249970777",
+      "amountOutFormatted": "249.970777",
+      "amountOutUsd": "249.876787987848",
+      "minAmountOut": "247471069",
+      "timeEstimate": 45,
+      "refundFee": "300000",
+      "withdrawFee": "0"
+    },
+    "quoteRequest": {
+      "dry": true,
+      "depositMode": "SIMPLE",
+      "swapType": "EXACT_INPUT",
+      "slippageTolerance": 100,
+      "originAsset": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+      "depositType": "ORIGIN_CHAIN",
+      "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "amount": "250000000",
+      "refundTo": "0x2527d02599ba641c19fea793cd0f167589a0f10d",
+      "refundType": "ORIGIN_CHAIN",
+      "recipient": "aurora",
+      "virtualChainRecipient": "0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c",
+      "recipientType": "DESTINATION_CHAIN",
+      "deadline": "2026-11-11T14:29:31.000Z",
+      "confidentiality": "public",
+      "quoteWaitingTimeMs": 0,
+      "insured": false,
+      "appFees": [
+        {
+          "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+          "fee": 1
+        }
+      ]
+    },
+    "signature": "ed25519:4a2QFJHkUPKM6gcjYjz5KjZkqjGUDCW486Wgs4iMAqoMbhtwJrNG95DqV4h8GM4HYVVQE416c4gWBUisJxZiZGTs",
+    "timestamp": "2026-11-11T13:59:31.979Z",
+    "correlationId": "3c1bb423-7da2-4d9f-84a4-67e356f92d01"
+  }
+}

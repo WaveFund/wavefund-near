@@ -410,3 +410,17 @@ test('executable quotes stay disabled unless explicitly enabled per client', asy
   await rejectsCode(client.prepareOrder(fundingRequest(LIVE_FUNDING_DRY)), ERROR_CODES.EXECUTION_QUOTES_DISABLED);
   assert.equal(transport.calls.length, 0);
 });
+
+test('LIVE happy path (13:59 UTC): shared request -> live client dry quote verifies; Safe signed lowercase; executable stays disabled', async () => {
+  const { summary, providerPayload } = fixture('live/happy-path-dry-quote.json');
+  assert.equal(summary.source, 'live-provider'); assert.equal(summary.mocked, false); assert.equal(summary.funded, false); assert.equal(summary.prepareOrder, 'EXECUTION_QUOTES_DISABLED');
+  assert.equal(createQuoteSignatureVerifier()(providerPayload).valid, true, 'real 1Click signature');
+  assert.equal(providerPayload.quoteRequest.dry, true); assert.equal(providerPayload.quoteRequest.recipient, 'aurora');
+  assert.equal(providerPayload.quoteRequest.virtualChainRecipient, '0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c');
+  assert.equal(providerPayload.quoteRequest.originAsset, ROUTE.source.assetId); assert.equal(providerPayload.quoteRequest.destinationAsset, ROUTE.destination.assetId);
+  // Replaying the same live payload through the client reproduces the normalized happy-path quote (labelled mocked on replay).
+  const request = fundingRequest(providerPayload, { minAmountOut: summary.amounts.requestMinAmountOut });
+  const transport = fakeTransport({ 'GET /v0/tokens': tokens(), 'POST /v0/quote': json(201, providerPayload) });
+  const replay = await createIntentsClient({ transport, clock: clockAt(summary.expiry.quotedAt) }).previewOrder(request);
+  assert.equal(replay.mocked, true); assert.deepEqual(replay.amounts, summary.amounts);
+});
