@@ -1,0 +1,233 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-11",
+  "chainId": 1313161555,
+  "roundId": "5",
+  "result": "cancelled-after-runner-validation-error",
+  "genuineModelCalls": 4,
+  "provider": {
+    "mode": "near-ai",
+    "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+    "attestationVerified": false
+  },
+  "attestationVerified": false,
+  "modelUsage": {
+    "inputTokens": 6743,
+    "outputTokens": 1079
+  },
+  "proposals": [
+    {
+      "id": 0,
+      "name": "Hold",
+      "allocationBps": 4483
+    },
+    {
+      "id": 1,
+      "name": "Momentum",
+      "allocationBps": 4483
+    },
+    {
+      "id": 2,
+      "name": "Conservative",
+      "allocationBps": 0
+    }
+  ],
+  "forecasts": [
+    {
+      "name": "Quant",
+      "forecasts": [
+        {
+          "proposalId": 0,
+          "expectedReturnBps": 0,
+          "confidenceBps": 1500
+        },
+        {
+          "proposalId": 1,
+          "expectedReturnBps": 0,
+          "confidenceBps": 1500
+        },
+        {
+          "proposalId": 2,
+          "expectedReturnBps": -134,
+          "confidenceBps": 2000
+        }
+      ]
+    },
+    {
+      "name": "Guardian",
+      "forecasts": [
+        {
+          "proposalId": 0,
+          "expectedReturnBps": 0,
+          "confidenceBps": 2000
+        },
+        {
+          "proposalId": 1,
+          "expectedReturnBps": 0,
+          "confidenceBps": 2000
+        },
+        {
+          "proposalId": 2,
+          "expectedReturnBps": -13,
+          "confidenceBps": 3000
+        }
+      ]
+    }
+  ],
+  "forecasterTradeConfidenceThresholdBps": 5000,
+  "forecasterDepositsSent": false,
+  "forecastTradesSent": false,
+  "investmentExecuted": false,
+  "mainnetFundsSpent": false,
+  "failures": [
+    "Two initial read-only Supra verifications rejected with selector 0xc5184216 (IncorrectFutureUpdate(uint256)); no round opened during these failures.",
+    "Later attempt opened the round and submitted both genuine proposals, then stopped because Hold weight changed from analysis4483bps to opening4485bps despite unchanged token quantities."
+  ],
+  "recovery": {
+    "stage": "recovered",
+    "roundId": "5",
+    "status": "cancelled",
+    "treasuryBefore": [
+      "1094400091",
+      "428886426777995925"
+    ],
+    "treasuryAfter": [
+      "1094400091",
+      "428886426777995925"
+    ],
+    "automaticRetry": false
+  },
+  "confirmedTransactions": [
+    {
+      "label": "round5:gas:Momentum",
+      "hash": "0x6e95d00bf60ecdea1399c7473d1ad9a9c724c398672cf62a63d17fb1fe6a1391",
+      "blockNumber": "277237882"
+    },
+    {
+      "label": "round5:mint:Momentum",
+      "hash": "0xfd9f12459cd28ee4425128025797b81b3a580e725c1ec1e688db988a6763cf1e",
+      "blockNumber": "277237896"
+    },
+    {
+      "label": "round5:bondApproval:Momentum",
+      "hash": "0x5b3e3f787ae25fe53bfc548a7637888bda61d14c6450034ccdd756de4f9ffb25",
+      "blockNumber": "277237911"
+    },
+    {
+      "label": "round5:gas:Conservative",
+      "hash": "0x5d5a232dc451f9dfa5977b9f002b36910c93f98ce3e24d427a80f6f5d21d3299",
+      "blockNumber": "277237925"
+    },
+    {
+      "label": "round5:mint:Conservative",
+      "hash": "0xa23b4de14442dd32b06e5d6d313ceab261f5afb50db388aeffd2672d0ac653e1",
+      "blockNumber": "277237938"
+    },
+    {
+      "label": "round5:bondApproval:Conservative",
+      "hash": "0x71dc4f47bd7a51adf235f85ac67b759e2cf35176f45e421cfe263c136771e7e2",
+      "blockNumber": "277237952"
+    },
+    {
+      "label": "round5:gas:Quant",
+      "hash": "0x8b1af6f92b30f2bc1f47dd11133e91d384863859a8ffec2785a4fe093d9ba8d9",
+      "blockNumber": "277237966"
+    },
+    {
+      "label": "round5:mint:Quant",
+      "hash": "0x6151af6b6dd3746250b5d22a84ac5d58cfdb486630ec8374e111d767e312b627",
+      "blockNumber": "277237978"
+    },
+    {
+      "label": "round5:depositApproval:Quant",
+      "hash": "0x2baecabe25163c71cca5f8a3ab1c4567c5b3bc7de0021f9ffca2a012f316489e",
+      "blockNumber": "277237990"
+    },
+    {
+      "label": "round5:gas:Guardian",
+      "hash": "0x5042bd4f24794097f824db72e6e0242ef8d53e75c1b872e172780c7202074a03",
+      "blockNumber": "277238003"
+    },
+    {
+      "label": "round5:mint:Guardian",
+      "hash": "0x1d9e7b48bce099f48589d089d4d9cbd358bb80205bb1c9c12fa4e957d21a122a",
+      "blockNumber": "277238015"
+    },
+    {
+      "label": "round5:depositApproval:Guardian",
+      "hash": "0x4e43cbaec86c95f408fe9e0626b6baac760b33d9a6827406075bfd673f11dc75",
+      "blockNumber": "277238027"
+    },
+    {
+      "label": "round5:oracle:open",
+      "hash": "0x82d6e0d8a339020a329b17dc357144ef1145e04aad8147321fb53e1ebb67d3ae",
+      "blockNumber": "277238325"
+    },
+    {
+      "label": "round5:authorize",
+      "hash": "0xc422294f7d6362b45f7117c70cddfbc8b2b10041a66f099e803e041f3ae4b6ff",
+      "blockNumber": "277238341"
+    },
+    {
+      "label": "round5:open",
+      "hash": "0xe4b1884034c5baedbf577338dd3486570f8b16a0646c7c81cf0717de0ada6322",
+      "blockNumber": "277238353"
+    },
+    {
+      "label": "round5:propose:Momentum",
+      "hash": "0x06725edaa56fae57bf8ed0a3bfc222c160bcecc3bb38c0ae77cf6d0a6bd3e73a",
+      "blockNumber": "277238365"
+    },
+    {
+      "label": "round5:propose:Conservative",
+      "hash": "0x2934db67a6e888d4f3f9aa439e4767801800ac919018f89ef4a623978037ca55",
+      "blockNumber": "277238377"
+    },
+    {
+      "label": "round5:collapse",
+      "hash": "0x8f8550971ed3cfd47fcea14850f1686167dfb0e0ce1b488abfb12b003a4b36d8",
+      "blockNumber": "277238844"
+    },
+    {
+      "label": "round5:abortExpired",
+      "hash": "0xa78afce63271004f0922b49852a3af2ab5b6d411e8b535158ef4e30de780578a",
+      "blockNumber": "277239013"
+    }
+  ],
+  "recordHashes": [
+    {
+      "name": "Momentum",
+      "inputHash": "4f6565fef9216ce5ce2e3120360ae3eb9f3f80a96b207c5c5dd368854d588e43",
+      "outputHash": "4d38801bf874c4c20b188775cd7867c07a12b769e058dbd433a85796c2147bee"
+    },
+    {
+      "name": "Conservative",
+      "inputHash": "186642256db34b8439058e892a6aba95764954faa39698453ac1235b802c7dca",
+      "outputHash": "5f949c4d1674d6a6fbc8b3dd3ba3647208f9e95275fd5eee3cce51eb998f7e86"
+    },
+    {
+      "name": "Quant",
+      "inputHash": "b1623ab202d6877f67227cf66b0affe9d133b4be380e5f426e8f96b576a6a1ea",
+      "outputHash": "f0321ed0b013d9e7d8e6358c010ed340fbd82a69f344a792b524c15d9881f405"
+    },
+    {
+      "name": "Guardian",
+      "inputHash": "7b000c9bd98643e8a17a957a9cdd6e4797a0125629b8f5c63276427c28f04864",
+      "outputHash": "295d2bbc10cbb080b91163bf23fd42ab2c70fd4734b3693112a2e7ed2e951ee1"
+    }
+  ],
+  "fixValidation": {
+    "runtimeTestsPassed": 139,
+    "failed": 0,
+    "skipped": 0,
+    "mutationChecksKilled": 3,
+    "liveRerunAfterFix": false
+  },
+  "limitations": [
+    "Four separately prompted calls use the same model, not independent model families.",
+    "Below-threshold forecasts were not changed; they imply abstention but trading decision stage was never reached.",
+    "This is an interrupted genuine-model round, not evidence of a completed genuine-AI trade/swap/payout cycle.",
+    "Hold fix validated in isolation, not through a new paid/model onchain round.",
+    "No automatic further model requests; original four-call allowance consumed."
+  ]
+}

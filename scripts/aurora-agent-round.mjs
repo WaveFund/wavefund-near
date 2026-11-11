@@ -7,6 +7,7 @@ import { chooseTrade } from '../runtime/agents/policy.mjs';
 import { collectResearch } from '../runtime/operator/research.mjs';
 import { namedOutputs } from '../runtime/chain.mjs';
 import { recoverInterruptedRound } from '../runtime/agents/interrupted-round.mjs';
+import { verifySubmittedProposals, verifyWinningProposal } from '../runtime/agents/submitted-proposals.mjs';
 
 const lines = readline.createInterface({ input: process.stdin, crlfDelay: Infinity });
 const iterator = lines[Symbol.asyncIterator]();
@@ -79,13 +80,19 @@ try {
         stage = `propose:${proposal.name}`;
         await tx(label(`propose:${proposal.name}`), proposal.name, 'engine', 'propose', [id, { tEthBps: proposal.allocationBps }, `NEAR AI model summary (test assets): ${proposal.rationale}`]);
       }
+      let baselineBps = null;
       async function verifyProposalSet() {
         const round = namedOutputs(abi('engine'), 'rounds', await read('engine', 'rounds', [id]));
         requireLive(round.proposalCount === 3, 'Onchain proposal set changed after analysis');
+        const actualProposals = [];
         for (const expected of plan.proposals) {
           const actual = namedOutputs(abi('engine'), 'proposals', await read('engine', 'proposals', [id, BigInt(expected.id)]));
-          requireLive(Number(actual.tEthBps) === expected.allocationBps && (expected.id === 0 || sameAddress(actual.proposer, accounts[expected.name].address)), 'Submitted proposal differs from model plan');
+          actualProposals.push({ id: expected.id, allocationBps: Number(actual.tEthBps), proposer: actual.proposer, isStatusQuo: actual.isStatusQuo });
         }
+        const blockNumber = await client.getBlockNumber();
+        const [stableBalance, assetBalance] = await Promise.all(['stable', 'asset'].map(token => read(token, 'balanceOf', [contracts.safe], blockNumber)));
+        baselineBps = verifySubmittedProposals({ proposals: plan.proposals, actual: actualProposals, accounts, baselineBps,
+          expectedBalances: plan.snapshot.portfolio, currentBalances: { stableBalance: String(stableBalance), assetBalance: String(assetBalance) } });
       }
       await verifyProposalSet();
       const decisions = [];
@@ -107,7 +114,7 @@ try {
       await verifyProposalSet();
       await tx(label('collapse'), 'owner', 'engine', 'collapse', [id]);
       const [winner, allocation] = await read('engine', 'winningAllocation', [id]);
-      requireLive(plan.proposals[Number(winner)]?.allocationBps === Number(allocation), 'Winner is outside the analysed set');
+      verifyWinningProposal({ proposals: plan.proposals, winner: Number(winner), allocationBps: Number(allocation), baselineBps });
       emit({ stage: 'winner', winner, allocationBps: allocation });
       stage = 'execution';
       await refresh(label('oracle:execute'));
