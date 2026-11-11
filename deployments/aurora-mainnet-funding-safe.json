@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "chainId": 1313161554,
+  "purpose": "mainnet-funding-proof-only",
+  "safe": "0xe7889338FDc4962f5d1280e0E4267a0566e05d06",
+  "manager": "0x37f91aa1e24AaFc7B3843E281650AA884A6651E2",
+  "refundRecipient": "0x37f91aa1e24AaFc7B3843E281650AA884A6651E2",
+  "threshold": 1,
+  "safeVersion": "1.4.1",
+  "singleton": "0x41675C099F32341bf84BFc5382aF534df5C7461a",
+  "factory": "0x4e1DCf7AD4e460CfD30791CCC4F9c8a4f820ec67",
+  "deploymentTransaction": "0xfbcb6679ab6fb9b1437d9ea411502b3d779f4885d23719381e2fd34a3bfc8b59",
+  "deploymentBlock": "224080230",
+  "deploymentBlockHash": "0x3699191845f7410c0bf759dd402e377575fe611ad9ed0fceee72dd9e28d16ed0",
+  "deploymentCostWei": "16554160000000",
+  "wavefundModuleEnabled": false,
+  "strategyExecutionNetwork": "aurora-testnet",
+  "intentsDeliveryProven": false
+}
