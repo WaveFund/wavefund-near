@@ -63,6 +63,52 @@ This is the **only** approved route. The Ethereum USDC route below is retained a
 
 Delivery stays **unproven** (`deliveryProven: false`).
 
+## Funding proof: 1 USDC Arbitrum → deployed Aurora Safe (prepared, not executed)
+
+**Scope.** This proves one funding delivery only. The mainnet Safe `0xe7889338FDc4962f5d1280e0E4267a0566e05d06` has **no Wavefund trading module**, and no mainnet strategy deployment is required or claimed (`deployments/aurora-mainnet-funding-safe.json`: `purpose: mainnet-funding-proof-only`, `wavefundModuleEnabled: false`).
+
+### Trusted RPC readers: `createTrustedChainReaders()` (`runtime/intents/chain-readers.mjs`)
+
+| Chain | Endpoint (default, fixed) | Explorer link |
+|---|---|---|
+| Arbitrum One `42161` | `https://arb1.arbitrum.io/rpc` | `https://arbiscan.io/tx/<hash>` |
+| Aurora mainnet `1313161554` | `https://mainnet.aurora.dev` | `https://explorer.mainnet.aurora.dev/tx/<hash>` |
+
+- **Construction:** the readers are viem public clients with **no retries**. An operator may substitute their own nodes (https only, no embedded credentials). The verifier authenticates each reader's chain id on every read.
+- **Trust:** "trusted" means operator-chosen. A dishonest RPC can lie, so this is not a light-client proof.
+- **Live check (16:33 UTC, `fixtures/intents/live/funding-proof-preflight.json`):**
+  - **Chain ids:** both correct.
+  - **`finalized` tag:** supported on both. Arbitrum's L1-finalized block trails the latest by about 4,000 blocks; on Aurora, finalized ≈ latest.
+  - **Historical state:** Aurora serves historical `balanceOf`.
+  - **Safe:** `VERSION` 1.4.1, sole owner `0x37f91aa1e24AaFc7B3843E281650AA884A6651E2`, threshold 1, no modules, Aurora USDC balance `0` (the baseline).
+
+### Proof builder: `buildFundingProof({ verifiers, chainReaders, record, destinationTransactionHash })` (`runtime/intents/funding-proof.mjs`)
+
+It uses the **same** read-only evidence as `verifyDelivery`, through `createFundingVerifiers(...).inspect`: the archived signed quote, live provider status, and canonical receipts. It changes no funding state and sends nothing. The proof document contains:
+
+- **Status:**
+  - `verified-final`: delivered, provider-linked on both legs, **and** both receipts at or below each chain's `finalized` block (for Arbitrum this means L1-finalized);
+  - `verified-not-final`;
+  - `not-verified`.
+- **Exact amounts:**
+  - requested input;
+  - **source deposit decoded from the Arbitrum receipt** (Transfer of USDC `0xaf88…5831` **from the manager** to the 1Click deposit address), and whether it equals the request;
+  - signed `minAmountOut`;
+  - provider-reported output;
+  - **amount delivered to the Safe**, decoded from the Aurora receipt (Transfer of `0x368e…45f7` to the Safe);
+  - the unsigned quoted fees, as quoted.
+- **Recipient checks:** `managerIsSender` and `recipientIsSafe` come only from decoded transfers. When no matching transfer exists, `to`/`from` are `null`.
+- **Transaction links:** both explorer URLs, plus the provider's linked origin/destination/NEAR/intent hashes.
+- **Confirmation evidence per leg:** block number, block hash, canonical flag, confirmations (Arbitrum policy 64, Aurora 1) and the chain-reported `finalized` flag.
+- **Safe balance check:** `balanceOf(Safe)` at the delivery block minus one and at the delivery block, with `deltaEqualsDelivery`. This is `null` if the RPC lacks historical state; it is never guessed.
+- **Labels:** `method` states "NOT a trustless bridge proof", and provider `SUCCESS` is labelled `reportedSuccessIsNotProof`.
+
+### Prerequisites still open for the bounded 1-USDC test
+
+1. **The manager wallet is unfunded on Arbitrum.** At Arbitrum block 523329788: USDC `0`, ETH `0`, nonce `0`. It needs ≥ 1 USDC plus ETH for gas before any deposit is possible.
+2. **Explicit authorization** of the bounded test before enabling `allowExecutionQuotes` and before any transfer. The funding-only operator path and spending cap are Developer A/C's work.
+3. **After the deposit:** the funding record (with `submission.txHash`) and the Aurora delivery transaction hash are passed to `buildFundingProof`. Until then delivery is **unproven**.
+
 ## B1: route feasibility (historical: Ethereum USDC)
 
 ### Verified route `eth-usdc-to-aurora-usdc`
@@ -307,8 +353,8 @@ No dependency was added. EIP-55 checksum validation uses `viem`, which is alread
 
 - **Tests:**
   - `runtime/test/intents-provider.test.mjs`: 26 tests.
-  - `runtime/test/intents-delivery.test.mjs`: 23 tests, including an end-to-end run through A's real `createFundingService` and `createFundingStore` (quoted → submitted → delivered) and review paths.
-  - Full runtime and funding suite (`runtime/test`, `runtime/funding`, `scripts/lib`): **139/139** (49 of them Intents tests).
+  - `runtime/test/intents-delivery.test.mjs`: 32 tests, including an end-to-end run through A's real `createFundingService` and `createFundingStore` (quoted → submitted → delivered) and review paths.
+  - Full runtime and funding suite (`runtime/test`, `runtime/funding`, `scripts/lib`): **152/152** (58 of them Intents tests: 26 provider + 32 delivery).
 - **Container:** run in Docker image `node:22.11.0-bookworm-slim` (`node@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da`) with `--network none --read-only --cap-drop ALL --security-opt no-new-privileges`, as user `node`, with no host environment variables. Dependencies were installed with `npm ci --ignore-scripts` in a separate, networked step before the tests ran.
 - **Mutation check:** 20 mutants, all killed:
   - echo binding;
@@ -342,6 +388,10 @@ No dependency was added. EIP-55 checksum validation uses `viem`, which is alread
   - Both regressions failed before the fix and pass after it.
   - Guard mutation check: 6 mutants, all killed, with a no-op baseline that survives: guard removed, over-deposit allowed, under-deposit allowed, any amount allowed, and `pending` instead of review.
   - One equivalent mutant (`both-legs` quality based on source presence) survives, because the guard has already returned for any non-exact source.
+- **Funding proof mutation check:** 10 mutants, all killed after four gap tests were added, with a no-op baseline that survives:
+  - source-only finality; finality ignored; verification on outcome only; always verified;
+  - balance delta always equal; `to` taken from the request; sender filter removed;
+  - http endpoints allowed; finality ignoring the canonical check.
 - **Arbitrum route mutation check:** 6 mutants, all killed, with a no-op baseline that survives: Arbitrum policy removed, policy set to 1, policy set to 63, provider chain hard-coded to `eth`, missing-policy guard removed, and the wrong source chain id in the route.
 - **Evidence and gating mutation check:** 4 mutants, all killed, with a no-op baseline that survives: marking the route `deliveryProven: true`, enabling executable quotes by default, altering the signed `virtualChainRecipient` in the index, and flipping the index's `deliveryProven` flag.
 - **Fixtures:** `fixtures/intents/live/` holds unmodified production captures. `fixtures/intents/mocked/` and every receipt built in the tests are synthetic. See `fixtures/intents/README.md`.
