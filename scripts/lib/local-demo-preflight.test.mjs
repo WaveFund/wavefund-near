@@ -3,7 +3,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
 import { spawn } from 'node:child_process';
-import { COMMAND_NOT_FOUND, DemoError, checkTool, createProcessGroup, preflight, REQUIRED_TOOLS } from '../local-demo.mjs';
+import { COMMAND_NOT_FOUND, DemoError, checkTool, createProcessGroup, listenHost, preflight, REQUIRED_TOOLS } from '../local-demo.mjs';
+
+test('only explicit container mode listens beyond loopback', () => {
+  assert.equal(listenHost({}), '127.0.0.1');
+  assert.equal(listenHost({ WAVEFUND_CONTAINER: '1' }), '0.0.0.0');
+  for (const value of ['true', 'yes', '0', ' 1', '']) assert.equal(listenHost({ WAVEFUND_CONTAINER: value }), '127.0.0.1', value);
+});
 
 // Fake child process: behaviour is 'missing', 'version:<text>' or 'exit:<code>'. Events are emitted asynchronously like Node.
 function fakeSpawn(behaviour, calls = []) {

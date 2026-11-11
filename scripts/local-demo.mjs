@@ -12,6 +12,11 @@ export const REQUIRED_TOOLS = Object.freeze([
 export const NEXT_BIN = 'node_modules/next/dist/bin/next';
 export const COMMAND_NOT_FOUND = 127;
 
+// In an isolated container the API and UI must listen on the container's interfaces so the host can reach the
+// published ports. Only an explicit WAVEFUND_CONTAINER=1 enables this (server.mjs applies the same rule);
+// Anvil always stays on loopback inside the container.
+export function listenHost(env = process.env) { return env.WAVEFUND_CONTAINER === '1' ? '0.0.0.0' : '127.0.0.1'; }
+
 export class DemoError extends Error {
   constructor(message, exitCode = 1) { super(message); this.name = 'DemoError'; this.exitCode = Number.isInteger(exitCode) && exitCode > 0 ? exitCode : 1; }
 }
@@ -109,8 +114,9 @@ export async function main({ spawnImpl = spawn } = {}) {
     const manifest = JSON.parse(await readFile('deployments/local.json', 'utf8'));
     manifest.deployedAtBlock = Math.min(...broadcast.receipts.map((r) => Number(BigInt(r.blockNumber))));
     await writeFile('deployments/local.json', JSON.stringify(manifest, null, 2) + '\n');
-    const api = child('api', process.execPath, ['runtime/server.mjs'], {}, true);
-    const ui = child('frontend', process.execPath, [NEXT_BIN, 'dev', 'frontend', '--hostname', '127.0.0.1', '--port', '3000']);
+    const host = listenHost();
+    const api = child('api', process.execPath, ['runtime/server.mjs'], host === '0.0.0.0' ? { HOST: host } : {}, true);
+    const ui = child('frontend', process.execPath, [NEXT_BIN, 'dev', 'frontend', '--hostname', host, '--port', '3000']);
     console.log('Open http://127.0.0.1:3000 — disposable simulation only. Funding preview: http://127.0.0.1:3000/fund?fixtures=1 (labelled fixtures). Ctrl+C stops owned processes.');
     await Promise.race([anvil, api, ui].map((entry) => entry.done.then(() => { throw new DemoError(`${entry.name} exited unexpectedly`); })));
     return 1;
