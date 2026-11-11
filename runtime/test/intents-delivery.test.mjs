@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { generateKeyPairSync, sign } from 'node:crypto';
 import {
   createIntentsClient, createQuoteSignatureVerifier, quoteMessage, verifyFundingDelivery,
-  IntentsError, ERROR_CODES, ERC20_TRANSFER_TOPIC, VERIFIED_FUNDING_ROUTES, AURORA_MAINNET_CHAIN_ID, OUTCOMES, EVIDENCE_QUALITY,
+  IntentsError, ERROR_CODES, ERC20_TRANSFER_TOPIC, VERIFIED_FUNDING_ROUTES, AURORA_MAINNET_CHAIN_ID, OUTCOMES, EVIDENCE_QUALITY, DEFAULT_MIN_CONFIRMATIONS,
 } from '../intents/index.mjs';
 import { base58Encode } from '../intents/signature.mjs';
 import { mkdtempSync, rmSync } from 'node:fs';
@@ -15,7 +15,8 @@ import { createFundingService, createFundingStore, configuration, fundingHash } 
 
 // Everything in this file is MOCKED: signed with a throwaway key, receipts are synthetic.
 const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/intents/${name}`, import.meta.url), 'utf8'));
-const TOKENS = fixture('live/tokens-subset.json').entries;
+const TOKENS = [...fixture('live/tokens-subset.json').entries, fixture('live/arb-identity-and-minimum.json').arbitrumUsdcEntry];
+const SRC_CHAIN = 42161; // Arbitrum One: the approved route's source chain
 const MOCK_EXEC = fixture('mocked/funding-execution-quote.template.json');
 const MOCK_STATUS = fixture('mocked/funding-status.template.json');
 const ROUTE = VERIFIED_FUNDING_ROUTES[0];
@@ -30,9 +31,9 @@ const ZERO = '0x0000000000000000000000000000000000000000';
 const pad = (address) => `0x${address.slice(2).toLowerCase().padStart(64, '0')}`;
 const transferLog = (token, from, to, value) => ({ address: token, topics: [ERC20_TRANSFER_TOPIC, pad(from), pad(to)], data: `0x${BigInt(value).toString(16).padStart(64, '0')}` });
 const receipt = (txHash, chainId, logs, { status = '0x1', confirmations = 64 } = {}) => ({ txHash, chainId, confirmations, receipt: { transactionHash: txHash, status, blockNumber: '0x1', logs } });
-const deposit = (value = '250000000', opts) => receipt(SRC_TX, 1, [transferLog(ROUTE.source.tokenAddress, '0x000000000000000000000000000000000000abcd', DEPOSIT, value)], opts);
+const deposit = (value = '250000000', opts) => receipt(SRC_TX, SRC_CHAIN, [transferLog(ROUTE.source.tokenAddress, '0x000000000000000000000000000000000000abcd', DEPOSIT, value)], opts);
 const delivery = (value = '249973358', { txHash = DST_TX, chainId = AURORA_MAINNET_CHAIN_ID, token = ROUTE.destination.tokenAddress, to = SAFE, ...opts } = {}) => receipt(txHash, chainId, [transferLog(token, ZERO, to, value)], opts);
-const refund = (value) => receipt(REFUND_TX, 1, [transferLog(ROUTE.source.tokenAddress, DEPOSIT, REFUND, value)]);
+const refund = (value) => receipt(REFUND_TX, SRC_CHAIN, [transferLog(ROUTE.source.tokenAddress, DEPOSIT, REFUND, value)]);
 
 async function scenario(status, swapDetails = {}) {
   const body = { ...MOCK_STATUS, status, quoteResponse: SIGNED, swapDetails: { ...MOCK_STATUS.swapDetails, ...swapDetails } };
@@ -40,7 +41,7 @@ async function scenario(status, swapDetails = {}) {
   const client = createIntentsClient({ transport: async (req) => routes[`${req.method} ${new URL(req.url).pathname}`], clock: { now: () => Date.parse('2026-11-11T12:00:10.000Z') }, verifySignature, allowExecutionQuotes: true });
   const r = MOCK_EXEC.quoteRequest;
   const quote = await client.prepareOrder({
-    fundingId: 'manager-1:funding-1', source: { chain: 'eth', chainId: 1, assetId: r.originAsset, tokenAddress: ROUTE.source.tokenAddress },
+    fundingId: 'manager-1:funding-1', source: { chain: ROUTE.source.chain, chainId: SRC_CHAIN, assetId: r.originAsset, tokenAddress: ROUTE.source.tokenAddress },
     destination: { chainId: AURORA_MAINNET_CHAIN_ID, virtualChainAccount: 'aurora', assetId: r.destinationAsset, tokenAddress: ROUTE.destination.tokenAddress, safeAddress: SAFE },
     amountIn: r.amount, minAmountOut: '247000000', slippageBps: 100, refundAddress: REFUND, expiresAt: r.deadline,
   });
@@ -98,7 +99,7 @@ test('wrong token, wrong network and reverted receipts make a linked observation
     const result = verify({ quote, status, destinationReceipts: [bad] });
     assert.equal(result.outcome, 'ambiguous'); assert.notEqual(result.outcome, 'delivered');
   }
-  const wrongSourceNetwork = verify({ quote, status, sourceReceipts: [receipt(SRC_TX, 42161, deposit().receipt.logs)], destinationReceipts: [delivery()] });
+  const wrongSourceNetwork = verify({ quote, status, sourceReceipts: [receipt(SRC_TX, 1, deposit().receipt.logs)], destinationReceipts: [delivery()] });
   assert.equal(wrongSourceNetwork.outcome, 'ambiguous');
   const malformed = verify({ quote, status, destinationReceipts: [{ ...delivery(), receipt: { ...delivery().receipt, logs: [{ address: ROUTE.destination.tokenAddress, topics: [ERC20_TRANSFER_TOPIC], data: '0x' }] } }] });
   assert.equal(malformed.outcome, 'ambiguous');
@@ -182,20 +183,21 @@ const NOW_S = Date.parse('2026-11-11T12:00:10.000Z') / 1000;
 const sharedRequest = (overrides = {}) => ({
   fundingId: 'fund-1', routeId: 'eth-usdc-to-aurora-usdc', configurationHash: configuration(sharedConfig()).configurationHash,
   manager: MANAGER, safe: SAFE,
-  source: { chainId: 1, assetId: ROUTE.source.assetId, token: ROUTE.source.tokenAddress, decimals: 6 },
+  source: { chainId: SRC_CHAIN, assetId: ROUTE.source.assetId, token: ROUTE.source.tokenAddress, decimals: 6 },
   destination: { chainId: AURORA_MAINNET_CHAIN_ID, assetId: ROUTE.destination.assetId, token: ROUTE.destination.tokenAddress, decimals: 6 },
   amountIn: '250000000', minAmountOut: '247000000', refundRecipient: MANAGER, expiresAt: Date.parse('2026-11-11T12:30:00.000Z') / 1000, ...overrides,
 });
 // FIXTURE configuration for tests only: production approved-routes.json stays empty.
 function sharedConfig() {
   return { schemaVersion: 1, routes: [{ routeId: 'eth-usdc-to-aurora-usdc', enabled: true, liveVerified: true, manager: MANAGER, safe: SAFE,
-    source: { chainId: 1, assetId: ROUTE.source.assetId, token: ROUTE.source.tokenAddress, decimals: 6 },
+    source: { chainId: SRC_CHAIN, assetId: ROUTE.source.assetId, token: ROUTE.source.tokenAddress, decimals: 6 },
     destination: { chainId: AURORA_MAINNET_CHAIN_ID, assetId: ROUTE.destination.assetId, token: ROUTE.destination.tokenAddress, decimals: 6 },
     refundRecipient: MANAGER, minAmountIn: '300001', maxAmountIn: '1000000000000', minAmountOut: '1',
     maxQuoteLifetimeSeconds: 3600, maxObservationAgeSeconds: 600, minimumConfirmations: 1 }] };
 }
 // viem-shaped fake public client. blockHashes maps block number -> canonical hash.
-function fakeChain(chainId, { receipts = {}, latest = 1000n, reorged = new Set(), reportedChainId = chainId } = {}) {
+// Default latest block 1100 gives >= 64 Arbitrum confirmations for every receipt block used below (<= 1037).
+function fakeChain(chainId, { receipts = {}, latest = 1100n, reorged = new Set(), reportedChainId = chainId } = {}) {
   return {
     getChainId: async () => reportedChainId,
     getBlockNumber: async () => latest,
@@ -215,7 +217,7 @@ async function sharedSetup(t, { status = 'SUCCESS', swapDetails = {}, ethReceipt
   const routes = { 'GET /v0/tokens': { status: 200, headers: {}, bodyText: JSON.stringify(TOKENS) }, 'POST /v0/quote': { status: 201, headers: {}, bodyText: JSON.stringify(SIGNED) }, 'GET /v0/status': { status: 200, headers: {}, bodyText: JSON.stringify(body) } };
   const client = createIntentsClient({ transport: async (req) => routes[`${req.method} ${new URL(req.url).pathname}`], clock: { now: () => NOW_S * 1000 }, verifySignature, allowExecutionQuotes: true });
   const chainReaders = {
-    1: fakeChain(1, { receipts: ethReceipts ?? { [SRC_TX]: viemReceipt(SRC_TX, 900n, depositLogs()) }, ...ethOptions }),
+    [SRC_CHAIN]: fakeChain(SRC_CHAIN, { receipts: ethReceipts ?? { [SRC_TX]: viemReceipt(SRC_TX, 900n, depositLogs()) }, ...ethOptions }),
     [AURORA_MAINNET_CHAIN_ID]: fakeChain(AURORA_MAINNET_CHAIN_ID, { receipts: auroraReceipts ?? { [DST_TX]: viemReceipt(DST_TX, 990n, deliveryLogs()) }, ...auroraOptions }),
   };
   const verifiers = createFundingVerifiers({ client, archive, chainReaders, verifySignature, clock: () => NOW_S });
@@ -250,7 +252,7 @@ test('SHARED: unproven deliveries throw and the core moves the record to review'
     ['reorged delivery block', { auroraOptions: { reorged: new Set([990n]) } }],
     ['wrong network reader', { auroraOptions: { reportedChainId: 1313161555 } }],
     ['deposit not from the manager', { ethReceipts: { [SRC_TX]: viemReceipt(SRC_TX, 900n, depositLogs('250000000', '0x000000000000000000000000000000000000abcd')) } }],
-    ['source not final (12 Ethereum confirmations required)', { ethOptions: { latest: 905n } }],
+    ['source not final (64 Arbitrum confirmations required)', { ethOptions: { latest: 962n } }], // 63 confirmations
     ['delivery below provider report', { auroraReceipts: { [DST_TX]: viemReceipt(DST_TX, 990n, deliveryLogs('249973357')) } }],
   ];
   for (const [label, options] of cases) {
@@ -337,10 +339,33 @@ test('REGRESSION: SUCCESS with an over-deposit (250000001) is not delivered on b
 test('REGRESSION: exact source deposit still delivers; incomplete deposits stay pending', async () => {
   const { quote, status } = await scenario('SUCCESS');
   assert.equal(verify({ quote, status, sourceReceipts: [deposit('250000000')], destinationReceipts: [delivery()] }).outcome, 'delivered');
-  const split = verify({ quote, status, sourceReceipts: [receipt(SRC_TX, 1, [...deposit('100000000').receipt.logs, ...deposit('150000000').receipt.logs])], destinationReceipts: [delivery()] });
+  const split = verify({ quote, status, sourceReceipts: [receipt(SRC_TX, SRC_CHAIN, [...deposit('100000000').receipt.logs, ...deposit('150000000').receipt.logs])], destinationReceipts: [delivery()] });
   assert.equal(split.outcome, 'delivered', 'transfers in the linked deposit tx are summed exactly');
   for (const s of ['KNOWN_DEPOSIT_TX', 'INCOMPLETE_DEPOSIT', 'PROCESSING']) {
     const p = await scenario(s);
     assert.equal(verify({ quote: p.quote, status: p.status, sourceReceipts: [deposit('1')] }).outcome, 'pending', s);
+  }
+});
+
+test('Arbitrum receipt-confirmation policy is explicit: 64 counts, 63 does not, and a missing policy fails closed', async (t) => {
+  assert.equal(DEFAULT_MIN_CONFIRMATIONS[42161], 64);
+  assert.equal(ROUTE.source.chainId, SRC_CHAIN);
+  const { quote, status } = await scenario('SUCCESS');
+  assert.equal(verify({ quote, status, sourceReceipts: [deposit('250000000', { confirmations: 64 })], destinationReceipts: [delivery()] }).outcome, 'delivered');
+  assert.equal(verify({ quote, status, sourceReceipts: [deposit('250000000', { confirmations: 63 })], destinationReceipts: [delivery()] }).evidenceQuality, 'provider-linked-one-leg');
+  const exact = await sharedSetup(t, { ethOptions: { latest: 963n } }); // exactly 64 confirmations of block 900
+  exact.setStableBalance((1000000n + 249973358n).toString());
+  assert.equal((await exact.service.confirmDelivery('fund-1', { transactionHash: DST_TX })).state, 'delivered');
+  const short = await sharedSetup(t, { ethOptions: { latest: 962n } }); // 63 confirmations
+  await assert.rejects(short.verifiers.verifyDelivery({ transactionHash: DST_TX }, short.record()), (e) => e.code === ERROR_CODES.DELIVERY_NOT_PROVEN);
+});
+
+test('a confirmation policy that omits the route source chain fails closed', async (t) => {
+  const f = await sharedSetup(t);
+  const untouched = { getExecutionStatus: async () => { throw new Error('status must not be read'); } };
+  const archive = { retain() {}, read: () => { throw new Error('archive must not be read'); } };
+  const verifiers = createFundingVerifiers({ client: untouched, archive, chainReaders: {}, verifySignature, minConfirmations: { 1: 12, [AURORA_MAINNET_CHAIN_ID]: 1 } });
+  for (const run of [verifiers.verifyDelivery, verifiers.verifyRefund]) {
+    await assert.rejects(run({ transactionHash: DST_TX }, f.record()), (e) => e.code === ERROR_CODES.EVIDENCE_UNAVAILABLE && /confirmation policy/.test(e.message));
   }
 });

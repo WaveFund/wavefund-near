@@ -13,7 +13,10 @@ export const EVIDENCE_QUALITY = Object.freeze([
   'provider-linked-both-legs',             // provider status plus verified, provider-linked source AND outcome receipts
 ]);
 export const ERC20_TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
-export const DEFAULT_MIN_CONFIRMATIONS = Object.freeze({ 1: 12, [AURORA_MAINNET_CHAIN_ID]: 1 });
+// Receipt confirmation policy per chain id (latest - receipt block + 1, on the canonical chain).
+// 42161 Arbitrum One: 64 blocks (~16 s at ~4 blocks/s) of sequencer soft-confirmation. This is NOT L1 finality
+// (batch posting plus Ethereum finality takes minutes); raise it via minConfirmations if L1 finality is required.
+export const DEFAULT_MIN_CONFIRMATIONS = Object.freeze({ 1: 12, 42161: 64, [AURORA_MAINNET_CHAIN_ID]: 1 });
 const HASH = /^0x[0-9a-fA-F]{64}$/;
 const TOPIC = /^0x[0-9a-fA-F]{64}$/;
 const DATA = /^0x[0-9a-fA-F]*$/;

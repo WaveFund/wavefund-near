@@ -5,7 +5,7 @@ import { fundingHash } from '../funding/schema.mjs';
 import { ERROR_CODES as E, IntentsError } from './errors.mjs';
 import { createQuoteSignatureVerifier, stableStringify } from './signature.mjs';
 import { quoteRequestFor, isObject, sameAddress } from './client.mjs';
-import { findFundingRoute } from './routes.mjs';
+import { findFundingRoute, VERIFIED_FUNDING_ROUTES } from './routes.mjs';
 import { verifyFundingDelivery, DEFAULT_MIN_CONFIRMATIONS } from './delivery.mjs';
 
 // Adapters for Developer A's funding core (runtime/funding/README.md). Trusted server-side capabilities only.
@@ -20,8 +20,11 @@ const entryHash = ({ reference, requestHash, quote }) => createHash('sha256').up
 export function toProviderFundingRequest(request, { slippageBps = 100 } = {}) {
   if (!isObject(request) || !isObject(request.source) || !isObject(request.destination)) fail(E.INVALID_ORDER, 'Shared funding request is malformed');
   if (!Number.isSafeInteger(request.expiresAt) || request.expiresAt <= 0) fail(E.INVALID_ORDER, 'expiresAt must be integer Unix seconds');
+  // The provider chain name comes from the approved route for this EVM chain id, never from a hard-coded chain.
+  const sourceChain = VERIFIED_FUNDING_ROUTES.find((r) => r.source.chainId === request.source.chainId)?.source.chain;
+  if (!sourceChain) fail(E.UNSUPPORTED_ROUTE, `No approved funding route from chain ${request.source.chainId}`);
   const route = findFundingRoute({
-    source: { chain: 'eth', chainId: request.source.chainId, assetId: request.source.assetId, tokenAddress: String(request.source.token) },
+    source: { chain: sourceChain, chainId: request.source.chainId, assetId: request.source.assetId, tokenAddress: String(request.source.token) },
     destination: { chainId: request.destination.chainId, virtualChainAccount: 'aurora', assetId: request.destination.assetId, tokenAddress: String(request.destination.token) },
   });
   if (!route || request.source.decimals !== route.source.decimals || request.destination.decimals !== route.destination.decimals) fail(E.UNSUPPORTED_ROUTE, 'Shared request does not match a verified 1Click funding route');
@@ -146,6 +149,10 @@ export function createFundingVerifiers({
 
   async function assess(evidence, record, kind) {
     if (!isObject(evidence) || Object.keys(evidence).join() !== 'transactionHash' || !/^0x[0-9a-fA-F]{64}$/.test(evidence.transactionHash)) fail(E.INVALID_ORDER, 'Evidence must be exactly { transactionHash }');
+    const confirmationPolicy = minConfirmations ?? DEFAULT_MIN_CONFIRMATIONS; // Arbitrum 64, Ethereum 12, Aurora 1; the core also enforces route.minimumConfirmations
+    if (!Number.isSafeInteger(confirmationPolicy[record?.request?.source?.chainId]) || !Number.isSafeInteger(confirmationPolicy[record?.request?.destination?.chainId])) {
+      fail(E.EVIDENCE_UNAVAILABLE, 'No receipt-confirmation policy for this route\'s chains');
+    }
     const sourceTx = record?.submission?.txHash;
     if (typeof sourceTx !== 'string') fail(E.INVALID_ORDER, 'Record has no submitted source transaction');
     const archived = archive.read(record.quote.reference);
@@ -162,7 +169,6 @@ export function createFundingVerifiers({
     const sourceObs = await observe(chainReaders, source.chainId, sourceTx);
     const outcomeObs = await observe(chainReaders, kind === 'delivery' ? destination.chainId : source.chainId, evidence.transactionHash.toLowerCase());
     for (const o of [sourceObs, outcomeObs]) if (!o.canonical) fail(E.DELIVERY_NOT_PROVEN, `Receipt ${o.txHash} is not in the canonical chain`);
-    const confirmationPolicy = minConfirmations ?? DEFAULT_MIN_CONFIRMATIONS; // Ethereum 12, Aurora 1; the core also enforces route.minimumConfirmations
     const result = verifyFundingDelivery({
       quote: stored, status, verifySignature: verify, minConfirmations: confirmationPolicy, expectedSender: record.request.manager,
       sourceReceipts: [sourceObs], ...(kind === 'delivery' ? { destinationReceipts: [outcomeObs] } : { refundReceipts: [outcomeObs] }),

@@ -16,7 +16,11 @@ import { fundingHash } from '../funding/index.mjs';
 const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/intents/${name}`, import.meta.url), 'utf8'));
 // LIVE evidence (real provider data) vs MOCKED templates are loaded from separate directories.
 const LIVE_TOKENS = fixture('live/tokens-subset.json');
-const LIVE_FUNDING_DRY = fixture('live/quote-dry-eth-usdc-to-aurora.json');
+const LIVE_ARB_IDENTITY = fixture('live/arb-identity-and-minimum.json');
+const LIVE_TOKEN_ENTRIES = [...LIVE_TOKENS.entries, LIVE_ARB_IDENTITY.arbitrumUsdcEntry]; // two live captures combined
+const LIVE_ARB = fixture('live/quote-dry-arb-usdc-to-aurora.json'); // EXAMPLE destination Safe, real manager refund
+const LIVE_FUNDING_DRY = LIVE_ARB.providerPayload; // the approved Arbitrum route
+const LIVE_ETH_DRY = fixture('live/quote-dry-eth-usdc-to-aurora.json'); // historical Ethereum evidence, signature-only
 const LIVE_OTHER_DRY = fixture('live/quote-dry-wnear-usdt.json');
 const MOCK_EXEC = fixture('mocked/funding-execution-quote.template.json');
 const MOCK_STATUS = fixture('mocked/funding-status.template.json');
@@ -48,14 +52,14 @@ function fundingRequest(fromQuote, overrides = {}) {
   const r = fromQuote.quoteRequest;
   return {
     fundingId: 'manager-1:funding-1',
-    source: { chain: 'eth', chainId: 1, assetId: r.originAsset, tokenAddress: ROUTE.source.tokenAddress },
+    source: { chain: ROUTE.source.chain, chainId: ROUTE.source.chainId, assetId: r.originAsset, tokenAddress: ROUTE.source.tokenAddress },
     destination: { chainId: AURORA_MAINNET_CHAIN_ID, virtualChainAccount: r.recipient, assetId: r.destinationAsset, tokenAddress: ROUTE.destination.tokenAddress, safeAddress: r.virtualChainRecipient },
-    amountIn: r.amount, minAmountOut: '247000000', slippageBps: r.slippageTolerance, refundAddress: r.refundTo, expiresAt: r.deadline, ...overrides,
+    amountIn: r.amount, minAmountOut: { '10000000': '9800000', '250000000': '247000000' }[r.amount], slippageBps: r.slippageTolerance, refundAddress: r.refundTo, expiresAt: r.deadline, ...overrides,
   };
 }
-const LIVE_CLOCK = '2026-11-11T10:16:57.000Z'; // ~4 s after the live funding quote's provider timestamp
+const LIVE_CLOCK = '2026-11-11T15:19:17.000Z'; // ~4.5 s after the live Arbitrum quote's provider timestamp
 const MOCK_CLOCK = '2026-11-11T12:00:10.000Z';
-const tokens = () => json(200, LIVE_TOKENS.entries);
+const tokens = () => json(200, LIVE_TOKEN_ENTRIES);
 function liveClient(quoteResponse = json(201, LIVE_FUNDING_DRY), options = {}) {
   const transport = fakeTransport({ 'GET /v0/tokens': tokens(), 'POST /v0/quote': quoteResponse });
   return { client: createIntentsClient({ transport, clock: clockAt(LIVE_CLOCK), ...options }), transport };
@@ -72,6 +76,7 @@ const rejectsCode = (promise, code) => assert.rejects(promise, (error) => error 
 test('LIVE: both captured provider quotes verify with the pinned production 1Click key', () => {
   const verify = createQuoteSignatureVerifier();
   assert.equal(verify(LIVE_FUNDING_DRY).valid, true);
+  assert.equal(verify(LIVE_ETH_DRY).valid, true);
   assert.equal(verify(LIVE_OTHER_DRY).valid, true);
 });
 
@@ -100,16 +105,16 @@ test('LIVE replay: previewOrder accepts the captured funding quote, bound and ne
   const quote = await client.previewOrder(fundingRequest(LIVE_FUNDING_DRY));
   assert.equal(quote.kind, 'DRY_QUOTE'); assert.equal(quote.purpose, 'funding'); assert.equal(quote.funded, false); assert.equal(quote.deposit, null);
   assert.equal(quote.mocked, true, 'replayed through an injected transport, so still labelled mocked'); assert.equal(quote.source, 'injected-transport');
-  assert.equal(quote.funding.routeId, 'eth-usdc-to-aurora-usdc'); assert.match(quote.funding.requestDigest, /^[0-9a-f]{64}$/);
+  assert.equal(quote.funding.routeId, 'arb-usdc-to-aurora-usdc'); assert.equal(quote.route.origin.chainId, 42161); assert.match(quote.funding.requestDigest, /^[0-9a-f]{64}$/);
   assert.equal(quote.route.destination.chainId, 1313161554); assert.equal(quote.route.destination.tokenAddress, '0x368ebb46aca6b8d0787c96b2b20bd3cc3f2c45f7');
-  assert.equal(quote.amounts.amountInDisplay, '250'); assert.equal(quote.amounts.minAmountOut, '247473624');
-  assert.equal(quote.fees.refundFee, '300000', 'refund fee preserved: refunds are not full-input');
+  assert.equal(quote.amounts.amountInDisplay, '10'); assert.equal(quote.amounts.minAmountOut, '9899347');
+  assert.equal(quote.fees.refundFee, '5300', 'refund fee preserved: refunds are not full-input');
   assert.equal(quote.fees.appFeesSigned, false); assert.equal(quote.fees.feesSigned, false, 'dry-quote fees are unsigned');
   const sent = transport.calls.find((c) => c.url.endsWith('/v0/quote')).parsedBody;
   assert.deepEqual(sent, {
     dry: true, swapType: 'EXACT_INPUT', slippageTolerance: 100, originAsset: ROUTE.source.assetId, depositType: 'ORIGIN_CHAIN',
-    destinationAsset: ROUTE.destination.assetId, amount: '250000000', refundTo: '0x2527D02599Ba641c19FEa793cD0F167589a0f10D', refundType: 'ORIGIN_CHAIN',
-    recipient: 'aurora', recipientType: 'DESTINATION_CHAIN', virtualChainRecipient: '0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C', deadline: '2026-11-11T10:46:52.118Z',
+    destinationAsset: ROUTE.destination.assetId, amount: '10000000', refundTo: '0x37f91aa1e24aafc7b3843e281650aa884a6651e2', refundType: 'ORIGIN_CHAIN',
+    recipient: 'aurora', recipientType: 'DESTINATION_CHAIN', virtualChainRecipient: '0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c', deadline: '2026-11-11T15:49:11.000Z',
   });
   assert.ok(Object.isFrozen(quote.providerPayload.quoteRequest));
 });
@@ -145,10 +150,10 @@ test('validly signed quotes still fail when amounts break the funding request', 
 
 test('expired requests, stale/future quotes and passed execution deadlines are rejected', async () => {
   const { client, transport } = liveClient();
-  await rejectsCode(client.previewOrder(fundingRequest(LIVE_FUNDING_DRY, { expiresAt: '2026-11-11T10:16:56.000Z' })), ERROR_CODES.ORDER_EXPIRED);
+  await rejectsCode(client.previewOrder(fundingRequest(LIVE_FUNDING_DRY, { expiresAt: '2026-11-11T15:19:16.000Z' })), ERROR_CODES.ORDER_EXPIRED);
   assert.equal(transport.calls.length, 0, 'expired requests send no HTTP');
-  await rejectsCode(liveClient(json(201, LIVE_FUNDING_DRY), { clock: clockAt('2026-11-11T10:19:00.000Z') }).client.previewOrder(fundingRequest(LIVE_FUNDING_DRY)), ERROR_CODES.QUOTE_EXPIRED);
-  await rejectsCode(liveClient(json(201, LIVE_FUNDING_DRY), { clock: clockAt('2026-11-11T10:16:00.000Z') }).client.previewOrder(fundingRequest(LIVE_FUNDING_DRY)), ERROR_CODES.MALFORMED_RESPONSE);
+  await rejectsCode(liveClient(json(201, LIVE_FUNDING_DRY), { clock: clockAt('2026-11-11T15:22:00.000Z') }).client.previewOrder(fundingRequest(LIVE_FUNDING_DRY)), ERROR_CODES.QUOTE_EXPIRED);
+  await rejectsCode(liveClient(json(201, LIVE_FUNDING_DRY), { clock: clockAt('2026-11-11T15:18:00.000Z') }).client.previewOrder(fundingRequest(LIVE_FUNDING_DRY)), ERROR_CODES.MALFORMED_RESPONSE);
   const past = signWith({ ...MOCK_EXEC, quote: { ...MOCK_EXEC.quote, deadline: '2026-11-11T12:00:05.000Z' } });
   await rejectsCode(mockClient({ quote: past }).client.prepareOrder(fundingRequest(MOCK_EXEC)), ERROR_CODES.QUOTE_EXPIRED);
   const earlier = signWith({ ...MOCK_EXEC, quote: { ...MOCK_EXEC.quote, deadline: '2026-11-11T12:10:00.000Z' } });
@@ -163,7 +168,8 @@ test('wrong token, wrong network, tickers and unverified routes are rejected bef
   const cases = [
     [{ source: { ...base.source, assetId: 'USDC' } }, ERROR_CODES.INVALID_ORDER],
     [{ source: { ...base.source, tokenAddress: '0xdac17f958d2ee523a2206206994597c13d831ec7' } }, ERROR_CODES.UNSUPPORTED_ROUTE], // USDT contract
-    [{ source: { ...base.source, chain: 'arb', chainId: 42161 } }, ERROR_CODES.UNSUPPORTED_ROUTE],
+    [{ source: { ...base.source, chain: 'eth', chainId: 1 } }, ERROR_CODES.UNSUPPORTED_ROUTE], // Ethereum is no longer approved
+    [{ source: { ...base.source, assetId: 'nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near', tokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' } }, ERROR_CODES.UNSUPPORTED_ROUTE],
     [{ destination: { ...base.destination, chainId: 1313161555 } }, ERROR_CODES.UNSUPPORTED_ROUTE], // Aurora TESTNET
     [{ destination: { ...base.destination, virtualChainAccount: 'aurora.testnet' } }, ERROR_CODES.UNSUPPORTED_ROUTE],
     [{ destination: { ...base.destination, tokenAddress: '0xb12bfca5a55806aaf64e99521918a4bf0fc40802' } }, ERROR_CODES.UNSUPPORTED_ROUTE],
@@ -171,19 +177,19 @@ test('wrong token, wrong network, tickers and unverified routes are rejected bef
     [{ destination: { ...base.destination, safeAddress: '0xB4c2fbec9d610F9A3a9b843c47b1A8095ceC887C' } }, ERROR_CODES.INVALID_ORDER], // bad EIP-55
     [{ destination: { ...base.destination, safeAddress: '0x0000000000000000000000000000000000000000' } }, ERROR_CODES.INVALID_ORDER],
     [{ refundAddress: base.destination.safeAddress }, ERROR_CODES.INVALID_ORDER],
-    [{ amountIn: '300000' }, ERROR_CODES.AMOUNT_TOO_LOW],
+    [{ amountIn: '5300' }, ERROR_CODES.AMOUNT_TOO_LOW], // observed Arbitrum bridge minimum 5301
     [{ slippageBps: 1001 }, ERROR_CODES.INVALID_ORDER],
     [{ winningProposalId: 1 }, ERROR_CODES.INVALID_ORDER], // strategy fields are not part of funding
   ];
   for (const [overrides, code] of cases) assert.throws(() => validateFundingRequest({ ...base, ...overrides }, now), (e) => e.code === code, JSON.stringify(overrides));
-  assert.equal(validateFundingRequest(base, now).route.id, 'eth-usdc-to-aurora-usdc');
+  assert.equal(validateFundingRequest(base, now).route.id, 'arb-usdc-to-aurora-usdc');
   const { client, transport } = liveClient();
   await rejectsCode(client.previewOrder({ ...base, destination: { ...base.destination, chainId: 1313161555 } }), ERROR_CODES.UNSUPPORTED_ROUTE);
   assert.equal(transport.calls.length, 0);
 });
 
 test('provider token list must still match the verified route identity and decimals', async () => {
-  const drift = (mutate) => { const entries = structuredClone(LIVE_TOKENS.entries); mutate(entries); return json(200, entries); };
+  const drift = (mutate) => { const entries = structuredClone(LIVE_TOKEN_ENTRIES); mutate(entries); return json(200, entries); };
   const usdcEth = (e) => e.find((x) => x.assetId === ROUTE.source.assetId);
   for (const [response, code] of [
     [drift((e) => { usdcEth(e).contractAddress = '0x0000000000000000000000000000000000000001'; }), ERROR_CODES.ASSET_CHAIN_MISMATCH],
@@ -262,7 +268,7 @@ test('MOCKED execution quote carries the source-chain deposit reference and is s
   assert.equal(quote.kind, 'EXECUTION_QUOTE'); assert.equal(quote.funded, false); assert.equal(quote.mocked, true); assert.equal(quote.fees.feesSigned, true);
   const feeTampered = signWith(MOCK_EXEC); feeTampered.quote.refundFee = '0';
   await rejectsCode(mockClient({ quote: feeTampered }).client.prepareOrder(fundingRequest(MOCK_EXEC)), ERROR_CODES.SIGNATURE_INVALID);
-  assert.deepEqual(quote.deposit, { type: 'ORIGIN_CHAIN', chain: 'eth', chainId: 1, tokenAddress: ROUTE.source.tokenAddress, address: '0xde90000000000000000000000000000000000001', memo: null, exactAmount: '250000000' });
+  assert.deepEqual(quote.deposit, { type: 'ORIGIN_CHAIN', chain: 'arb', chainId: 42161, tokenAddress: ROUTE.source.tokenAddress, address: '0xde90000000000000000000000000000000000001', memo: null, exactAmount: '250000000' });
   assert.equal(transport.calls.find((c) => c.url.endsWith('/v0/quote')).parsedBody.dry, false);
 });
 
@@ -311,7 +317,7 @@ const MANAGER = MOCK_EXEC.quoteRequest.refundTo; // the shared schema requires r
 const sharedRequest = (overrides = {}) => ({
   fundingId: 'fund-1', routeId: 'eth-usdc-to-aurora-usdc', configurationHash: `0x${'c'.repeat(64)}`,
   manager: MANAGER, safe: MOCK_EXEC.quoteRequest.virtualChainRecipient,
-  source: { chainId: 1, assetId: ROUTE.source.assetId, token: ROUTE.source.tokenAddress, decimals: 6 },
+  source: { chainId: ROUTE.source.chainId, assetId: ROUTE.source.assetId, token: ROUTE.source.tokenAddress, decimals: 6 },
   destination: { chainId: AURORA_MAINNET_CHAIN_ID, assetId: ROUTE.destination.assetId, token: ROUTE.destination.tokenAddress, decimals: 6 },
   amountIn: '250000000', minAmountOut: '247000000', refundRecipient: MANAGER, expiresAt: Date.parse('2026-11-11T12:30:00.000Z') / 1000, ...overrides,
 });
@@ -417,10 +423,27 @@ test('LIVE happy path (13:59 UTC): shared request -> live client dry quote verif
   assert.equal(createQuoteSignatureVerifier()(providerPayload).valid, true, 'real 1Click signature');
   assert.equal(providerPayload.quoteRequest.dry, true); assert.equal(providerPayload.quoteRequest.recipient, 'aurora');
   assert.equal(providerPayload.quoteRequest.virtualChainRecipient, '0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c');
-  assert.equal(providerPayload.quoteRequest.originAsset, ROUTE.source.assetId); assert.equal(providerPayload.quoteRequest.destinationAsset, ROUTE.destination.assetId);
-  // Replaying the same live payload through the client reproduces the normalized happy-path quote (labelled mocked on replay).
-  const request = fundingRequest(providerPayload, { minAmountOut: summary.amounts.requestMinAmountOut });
+  assert.equal(providerPayload.quoteRequest.originAsset, 'nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near'); // historical Ethereum origin assert.equal(providerPayload.quoteRequest.destinationAsset, ROUTE.destination.assetId);
+  // Historical: the Ethereum route is no longer approved, so this evidence cannot produce a quote any more.
+  const ethRequest = { ...fundingRequest(providerPayload, { minAmountOut: summary.amounts.requestMinAmountOut }), source: { chain: 'eth', chainId: 1, assetId: providerPayload.quoteRequest.originAsset, tokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' } };
+  assert.throws(() => validateFundingRequest(ethRequest, { now: Date.parse(summary.expiry.quotedAt) }), (e) => e.code === ERROR_CODES.UNSUPPORTED_ROUTE);
+});
+
+test('LIVE Arbitrum happy path (15:19 UTC): shared request -> live client dry quote verifies; EXAMPLE Safe; executable disabled', async () => {
+  const { summary, providerPayload } = LIVE_ARB;
+  assert.match(summary.destinationLabel, /EXAMPLE destination/);
+  assert.equal(summary.source, 'live-provider'); assert.equal(summary.mocked, false); assert.equal(summary.funded, false); assert.equal(summary.prepareOrder, 'EXECUTION_QUOTES_DISABLED');
+  assert.equal(summary.managerChecksumValid, true);
+  assert.equal(createQuoteSignatureVerifier()(providerPayload).valid, true, 'real 1Click signature');
+  const q = providerPayload.quoteRequest;
+  assert.equal(q.dry, true); assert.equal(q.originAsset, 'nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near');
+  assert.equal(q.destinationAsset, 'nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1');
+  assert.equal(q.recipient, 'aurora'); assert.equal(q.virtualChainRecipient, '0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c');
+  assert.equal(q.refundTo, '0x37f91aa1e24aafc7b3843e281650aa884a6651e2', 'refund goes to the supplied manager wallet');
+  // The shared request recorded with the capture maps to exactly the signed provider request.
+  const mapped = toProviderFundingRequest(summary.sharedRequest);
+  assert.equal(mapped.source.chain, 'arb'); assert.equal(mapped.source.chainId, 42161);
   const transport = fakeTransport({ 'GET /v0/tokens': tokens(), 'POST /v0/quote': json(201, providerPayload) });
-  const replay = await createIntentsClient({ transport, clock: clockAt(summary.expiry.quotedAt) }).previewOrder(request);
+  const replay = await createIntentsClient({ transport, clock: clockAt(summary.expiry.quotedAt) }).previewOrder(mapped);
   assert.equal(replay.mocked, true); assert.deepEqual(replay.amounts, summary.amounts);
 });
