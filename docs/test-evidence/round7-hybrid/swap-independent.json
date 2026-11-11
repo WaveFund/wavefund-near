@@ -1,0 +1,20 @@
+{
+  "hash": "0x63a743ae801bc7ee0e51b71397e87148e1838ffccbc6c7397d05a2e92a028ead",
+  "blockNumber": "277244597",
+  "safe": "0x781430393ec48f5c2af78be63ae273875b180ad1",
+  "rows": {
+    "stable": {
+      "before": "1094400091",
+      "after": "497160197",
+      "delta": "-597239894"
+    },
+    "asset": {
+      "before": "428886426777995925",
+      "after": "713380500461450544",
+      "delta": "284494073683454619"
+    }
+  },
+  "slippageBps": 100,
+  "routerAllowancesZero": true,
+  "passed": true
+}

@@ -1,6 +1,37 @@
 # Deliberate product testing — 10 November 2026
 
-## Published source boundary — 11 November
+## Latest result — round 7, 11 November
+
+The current runner supports `--profile hybrid`: four genuine NEAR AI proposer
+calls with explicit exposure mandates, enriched Coinbase/Kraken research inputs,
+and four **scripted** forecasters. This selectively implemented mode is separate
+from the old parked eight-real-agent experiment; that branch was not merged wholesale.
+
+Round 7 completed on Aurora testnet. Real AI proposals were 5%, 45%, 75% and 95%
+investment-asset exposure. Scripted LONG/SHORT activity selected proposal 3 (75%).
+The Safe swapped **597.239894 test USDC for 0.284494073683454619 test ETH** through
+Trisolaris with its **unchanged 100 bps slippage policy**. Supra settlement and all
+four redemptions completed; seed was released and outstanding deposits are zero.
+
+Independent historical receipt/balance checks verified the swap, all four fills,
+each payout, measured return and collateral conservation. This proves execution of
+a real AI-generated target under controlled market selection. It does **not** prove
+profitable AI forecasting: all four forecasters in this round were fixtures.
+
+Evidence: [public plan and literal inputs](test-evidence/round7-hybrid/plan.json),
+[round report](test-evidence/round7-hybrid/report.json),
+[independent payout verification](test-evidence/round7-hybrid/independent.json),
+[independent swap verification](test-evidence/round7-hybrid/swap-independent.json).
+Research claims and limits: [data/thesis guide](AGENT-DATA-AND-THESIS.md).
+
+Separately, [round 6](test-evidence/genuine-agent-round6.json) completed with genuine
+AI forecasters choosing to abstain, followed by Hold execution and full redemption.
+There is still no demonstrated genuine-model-directed LONG/SHORT fill.
+
+## Historical published-source boundary before round 7
+
+The following paragraph records the older experiment's boundary, not the current
+hybrid runner or its test counts.
 
 The contract scenarios, planner modules and independent read-only verifier are included in this branch. The expanded `scripts/aurora-agent-round.mjs`, `scripts/run-aurora-agents.py` and related bridge-test edits remain **local and unpublished** pending a completed live-agent lifecycle. Commands below describe that local experiment; the published runner still has its preceding interface. The 8-Python-test result describes the local tested workspace, including two unpublished safety additions. These reports preserve both successful fixture execution and the failed model experiment; they do not claim the full runner is ready to adopt.
 

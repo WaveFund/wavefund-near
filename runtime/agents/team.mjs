@@ -10,16 +10,18 @@ export function createAgentTeam({ provider, onRecord } = {}) {
   if (!provider?.complete || !['local', 'near-ai', 'test-fixture'].includes(provider.info?.mode)) throw new Error('An explicit model provider is required');
   return {
     info: { ...provider.info },
-    async plan({ market, portfolio, policy }) {
+    async plan({ market, portfolio, policy, researchContext }) {
       // Context deliberately has no private key, RPC URL, Safe address or future settlement price.
-      const evidenceIds = [market.evidenceId];
+      const evidenceIds = [market.evidenceId, ...(researchContext ? [researchContext.evidenceId] : [])];
       const common = { market, portfolio: { stableBalance: portfolio.stableBalance, assetBalance: portfolio.assetBalance, currentAllocationBps: portfolio.currentAllocationBps }, policy: { minAllocationBps: 0, maxAllocationBps: 10000, horizonSeconds: policy.horizonSeconds, routerFeeBps: 30, rMin: '0.95', rMax: '1.05', forecastDepositMicro: '10000000', maxTradeMicro: '5000000' } };
+      if (researchContext) common.researchContext = researchContext;
       const records = []; const proposals = [{ id: 0, name: 'Hold', allocationBps: portfolio.currentAllocationBps, rationale: 'Keep current token quantities; no rebalance fee.' }];
       async function ask(spec, context, instruction, validate) {
         const task = { system: `${SHARED}\n${spec.name}: ${spec.mandate}\n${instruction}`, context: { agent: spec.name, role: spec.role, ...context } };
         const response = await provider.complete(task);
         const decision = validate(response.value);
         const record = { name: spec.name, role: spec.role, provider: provider.info.mode, model: provider.info.model, attestationVerified: false, inputHash: digest(task), outputHash: digest(decision), decision, usage: response.usage ?? {}, timestamp: new Date().toISOString() };
+        if (researchContext) record.input = task;
         records.push(record); await onRecord?.(record); return decision;
       }
       for (const spec of AGENT_SPECS.filter((item) => item.role === 'proposer')) {
