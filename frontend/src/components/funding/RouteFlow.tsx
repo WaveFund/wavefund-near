@@ -38,7 +38,7 @@ export function RouteFlow({ state, sourceLabel, safeLabel }: { state: FlowState;
     : "Preview a route to see how funds would travel";
   return <figure className={`route-flow ${state.bucket === "delivered" ? "is-delivered" : ""}`} aria-label={`Funding route: ${caption}`}>
     <div className="route-flow-head">
-      <span className="section-label">FUNDING ROUTE</span>
+      <span className="kicker muted">Funding route</span>
       <span className="route-flow-tags">
         {state.evidence === "fixture" && <Pill tone="fixture">Fixture</Pill>}
         {state.verified && <Pill tone="success"><Icon name="check" />Verified</Pill>}

@@ -24,4 +24,4 @@ The visible simulation and fixture labels are always present. Agent decisions an
 
 Run installation, typechecking, tests and builds in the repository's isolated development environment. The frontend binds to `127.0.0.1` by default. The isolated container launcher may explicitly override its internal hostname to `0.0.0.0` while exposing only `127.0.0.1:3000` on the host.
 
-Design uses the green/black palette of the original Wavefund frontend, whose MIT copyright is retained in the root LICENSE. The layout, capital separation, funding flow and local simulation flow are new. No original source files were modified.
+Design: a dark, crypto-native system in `src/app/globals.css` and `src/app/funding.css`, shared through `components/AppShell.tsx`. It uses glass cards, a mint→cyan→violet gradient and tabular monospace numbers. Network colours: mint = Aurora mainnet / Safe money, violet = Aurora testnet / forecasting, amber = local chain, fixtures and warnings. System fonts only, so the build works offline and makes no remote font requests. The original Wavefund frontend's MIT copyright is retained in the root LICENSE; no original source files were modified.

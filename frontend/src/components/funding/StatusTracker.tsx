@@ -95,11 +95,11 @@ function EvidenceTable({ kind, view, config, live }: { kind: "delivery" | "refun
 export function StatusTracker({ record, display, config, now, loading, scenarioLabel }: { record: unknown; display: FundingDisplay | null; config: FundingConfig; now: number; loading: boolean; scenarioLabel?: string | null }) {
   const view = asRecord(record);
   const head = (tags: ReactNode) => <header className="tracker-head">
-    <div><p className="eyebrow quiet"><span />STEP 05 · DELIVERY & EVIDENCE</p><h3>Funding record</h3></div>
+    <div><span className="kicker">Transfer status</span><h3>Funding record</h3></div>
     <div className="tracker-tags">{loading ? <span className="spinner" aria-label="Loading" /> : tags}</div>
   </header>;
   if (!view || !display) {
-    return <section className="panel tracker" aria-live="polite" aria-busy={loading}>
+    return <section className="card tracker" aria-live="polite" aria-busy={loading}>
       {head(null)}
       <div className="tracker-empty">
         <span className="tracker-empty-icon"><Icon name="eye" /></span>
@@ -116,7 +116,7 @@ export function StatusTracker({ record, display, config, now, loading, scenarioL
   const live = display.evidence === "live";
   const fundingId = safeText(view.fundingId, 80) ?? "Unavailable";
   const inFlight = display.doNotPayAgain && !["delivered", "refunded"].includes(display.bucket);
-  return <section className={`panel tracker tone-${display.tone}`} aria-live="polite" aria-busy={loading}>
+  return <section className={`card tracker tone-${display.tone}`} aria-live="polite" aria-busy={loading}>
     {head(<>{display.verified ? <Pill tone="success"><Icon name="check" />Verified</Pill> : null}{display.evidence === "fixture" ? <Pill tone="fixture">Fixture</Pill> : display.evidence === "live" ? <Pill tone="live">Live service</Pill> : null}</>)}
     <p className="tracker-id"><span>fundingId</span><code title={fundingId}>{fundingId}</code>{scenarioLabel ? <em>{scenarioLabel}</em> : null}</p>
     <div className={`status-hero tone-${display.tone}`}>

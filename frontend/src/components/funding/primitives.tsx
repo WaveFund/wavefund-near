@@ -3,7 +3,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { explorerUrl, formatDuration, formatUnits, isAddress, shortHex } from "@/lib/funding/model.mjs";
 
-export type IconName = "wallet" | "intents" | "aurora" | "safe" | "check" | "cross" | "lock" | "alert" | "arrow" | "copy" | "external" | "refund" | "clock" | "shield" | "spark" | "eye";
+export type IconName = "wallet" | "intents" | "aurora" | "safe" | "check" | "cross" | "lock" | "alert" | "arrow" | "copy" | "external" | "refund" | "clock" | "shield" | "spark" | "eye"
+  | "fund" | "chart" | "sliders" | "down" | "bolt" | "receipt" | "users" | "trophy" | "pulse" | "route" | "play" | "chevron" | "download" | "layers";
 
 const stroke = { fill: "none", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
 const PATHS: Record<IconName, ReactNode> = {
@@ -23,6 +24,20 @@ const PATHS: Record<IconName, ReactNode> = {
   shield: <path d="M12 3.5 5 6.5v5c0 4.3 3 7.6 7 9 4-1.4 7-4.7 7-9v-5l-7-3Z" {...stroke} />,
   spark: <path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6" {...stroke} />,
   eye: <><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z" {...stroke} /><circle cx="12" cy="12" r="2.8" {...stroke} /></>,
+  fund: <><path d="M12 3.5v10m-4-4 4 4 4-4" {...stroke} /><path d="M4 14.5v3A2.5 2.5 0 0 0 6.5 20h11a2.5 2.5 0 0 0 2.5-2.5v-3" {...stroke} /></>,
+  chart: <><path d="M4 19.5h16" {...stroke} /><path d="M7 16V11M12 16V6M17 16v-7" {...stroke} /></>,
+  sliders: <><path d="M5 6.5h8M17 6.5h2M5 12h2M11 12h8M5 17.5h10M19 17.5h0" {...stroke} /><circle cx="15" cy="6.5" r="2" {...stroke} /><circle cx="9" cy="12" r="2" {...stroke} /><circle cx="17" cy="17.5" r="2" {...stroke} /></>,
+  down: <path d="M12 5v14m-6-6 6 6 6-6" {...stroke} />,
+  bolt: <path d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3Z" {...stroke} />,
+  receipt: <><path d="M6 3.5h12v17l-3-2-3 2-3-2-3 2v-17Z" {...stroke} /><path d="M9 8.5h6M9 12h6" {...stroke} /></>,
+  users: <><circle cx="9" cy="8.5" r="3.2" {...stroke} /><path d="M3.5 19c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5M15.5 5.6a3.2 3.2 0 0 1 0 5.8M17.5 14.8c1.6.6 2.6 2 3 4.2" {...stroke} /></>,
+  trophy: <><path d="M8 4h8v5a4 4 0 0 1-8 0V4ZM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v3.5M8.5 20h7M10 16.5h4V20h-4z" {...stroke} /></>,
+  pulse: <path d="M3 12h4l2.5-6 4 12 2.5-6H21" {...stroke} />,
+  route: <><circle cx="6" cy="18" r="2.2" {...stroke} /><circle cx="18" cy="6" r="2.2" {...stroke} /><path d="M8 18h7a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h7" {...stroke} /></>,
+  play: <path d="M8 5.5v13l10.5-6.5L8 5.5Z" {...stroke} />,
+  chevron: <path d="m9 6 6 6-6 6" {...stroke} />,
+  download: <><path d="M12 4v11m-4.5-4.5L12 15l4.5-4.5" {...stroke} /><path d="M5 19.5h14" {...stroke} /></>,
+  layers: <><path d="m12 4 8.5 4.5L12 13 3.5 8.5 12 4Z" {...stroke} /><path d="m3.5 13 8.5 4.5 8.5-4.5" {...stroke} /></>,
 };
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {

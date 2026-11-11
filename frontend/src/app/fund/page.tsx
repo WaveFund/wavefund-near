@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Brand, JourneyNav } from "@/components/JourneyNav";
+import { AppShell } from "@/components/AppShell";
 import { RouteFlow, type FlowState } from "@/components/funding/RouteFlow";
 import { StatusTracker } from "@/components/funding/StatusTracker";
-import { AmountStep, DestinationCard, EligibilityCard, JourneyStrip, NetworkTruth, RouteOptions, ScenarioExplorer, SendStep, StepCard, amountValidation } from "@/components/funding/FundingPanels";
-import { Icon, Pill, useNow } from "@/components/funding/primitives";
+import { BridgeCard, EligibilityCard, JourneyStrip, NetworkTruth, ScenarioExplorer, amountValidation } from "@/components/funding/FundingPanels";
+import { Icon, useNow } from "@/components/funding/primitives";
 import { AURORA_MAINNET, AURORA_TESTNET, classifyFunding, networkName, shortHex, type FundingConfig, type FundingPreview } from "@/lib/funding/model.mjs";
 import { FIXTURE_LABEL } from "@/lib/funding/fixtures.mjs";
 import { FundingApiUnavailable, createApiFundingLoader, createFixtureFundingLoader, type FundingLoader, type LoadedRecord } from "@/lib/funding/loader";
@@ -130,101 +130,76 @@ export default function FundPage() {
     : { step: 0, halted: false, bucket: null, preview: Boolean(shownPreview), verified: false, evidence: liveConfig ? "none" : "fixture" };
 
   const banner = phase === "connecting" ? { tone: "neutral", label: "CONNECTING", text: "Checking the local funding API…" }
-    : isFixture ? { tone: "fixture", label: "FIXTURE EXPLORER", text: `${FIXTURE_LABEL}. Safe, wallet and transaction values are fake.` }
+    : isFixture ? { tone: "fixture", label: "FIXTURE MODE", text: `${FIXTURE_LABEL}. Safe, wallet and transaction values are fake.` }
     : phase === "ready" && !liveConfig ? { tone: "fixture", label: "API FIXTURE DATA", text: "The local API reports fixture-quality configuration. Nothing here is live evidence." }
     : phase === "ready" ? (config?.mode === "live-preview"
-      ? { tone: "live", label: "LIVE DRY QUOTES", text: "Local API · NEAR Intents 1Click dry quotes for the trusted Safe · signing disabled" }
-      : { tone: "live", label: "FUNDING SERVICE", text: "Local API · shared funding service records · signing disabled" })
+      ? { tone: "live", label: "LIVE DRY QUOTES", text: "NEAR Intents 1Click dry quotes for the trusted Safe · signing disabled" }
+      : { tone: "live", label: "FUNDING SERVICE", text: "Shared funding service records · signing disabled" })
     : phase === "unavailable" ? { tone: "warning", label: "API NOT CONNECTED", text: notice ?? "The local funding API is not available." }
     : { tone: "danger", label: "CONFIGURATION REJECTED", text: notice ?? "The funding configuration was rejected." };
+  const status = phase === "ready" ? (liveConfig ? { label: "Live dry quotes", tone: "ok" as const } : { label: "Fixture mode", tone: "warn" as const })
+    : phase === "connecting" ? { label: "Connecting", tone: "pending" as const } : { label: "API offline", tone: "off" as const };
 
-  return <main className="shell fund-shell">
-    <header className="masthead">
-      <Brand />
-      <div className="header-right"><JourneyNav /><span className="network-tag">AURORA MAINNET <span>{AURORA_MAINNET}</span></span></div>
-    </header>
-
-    <div className={`mode-banner tone-${banner.tone}`} role="status">
-      <span className="notice-label">{banner.label}</span>
+  return <AppShell network={{ label: "Aurora mainnet", chainId: AURORA_MAINNET, tone: "mainnet" }} status={status}>
+    <div className={`mode-strip tone-${banner.tone}`} role="status">
+      <span className="mode-label">{banner.label}</span>
       <span className="mode-text">{banner.text}</span>
       {phase !== "connecting" && (isFixture
-        ? <button type="button" className="mode-action" onClick={() => void connect(createApiFundingLoader())}>Use local API</button>
-        : <button type="button" className="mode-action" onClick={() => void connect(createFixtureFundingLoader())}>Explore fixture states</button>)}
+        ? <button type="button" className="btn btn-ghost small" onClick={() => void connect(createApiFundingLoader())}>Use local API</button>
+        : <button type="button" className="btn btn-ghost small" onClick={() => void connect(createFixtureFundingLoader())}><Icon name="layers" />Explore fixture states</button>)}
     </div>
 
-    <NetworkTruth roundChainId={config?.eligibility.roundChainId ?? AURORA_TESTNET} />
-
-    <section className="fund-hero">
-      <div className="fund-hero-copy">
-        <p className="eyebrow"><span />STEP 01 · FUNDING BEFORE A ROUND</p>
-        <h1>Fund your Trading Safe.<br /><em>From another chain, straight into your custody.</em></h1>
-        <p className="hero-description">Move stablecoins from your wallet through NEAR Intents into the Safe you control on Aurora mainnet, before any round begins. Progress is proven by receipts, never by a status message alone.</p>
-        <ul className="hero-facts">
-          <li><Icon name="safe" /><span><b>Your Safe</b>receives the funds</span></li>
-          <li><Icon name="intents" /><span><b>NEAR Intents</b>routes them</span></li>
-          <li><Icon name="shield" /><span><b>Receipts</b>prove delivery</span></li>
-        </ul>
+    <section className="page-head">
+      <div>
+        <span className="kicker">Step 01 · Funding before a round</span>
+        <h1>Fund your <span className="grad-text">Trading Safe</span></h1>
+        <p className="lede">Bridge stablecoins from your wallet through NEAR Intents into the Safe you control on Aurora, before any round begins. Progress is proven by receipts, never by a status message alone.</p>
       </div>
-      <RouteFlow state={flow}
-        sourceLabel={route ? `${networkName(route.source.chainId)} · ${route.source.symbol ?? "token"}` : "Supported source chain"}
-        safeLabel={config ? `Aurora mainnet · ${shortHex(config.destination.safe)}` : "Aurora mainnet"} />
+      <NetworkTruth roundChainId={config?.eligibility.roundChainId ?? AURORA_TESTNET} />
     </section>
 
-    {phase === "connecting" && <div className="fund-loading" aria-busy="true"><span className="spinner" />Loading funding configuration…</div>}
+    {phase === "connecting" && <div className="card loading-card" aria-busy="true"><span className="spinner" />Loading funding configuration…</div>}
 
-    {(phase === "unavailable" || phase === "rejected") && <section className="connect-panel">
-      <span className="empty-icon">{phase === "rejected" ? "!" : "↗"}</span>
+    {(phase === "unavailable" || phase === "rejected") && <section className="card connect-card">
+      <span className="empty-ico">{phase === "rejected" ? <Icon name="alert" /> : <Icon name="route" />}</span>
       <div>
         <h3>{phase === "rejected" ? "The funding configuration was rejected" : "The funding API is not connected"}</h3>
         <p>{notice}</p>
-        {phase === "unavailable" && <p>Start the local API with dry-quote preview: <code>WAVEFUND_FUNDING=live-preview npm run dev:api</code>. Previews ask NEAR Intents 1Click for a dry quote only. Nothing is signed, funded or sent.</p>}
+        {phase === "unavailable" && <p>Run the full local demo with live dry quotes: <code>WAVEFUND_FUNDING=live-preview npm run demo:local</code>. Previews ask NEAR Intents 1Click for a dry quote only. Nothing is signed, funded or sent.</p>}
         <div className="connect-actions">
-          <button type="button" className="primary-button" onClick={() => void connect(createFixtureFundingLoader())}><span>Explore labelled fixtures</span><Icon name="arrow" /></button>
-          <button type="button" className="secondary-button" onClick={() => void connect(createApiFundingLoader())}>Retry local API</button>
+          <button type="button" className="btn btn-primary" onClick={() => void connect(createFixtureFundingLoader())}><Icon name="layers" /><span>Explore labelled fixtures</span></button>
+          <button type="button" className="btn btn-ghost" onClick={() => void connect(createApiFundingLoader())}><Icon name="refund" />Retry local API</button>
         </div>
       </div>
     </section>}
 
     {phase === "ready" && config && <>
       {isFixture && <ScenarioExplorer scenarios={scenarios} selected={scenarioId} onSelect={(id) => void loadRecord(id, true)} busy={tracking} />}
-      <div className="fund-grid">
-        <div className="fund-steps">
-          <StepCard index={1} title="Destination" state="done" kicker={<Pill tone="muted">Not editable</Pill>}>
-            <DestinationCard config={config} live={liveConfig} />
-          </StepCard>
-          <StepCard index={2} title="Source route" state={route ? "done" : "active"} kicker={<span>{config.routes.length} supported · {config.unsupported.length} unavailable</span>}>
-            <RouteOptions config={config} selected={routeId} onSelect={changeRoute} live={liveConfig} />
-          </StepCard>
-          <StepCard index={3} title="Amount & dry quote" state={shownPreview ? "done" : "active"} kicker={<Pill tone="violet">Preview only</Pill>}>
-            {route ? <AmountStep route={route} config={config} amountText={amountText} onAmountChange={changeAmount} onPreview={(raw) => void requestPreview(raw)}
-              previewing={previewing} previewError={previewError} preview={shownPreview} now={now} canPreview={config.capabilities.preview && route.previewAvailable} />
-              : <p className="panel-empty">Choose a supported route first.</p>}
-          </StepCard>
-          <StepCard index={4} title="Send from wallet" state="locked" kicker={<Pill tone="warning">Disabled for review</Pill>}>
-            {route ? <SendStep preview={shownPreview} route={route} /> : <p className="panel-empty">Choose a supported route first.</p>}
-          </StepCard>
+      <div className="fund-layout">
+        <div className="fund-main">
+          {route ? <BridgeCard config={config} live={liveConfig} route={route} onRoute={changeRoute} amountText={amountText} onAmountChange={changeAmount}
+            onPreview={(raw) => void requestPreview(raw)} previewing={previewing} previewError={previewError} preview={shownPreview} now={now}
+            canPreview={config.capabilities.preview && route.previewAvailable} />
+            : <div className="card empty"><span className="empty-ico"><Icon name="route" /></span><div><h3>No supported route</h3><p>The configuration lists no route that can be previewed.</p></div></div>}
         </div>
-        <aside className="fund-side">
+        <div className="fund-side">
+          <RouteFlow state={flow}
+            sourceLabel={route ? `${networkName(route.source.chainId)} · ${route.source.symbol ?? "token"}` : "Supported source chain"}
+            safeLabel={`Aurora · ${shortHex(config.destination.safe)}`} />
           <StatusTracker record={tracked?.record ?? null} display={display} config={config} now={now} loading={tracking}
             scenarioLabel={isFixture ? scenarios.find((scenario) => scenario.id === scenarioId)?.label ?? null : null} />
           {trackError && <p className="inline-error" role="alert"><Icon name="alert" />{trackError}</p>}
-          {!isFixture && config.capabilities.records && <form className="panel track-form" onSubmit={(event) => { event.preventDefault(); void loadRecord(trackInput.trim(), false); }}>
+          {!isFixture && config.capabilities.records && <form className="card track-form" onSubmit={(event) => { event.preventDefault(); void loadRecord(trackInput.trim(), false); }}>
             <label htmlFor="track-id">Track a funding record</label>
             <div><input id="track-id" value={trackInput} onChange={(event) => setTrackInput(event.target.value)} placeholder="fundingId" maxLength={128} autoComplete="off" spellCheck={false} />
-              <button type="submit" className="secondary-button" disabled={!trackInput.trim() || tracking}>Track</button></div>
+              <button type="submit" className="btn btn-ghost" disabled={!trackInput.trim() || tracking}>Track</button></div>
           </form>}
-          {!isFixture && !config.capabilities.records && <p className="panel side-note"><Icon name="eye" />Funding records are not connected to this API yet. Dry-quote previews never create a record.</p>}
+          {!isFixture && !config.capabilities.records && <p className="side-note"><Icon name="eye" />Funding records are not connected to this API yet. Dry-quote previews never create a record.</p>}
           <EligibilityCard config={config} />
-        </aside>
+        </div>
       </div>
     </>}
 
     <JourneyStrip />
-
-    <footer>
-      <a className="footer-brand" href="/">wavefund.</a>
-      <p>Funding preview for a manager-owned Aurora mainnet Safe. Dry quotes only: executable quotes, signing and fund movement are disabled in this build. Verified strategy rounds remain on Aurora testnet.</p>
-      <span>YOUR SAFE.<br />VERIFIED FUNDING.</span>
-    </footer>
-  </main>;
+  </AppShell>;
 }
