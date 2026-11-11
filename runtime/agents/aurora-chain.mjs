@@ -5,6 +5,7 @@ import { auroraTestnet } from 'viem/chains';
 import { createManagerService } from '../operator/manager.mjs';
 import { normalizeAuthenticatedPrices } from './supra-observation.mjs';
 import { supraProofBytes } from '../../scripts/lib/supra-proof.mjs';
+import { verifySupraAtChainTime } from './supra-clock.mjs';
 
 const RPC = 'https://testnet.aurora.dev';
 const OPERATOR = '0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9';
@@ -79,13 +80,16 @@ export function createAuroraChain({ manifest, artifacts, privateKey, actorKeys, 
     }
   }
   async function verifiedProof(minimumTime = 0n) {
-    const verifierAbi = parseAbi(['function verifyOracleProofV2(bytes) returns ((uint256[] pairs,uint256[] prices,uint256[] timestamp,uint256[] decimal,uint256[] round))']);
+    const verifierAbi = parseAbi(['error IncorrectFutureUpdate(uint256 FutureLengthInMsecs)', 'function verifyOracleProofV2(bytes) returns ((uint256[] pairs,uint256[] prices,uint256[] timestamp,uint256[] decimal,uint256[] round))']);
     for (let i = 0; i < 36; i++) {
       const response = await fetch('https://rpc-testnet-dora-2.supra.com/get_proof', { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(20000), headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pair_indexes: [19, 89], chain_type: 'evm' }) });
       requireLive(response.ok, 'Supra public proof service unavailable');
       const body = await response.text(); requireLive(body.length <= 1000000, 'Supra response too large');
       const proof = supraProofBytes(JSON.parse(body));
-      const prices = (await client.simulateContract({ address: VERIFIER, abi: verifierAbi, functionName: 'verifyOracleProofV2', args: [proof] })).result;
+      const prices = (await verifySupraAtChainTime({
+        verify: () => client.simulateContract({ address: VERIFIER, abi: verifierAbi, functionName: 'verifyOracleProofV2', args: [proof] }),
+        blockTime: async () => (await client.getBlock()).timestamp, waitUntil,
+      })).result;
       requireLive(prices.pairs.length === 2 && new Set(prices.pairs.map(String)).size === 2 && prices.pairs.includes(19n) && prices.pairs.includes(89n), 'Unexpected authenticated feeds');
       if (prices.timestamp.some(t => t / 1000n < minimumTime)) { await sleep(5000); continue; }
       const now = (await client.getBlock()).timestamp;

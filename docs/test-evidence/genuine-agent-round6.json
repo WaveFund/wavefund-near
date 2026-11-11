@@ -1,0 +1,278 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-11",
+  "result": "genuine-model-Hold-round-completed",
+  "chainId": 1313161555,
+  "roundId": "6",
+  "modelCalls": 4,
+  "provider": {
+    "mode": "near-ai",
+    "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+    "attestationVerified": false
+  },
+  "attestationVerified": false,
+  "inferenceRetries": 0,
+  "modelUsage": {
+    "inputTokens": 6735,
+    "outputTokens": 1004
+  },
+  "proposals": [
+    {
+      "id": 0,
+      "name": "Hold",
+      "allocationBps": 4488
+    },
+    {
+      "id": 1,
+      "name": "Momentum",
+      "allocationBps": 4488
+    },
+    {
+      "id": 2,
+      "name": "Conservative",
+      "allocationBps": 0
+    }
+  ],
+  "maximumForecasterConfidenceBps": [
+    {
+      "name": "Quant",
+      "value": 500
+    },
+    {
+      "name": "Guardian",
+      "value": 500
+    }
+  ],
+  "independentVerification": {
+    "chainId": 1313161555,
+    "roundId": "6",
+    "verifiedAtBlock": "277241577",
+    "status": "settled",
+    "analysisHoldBps": 4488,
+    "onchainHoldBps": 4486,
+    "safeQuantitiesUnchanged": true,
+    "routerAllowancesZero": true,
+    "forecastEscrowMatchesSeed": true,
+    "seedReleased": true,
+    "liabilitiesZero": true,
+    "payoutsMatchDeposits": true,
+    "balances": {
+      "stable": "1094400091",
+      "asset": "428886426777995925"
+    },
+    "engineBalance": "100300427",
+    "reserve": "100300427"
+  },
+  "completion": {
+    "stage": "complete",
+    "chainId": 1313161555,
+    "roundId": "6",
+    "winner": "0",
+    "allocation": 4486,
+    "round": {
+      "tradingStart": "1794414882",
+      "tradingEnd": "1794415168",
+      "evaluationEnd": "1794415348",
+      "twapWindow": "90",
+      "rMin": "950000000000000000",
+      "rMax": "1050000000000000000",
+      "status": 3,
+      "proposalCount": 3,
+      "winnerId": 0,
+      "seedReleased": true,
+      "realisedReturn": "999456739214617756",
+      "pi": "494567392146177560",
+      "totalDeposits": "20000000",
+      "depositsOutstanding": "0",
+      "escrow": "25000000",
+      "totalPaid": "20000000"
+    },
+    "portfolio": {
+      "startingValueX18": "1984828800736062418425",
+      "stableQty6": "1094400091",
+      "assetQty18": "428886426777995925",
+      "executedAt": "1794415201",
+      "observedAt": "1794415374",
+      "oraclePublishedAt": "1794415353",
+      "realisedReturn": "999456739214617756",
+      "observationHash": "0xbbcabc2be7304974bff8a4776a774da475d1da92c0cbb56699e3e07d74f39e75"
+    },
+    "payouts": [
+      {
+        "name": "Quant",
+        "address": "0x954362D2D831fC9430122d95F79c2eE3841E975D",
+        "deposit": "10000000",
+        "payout": "10000000",
+        "profitLoss": "0"
+      },
+      {
+        "name": "Guardian",
+        "address": "0xc410cE4092eB91E89792F5AB731D64d544932B47",
+        "deposit": "10000000",
+        "payout": "10000000",
+        "profitLoss": "0"
+      }
+    ],
+    "decisions": [
+      {
+        "name": "Quant",
+        "action": "abstain",
+        "reason": "No forecast clears confidence and actual entry-cost edge checks"
+      },
+      {
+        "name": "Guardian",
+        "action": "abstain",
+        "reason": "No forecast clears confidence and actual entry-cost edge checks"
+      }
+    ],
+    "reserve": "100300427",
+    "provider": {
+      "mode": "near-ai",
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "attestationVerified": false
+    },
+    "recordHashes": [
+      {
+        "name": "Momentum",
+        "inputHash": "1d8512b050d211f65d54eb5a8f096b194a62d32730409a3274da9e4287f7f085",
+        "outputHash": "43543fe269a5dc1a3ff5808c1bc4c88fb7b8854a07c042cc74ceb6f8e1c33c3b"
+      },
+      {
+        "name": "Conservative",
+        "inputHash": "f9cdcdace568a83b4b3977610e7a80c69cb8c648518b200c2c35cb03ef96a78f",
+        "outputHash": "60743f25e0909ccf282abf9921f029707e15ef9395834e8243961779c6a3e2c7"
+      },
+      {
+        "name": "Quant",
+        "inputHash": "8f4c22698677eaa7ff1c3cd515e1a628a0c9400e7bbf78466ea1fafd281b682b",
+        "outputHash": "adaeac21c6051569ee67dac50306fbe77df6dd9cb5edd058ecb6a774609dedc6"
+      },
+      {
+        "name": "Guardian",
+        "inputHash": "7f7408e1696b3d6d071d07e66507ac984dbd5ce125f4dcb1dc9d6b989b412434",
+        "outputHash": "5199bfc5a1724e3654c231470ec3dc4350a7236979c56aa50c74425404ac1d35"
+      }
+    ],
+    "scope": "Four separate agent wallets and four separately prompted calls to the same NEAR AI model; test assets, no verified attestation, no forced winner or trade."
+  },
+  "confirmedTransactions": [
+    {
+      "label": "round6:mint:Momentum",
+      "hash": "0xe88ee80205359b3e39c161166bcf224e88f33a3f85139173b12fd483192aec1f",
+      "blockNumber": "277240403"
+    },
+    {
+      "label": "round6:bondApproval:Momentum",
+      "hash": "0x5ee907685192fe0ec77152721928922be76f240f37a5f558211c978945a87ed2",
+      "blockNumber": "277240419"
+    },
+    {
+      "label": "round6:mint:Conservative",
+      "hash": "0xcb26e2c16cf182fa823dcaf2f0e6408ee9fc0cf7983a4635c4b3087e9f3912c2",
+      "blockNumber": "277240433"
+    },
+    {
+      "label": "round6:bondApproval:Conservative",
+      "hash": "0x3335ecde0b3921ee35f2ed2adade9218896cfd98ff2931d39345c4006f270f67",
+      "blockNumber": "277240446"
+    },
+    {
+      "label": "round6:mint:Quant",
+      "hash": "0xec4b8b9aa6f0ee702c35e9c9a1cbf9ea01d4752632bec84e0f48828e01a88662",
+      "blockNumber": "277240461"
+    },
+    {
+      "label": "round6:depositApproval:Quant",
+      "hash": "0x7c65e2abcc5c4e358883fcc82d0a74f4f5df9d8f9a473d7db816ec66b9e75048",
+      "blockNumber": "277240473"
+    },
+    {
+      "label": "round6:mint:Guardian",
+      "hash": "0x5916120280dbb173e41bd581047127922de0be3e7fd5d173b5228531ac210dee",
+      "blockNumber": "277240485"
+    },
+    {
+      "label": "round6:depositApproval:Guardian",
+      "hash": "0x78791fb487332b467c51a9207db70b94cd8f8177ac18ab067e4862fc350afbb6",
+      "blockNumber": "277240497"
+    },
+    {
+      "label": "round6:oracle:open",
+      "hash": "0xdb747afe73c8d2b2506bcf06113ed9cbb19d8e625845df575961037c3a563083",
+      "blockNumber": "277240579"
+    },
+    {
+      "label": "round6:authorize",
+      "hash": "0xfd761133545f4a0a8d3698668bce7878dd36c829163ebc063ad78acce344be83",
+      "blockNumber": "277240596"
+    },
+    {
+      "label": "round6:open",
+      "hash": "0xcf041a9af3bedfa117ecd201776c1ffd949044329f78f2890149c4a23487cf81",
+      "blockNumber": "277240608"
+    },
+    {
+      "label": "round6:propose:Momentum",
+      "hash": "0xec6476afa52fa5b2446fb23d30b49d35b2710dd0f3d6a84ddbf0a1ed5fb00779",
+      "blockNumber": "277240623"
+    },
+    {
+      "label": "round6:propose:Conservative",
+      "hash": "0x43bdb97d49a05e95a9df8ef163d23d847606197ae53b0051e17853bce8d45603",
+      "blockNumber": "277240638"
+    },
+    {
+      "label": "round6:deposit:Quant",
+      "hash": "0xa7c520f198f17635b1af102f75010a2c5fcf5ae07b4a75fda833ff8c23f3e17d",
+      "blockNumber": "277240656"
+    },
+    {
+      "label": "round6:deposit:Guardian",
+      "hash": "0xc130a1cb0a9733d9837fa48a56b9fb436814f6653f35c6f2a0cf9e09e15e2c62",
+      "blockNumber": "277240673"
+    },
+    {
+      "label": "round6:collapse",
+      "hash": "0xa4bf60f6018253ca1f62292a0e72cd8cc7cfcb57fc4213be095b7f87520334e9",
+      "blockNumber": "277241104"
+    },
+    {
+      "label": "round6:oracle:execute",
+      "hash": "0xe2aa19d4fc8945dbdc0c1b0113cd73dc47126b9c0e73a0e4cd32931b09c55444",
+      "blockNumber": "277241129"
+    },
+    {
+      "label": "round6:execute",
+      "hash": "0xc6e6c0a19f4dd0b88a2b3fecc82ce6fdab16e4ffc09a6c19e62cc4e87e4efcf5",
+      "blockNumber": "277241144"
+    },
+    {
+      "label": "round6:oracle:settle",
+      "hash": "0x72d06639f123d4b1eecba05b152c783b4252173a077d00d2eacffda5b3be93c1",
+      "blockNumber": "277241427"
+    },
+    {
+      "label": "round6:settle",
+      "hash": "0x8014bbe58e167c33645ccbe2169ddd23e33cae75c801a5b5d87d8aae51088a42",
+      "blockNumber": "277241441"
+    },
+    {
+      "label": "round6:redeem:Quant",
+      "hash": "0xa0deaf72f5942358af4129419336211b2a3634c601b3662452f7f21b408bfeda",
+      "blockNumber": "277241457"
+    },
+    {
+      "label": "round6:redeem:Guardian",
+      "hash": "0xa5c9900c726abd893ceb870baf5715b5ba7ce10c3f94db88eefe256caec75f11",
+      "blockNumber": "277241472"
+    }
+  ],
+  "limitations": [
+    "Four separately prompted calls to the same NEAR AI model, not independent model families.",
+    "Both genuine forecasters abstained; no actual LONG/SHORT fill occurred.",
+    "Hold preserved quantities; no investment AMM swap occurred.",
+    "All capital and gas in this round are testnet assets.",
+    "This validates live AI-to-Hold execution/settlement/payout, not live AI betting/swap activity.",
+    "No mainnet funds or additional model calls were used."
+  ]
+}
