@@ -1,0 +1,40 @@
+{
+  "capturedAt": "2026-11-11T16:33:20.747Z",
+  "endpoints": {
+    "42161": {
+      "chainId": 42161,
+      "latest": "523329769",
+      "finalized": "523325770",
+      "finalityLagBlocks": "3999"
+    },
+    "1313161554": {
+      "chainId": 1313161554,
+      "latest": "224090176",
+      "finalized": "224090178",
+      "finalityLagBlocks": "-2"
+    }
+  },
+  "safe": {
+    "address": "0xe7889338fdc4962f5d1280e0e4267a0566e05d06",
+    "codeBytes": 171,
+    "version": "1.4.1",
+    "owners": [
+      "0x37f91aa1e24AaFc7B3843E281650AA884A6651E2"
+    ],
+    "threshold": "1",
+    "modules": [],
+    "auroraUsdcBalance": "0",
+    "atBlock": "224090176"
+  },
+  "historicalStateOnAurora": {
+    "supported": true,
+    "balance1000BlocksAgo": "0"
+  },
+  "manager": {
+    "address": "0x37f91aa1e24aafc7b3843e281650aa884a6651e2",
+    "arbitrumUsdcBalance": "0",
+    "atBlock": "523329788",
+    "arbitrumEthBalanceWei": "0",
+    "arbitrumNonce": 0
+  }
+}
