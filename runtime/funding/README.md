@@ -175,3 +175,35 @@ Provider failure never means refunded. Expired unsubmitted records stay unresolv
 for explicit review rather than being silently recycled. No fees or balances are
 expressed as floats. The local store is not tamper-proof against its OS owner,
 malicious adapter injection, manual rollback or dishonest RPC infrastructure.
+
+## Bounded first-delivery proof (operator preparation)
+
+The mainnet Safe is a funding-only deployment. It does not have a mainnet
+Wavefund trading stack, so the full deployment/round-readiness adapter must not
+be faked or weakened to accept it. Production routes stay empty until reviewed.
+
+`demo-plan.mjs` prepares a separately labelled one-off funding proof:
+
+- `fundingDemoRequest` derives the exact manager/Safe/refund and Arbitrum route
+  from trusted deployment configuration; fixes input at 1 USDC and request minimum
+  at 0.98 USDC, with at most five minutes of quote validity.
+- `fundingDemoPreviewInput` uses B's provider mapping at 100 bps slippage.
+- `prepareFundingDemoDeposit` accepts a separately authorized executable quote,
+  delegates signature/archival checks to B's `verifyQuote`, and constructs only an
+  unsigned ERC20 `transfer(depositAddress,1000000)` from the manager on Arbitrum.
+  Source balances/nonce/gas estimate must be freshly supplied by a trusted local
+  operator. Gas cost is capped at **0.00001 ETH**. The plan expires within 30 seconds
+  of that source observation and never grants production round readiness.
+
+The planner performs no network call, transfer, approval or signing. Its tests use
+synthetic verifier results to exercise the planning policy, not real signed
+executable quotes. Before a real send, an explicit approval, current Safe checks,
+fresh source read, ERC20 transfer simulation, and a durable one-attempt signing
+journal are still required. Never use a dry quote as an executable quote. B owns
+canonical source/delivery/refund receipt readers; the planner does not duplicate
+them or infer delivery from an unsigned status flag.
+
+`node scripts/funding-demo-preview.mjs` requests only a dry quote for the deployed
+Safe, using no credentials. It must be run in the approved network container.
+It does not enable executable quotes. No unsigned plan is an instruction to send
+funds until the quoted amount and gas budget are explicitly approved.

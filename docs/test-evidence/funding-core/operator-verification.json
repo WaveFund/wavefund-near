@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-11",
+  "baseCommit": "71b193b",
+  "branch": "feat/funding-operator",
+  "scope": "A-owned unsigned 1-USDC funding-proof planning, bounded oracle clock handling and deterministic inference-timeout test",
+  "runtimeTests": { "passed": 152, "failed": 0, "skipped": 0 },
+  "newTests": { "fundingPlanner": 5, "oracleClock": 4 },
+  "mutationsKilled": ["clock-wait", "clock-bound", "demo-request", "demo-gas", "demo-fixture", "demo-amount", "timeout-signal"],
+  "environment": "Network-isolated existing Node container; scratch copies, no credentials",
+  "syntaxChecks": ["scripts/funding-demo-preview.mjs", "scripts/aurora-agent-round.mjs"],
+  "initialFailure": "Existing 20ms timeout test raced loopback HTTP delivery under parallel load. Changed the test to count injected transport invocations and assert the actual abort signal; no production inference logic changed.",
+  "fundingDemoLimits": { "inputUSDCBaseUnits": "1000000", "requestMinimumOutBaseUnits": "980000", "maximumSourceGasCostWei": "10000000000000" },
+  "fundingExecutionEnabled": false,
+  "mainnetTransfersPerformed": false,
+  "productionRoutesEnabled": false,
+  "limitations": [
+    "Planner tests use synthetic trusted verifier outputs, not real executable quotes.",
+    "Planner never signs, requests executable quotes, broadcasts, or grants mainnet round readiness.",
+    "Fresh Safe/source checks, explicit budget approval, transfer simulation and durable one-attempt signing journal are required before a real send.",
+    "B owns receipt readers and funding-delivery verification; no B-owned source files changed.",
+    "Real-AI round-six evidence is recorded separately after onchain settlement."
+  ]
+}
