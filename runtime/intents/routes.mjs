@@ -20,6 +20,10 @@ export const VERIFIED_FUNDING_ROUTES = Object.freeze([
     }),
     // Smallest amount accepted by a live dry quote was above this; "try at least 300001" for smaller ones.
     minimumAmountIn: '300001',
+    // Status flags for integration review. Delivery has never been observed, and EVM-origin quoting was
+    // unavailable on the 10:42 UTC recheck. Do not mark the shared route liveVerified on this evidence alone.
+    deliveryProven: false,
+    evidence_status: 'signed dry quotes 2026-11-11 10:09-10:16 UTC; EVM-origin quoting unavailable from 10:42 UTC; no delivery observed',
     evidence: 'fixtures/intents/live/{tokens-subset.json,quote-dry-eth-usdc-to-aurora.json,probes/}',
   }),
 ]);

@@ -1,0 +1,260 @@
+{
+  "kind": "LIVE EVIDENCE INDEX (derived from unmodified captures in this directory; dry quotes only)",
+  "deliveryProven": false,
+  "executableQuotesRequested": false,
+  "fundsMoved": false,
+  "providerPublicKey": "ed25519:reYaWhvwu8Jzo3WUM3zhn6VrhuMEF4eADL17qtRVifc",
+  "addressesUsed": {
+    "0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C": "OpenAPI example address used as virtualChainRecipient/refundTo; NOT a Wavefund Safe",
+    "0x2527D02599Ba641c19FEa793cD0F167589a0f10D": "OpenAPI example address used as refundTo; NOT a Wavefund wallet"
+  },
+  "assets": {
+    "sourceErc20Asset": {
+      "provider": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+      "blockchain": "eth",
+      "evmChainId": 1,
+      "erc20": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "decimals": 6
+    },
+    "deliveredNep141": {
+      "provider": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "blockchain": "near",
+      "nearAccount": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "decimals": 6
+    },
+    "auroraErc20": {
+      "evmChainId": 1313161554,
+      "erc20": "0x368ebb46aca6b8d0787c96b2b20bd3cc3f2c45f7",
+      "decimals": 6,
+      "mappingSource": "aurora.get_erc20_from_nep141 (probes/aurora-usdc-mapping.json)"
+    },
+    "virtualChainAccount": "aurora"
+  },
+  "quotes": [
+    {
+      "source": "quote-dry-eth-usdc-to-aurora.json",
+      "correlationId": "628fe80d-2b07-498c-94f3-565f200dc4ff",
+      "timestamp": "2026-11-11T10:16:52.883Z",
+      "signature": "ed25519:5zAUNnVFUrpqjQcx9bqzbPTEwpqzDMizdNyErQ7Dbbh8spwiB4Jx22fde7NVN3GRQav49zBzfU7KaodJQDi1VTXL",
+      "signatureVerified": true,
+      "signedMessage": "7KmREncNixtTtCkBnUuAFucEQSf3XW9sGdeFvkwLwr1e",
+      "fundingRouteShape": true,
+      "signedRequestFields": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "amount": "250000000",
+        "refundTo": "0x2527D02599Ba641c19FEa793cD0F167589a0f10D",
+        "refundType": "ORIGIN_CHAIN",
+        "recipient": "aurora",
+        "recipientType": "DESTINATION_CHAIN",
+        "virtualChainRecipient": "0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C",
+        "deadline": "2026-11-11T10:46:52.118Z"
+      },
+      "signedAmounts": {
+        "amountIn": "250000000",
+        "minAmountIn": "250000000",
+        "amountOut": "249973358",
+        "minAmountOut": "247473624",
+        "amountInFormatted": "250.0",
+        "amountOutFormatted": "249.973358",
+        "amountInUsd": "249.899750000000",
+        "amountOutUsd": "249.873118683442"
+      },
+      "unsignedInDryQuote": {
+        "refundFee": "300000",
+        "withdrawFee": "0",
+        "timeEstimate": 45,
+        "appFees": [
+          {
+            "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+            "fee": 1
+          }
+        ]
+      }
+    },
+    {
+      "source": "probes/dry-quote-probes.json#B-near-usdc-to-aurora-engine-msg",
+      "correlationId": "e33b28bd-0954-4870-a9cb-24595535ede8",
+      "timestamp": "2026-11-11T10:09:23.112Z",
+      "signature": "ed25519:ZWiuoCFvkDJak9zmGsgraijASCywn6BiGrqdRSEXHFJzTojbYre6eLphhnojzmgN82xTrngjUE2NnWoYqS51saj",
+      "signatureVerified": true,
+      "signedMessage": "FhqYsuhTgerTcuUh4fbBRLjuCncZYonJH7tHatim9BDt",
+      "fundingRouteShape": false,
+      "signedRequestFields": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "amount": "100000000",
+        "refundTo": "0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C",
+        "refundType": "ORIGIN_CHAIN",
+        "recipient": "aurora",
+        "recipientType": "DESTINATION_CHAIN",
+        "customRecipientMsg": "b4c2fbec9d610f9a3a9b843c47b1a8095cec887c",
+        "deadline": "2026-11-11T10:39:21.841Z"
+      },
+      "signedAmounts": {
+        "amountIn": "100000000",
+        "minAmountIn": "100000000",
+        "amountOut": "99989912",
+        "minAmountOut": "98990012",
+        "amountInFormatted": "100.0",
+        "amountOutFormatted": "99.989912",
+        "amountInUsd": "99.957100000000",
+        "amountOutUsd": "99.947016327752"
+      },
+      "unsignedInDryQuote": {
+        "refundFee": "300000",
+        "withdrawFee": "0",
+        "timeEstimate": 45,
+        "appFees": [
+          {
+            "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+            "fee": 1
+          }
+        ]
+      }
+    },
+    {
+      "source": "probes/dry-quote-probes.json#C2-virtual-recipient-only-aurora",
+      "correlationId": "2401459b-af4e-4cc3-b3a6-97d7e0ee12c0",
+      "timestamp": "2026-11-11T10:09:42.569Z",
+      "signature": "ed25519:TZ5mTVpX73DMs3q5R5BMB6zeMZhCmmoWWgs3G2gS5DWKXbtnf5RBr4draDqWEPTYU9oXD9zJRtJnVb26cTfWySG",
+      "signatureVerified": true,
+      "signedMessage": "5dqbnbwYrusnrm45jpfTPiqMuzv73V1BfBkozuNZQZqT",
+      "fundingRouteShape": true,
+      "signedRequestFields": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "amount": "100000000",
+        "refundTo": "0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C",
+        "refundType": "ORIGIN_CHAIN",
+        "recipient": "aurora",
+        "recipientType": "DESTINATION_CHAIN",
+        "virtualChainRecipient": "0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C",
+        "deadline": "2026-11-11T10:39:42.062Z"
+      },
+      "signedAmounts": {
+        "amountIn": "100000000",
+        "minAmountIn": "100000000",
+        "amountOut": "99989912",
+        "minAmountOut": "98990012",
+        "amountInFormatted": "100.0",
+        "amountOutFormatted": "99.989912",
+        "amountInUsd": "99.957200000000",
+        "amountOutUsd": "99.947116317664"
+      },
+      "unsignedInDryQuote": {
+        "refundFee": "300000",
+        "withdrawFee": "0",
+        "timeEstimate": 45,
+        "appFees": [
+          {
+            "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+            "fee": 1
+          }
+        ]
+      }
+    },
+    {
+      "source": "probes/dry-quote-probes.json#E-min-1000000",
+      "correlationId": "23615e7c-f44c-4fea-a91f-a2e2e9757c9b",
+      "timestamp": "2026-11-11T10:11:26.148Z",
+      "signature": "ed25519:5o3CEa2nKRqLWAvtVuAh5zGVvmRTgGcsNXHqr7A6QmaeiPhPBFpX61nxP4KD1ehTB5SLBhNoMaeE7atx6nK8DLJw",
+      "signatureVerified": true,
+      "signedMessage": "AqNbFZFf1vvXCFmKu3d1G9YcH19armqpMTeUJQTXJpr5",
+      "fundingRouteShape": true,
+      "signedRequestFields": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "amount": "1000000",
+        "refundTo": "0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C",
+        "refundType": "ORIGIN_CHAIN",
+        "recipient": "aurora",
+        "recipientType": "DESTINATION_CHAIN",
+        "virtualChainRecipient": "0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C",
+        "deadline": "2026-11-11T10:41:24.017Z"
+      },
+      "signedAmounts": {
+        "amountIn": "1000000",
+        "minAmountIn": "1000000",
+        "amountOut": "999798",
+        "minAmountOut": "989800",
+        "amountInFormatted": "1.0",
+        "amountOutFormatted": "0.999798",
+        "amountInUsd": "0.999569000000",
+        "amountOutUsd": "0.999367087062"
+      },
+      "unsignedInDryQuote": {
+        "refundFee": "300000",
+        "withdrawFee": "0",
+        "timeEstimate": 45,
+        "appFees": [
+          {
+            "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+            "fee": 1
+          }
+        ]
+      }
+    },
+    {
+      "source": "probes/route-recheck.json#near-usdc-to-aurora-virtual",
+      "correlationId": "735d42d6-af79-4d2e-8a54-e89ef2342387",
+      "timestamp": "2026-11-11T10:43:40.195Z",
+      "signature": "ed25519:2eNFWDvLN5yhNA81kwUjZMNoK72yik2AaioJjqBZFY8HN57bN6f8nSqXaAVjJrqo7GG41BFVUx6BUHY1ajV9Xu1B",
+      "signatureVerified": true,
+      "signedMessage": "EgG7c15fYQ4PWnBFvbWXhqNz6LhCoZL8KtX292Z3MZNk",
+      "fundingRouteShape": false,
+      "signedRequestFields": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:usdt.tether-token.near",
+        "amount": "250000000",
+        "refundTo": "your-account.near",
+        "refundType": "ORIGIN_CHAIN",
+        "recipient": "aurora",
+        "recipientType": "DESTINATION_CHAIN",
+        "virtualChainRecipient": "0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C",
+        "deadline": "2026-11-11T11:13:38.000Z"
+      },
+      "signedAmounts": {
+        "amountIn": "250000000",
+        "minAmountIn": "250000000",
+        "amountOut": "250178797",
+        "minAmountOut": "247677009",
+        "amountInFormatted": "250.0",
+        "amountOutFormatted": "250.178797",
+        "amountInUsd": "249.900500000000",
+        "amountOutUsd": "249.900500000000"
+      },
+      "unsignedInDryQuote": {
+        "refundFee": "0",
+        "withdrawFee": "0",
+        "timeEstimate": 20,
+        "appFees": [
+          {
+            "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+            "fee": 1
+          }
+        ]
+      }
+    }
+  ]
+}

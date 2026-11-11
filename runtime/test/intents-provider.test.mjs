@@ -381,3 +381,32 @@ test('QUOTING_UNAVAILABLE (observed live for EVM origins) maps to a retryable co
   await assert.rejects(liveClient(json(400, { message: 'Quoting for this pair is not available' })).client.previewOrder(fundingRequest(LIVE_FUNDING_DRY)),
     (e) => e.code === ERROR_CODES.QUOTING_UNAVAILABLE && e.retryable === true);
 });
+
+test('LIVE evidence index: every Aurora-bound signed quote re-verifies, with exact signed virtualChainRecipient; delivery unproven', () => {
+  const index = fixture('live/signed-aurora-quotes.json');
+  assert.equal(index.deliveryProven, false); assert.equal(index.executableQuotesRequested, false); assert.equal(index.fundsMoved, false);
+  assert.equal(ROUTE.deliveryProven, false, 'route must stay labelled delivery-unproven');
+  const verify = createQuoteSignatureVerifier();
+  const funding = index.quotes.filter((q) => q.fundingRouteShape);
+  assert.ok(funding.length >= 3);
+  for (const q of index.quotes) {
+    const payload = { quoteRequest: q.signedRequestFields, quote: q.signedAmounts, timestamp: q.timestamp, signature: q.signature };
+    assert.equal(verify(payload).valid, true, q.source); // the index alone is sufficient to re-verify
+    assert.equal(quoteMessage(payload), q.signedMessage, q.source);
+  }
+  for (const q of funding) {
+    assert.equal(q.signedRequestFields.originAsset, 'nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near');
+    assert.equal(q.signedRequestFields.destinationAsset, 'nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1');
+    assert.equal(q.signedRequestFields.recipient, 'aurora');
+    assert.equal(q.signedRequestFields.virtualChainRecipient, '0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C');
+    const changed = { quoteRequest: { ...q.signedRequestFields, virtualChainRecipient: '0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c' }, quote: q.signedAmounts, timestamp: q.timestamp, signature: q.signature };
+    assert.equal(verify(changed).valid, false, 'the signature binds the exact virtualChainRecipient string, including case');
+  }
+});
+
+test('executable quotes stay disabled unless explicitly enabled per client', async () => {
+  const transport = fakeTransport({});
+  const client = createIntentsClient({ transport });
+  await rejectsCode(client.prepareOrder(fundingRequest(LIVE_FUNDING_DRY)), ERROR_CODES.EXECUTION_QUOTES_DISABLED);
+  assert.equal(transport.calls.length, 0);
+});
