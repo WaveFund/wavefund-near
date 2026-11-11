@@ -153,4 +153,20 @@ Mutation checks, each applied to a scratch clone; the named test must fail:
 1. **No reviewed Aurora mainnet Wavefund deployment**: funding can never be round-eligible today.
 2. **Route not live-verified**: delivery has never been observed, and production `approved-routes.json` is empty.
 3. **Executable quotes and wallet signing**: disabled pending review by A and B.
-4. **Live preview needs a running API runtime**: the API server also starts the local-demo or Aurora-monitor runtime, so `WAVEFUND_FUNDING=live-preview` needs `npm run demo:local` (Foundry) or the Aurora monitor with compiled `out/` artifacts. The fixture explorer works without either.
+## End-to-end run in a container
+
+The API server also needs the local-demo (or Aurora-monitor) runtime, so live funding preview runs alongside the full demo. In an isolated container with Node 22, Foundry 1.5.1, restored dependencies and compiled contracts:
+
+```sh
+WAVEFUND_CONTAINER=1 WAVEFUND_FUNDING=live-preview npm run demo:local
+# publish only 127.0.0.1:3000 (dashboard) and 127.0.0.1:3001 (API) to the host
+```
+
+`WAVEFUND_CONTAINER=1` makes the launcher bind the API and dashboard to the container's interfaces (`server.mjs` already gates `0.0.0.0` on the same flag). Anvil stays on loopback.
+
+Verified on 2026-11-12, driven through the real dashboard in Playwright:
+- Round 1 completed with 27/27 successful local transactions. “100% asset” won (final-window average 0.852 vs Hold 0.500). The Safe swapped 2,000 test USDC for 0.997 test ETH, with a measured return of +4.685%. Quant redeemed +2.45 and Guardian +0.15 test USDC.
+- `/manager` loaded the live module and oracle state.
+- `/fund` showed a real provider-signed, signature-verified 1Click dry quote to the trusted mainnet funding Safe (25 USDC → 24.9952, signed minimum 24.745248).
+
+A container launcher (Dockerfile, plus `up.sh`/`down.sh` that sync the working tree, install with scripts disabled, fetch pinned sources, compile and start) was used locally from the git-ignored `.run/e2e/`. Adding it to the repository is a proposal for whoever owns `docs/LOCAL-DEMO.md` and shared tooling.
