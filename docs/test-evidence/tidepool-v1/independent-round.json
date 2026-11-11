@@ -1,0 +1,103 @@
+{
+  "chainId": 1313161555,
+  "roundId": "1",
+  "pinnedPreRedemptionBlock": "277273938",
+  "winner": "3",
+  "fills": [
+    {
+      "name": "Quant",
+      "hash": "0xde9b1e30aee062b7eea1035ceed867d6755f2defa8ef7e5df31090140899bde5",
+      "roundId": "1",
+      "proposalId": "3",
+      "user": "0x954362D2D831fC9430122d95F79c2eE3841E975D",
+      "isLong": true,
+      "credits": "400000",
+      "tokensOut": "769341335111506260"
+    },
+    {
+      "name": "Guardian",
+      "hash": "0x0eee5771e8a6c9ddddaf3b433aaac40951ba3d8fb9ca175df9dd09c0e08ebc1f",
+      "roundId": "1",
+      "proposalId": "3",
+      "user": "0xc410cE4092eB91E89792F5AB731D64d544932B47",
+      "isLong": false,
+      "credits": "100000",
+      "tokensOut": "213788487962928732"
+    },
+    {
+      "name": "FeeAnalyst",
+      "hash": "0xa448bb482d86ffd118072e3b5c86727437c43e58b8fa1b7993b7e8b769c18370",
+      "roundId": "1",
+      "proposalId": "1",
+      "user": "0x50ef16734f1443c97c37e29F31F8AA0aa045bf51",
+      "isLong": false,
+      "credits": "100000",
+      "tokensOut": "197750848089103280"
+    },
+    {
+      "name": "StressAnalyst",
+      "hash": "0x8c48190460b45e92644037d43ccd617bda991424ceb403144c05f3ed87f156c8",
+      "roundId": "1",
+      "proposalId": "3",
+      "user": "0x949A277347a18c984c13D5228e0acE60cD2D99E6",
+      "isLong": true,
+      "credits": "100000",
+      "tokensOut": "187584405930591284"
+    }
+  ],
+  "payouts": [
+    {
+      "name": "Quant",
+      "address": "0x954362D2D831fC9430122d95F79c2eE3841E975D",
+      "deposit": "10000000",
+      "claimedWinningCredits": "10000000",
+      "unclaimedPrincipal": "0",
+      "credit": "9600000",
+      "long": "769341335111506260",
+      "short": "0",
+      "derivedPayout": "9934985",
+      "actualPayout": "9934985"
+    },
+    {
+      "name": "Guardian",
+      "address": "0xc410cE4092eB91E89792F5AB731D64d544932B47",
+      "deposit": "10000000",
+      "claimedWinningCredits": "10000000",
+      "unclaimedPrincipal": "0",
+      "credit": "9900000",
+      "long": "0",
+      "short": "213788487962928732",
+      "derivedPayout": "10020700",
+      "actualPayout": "10020700"
+    },
+    {
+      "name": "FeeAnalyst",
+      "address": "0x50ef16734f1443c97c37e29F31F8AA0aa045bf51",
+      "deposit": "10000000",
+      "claimedWinningCredits": "0",
+      "unclaimedPrincipal": "10000000",
+      "credit": "0",
+      "long": "0",
+      "short": "0",
+      "derivedPayout": "10000000",
+      "actualPayout": "10000000"
+    },
+    {
+      "name": "StressAnalyst",
+      "address": "0x949A277347a18c984c13D5228e0acE60cD2D99E6",
+      "deposit": "10000000",
+      "claimedWinningCredits": "10000000",
+      "unclaimedPrincipal": "0",
+      "credit": "9900000",
+      "long": "187584405930591284",
+      "short": "0",
+      "derivedPayout": "9981677",
+      "actualPayout": "9981677"
+    }
+  ],
+  "collateralAtCollapse": "140000000",
+  "endingCollateral": "100062638",
+  "reserve": "100062638",
+  "recomputedReturn": "993541889635073190",
+  "passed": true
+}

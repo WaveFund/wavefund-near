@@ -165,3 +165,20 @@ with injected capabilities; a reviewed live signing configuration and actual
 funding delivery remain separate gates.
 
 Final full isolated Solidity regression: **451 passed, zero failed/skipped, across 29 suites**. The new reputation contract also passed a separate clean final-artifact unit run before testnet deployment. No mutation artifacts were deployed.
+
+## Tidepool-funded connected path — 12 November 2026
+
+[Complete flow](TIDEPOOL-DEMO.md), [manifest](../deployments/aurora-testnet-tidepool.json)
+and [public evidence](test-evidence/tidepool-v1/). Arbitrum Sepolia source funding
+200 -> Aurora Safe 199.48 test USDC was linked to final native NEAR testnet
+execute_intents. Four genuine AI proposals plus four scripted forecasters chose
+75% ETH; actual Trisolaris swap, Supra measurement, four redemptions and -1 outcome
+reputation completed. Return factor0.993541889635073190 is a post-funding strategy
+return, not a guarantee of investment alpha. All accounting independently passed.
+
+184 runtime tests, 3 new bridge tests and 7 targeted mutation checks passed.
+Existing Solidity implementations were reused; the earlier451-pass baseline was
+not redundantly rerun. Rejected below-base-fee submissions were reconciled with a
+same-nonce, same-deposit recovery, not a second principal send. Mixed NEAR/EVM
+hash selection now has its observed-shape regression. Original production1Click
+execution remains disabled; no mainnet transfer or UI merge occurred.

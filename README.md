@@ -2,9 +2,14 @@
 
 **Team starting point:** [Engineer handoff, current blockers and verified evidence](docs/ENGINEER-HANDOFF.md).
 
+**Live NEAR verification, no wallet or AI key:** after installing locked dependencies,
+run `node scripts/judge-check.mjs`. It checks live reputation, signed dry quotes,
+actual Tidepool funding receipts and final NEAR testnet `execute_intents`.
+See [the separate testnet flow and exact scope](docs/TIDEPOOL-DEMO.md).
+
 Solidity implementation targeting Aurora testnet (chain 1313161555). A [genuine public Safe round](docs/AURORA-SAFE-ROUND.md) completed v4 forecasting, an actual Trisolaris swap, Supra-authenticated settlement and forecaster redemption. This is a single-operator rehearsal with freely minted test assets, not an audited or production-approved deployment.
 
-Supra supplies authenticated public-testnet observations without a gateway key. [RedStone access](docs/REDSTONE-PROOF.md) remains an alternative, not a blocker for the completed round. Latest runtime verification: **171 Node tests and 6 Python bridge tests passed**. The additive reputation tests also pass against real local settlement contracts. The full isolated Solidity regression passed **451 executions across 29 suites**. See [deliberate product testing](docs/PRODUCT-TESTING.md) for scripted LONG/SHORT coverage, real-model limitations and recovery evidence.
+Supra supplies authenticated public-testnet observations without a gateway key. [RedStone access](docs/REDSTONE-PROOF.md) remains an alternative, not a blocker for the completed round. Latest runtime verification: **184 Node tests passed**; the existing six Python bridge tests remain prior evidence and the three new Tidepool bridge tests pass separately. The additive reputation tests also pass against real local settlement contracts. The full isolated Solidity regression passed **451 executions across 29 suites**. See [deliberate product testing](docs/PRODUCT-TESTING.md) for scripted LONG/SHORT coverage, real-model limitations and recovery evidence.
 
 [Local full-stack demo](docs/LOCAL-DEMO.md): real local Safe/v4 transactions, a Node orchestration API and a Next.js dashboard. Run `npm run demo:local` after isolated dependency setup. Prices and agents are explicitly simulated.
 
@@ -49,7 +54,7 @@ Use a clean isolated development environment. Requirements: Node 22+, Python 3.1
    python3 scripts/test-aurora-bridge.py
    ```
 
-   Expected current runtime result: 171 Node tests and 6 Python tests pass. The Solidity verification command is below; its current result is 451 executions across 29 suites.
+   Expected current runtime result: 184 Node tests and 6 Python tests pass. The Solidity verification command is below; its current result is 451 executions across 29 suites.
 
 4. With ports 8545, 3001 and 3000 free and no previous `.run/local-demo` journal, start:
 
@@ -130,7 +135,7 @@ This adapts an existing Wavefund project; reused forecasting contracts are basel
 
 ## Current execution and funding model
 
-Manager-owned capital funding through NEAR Intents now has a signed-quote provider, receipt-proof tooling, funding state machine and bounded local one-USDC operator. Real signed dry quotes are verified; live delivery remains unproven and signing is not exposed through HTTP. The local operator requires explicitly supplied trusted capabilities and approval of the exact plan hash. A live Intents route targets mainnet; it cannot fund the existing Aurora testnet deployment. Funding and strategy evidence must retain their real network identities. The existing strategy executor remains the direct Trisolaris path.
+Manager-owned capital funding through NEAR Intents now has a signed-quote provider, receipt-proof tooling, funding state machine and bounded local one-USDC operator. Real signed dry quotes are verified for the official production 1Click route; delivery on that mainnet route remains unproven and signing is not exposed through HTTP. The local operator requires explicitly supplied trusted capabilities and approval of the exact plan hash. A live Intents route targets mainnet; it cannot fund the existing Aurora testnet deployment. Funding and strategy evidence must retain their real network identities. The existing strategy executor remains the direct Trisolaris path.
 
 Uniswap v4 pools and WaveHook serve forecasting LONG/SHORT claims. The Safe module reads the canonical winner and calls a fixed exact-input investment router with oracle/slippage and balance checks. The local demo retains its prefunded fixture. The public testnet stack uses the existing Trisolaris router with our self-seeded test-token pair; an actual Safe swap is verified.
 
@@ -139,3 +144,5 @@ Managers supply their own investment capital. Forecasters supply separate collat
 ## Agent outcome reputation
 
 [Outcome reputation](docs/AGENT-REPUTATION.md) is additive to the existing trading stack. Only a selected, executed and settled strategy scores: positive return +1, negative -1, flat 0. Counts and points are per proposer address, not lending creditworthiness. Deployment evidence: [Aurora testnet reputation](deployments/aurora-testnet-reputation.json). The genuine eight-agent runner uses `--profile swarm`; the paid inference flag and a fresh budget remain required.
+
+The separate [Tidepool testnet happy path](docs/TIDEPOOL-DEMO.md) completed cross-chain funding, four genuine AI proposals, scripted forecast trades, an actual Safe investment swap, authenticated settlement, redemptions and outcome scoring. It is community testnet execution with worthless tokens, not official mainnet 1Click delivery.

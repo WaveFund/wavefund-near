@@ -1,0 +1,320 @@
+[
+  {
+    "stage": "confirmed",
+    "label": "deploy:safe",
+    "hash": "0x5d43506137017c8d5f1b9dea972797650d1c5bdf8aebe767e72e1928d82862ef",
+    "blockNumber": "277271195",
+    "gasUsed": "96151",
+    "contractAddress": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11"
+  },
+  {
+    "stage": "confirmed",
+    "label": "safe:setup",
+    "hash": "0x5cc49dc7e79035f161a2494ee37ced8c4a6d2b83c1f5443ef446d8c812cf8723",
+    "blockNumber": "277271207",
+    "gasUsed": "143924",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "deploy:tokens",
+    "hash": "0x38990ee5ed3d5dbeb7c7b37eae4edb542a760c3df50358b4411218616a7b53c8",
+    "blockNumber": "277271217",
+    "gasUsed": "1839161",
+    "contractAddress": "0x8f32992dfdc09de738972ce2d4dc5e37eec897f0"
+  },
+  {
+    "stage": "confirmed",
+    "label": "tokens:decimals",
+    "hash": "0x82e477a0a71217dfe41ca85d5eeff6d2dc685cae1309a08ae7b67e43ae6d9f4e",
+    "blockNumber": "277271231",
+    "gasUsed": "29778",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "deploy:registry",
+    "hash": "0xa96647b76b7803f0e4015e5ce2b0f2c39ea40ce128e39698f5e74008fe2ba8d3",
+    "blockNumber": "277271244",
+    "gasUsed": "1257741",
+    "contractAddress": "0x6d0edb3c3ded534d8d08cc6a6523cee6fce67d40"
+  },
+  {
+    "stage": "confirmed",
+    "label": "deploy:market",
+    "hash": "0xd9474dc270c884c709fa6d75ebf3ed4f573a4daf51c7f920fd54c0f4db768791",
+    "blockNumber": "277271258",
+    "gasUsed": "4480202",
+    "contractAddress": "0x34d5c5f628e854f54c8b1ff93f9802b871a11834"
+  },
+  {
+    "stage": "confirmed",
+    "label": "deploy:engine",
+    "hash": "0xdbeb05d7b57381a41f17abfafb898706e9ffbef6867a15d4df142cf9666809d7",
+    "blockNumber": "277271273",
+    "gasUsed": "4716443",
+    "contractAddress": "0xba96a117f4de33c38df72002651f11024ed14a14"
+  },
+  {
+    "stage": "confirmed",
+    "label": "deploy:hook",
+    "hash": "0xb8ffde2ac415a7b7c133b676dbb38ef0310c69e29b98046691570dae45df271c",
+    "blockNumber": "277271288",
+    "gasUsed": "1792323",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "market:engine",
+    "hash": "0x584471564bd98c0cb04ffd58c4d9b3269b6e4b10faef0e9c46dc28fe1a8a843a",
+    "blockNumber": "277271302",
+    "gasUsed": "54321",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "market:hook",
+    "hash": "0x6ebbd7d13b628a9678c8223a530c7417ec7fe6811b523d3aee1b3d5aa9c736d7",
+    "blockNumber": "277271315",
+    "gasUsed": "58466",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "tokens:role",
+    "hash": "0xec7e300b29ca1b3b6e53ed18fd6583f68b495a5989e299db8b7df0542a1064e3",
+    "blockNumber": "277271328",
+    "gasUsed": "51166",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "registry:role",
+    "hash": "0x8efc2e6101645f240035f7d60992a5cc5008b528822cb982378f070dfadfb2a4",
+    "blockNumber": "277271341",
+    "gasUsed": "51177",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "deploy:tracker",
+    "hash": "0x28d489dab0b0bd9947783172d9a46132874dd5702ce6d1b2a840ee4814ca4eba",
+    "blockNumber": "277271353",
+    "gasUsed": "821210",
+    "contractAddress": "0xc2c389f3abd8c55d78a2400a6918b2ed02bf937d"
+  },
+  {
+    "stage": "confirmed",
+    "label": "deploy:module",
+    "hash": "0xc5c1fbbad1e2cbc1afeb4eeef03e713174511e744eb123112962855fd864ea8a",
+    "blockNumber": "277271367",
+    "gasUsed": "2753141",
+    "contractAddress": "0xb32cba22032f69f172c7a8e363d4975023543fcf"
+  },
+  {
+    "stage": "confirmed",
+    "label": "tracker:bind",
+    "hash": "0xd259c705b4ae5ad5fb834b4e8ee69236fc9e3211ff1dccf6521d59e1572ba336",
+    "blockNumber": "277271377",
+    "gasUsed": "50517",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "engine:bind",
+    "hash": "0xcbba9d85f37a3f7b9a916fb83ceb49f6ea9432c318238a8280c23ebdad257a48",
+    "blockNumber": "277271390",
+    "gasUsed": "101481",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "engine:keeper",
+    "hash": "0x4fa1799af2ac2e0349a7430237363e8ac8dcf5977c063bc11c08a458e24ac5a4",
+    "blockNumber": "277271403",
+    "gasUsed": "51353",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "engine:admin",
+    "hash": "0x5394a8aa42505b56562b58e615f5bce6aec4eee35828bde8be07381971da868e",
+    "blockNumber": "277271416",
+    "gasUsed": "50969",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "tokens:seal",
+    "hash": "0xa540c6ec021317e589ace24e0536d6a1fb968920c578113ffe72a586cd8911d5",
+    "blockNumber": "277271429",
+    "gasUsed": "24494",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "registry:seal",
+    "hash": "0x8e0d69486fd822e67e7b477e7adb9b1f2567b20a87e5c2d35b856b7dda1741da",
+    "blockNumber": "277271442",
+    "gasUsed": "24483",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "engine:seal",
+    "hash": "0x10abc0db4863b92faa1645fa3d6e6ab2d9e45aca5d4a8f1c2c848c85f243f92e",
+    "blockNumber": "277271454",
+    "gasUsed": "24681",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "safe:module",
+    "hash": "0xd9d8834f4afbbfdc7251aad3a1f7dc43f3bd061a26801e342e2f22f6620b8cf4",
+    "blockNumber": "277271467",
+    "gasUsed": "93236",
+    "contractAddress": null
+  },
+  {
+    "stage": "authenticatedProof",
+    "label": "oracle:pool",
+    "pairs": [
+      "19",
+      "89"
+    ],
+    "timestampsMs": [
+      "1794433077108",
+      "1794433077108"
+    ]
+  },
+  {
+    "stage": "confirmed",
+    "label": "oracle:pool",
+    "hash": "0x20eb68a96cfab18160b13ddd312b9bedd630e5cc2c0e737c6d7142fdde5c5a03",
+    "blockNumber": "277271491",
+    "gasUsed": "422842",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "mint:operator:asset",
+    "hash": "0xd47be3844f171dc1a1793e9bd3637c09cce0f112e42f22f404d690090ebcd71b",
+    "blockNumber": "277271504",
+    "gasUsed": "51119",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "transfer:forecastSeed",
+    "hash": "0x9997179dac89943da41866707a6c683e5fab74d1cf234927c7ffe15648ef0038",
+    "blockNumber": "277271514",
+    "gasUsed": "51610",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "approve:lp:stable",
+    "hash": "0xd72125bf3b6f59575efded0a42841674672f11c5a575503447fa5e269bf2dd6e",
+    "blockNumber": "277271524",
+    "gasUsed": "46173",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "approve:lp:asset",
+    "hash": "0x686bfb2b8f7763faaff7b810a54a6d077f4a9bc994fe379fbb5505cbfe9c49ec",
+    "blockNumber": "277271534",
+    "gasUsed": "45993",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "amm:addLiquidity",
+    "hash": "0xefe334cc80be45837b1371cab131f5aa5ab28ea0511e1754ea24a983d8e8cd88",
+    "blockNumber": "277271548",
+    "gasUsed": "2273966",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "safe:approveSeed",
+    "hash": "0x33c0af571ccc9b6b1ed8f4a9b82fbab691d268b722a0fcee456447c34f2e61a4",
+    "blockNumber": "277271561",
+    "gasUsed": "73522",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "safe:seed",
+    "hash": "0xabbd560c0086ad21971531165a601a3d387e15543fac51e6466cb4b0b30b89ff",
+    "blockNumber": "277271574",
+    "gasUsed": "105826",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "safe:clearSeedApproval",
+    "hash": "0xf50ce45c2d73713c974d950154eeb8f29f950be1954ad862355ec4762666933b",
+    "blockNumber": "277271586",
+    "gasUsed": "53586",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "proposer:register",
+    "hash": "0x3338691c507037a387aeea499fde6aad25654c2010e5eadc9f08e45da4c8cb73",
+    "blockNumber": "277271596",
+    "gasUsed": "115281",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "proposer:approveBond",
+    "hash": "0xfb3ea0d84b33d8abd1b76e87d8defa1e05a25d9eb1a1316746145b8f257e1669",
+    "blockNumber": "277271609",
+    "gasUsed": "46161",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "forecaster:approve",
+    "hash": "0x856b98a3538795ebb27ff3d1603a3c4a6d4f7807ba3704673cebdb53fe22bab1",
+    "blockNumber": "277271623",
+    "gasUsed": "46161",
+    "contractAddress": null
+  },
+  {
+    "stage": "confirmed",
+    "label": "deploy:reputation",
+    "hash": "0x9bcea216020dc60f3249f16e7310f4af113872d194272ef15108a05d0a964aea",
+    "blockNumber": "277271636",
+    "gasUsed": "484185",
+    "contractAddress": "0xfa71a652547284d1034ae6813ed4a882cb354e92"
+  },
+  {
+    "stage": "manifest",
+    "schemaVersion": 1,
+    "chainId": 1313161555,
+    "contracts": {
+      "poolManager": "0xfaf156a5a6c36b1b280f64d420869b06e4c98f80",
+      "router": "0x26ec2aFBDFdFB972F106100A3deaE5887353d9B9",
+      "verifier": "0x6Cd59830AAD978446e6cc7f6cc173aF7656Fb917",
+      "hookDeployer": "0xcdfe26b5b6d41ff513385aea7217380401240154",
+      "oracle": "0x4c92a21c56b5fcb453ec7c5ffd0117768dca5e46",
+      "stable": "0x38d81431b9f76d9699af7517040d5221d9dea252",
+      "asset": "0x8d52924ccf3648f575e92ac5b1be72f2a1a1dc5a",
+      "safe": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11",
+      "tokens": "0x8f32992dfdc09de738972ce2d4dc5e37eec897f0",
+      "registry": "0x6d0edb3c3ded534d8d08cc6a6523cee6fce67d40",
+      "market": "0x34d5c5f628e854f54c8b1ff93f9802b871a11834",
+      "engine": "0xba96a117f4de33c38df72002651f11024ed14a14",
+      "hook": "0xe4e94633950a15DfAb70f9D75D4546025f9e0ac0",
+      "tracker": "0xc2c389f3abd8c55d78a2400a6918b2ed02bf937d",
+      "module": "0xb32cba22032f69f172c7a8e363d4975023543fcf",
+      "reputation": "0xfa71a652547284d1034ae6813ed4a882cb354e92"
+    },
+    "integrations": {
+      "fundingProvider": "tidepool-community-testnet"
+    }
+  }
+]

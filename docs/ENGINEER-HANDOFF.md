@@ -1,5 +1,7 @@
 # Current checkpoint — 12 November 2026
 
+**Tidepool update:** a separate token-compatible testnet stack and pool are deployed. Exact 200-test-USDC Arbitrum Sepolia deposit, 199.48 Aurora Safe delivery and final NEAR testnet execute_intents are independently verified. This does not change the original official 1Click mainnet route's unproven-delivery status. See TIDEPOOL-DEMO.md and deployments/aurora-testnet-tidepool.json.
+
 Use [PRODUCT-TESTING.md](PRODUCT-TESTING.md), [AGENT-REPUTATION.md](AGENT-REPUTATION.md) and [INTENTS-PROVIDER.md](INTENTS-PROVIDER.md) for current evidence. The funding provider, state machine, bounded local operator and receipt proof are implemented; mainnet delivery remains unproven. Round seven executed a real AI-proposed rebalance with scripted forecasts. The genuine eight-agent run and additive reputation deployment are documented in the current test report. Dev C's dashboard remains separate pending his release for merge. Native subaccounts, attestation and DAO integration are not implemented.
 
 The snapshot below is preserved as historical context; its counts and pending items are not the latest project status.
