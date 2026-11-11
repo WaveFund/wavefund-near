@@ -207,3 +207,24 @@ them or infer delivery from an unsigned status flag.
 Safe, using no credentials. It must be run in the approved network container.
 It does not enable executable quotes. No unsigned plan is an instruction to send
 funds until the quoted amount and gas budget are explicitly approved.
+
+## Local bounded funding operator
+
+`createFundingDemoOperator` in `demo-operator.mjs` consumes the existing one-USDC
+planner and injected local capabilities. It does not load keys, register an HTTP
+route, enable executable quotes or run automatically. Use a separate private
+`createFundingStore` directory, never the production funding-service directory.
+
+`preview()` verifies the supplied executable quote and prepares an unsigned plan.
+`execute({approvedPlanHash})` re-prepares from fresh trusted source observations;
+the operator must explicitly approve that exact plan hash. It reserves one attempt
+per destination Safe, simulates the exact transfer, verifies recovered signer and
+all signed transaction fields, durably stores signed bytes/hash, then broadcasts
+once. Errors retain the attempt for review; there is no resend or automatic retry.
+A submitted result means neither delivery nor round readiness. B's existing
+receipt verifier/proof builder remains the delivery authority.
+
+These are callable local capabilities, not an installed live signing workflow.
+Their tests use a public deterministic test identity, synthetic quote verification
+and a fake broadcaster. Mainnet signing/transfer remains disabled until an
+operator supplies reviewed capabilities and explicitly approves the exact spend.
