@@ -1,0 +1,16 @@
+{
+  "correlationId": "00000000-0000-4000-8000-00000000f002",
+  "status": "SET_IN_TEST",
+  "updatedAt": "2026-11-11T12:05:00.000Z",
+  "quoteResponse": "EMBEDDED_IN_TEST",
+  "swapDetails": {
+    "intentHashes": ["MockedIntentHash"],
+    "nearTxHashes": ["MockedNearTxHash"],
+    "amountIn": "250000000",
+    "amountOut": "249973358",
+    "slippage": 0,
+    "originChainTxHashes": [{ "hash": "0x5000000000000000000000000000000000000000000000000000000000000001", "explorerUrl": "https://example.invalid/tx/1" }],
+    "destinationChainTxHashes": [{ "hash": "0xd000000000000000000000000000000000000000000000000000000000000001", "explorerUrl": "https://example.invalid/tx/2" }],
+    "depositedAmount": "250000000"
+  }
+}

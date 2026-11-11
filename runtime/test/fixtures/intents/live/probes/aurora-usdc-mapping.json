@@ -1,0 +1,36 @@
+{
+  "purpose": "Read-only views, no transactions",
+  "nearMainnet": {
+    "rpc": "https://rpc.mainnet.near.org",
+    "ft_metadata": {
+      "account": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "block": 224050955,
+      "value": {
+        "spec": "ft-1.0.0",
+        "name": "USDC",
+        "symbol": "USDC",
+        "reference": null,
+        "reference_hash": null,
+        "decimals": 6
+      }
+    },
+    "get_erc20_from_nep141": {
+      "account": "aurora",
+      "argsEncoding": "borsh string (u32 LE length + UTF-8)",
+      "result": "0x368ebb46aca6b8d0787c96b2b20bd3cc3f2c45f7",
+      "block": 224050995,
+      "jsonArgsResult": "ERR_ARG_PARSE"
+    }
+  },
+  "auroraMainnet": {
+    "rpc": "https://mainnet.aurora.dev",
+    "capturedAt": "2026-11-11T10:10:56.254Z",
+    "erc20": "0x368ebb46aca6b8d0787c96b2b20bd3cc3f2c45f7",
+    "chainId": "0x4e454152",
+    "block": "0xd5abf50",
+    "codeBytes": 5253,
+    "decimals": 6,
+    "symbol": "USDC",
+    "name": "USDC"
+  }
+}

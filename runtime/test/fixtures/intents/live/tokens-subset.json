@@ -1,0 +1,132 @@
+{
+  "capturedAt": "2026-11-11T10:08Z",
+  "source": "GET https://1click.chaindefuser.com/v0/tokens (unauthenticated)",
+  "totalEntries": 229,
+  "blockchains": [
+    "abs",
+    "adi",
+    "aleo",
+    "aptos",
+    "arb",
+    "avax",
+    "base",
+    "bch",
+    "bera",
+    "bsc",
+    "btc",
+    "cardano",
+    "dash",
+    "doge",
+    "eth",
+    "fogo",
+    "gnosis",
+    "hood",
+    "hypercore",
+    "ltc",
+    "miden",
+    "monad",
+    "movement",
+    "near",
+    "op",
+    "plasma",
+    "pol",
+    "prl",
+    "qtc",
+    "scroll",
+    "sol",
+    "starknet",
+    "stellar",
+    "sui",
+    "ton",
+    "tron",
+    "xlayer",
+    "xrp",
+    "zec"
+  ],
+  "assetIdPrefixes": {
+    "nep141": 167,
+    "nep245": 35,
+    "1cs_v1": 27
+  },
+  "entries": [
+    {
+      "assetId": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+      "decimals": 6,
+      "blockchain": "eth",
+      "symbol": "USDC",
+      "price": 0.999571,
+      "priceUpdatedAt": "2026-11-11T10:08:00.782Z",
+      "contractAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "coingeckoId": "usd-coin"
+    },
+    {
+      "assetId": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "decimals": 6,
+      "blockchain": "near",
+      "symbol": "USDC",
+      "price": 0.999571,
+      "priceUpdatedAt": "2026-11-11T10:08:00.782Z",
+      "contractAddress": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "coingeckoId": "usd-coin"
+    },
+    {
+      "assetId": "nep141:wrap.near",
+      "decimals": 24,
+      "blockchain": "near",
+      "symbol": "wNEAR",
+      "price": 3.61,
+      "priceUpdatedAt": "2026-11-11T10:08:00.782Z",
+      "contractAddress": "wrap.near",
+      "coingeckoId": "wrapped-near"
+    },
+    {
+      "assetId": "nep141:usdt.tether-token.near",
+      "decimals": 6,
+      "blockchain": "near",
+      "symbol": "USDT",
+      "price": 0.999222,
+      "priceUpdatedAt": "2026-11-11T10:08:00.782Z",
+      "contractAddress": "usdt.tether-token.near",
+      "coingeckoId": "tether"
+    },
+    {
+      "assetId": "nep141:aaaaaa20d9e0e2461697782ef11675f668207961.factory.bridge.near",
+      "decimals": 18,
+      "blockchain": "near",
+      "symbol": "AURORA",
+      "price": 0.03962073,
+      "priceUpdatedAt": "2026-11-11T10:08:00.782Z",
+      "contractAddress": "aaaaaa20d9e0e2461697782ef11675f668207961.factory.bridge.near",
+      "coingeckoId": "aurora-near"
+    },
+    {
+      "assetId": "nep141:eth-0xaaaaaa20d9e0e2461697782ef11675f668207961.omft.near",
+      "decimals": 18,
+      "blockchain": "eth",
+      "symbol": "AURORA",
+      "price": 0.03962073,
+      "priceUpdatedAt": "2026-11-11T10:08:00.782Z",
+      "contractAddress": "0xaaaaaa20d9e0e2461697782ef11675f668207961",
+      "coingeckoId": "aurora-near"
+    },
+    {
+      "assetId": "1cs_v1:bsc:bep20:0x1a6659d434482a2b1694098c6757a62a8619cf12",
+      "decimals": 18,
+      "blockchain": "bsc",
+      "symbol": "AURORA",
+      "price": 0.03962073,
+      "priceUpdatedAt": "2026-11-11T10:08:00.782Z",
+      "contractAddress": "0x1a6659d434482a2b1694098c6757a62a8619cf12",
+      "coingeckoId": "aurora-near"
+    },
+    {
+      "assetId": "nep141:eth.omft.near",
+      "decimals": 18,
+      "blockchain": "eth",
+      "symbol": "ETH",
+      "price": 2054.07,
+      "priceUpdatedAt": "2026-11-11T10:08:00.782Z",
+      "coingeckoId": "ethereum"
+    }
+  ]
+}
