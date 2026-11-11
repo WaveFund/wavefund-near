@@ -4,3 +4,5 @@ export { verifyFundingDelivery, OUTCOMES, EVIDENCE_QUALITY, ERC20_TRANSFER_TOPIC
 export { createQuoteSignatureVerifier, ONE_CLICK_MANAGER_PUBLIC_KEY, quoteMessage, stableStringify } from './signature.mjs';
 export { IntentsError, ERROR_CODES } from './errors.mjs';
 export { createFundingVerifiers, createFundingEvidenceArchive, toProviderFundingRequest } from './funding-adapter.mjs';
+export { createTrustedChainReaders, DEFAULT_RPC_ENDPOINTS, EXPLORER_TX_URL, ARBITRUM_ONE_CHAIN_ID } from './chain-readers.mjs';
+export { buildFundingProof } from './funding-proof.mjs';

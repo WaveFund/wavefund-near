@@ -21,7 +21,7 @@ const HASH = /^0x[0-9a-fA-F]{64}$/;
 const TOPIC = /^0x[0-9a-fA-F]{64}$/;
 const DATA = /^0x[0-9a-fA-F]*$/;
 
-function decodeTransfers(receipt) {
+export function decodeTransfers(receipt) {
   const transfers = [];
   for (const log of receipt.logs) {
     if (!isObject(log) || !Array.isArray(log.topics) || typeof log.address !== 'string' || typeof log.data !== 'string') throw new Error('malformed log');

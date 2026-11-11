@@ -12,6 +12,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createFundingVerifiers, createFundingEvidenceArchive, toProviderFundingRequest } from '../intents/index.mjs';
 import { createFundingService, createFundingStore, configuration, fundingHash } from '../funding/index.mjs';
+import { buildFundingProof, createTrustedChainReaders, DEFAULT_RPC_ENDPOINTS, EXPLORER_TX_URL } from '../intents/index.mjs';
+import { custom } from 'viem';
 
 // Everything in this file is MOCKED: signed with a throwaway key, receipts are synthetic.
 const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/intents/${name}`, import.meta.url), 'utf8'));
@@ -197,12 +199,17 @@ function sharedConfig() {
 }
 // viem-shaped fake public client. blockHashes maps block number -> canonical hash.
 // Default latest block 1100 gives >= 64 Arbitrum confirmations for every receipt block used below (<= 1037).
-function fakeChain(chainId, { receipts = {}, latest = 1100n, reorged = new Set(), reportedChainId = chainId } = {}) {
+function fakeChain(chainId, { receipts = {}, latest = 1100n, reorged = new Set(), reportedChainId = chainId, finalized = null, balances = null } = {}) {
   return {
     getChainId: async () => reportedChainId,
     getBlockNumber: async () => latest,
     getTransactionReceipt: async ({ hash }) => { const r = receipts[hash]; if (!r) throw new Error('not found'); return r; },
-    getBlock: async ({ blockNumber }) => ({ hash: reorged.has(blockNumber) ? `0x${'e'.repeat(64)}` : `0x${blockNumber.toString(16).padStart(64, 'b')}` }),
+    getBlock: async ({ blockNumber, blockTag }) => {
+      if (blockTag === 'finalized') { if (finalized === null) throw new Error('finalized tag unsupported'); return { number: finalized }; }
+      return { hash: reorged.has(blockNumber) ? `0x${'e'.repeat(64)}` : `0x${blockNumber.toString(16).padStart(64, 'b')}` };
+    },
+    // balanceOf(holder) at a historical block, for the proof's Safe balance delta. Missing -> unsupported.
+    ...(balances ? { call: async ({ blockNumber }) => { const v = balances[blockNumber.toString()]; if (v === undefined) throw new Error('state unavailable'); return { data: `0x${BigInt(v).toString(16).padStart(64, '0')}` }; } } : {}),
   };
 }
 const viemReceipt = (hash, blockNumber, logs, status = 'success') => ({ transactionHash: hash, status, blockNumber, blockHash: `0x${blockNumber.toString(16).padStart(64, 'b')}`, logs });
@@ -228,7 +235,7 @@ async function sharedSetup(t, { status = 'SUCCESS', swapDetails = {}, ethReceipt
   const created = await service.createQuoted(sharedRequest(), providerQuote);
   const reserved = await service.reserveSubmission('fund-1');
   await service.recordSubmitted('fund-1', { attemptId: reserved.submission.attemptId, transactionHash: SRC_TX });
-  return { service, verifiers, created, setStableBalance: (v) => { stableBalance = v; }, record: () => service.get('fund-1') };
+  return { service, verifiers, created, chainReaders, setStableBalance: (v) => { stableBalance = v; }, record: () => service.get('fund-1') };
 }
 
 test('SHARED end-to-end (fixture): quote -> submitted -> provider-linked delivery -> delivered in the funding core', async (t) => {
@@ -368,4 +375,88 @@ test('a confirmation policy that omits the route source chain fails closed', asy
   for (const run of [verifiers.verifyDelivery, verifiers.verifyRefund]) {
     await assert.rejects(run({ transactionHash: DST_TX }, f.record()), (e) => e.code === ERROR_CODES.EVIDENCE_UNAVAILABLE && /confirmation policy/.test(e.message));
   }
+});
+
+// ------------------------------------------------------------------ funding proof (MOCKED chains; no network)
+
+const PROOF_FINAL = { ethOptions: { finalized: 1000n }, auroraOptions: { finalized: 1000n, balances: { 989: '1000000', 990: (1000000n + 249973358n).toString() } } };
+test('funding proof: verified-final with exact amounts, parties, links, confirmations and Safe balance delta', async (t) => {
+  const f = await sharedSetup(t, PROOF_FINAL);
+  const proof = await buildFundingProof({ verifiers: f.verifiers, chainReaders: f.chainReaders, record: f.record(), destinationTransactionHash: DST_TX, clock: () => NOW_S });
+  assert.equal(proof.status, 'verified-final'); assert.equal(proof.outcome, 'delivered'); assert.equal(proof.providerLinkage, 'provider-linked-both-legs');
+  assert.equal(proof.evidenceQuality, 'fixture', 'mocked wiring never claims live-verified');
+  assert.match(proof.method, /NOT a trustless bridge proof/); assert.match(proof.scope, /No Wavefund trading module or strategy deployment is claimed/);
+  assert.deepEqual([proof.amounts.requestedIn, proof.amounts.sourceDeposited, proof.amounts.deliveredToSafe, proof.amounts.signedMinOut], ['250000000', '250000000', '249973358', MOCK_EXEC.quote.minAmountOut]);
+  assert.equal(proof.amounts.sourceMatchesRequest, true); assert.equal(proof.amounts.deliveredAtLeastSignedMin, true);
+  assert.equal(proof.amounts.unsignedQuotedFees.refundFee, '300000');
+  assert.equal(proof.source.chainId, 42161); assert.equal(proof.source.from, MANAGER); assert.equal(proof.source.to, DEPOSIT); assert.equal(proof.source.managerIsSender, true);
+  assert.equal(proof.source.blockNumber, '900'); assert.equal(proof.source.confirmations, 201); assert.equal(proof.source.finalized, true);
+  assert.equal(proof.source.explorer, `https://arbiscan.io/tx/${SRC_TX}`);
+  assert.equal(proof.destination.chainId, AURORA_MAINNET_CHAIN_ID); assert.equal(proof.destination.to, SAFE); assert.equal(proof.destination.recipientIsSafe, true);
+  assert.equal(proof.destination.explorer, `https://explorer.mainnet.aurora.dev/tx/${DST_TX}`); assert.equal(proof.destination.finalized, true);
+  assert.equal(proof.safeBalance.delta, '249973358'); assert.equal(proof.safeBalance.deltaEqualsDelivery, true);
+  assert.equal(proof.provider.status, 'SUCCESS'); assert.equal(proof.provider.reportedSuccessIsNotProof, true);
+  assert.equal(proof.funding.reference, `1click:${MOCK_EXEC.correlationId}`);
+  assert.equal(f.record().state, 'pending', 'building a proof changes no funding state');
+});
+
+test('funding proof: verified but not final while Arbitrum L1 finality is pending', async (t) => {
+  const f = await sharedSetup(t, { ...PROOF_FINAL, ethOptions: { finalized: 899n } }); // source block 900 not yet L1-finalized
+  const proof = await buildFundingProof({ verifiers: f.verifiers, chainReaders: f.chainReaders, record: f.record(), destinationTransactionHash: DST_TX });
+  assert.equal(proof.status, 'verified-not-final'); assert.equal(proof.source.finalized, false); assert.equal(proof.source.confirmations, 201);
+});
+
+test('funding proof: inexact source amount or unrelated destination is not verified', async (t) => {
+  const partial = await sharedSetup(t, { ...PROOF_FINAL, ethReceipts: { [SRC_TX]: viemReceipt(SRC_TX, 900n, depositLogs('1')) } });
+  const p1 = await buildFundingProof({ verifiers: partial.verifiers, chainReaders: partial.chainReaders, record: partial.record(), destinationTransactionHash: DST_TX });
+  assert.equal(p1.status, 'not-verified'); assert.equal(p1.outcome, 'ambiguous'); assert.equal(p1.amounts.sourceDeposited, '1'); assert.equal(p1.amounts.sourceMatchesRequest, false);
+  assert.equal(p1.safeBalance, null);
+  const unrelated = await sharedSetup(t, { ...PROOF_FINAL, auroraReceipts: { [DST_TX]: viemReceipt(DST_TX, 990n, [transferLog(ROUTE.destination.tokenAddress, ZERO, '0x000000000000000000000000000000000000dead', '249973358')]) } });
+  const p2 = await buildFundingProof({ verifiers: unrelated.verifiers, chainReaders: unrelated.chainReaders, record: unrelated.record(), destinationTransactionHash: DST_TX });
+  assert.equal(p2.status, 'not-verified'); assert.equal(p2.destination.amount, '0'); assert.equal(p2.destination.to, null); assert.equal(p2.destination.recipientIsSafe, false);
+  await assert.rejects(buildFundingProof({ verifiers: unrelated.verifiers, chainReaders: unrelated.chainReaders, record: unrelated.record(), destinationTransactionHash: 'nope' }), (e) => e.code === ERROR_CODES.INVALID_ORDER);
+});
+
+test('funding proof: unavailable historical balance or finality is reported as null, never guessed', async (t) => {
+  const f = await sharedSetup(t); // fake chains without finalized tag or historical state
+  const proof = await buildFundingProof({ verifiers: f.verifiers, chainReaders: f.chainReaders, record: f.record(), destinationTransactionHash: DST_TX });
+  assert.equal(proof.status, 'verified-not-final'); assert.equal(proof.source.finalized, null); assert.equal(proof.destination.finalized, null);
+  assert.equal(proof.safeBalance.before, null); assert.equal(proof.safeBalance.delta, null); assert.equal(proof.safeBalance.deltaEqualsDelivery, null);
+});
+
+test('trusted readers: fixed official endpoints by default, https only, no credentials, chain id read through the transport', async () => {
+  assert.deepEqual(DEFAULT_RPC_ENDPOINTS, { 42161: 'https://arb1.arbitrum.io/rpc', 1313161554: 'https://mainnet.aurora.dev' });
+  assert.equal(EXPLORER_TX_URL[42161], 'https://arbiscan.io/tx/');
+  for (const endpoints of [{ ...DEFAULT_RPC_ENDPOINTS, 42161: 'http://arb1.arbitrum.io/rpc' }, { ...DEFAULT_RPC_ENDPOINTS, 1313161554: 'https://user:pass@mainnet.aurora.dev' }, { 42161: DEFAULT_RPC_ENDPOINTS[42161] }]) {
+    assert.throws(() => createTrustedChainReaders({ endpoints }), /RPC endpoint/);
+  }
+  const seen = [];
+  const transportFactory = (url) => custom({ request: async ({ method }) => { seen.push([url, method]); if (method === 'eth_chainId') return url.includes('arbitrum') ? '0xa4b1' : '0x4e454152'; throw new Error('unexpected'); } });
+  const readers = createTrustedChainReaders({ transportFactory });
+  assert.equal(await readers[42161].getChainId(), 42161); assert.equal(await readers[AURORA_MAINNET_CHAIN_ID].getChainId(), 1313161554);
+  assert.deepEqual(seen.map(([u]) => u), ['https://arb1.arbitrum.io/rpc', 'https://mainnet.aurora.dev/']);
+});
+
+test('funding proof: destination not finalized keeps the proof not final', async (t) => {
+  const f = await sharedSetup(t, { ...PROOF_FINAL, auroraOptions: { ...PROOF_FINAL.auroraOptions, finalized: 989n } }); // delivery block 990
+  const proof = await buildFundingProof({ verifiers: f.verifiers, chainReaders: f.chainReaders, record: f.record(), destinationTransactionHash: DST_TX });
+  assert.equal(proof.status, 'verified-not-final'); assert.equal(proof.source.finalized, true); assert.equal(proof.destination.finalized, false);
+});
+
+test('funding proof: a delivery linked on one leg only (source not provider-linked) is not verified', async (t) => {
+  const f = await sharedSetup(t, { ...PROOF_FINAL, swapDetails: { originChainTxHashes: [] } });
+  const proof = await buildFundingProof({ verifiers: f.verifiers, chainReaders: f.chainReaders, record: f.record(), destinationTransactionHash: DST_TX });
+  assert.equal(proof.outcome, 'delivered'); assert.equal(proof.providerLinkage, 'provider-linked-one-leg'); assert.equal(proof.status, 'not-verified');
+});
+
+test('funding proof: a Safe balance delta that differs from the delivery is flagged', async (t) => {
+  const f = await sharedSetup(t, { ...PROOF_FINAL, auroraOptions: { ...PROOF_FINAL.auroraOptions, balances: { 989: '1000000', 990: (1000000n + 249973358n + 5n).toString() } } });
+  const proof = await buildFundingProof({ verifiers: f.verifiers, chainReaders: f.chainReaders, record: f.record(), destinationTransactionHash: DST_TX });
+  assert.equal(proof.safeBalance.delta, '249973363'); assert.equal(proof.safeBalance.deltaEqualsDelivery, false);
+});
+
+test('funding proof: a deposit not sent by the manager reports no manager transfer', async (t) => {
+  const f = await sharedSetup(t, { ...PROOF_FINAL, ethReceipts: { [SRC_TX]: viemReceipt(SRC_TX, 900n, depositLogs('250000000', '0x000000000000000000000000000000000000abcd')) } });
+  const proof = await buildFundingProof({ verifiers: f.verifiers, chainReaders: f.chainReaders, record: f.record(), destinationTransactionHash: DST_TX });
+  assert.equal(proof.status, 'not-verified'); assert.equal(proof.source.from, null); assert.equal(proof.source.amount, '0'); assert.equal(proof.source.managerIsSender, false);
 });

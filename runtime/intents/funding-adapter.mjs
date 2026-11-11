@@ -88,8 +88,12 @@ async function observe(readers, chainId, hash) {
     const block = await reader.getBlock({ blockNumber: BigInt(r.blockNumber) });
     const canonical = typeof block?.hash === 'string' && typeof r.blockHash === 'string' && block.hash.toLowerCase() === r.blockHash.toLowerCase();
     const status = r.status === 'success' || r.status === '0x1' || r.status === 1 ? '0x1' : '0x0';
+    // Chain-reported finality (Arbitrum: L1-finalized). Informational for the proof; absent support yields null.
+    let finalized = null;
+    try { const f = await reader.getBlock({ blockTag: 'finalized' }); if (f?.number !== undefined && f?.number !== null) finalized = canonical && BigInt(f.number) >= BigInt(r.blockNumber); } catch { finalized = null; }
     return {
-      txHash: hash, chainId, canonical,
+      txHash: hash, chainId, canonical, finalized,
+      blockNumber: BigInt(r.blockNumber).toString(), blockHash: typeof r.blockHash === 'string' ? r.blockHash.toLowerCase() : null,
       confirmations: canonical ? Number(latest - BigInt(r.blockNumber) + 1n) : 0,
       receipt: { transactionHash: r.transactionHash, status, blockNumber: `0x${BigInt(r.blockNumber).toString(16)}`, logs: (r.logs ?? []).map((l) => ({ address: l.address, topics: l.topics, data: l.data })) },
     };
@@ -174,7 +178,7 @@ export function createFundingVerifiers({
       sourceReceipts: [sourceObs], ...(kind === 'delivery' ? { destinationReceipts: [outcomeObs] } : { refundReceipts: [outcomeObs] }),
     });
     const evidenceQuality = record.quote.evidenceQuality === 'live-verified' && productionKey && status.mocked === false && stored.mocked === false ? 'live-verified' : 'fixture';
-    return { result, sourceObs, outcomeObs, evidenceQuality };
+    return { result, sourceObs, outcomeObs, evidenceQuality, status, stored };
   }
 
   async function verifyDelivery(evidence, record) {
@@ -198,5 +202,11 @@ export function createFundingVerifiers({
       amount: result.amounts.observedRefund, confirmations: outcomeObs.confirmations, observedAt: now(), evidenceQuality };
   }
 
-  return Object.freeze({ verifyQuote, verifyDelivery, verifyRefund });
+  // inspect(): read-only evidence for the funding proof; never changes funding state and is not an adapter for the core.
+  async function inspect(evidence, record, kind = 'delivery') {
+    if (kind !== 'delivery' && kind !== 'refund') throw new Error('kind must be delivery or refund');
+    return assess(evidence, record, kind);
+  }
+
+  return Object.freeze({ verifyQuote, verifyDelivery, verifyRefund, inspect });
 }
