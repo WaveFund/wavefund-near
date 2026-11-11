@@ -18,11 +18,12 @@ async function acknowledge(hash) {
   const next = await iterator.next();
   requireLive(!next.done && JSON.parse(next.value).ack === hash, 'Prepared journal entry was not durably acknowledged');
 }
+const expanded = config.hybrid === true || config.swarm === true;
 let stage = config.phase;
 try {
   if (config.phase === 'plan') {
     requireLive(!config.privateKey && !config.actorKeys, 'Wallet credentials must not enter inference process');
-    const plan = await (config.hybrid ? makeStrategyPlan : makeAuroraPlan)({ snapshot: config.snapshot, market: config.market,
+    const plan = await (expanded ? makeStrategyPlan : makeAuroraPlan)({ snapshot: config.snapshot, market: config.market,
       scriptedForecasts: config.hybrid === true, researchContext: config.researchContext,
       env: { WAVEFUND_AGENT_MODE: 'near-ai', WAVEFUND_AGENT_MODEL: config.model, WAVEFUND_ALLOW_REMOTE_INFERENCE: '1', NEARAI_API_KEY: config.apiKey },
       onRequest: async request => { emit({ stage: 'inference-request', ...request }); await acknowledge(`inference-${request.request}`); },
@@ -32,8 +33,8 @@ try {
     const chain = createAuroraChain({ ...config, emit, acknowledge });
     delete config.privateKey; delete config.actorKeys;
     const { contracts, accounts, client, abi, read, tx, send, ownerCall, refresh, waitUntil } = chain;
-    const proposerNames = config.hybrid ? STRATEGIES.map(s => s.name) : ['Momentum', 'Conservative'];
-    const forecasterNames = config.hybrid ? FORECASTERS.map(s => s.name) : ['Quant', 'Guardian'];
+    const proposerNames = expanded ? STRATEGIES.map(s => s.name) : ['Momentum', 'Conservative'];
+    const forecasterNames = expanded ? FORECASTERS.map(s => s.name) : ['Quant', 'Guardian'];
     if (config.phase === 'recover-cancel') {
       await recoverInterruptedRound({ chain: { ...chain, roundRecord: async id => namedOutputs(abi('engine'), 'rounds', await read('engine', 'rounds', [id])) }, events: config.events, emit });
     } else {
@@ -64,10 +65,10 @@ try {
         blockNumber: (await client.getBlockNumber()).toString() }, ...research });
     } else if (config.phase === 'run') {
       const plan = config.plan;
-      requireLive(plan, 'A completed four-agent plan is required');
+      requireLive(plan, 'A completed matching-profile agent plan is required');
       const prices = await chain.verifiedProof();
       const portfolio = await chain.portfolio(prices);
-      (config.hybrid ? validateStrategyPlan : validateAuroraPlan)(plan, { contracts, roundId: nextId, portfolio, now: Math.floor(Date.now() / 1000), scriptedForecasts: config.hybrid === true });
+      (expanded ? validateStrategyPlan : validateAuroraPlan)(plan, { contracts, roundId: nextId, portfolio, now: Math.floor(Date.now() / 1000), scriptedForecasts: config.hybrid === true });
       requireLive(BigInt(state.sponsorReserve) >= BigInt(plan.proposals.length) * 5000000n, 'All proposals need separate forecasting seed');
       const id = nextId;
       const label = name => `round${id}:${name}`;
@@ -75,7 +76,7 @@ try {
       const initial = Object.fromEntries(await Promise.all(forecasterNames.map(async name => [name, await read('stable', 'balanceOf', [accounts[name].address])])));
       await refresh(label('oracle:open'));
       const now = (await client.getBlock()).timestamp;
-      const end = now + (config.hybrid ? 420n : 300n); const evaluation = end + 180n; const deadline = end + 100n;
+      const end = now + (expanded ? 420n : 300n); const evaluation = end + 180n; const deadline = end + 100n;
       emit({ stage: 'schedule', roundId: id, tradingEnd: end, evaluationEnd: evaluation, executionDeadline: deadline });
       stage = 'authorize';
       await ownerCall(label('authorize'), 'module', 'authorizeRound', [id, end, evaluation, deadline, 950000000000000000n, 1050000000000000000n, 90n]);
@@ -156,7 +157,7 @@ try {
       requireLive(engineBalance === reserve && beforeEngine + BigInt(forecasterNames.length) * 10000000n === engineBalance + payouts.reduce((sum, p) => sum + p.payout, 0n), 'Forecast collateral does not reconcile');
       emit({ stage: 'complete', chainId: 1313161555, roundId: id, winner, allocation, round, portfolio: portfolioResult, payouts, decisions, reserve,
         provider: plan.provider, recordHashes: plan.records.map(r => ({ name: r.name, inputHash: r.inputHash, outputHash: r.outputHash })),
-        scope: config.hybrid ? 'HYBRID TEST: four genuine NEAR AI proposer calls with assigned exposure mandates; four SCRIPTED forecasters deliberately target proposal3. Actual testnet swaps/payouts are not evidence of AI forecasting alpha.' : 'Four separate agent wallets and four separately prompted calls to the same NEAR AI model; test assets, no verified attestation, no forced winner or trade.' });
+        scope: config.hybrid ? 'HYBRID TEST: four genuine NEAR AI proposer calls with assigned exposure mandates; four SCRIPTED forecasters deliberately target proposal3. Actual testnet swaps/payouts are not evidence of AI forecasting alpha.' : config.swarm ? 'Eight separate agent wallets; four genuine proposer and four genuine forecaster calls to the same NEAR AI model. Test assets, no verified attestation, no forced winner or trade.' : 'Four separate agent wallets and four separately prompted calls to the same NEAR AI model; test assets, no verified attestation, no forced winner or trade.' });
     } else throw new Error('Unknown phase');
     }
   }

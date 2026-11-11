@@ -66,3 +66,18 @@ test('hybrid calls only four live proposers, labels scripted forecasts, and reco
   plan.records[4].provider = 'near-ai';
   assert.throws(() => validateStrategyPlan(plan, options), /provenance/);
 });
+
+test('expanded genuine-provider path calls eight roles and preserves auditable research without fixture forecasts', async () => {
+  const calls=[]; const fixture=deliberateProvider();
+  // Injected deterministic transport verifies orchestration only; no model intelligence is claimed.
+  const provider={info:{mode:'near-ai',model:LIVE_MODEL},async complete(task){calls.push(task);return fixture.complete(task);}};
+  const portfolio={stableBalance:'1000000000',assetBalance:'500000000000000000',currentAllocationBps:5000};
+  const contracts={safe:'0x'+'11'.repeat(20),engine:'0x'+'22'.repeat(20)};
+  const plan=await makeStrategyPlan({snapshot:{chainId:1313161555,roundId:'8',...contracts,portfolio,blockNumber:'100'},market,researchContext:researchContext(data(),{market,now}),provider,now});
+  assert.equal(calls.length,8);assert.equal(calls.filter(x=>x.context.role==='forecaster').length,4);
+  assert.equal(plan.kind,'live-model');assert.ok(plan.records.every(r=>r.provider==='near-ai'&&r.input));
+  assert.ok(calls.every(t=>t.context.researchContext.evidenceId===plan.researchContext.evidenceId));
+  assert.equal(validateStrategyPlan(plan,{contracts,roundId:8n,portfolio,now}),plan);
+  plan.records[4].input.system+=' tampered';
+  assert.throws(()=>validateStrategyPlan(plan,{contracts,roundId:8n,portfolio,now}),/Changed recorded research input/);
+});

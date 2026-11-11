@@ -23,7 +23,7 @@ p.add_argument('--env', type=Path, default=Path('.env.agents'))
 p.add_argument('--artifacts', type=Path, default=Path('out'))
 p.add_argument('--extra-artifacts', type=Path)
 p.add_argument('--run-inference', action='store_true')
-p.add_argument('--profile', choices=['classic', 'hybrid'], default='classic')
+p.add_argument('--profile', choices=['classic', 'hybrid', 'swarm'], default='classic')
 p.add_argument('--context', default='colima-wavefund')
 p.add_argument('--container', default='wavefund-build-check')
 a = p.parse_args()
@@ -40,16 +40,18 @@ pending = [e['hash'] for e in events if e.get('stage') == 'prepared' and e['hash
 if pending:
     sys.exit('Unresolved transaction: inspect receipts before continuing: ' + ', '.join(pending))
 hybrid = a.profile == 'hybrid'
-actor_names = ['Conservative', 'Balanced', 'Momentum', 'HighBeta', 'Quant', 'Guardian', 'FeeAnalyst', 'StressAnalyst'] if hybrid else ['Momentum', 'Conservative', 'Quant', 'Guardian']
-config = dict(phase=a.phase, events=events, hybrid=hybrid, actorNames=actor_names)
+swarm = a.profile == 'swarm'
+expanded = hybrid or swarm
+actor_names = ['Conservative', 'Balanced', 'Momentum', 'HighBeta', 'Quant', 'Guardian', 'FeeAnalyst', 'StressAnalyst'] if expanded else ['Momentum', 'Conservative', 'Quant', 'Guardian']
+config = dict(phase=a.phase, events=events, hybrid=hybrid, swarm=swarm, actorNames=actor_names)
 if a.phase == 'plan':
     if not a.run_inference:
-        sys.exit('Use --run-inference to explicitly spend credits on at most four model calls.')
+        sys.exit('Use --run-inference to explicitly spend credits on at most eight model calls for swarm, four otherwise.')
     if any(e.get('stage') == 'inference-request' for e in events):
         sys.exit('Inference already attempted in this session. No automatic paid retry.')
     snapshot = json.loads((a.directory / 'snapshot.json').read_text())
     config.update(snapshot=snapshot['snapshot'], market=snapshot['market'])
-    if hybrid or snapshot.get('researchContext'):
+    if expanded or snapshot.get('researchContext'):
         config['researchContext'] = snapshot['researchContext']
     environment = {}
     for line in a.env.read_text().splitlines():

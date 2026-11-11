@@ -59,7 +59,7 @@ export async function makeStrategyPlan({ snapshot, market: input, researchContex
     const response = await actor.complete(task); const decision = validate(response.value);
     const record = { name: spec.name, role, provider: actor.info.mode, model: actor.info.model, attestationVerified: false,
       inputHash: digest(task), outputHash: digest(decision), decision, usage: response.usage ?? {}, timestamp: new Date().toISOString() };
-    if (scriptedForecasts) record.input = task; // Public source facts + literal role/policy prompt for judge inspection.
+    record.input = task; // Public source facts + literal role/policy prompt for judge inspection.
     records.push(record); await onRecord?.(record); return decision;
   }
   for (const [index, spec] of STRATEGIES.entries()) {
@@ -108,7 +108,7 @@ export function validateStrategyPlan(plan, { contracts, roundId, portfolio, now,
   check(plan.records.every((r, i) => r.role === (i < 4 ? 'proposer' : 'forecaster') && r.attestationVerified === false && (scriptedForecasts && r.role === 'forecaster'
     ? r.provider === 'test-fixture' && r.model === scriptedModel()
     : r.provider === plan.provider.mode && r.model === plan.provider.model)), 'Changed expanded provenance');
-  if (scriptedForecasts) check(plan.records.every(r => r.input && digest(r.input) === r.inputHash), 'Changed recorded research input');
+  if (scriptedForecasts || plan.records.some(r => r.input)) check(plan.records.every(r => r.input && digest(r.input) === r.inputHash), 'Changed recorded research input');
   return plan;
 }
 const scriptedModel = () => deliberateProvider().info.model;
