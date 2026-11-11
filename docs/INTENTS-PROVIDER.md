@@ -40,7 +40,7 @@ The probes are recorded in `probes/dry-quote-probes.json`. Every one used `dry: 
 
 | Probe | Request | Result |
 |---|---|---|
-| A | Direct `1cs_v1:aurora:erc20:0x368e…` destination (a constructed id; it is **not** in `/v0/tokens`) | 400 `tokenOut is not valid` |
+| A | Direct `1cs_v1:aurora:erc20:0x368ebb46aca6b8d0787c96b2b20bd3cc3f2c45f7` destination (a constructed id; it is **not** in `/v0/tokens`) | 400 `tokenOut is not valid` |
 | B | NEAR USDC to `aurora` with `customRecipientMsg` = EVM address | 201, signed. **Not used:** the docs mark `customRecipientMsg` "HIGHLY EXPERIMENTAL", and funds can be lost. |
 | C | `virtualChainRecipient` + `virtualChainRefundRecipient` | 400 `Virtual chains refunds are only available for near blockchain` |
 | C2 / F | `recipient: aurora` + `virtualChainRecipient` | 201, signed and verified. This is the route. |
@@ -55,7 +55,7 @@ The probes are recorded in `probes/dry-quote-probes.json`. Every one used `dry: 
 | 10:42:37–10:43:17 | Funding shape (lowercase and checksummed addresses, twice), Ethereum → NEAR control, Ethereum USDC → Ethereum USDT | all `400 Quoting for this pair is not available` |
 | 10:43:39 | wNEAR → USDT on NEAR | 201 |
 | 10:43:40 | NEAR USDC → `aurora` virtual recipient | 201 |
-| 10:43:41 | Base USDC (listed asset `nep141:base-0x8335…omft.near`) → `aurora` virtual recipient | `400 Quoting for this pair is not available` |
+| 10:43:41 | Base USDC (listed asset `nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near`) → `aurora` virtual recipient | `400 Quoting for this pair is not available` |
 
 Both route assets are still listed with unchanged decimals and contracts, and the token list still has no `aurora` chain. The cause has not been established: it could be a temporary EVM-origin outage, solver availability, or rate limiting of unauthenticated callers. The client maps this message to the retryable `QUOTING_UNAVAILABLE` code and never retries it automatically.
 
@@ -101,11 +101,11 @@ This is a provider-input shape pending Developer A's shared schema. The client h
 ```js
 {
   fundingId: 'manager-1:funding-1',
-  source:      { chain: 'eth', chainId: 1, assetId: 'nep141:eth-0xa0b8…omft.near', tokenAddress: '0xa0b8…eb48' },
-  destination: { chainId: 1313161554, virtualChainAccount: 'aurora', assetId: 'nep141:17208628…', tokenAddress: '0x368e…45f7', safeAddress: '0x…' },
+  source:      { chain: 'eth', chainId: 1, assetId: 'nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near', tokenAddress: '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48' },
+  destination: { chainId: 1313161554, virtualChainAccount: 'aurora', assetId: 'nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1', tokenAddress: '0x368ebb46aca6b8d0787c96b2b20bd3cc3f2c45f7', safeAddress: '0x<Safe on Aurora mainnet>' },
   amountIn: '250000000', minAmountOut: '247000000', slippageBps: 100,
-  refundAddress: '0x…',      // manager wallet on the ORIGIN chain; must differ from the Safe address
-  expiresAt: '2026-…Z',      // canonical ISO; sent as the 1Click deadline
+  refundAddress: '0x<manager wallet>',      // manager wallet on the ORIGIN chain; must differ from the Safe address
+  expiresAt: '2026-11-11T12:30:00.000Z',      // canonical ISO; sent as the 1Click deadline
 }
 ```
 
@@ -180,6 +180,42 @@ verifyFundingDelivery({ quote, status, statusError, sourceReceipts, destinationR
 
    `trustless` is always `false`. 1Click supplies the linkage between legs, and the chains only confirm each leg.
 
+## Signed evidence (verbatim)
+
+The machine-readable index is `runtime/test/fixtures/intents/live/signed-aurora-quotes.json`. It was rebuilt from the unmodified live captures inside the isolated container, and each signature was re-verified against the pinned key `ed25519:reYaWhvwu8Jzo3WUM3zhn6VrhuMEF4eADL17qtRVifc`. A test re-verifies every entry from the index alone. The same test checks that changing only the **case** of `virtualChainRecipient` breaks the signature, so the signed value is the exact string shown.
+
+- **Delivery is UNPROVEN.**
+- **Executable quotes are disabled:** `prepareOrder` requires `allowExecutionQuotes: true`, and nothing in this repository enables it. No executable quote was requested.
+- **No funds moved.**
+- The addresses below are OpenAPI example addresses, **not Wavefund wallets or Safes**.
+
+### Complete identifiers
+
+| Role | Exact identifier |
+|---|---|
+| 1Click origin asset | `nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near` (blockchain `eth`, EVM chain id 1) |
+| Origin ERC-20 contract | `0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48` (6 decimals) |
+| 1Click destination asset | `nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1` (blockchain `near`, NEP-141 account `17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1`, 6 decimals) |
+| Virtual-chain account (1Click `recipient`) | `aurora` |
+| Aurora mainnet ERC-20 (engine mapping) | `0x368ebb46aca6b8d0787c96b2b20bd3cc3f2c45f7` (chain id 1313161554, 6 decimals) |
+| Example `virtualChainRecipient` (signed) | `0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C` |
+| Example `refundTo` values (signed) | `0x2527D02599Ba641c19FEa793cD0F167589a0f10D`, `0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C` |
+| Provider `appFees` recipient (unsigned) | `5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd` |
+
+### Aurora-bound signed quotes
+
+| Capture | Funding shape | `originAsset` | `destinationAsset` | `amount` | `recipient` | `virtualChainRecipient` | `refundTo` | `deadline` | `timestamp` | `minAmountOut` | `signature` | Check |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| `quote-dry-eth-usdc-to-aurora.json` | yes | `nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near` | `nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1` | `250000000` | `aurora` | `0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C` | `0x2527D02599Ba641c19FEa793cD0F167589a0f10D` | `2026-11-11T10:46:52.118Z` | `2026-11-11T10:16:52.883Z` | `247473624` | `ed25519:5zAUNnVFUrpqjQcx9bqzbPTEwpqzDMizdNyErQ7Dbbh8spwiB4Jx22fde7NVN3GRQav49zBzfU7KaodJQDi1VTXL` | verified |
+| `probes/dry-quote-probes.json#B-near-usdc-to-aurora-engine-msg` | no | `nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near` | `nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1` | `100000000` | `aurora` | `(not set; uses customRecipientMsg b4c2fbec9d610f9a3a9b843c47b1a8095cec887c)` | `0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C` | `2026-11-11T10:39:21.841Z` | `2026-11-11T10:09:23.112Z` | `98990012` | `ed25519:ZWiuoCFvkDJak9zmGsgraijASCywn6BiGrqdRSEXHFJzTojbYre6eLphhnojzmgN82xTrngjUE2NnWoYqS51saj` | verified |
+| `probes/dry-quote-probes.json#C2-virtual-recipient-only-aurora` | yes | `nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near` | `nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1` | `100000000` | `aurora` | `0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C` | `0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C` | `2026-11-11T10:39:42.062Z` | `2026-11-11T10:09:42.569Z` | `98990012` | `ed25519:TZ5mTVpX73DMs3q5R5BMB6zeMZhCmmoWWgs3G2gS5DWKXbtnf5RBr4draDqWEPTYU9oXD9zJRtJnVb26cTfWySG` | verified |
+| `probes/dry-quote-probes.json#E-min-1000000` | yes | `nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near` | `nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1` | `1000000` | `aurora` | `0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C` | `0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C` | `2026-11-11T10:41:24.017Z` | `2026-11-11T10:11:26.148Z` | `989800` | `ed25519:5o3CEa2nKRqLWAvtVuAh5zGVvmRTgGcsNXHqr7A6QmaeiPhPBFpX61nxP4KD1ehTB5SLBhNoMaeE7atx6nK8DLJw` | verified |
+| `probes/route-recheck.json#near-usdc-to-aurora-virtual` | no | `nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1` | `nep141:usdt.tether-token.near` | `250000000` | `aurora` | `0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C` | `your-account.near` | `2026-11-11T11:13:38.000Z` | `2026-11-11T10:43:40.195Z` | `247677009` | `ed25519:2eNFWDvLN5yhNA81kwUjZMNoK72yik2AaioJjqBZFY8HN57bN6f8nSqXaAVjJrqo7GG41BFVUx6BUHY1ajV9Xu1B` | verified |
+
+Every quote in the table has `dry: true`, `swapType: EXACT_INPUT`, `slippageTolerance: 100`, `depositType: ORIGIN_CHAIN`, `refundType: ORIGIN_CHAIN` and `recipientType: DESTINATION_CHAIN`, and all of these are signed. "Funding shape" means Ethereum USDC origin with `virtualChainRecipient` and no `customRecipientMsg`. The `#B` probe used `customRecipientMsg` and is not a usable route. The recheck entry is NEAR-origin and is included only to show that NEAR-origin quotes to `aurora` still worked at 10:43 UTC.
+
+Not signed in these dry quotes: `refundFee` (300000 on every Ethereum-origin quote; 0 on the NEAR-origin recheck), `withdrawFee` (0), `timeEstimate` and the provider-added `appFees` (`fee: 1`).
+
 ## Shared funding interface (`runtime/funding/README.md` @ `11b9e56`)
 
 `runtime/intents/funding-adapter.mjs` provides the trusted server-side adapters that Developer A's `createFundingService` expects:
@@ -223,10 +259,10 @@ No dependency was added. EIP-55 checksum validation uses `viem`, which is alread
 ## Tests and isolation
 
 - **Tests:**
-  - `runtime/test/intents-provider.test.mjs`: 22 tests.
+  - `runtime/test/intents-provider.test.mjs`: 24 tests.
   - `runtime/test/intents-delivery.test.mjs`: 18 tests, including an end-to-end run through A's real `createFundingService` and `createFundingStore` (quoted → submitted → delivered) and review paths.
-  - Full runtime and funding suite (`runtime/test`, `runtime/funding`, `scripts/lib`): **130/130** (40 of them Intents tests).
-- **Container:** run in Docker image `node:22.11.0-bookworm-slim` (`node@sha256:f035ba7f…12da`) with `--network none --read-only --cap-drop ALL --security-opt no-new-privileges`, as user `node`, with no host environment variables. Dependencies were installed with `npm ci --ignore-scripts` in a separate, networked step before the tests ran.
+  - Full runtime and funding suite (`runtime/test`, `runtime/funding`, `scripts/lib`): **132/132** (42 of them Intents tests).
+- **Container:** run in Docker image `node:22.11.0-bookworm-slim` (`node@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da`) with `--network none --read-only --cap-drop ALL --security-opt no-new-privileges`, as user `node`, with no host environment variables. Dependencies were installed with `npm ci --ignore-scripts` in a separate, networked step before the tests ran.
 - **Mutation check:** 20 mutants, all killed:
   - echo binding;
   - added-redirection refusal;
@@ -255,4 +291,5 @@ No dependency was added. EIP-55 checksum validation uses `viem`, which is alread
   - loose confirmation defaults; delivery-level sender filter; `QUOTING_UNAVAILABLE` mapping.
 
   One mutant is equivalent and survives: returning the provider-reported refund instead of the observed refund. The verifier already requires the two to be equal.
+- **Evidence and gating mutation check:** 4 mutants, all killed, with a no-op baseline that survives: marking the route `deliveryProven: true`, enabling executable quotes by default, altering the signed `virtualChainRecipient` in the index, and flipping the index's `deliveryProven` flag.
 - **Fixtures:** `fixtures/intents/live/` holds unmodified production captures. `fixtures/intents/mocked/` and every receipt built in the tests are synthetic. See `fixtures/intents/README.md`.
