@@ -1,3 +1,9 @@
+# Current checkpoint — 12 November 2026
+
+Use [PRODUCT-TESTING.md](PRODUCT-TESTING.md), [AGENT-REPUTATION.md](AGENT-REPUTATION.md) and [INTENTS-PROVIDER.md](INTENTS-PROVIDER.md) for current evidence. The funding provider, state machine, bounded local operator and receipt proof are implemented; mainnet delivery remains unproven. Round seven executed a real AI-proposed rebalance with scripted forecasts. The genuine eight-agent run and additive reputation deployment are documented in the current test report. Dev C's dashboard remains separate pending his release for merge. Native subaccounts, attestation and DAO integration are not implemented.
+
+The snapshot below is preserved as historical context; its counts and pending items are not the latest project status.
+
 # Engineer handoff — 10 November 2026
 
 **Publication boundary:** expanded round-runner/host-bridge edits remain local pending full live-agent validation; use the published planner/tests/verifier, not the experimental CLI workflow.
