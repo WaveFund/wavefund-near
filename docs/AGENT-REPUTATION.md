@@ -42,3 +42,21 @@ hash formats. Calls are bounded at eight, $0.10, no retries. The operator must
 use `--run-inference` and obtain a fresh spending authorization before running.
 The tests inject a deterministic provider; they do not establish genuine forecasts.
 Hold and abstention remain valid outcomes, with no forced proposal winner or swap.
+
+# Read-only dashboard adapter
+
+`createReputationReader({ client, manifest })` in
+`runtime/agents/reputation-readonly.mjs` accepts a trusted read-only viem client
+and `deployments/aurora-testnet-reputation.json`. Call `read(agentAddress)`.
+No server or frontend files were changed; C can inject this capability later.
+
+It checks the chain, deployed runtime hash and engine/tracker bindings, pins all
+contract reads to one fresh block, and verifies sample totals and net points.
+Counts, points and block identity are integer strings. `hasEvaluatedStrategies`
+distinguishes a real zero-sample history from unavailable data; RPC errors throw
+sanitized codes instead of fabricated scores. This is trusted-RPC evidence, not
+a light-client proof. No signing or write capability is included.
+
+Scoped verification: six new tests pass; all four guard mutations are caught
+and the restored baseline passes. Existing Solidity/agent/funding suites were
+not rerun for this independent read-only addition.
