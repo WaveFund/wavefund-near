@@ -49,7 +49,8 @@ try {
         const address = accounts[name].address;
         const gasAmount = proposerNames.includes(name) ? 300000000000000n : 150000000000000n;
         if (await client.getBalance({ address }) < gasAmount) await send(`${prefix}:gas:${name}`, 'owner', address, '0x', gasAmount);
-        await tx(`${prefix}:mint:${name}`, 'owner', 'stable', 'mint', [address, 20000000n]);
+        const suppliedStable = sameAddress(contracts.stable, '0x38d81431b9f76d9699af7517040d5221d9dea252');
+        await tx(`${prefix}:${suppliedStable ? 'transfer' : 'mint'}:${name}`, 'owner', 'stable', suppliedStable ? 'transfer' : 'mint', [address, 20000000n]);
         if (proposerNames.includes(name)) {
           const agent = await read('registry', 'agents', [address]);
           if (!agent[0]) await tx(`${prefix}:register:${name}`, name, 'registry', 'registerAgent', [name]);
