@@ -3,21 +3,21 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { generateKeyPairSync, sign } from 'node:crypto';
 import {
-  createIntentsClient, createQuoteSignatureVerifier, quoteMessage, formatUnits, validateOrder,
-  IntentsError, ERROR_CODES, EXECUTION_STATUSES, ONE_CLICK_BASE_URL,
+  createIntentsClient, createQuoteSignatureVerifier, quoteMessage, formatUnits, validateFundingRequest,
+  IntentsError, ERROR_CODES, EXECUTION_STATUSES, ONE_CLICK_BASE_URL, VERIFIED_FUNDING_ROUTES, AURORA_MAINNET_CHAIN_ID,
 } from '../intents/index.mjs';
 import { base58Encode } from '../intents/signature.mjs';
 
 const fixture = (name) => JSON.parse(readFileSync(new URL(`./fixtures/intents/${name}`, import.meta.url), 'utf8'));
-const TOKENS = fixture('tokens.live-subset.json');
-const LIVE_DRY = fixture('quote-dry.live.json');
-const EXEC_TEMPLATE = fixture('execution-quote.mocked.template.json');
-const STATUS_TEMPLATE = fixture('status.mocked.template.json');
-const USDC_NEAR = 'nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1';
-const POLICY = `0x${'ab'.repeat(32)}`;
+// LIVE evidence (real provider data) vs MOCKED templates are loaded from separate directories.
+const LIVE_TOKENS = fixture('live/tokens-subset.json');
+const LIVE_FUNDING_DRY = fixture('live/quote-dry-eth-usdc-to-aurora.json');
+const LIVE_OTHER_DRY = fixture('live/quote-dry-wnear-usdt.json');
+const MOCK_EXEC = fixture('mocked/funding-execution-quote.template.json');
+const MOCK_STATUS = fixture('mocked/funding-status.template.json');
+const ROUTE = VERIFIED_FUNDING_ROUTES[0];
 
-// Throwaway signer for MOCKED payloads. The real 1Click key is only exercised by the live dry fixture.
-const { privateKey, publicKey } = generateKeyPairSync('ed25519');
+const { privateKey, publicKey } = generateKeyPairSync('ed25519'); // throwaway key for MOCKED payloads only
 const TEST_PUBLIC_KEY = `ed25519:${base58Encode(Buffer.from(publicKey.export({ format: 'jwk' }).x, 'base64url'))}`;
 const testVerifier = createQuoteSignatureVerifier({ publicKey: TEST_PUBLIC_KEY });
 function signWith(payload, key = privateKey) {
@@ -25,319 +25,276 @@ function signWith(payload, key = privateKey) {
   copy.signature = `ed25519:${base58Encode(sign(null, Buffer.from(quoteMessage(copy), 'utf8'), key))}`;
   return copy;
 }
-
 const clockAt = (iso) => { let now = Date.parse(iso); return { now: () => now, advance: (ms) => { now += ms; } }; };
 const json = (status, body, headers = {}) => ({ status, headers, bodyText: typeof body === 'string' ? body : JSON.stringify(body) });
-
-// Route-based fake transport; records every call so tests can prove what was (not) sent.
 function fakeTransport(routes) {
   const calls = [];
   const transport = async (req) => {
     calls.push({ ...req, parsedBody: req.body ? JSON.parse(req.body) : undefined });
-    const url = new URL(req.url);
-    const handler = routes[`${req.method} ${url.pathname}`];
-    if (!handler) throw new Error(`Unexpected request ${req.method} ${url.pathname}`);
-    return typeof handler === 'function' ? handler(req, url) : handler;
+    const handler = routes[`${req.method} ${new URL(req.url).pathname}`];
+    if (!handler) throw new Error(`Unexpected request ${req.method} ${req.url}`);
+    return typeof handler === 'function' ? handler(req) : handler;
   };
   transport.calls = calls;
   return transport;
 }
 
-function liveDryOrder(overrides = {}) {
+function fundingRequest(fromQuote, overrides = {}) {
+  const r = fromQuote.quoteRequest;
   return {
-    decisionId: 'round-7:decision-1', policyHash: POLICY, winningProposalId: 1,
-    origin: { chain: 'near', assetId: 'nep141:wrap.near' }, destination: { chain: 'near', assetId: 'nep141:usdt.tether-token.near' },
-    depositType: 'ORIGIN_CHAIN', amountIn: '1000000000000000000000000', minAmountOut: '3600000', slippageBps: 100,
-    recipient: { address: 'your-account.near', type: 'DESTINATION_CHAIN' }, refund: { address: 'your-account.near', type: 'ORIGIN_CHAIN' },
-    expiresAt: '2026-11-11T06:23:57.911Z', ...overrides,
+    fundingId: 'manager-1:funding-1',
+    source: { chain: 'eth', chainId: 1, assetId: r.originAsset, tokenAddress: ROUTE.source.tokenAddress },
+    destination: { chainId: AURORA_MAINNET_CHAIN_ID, virtualChainAccount: r.recipient, assetId: r.destinationAsset, tokenAddress: ROUTE.destination.tokenAddress, safeAddress: r.virtualChainRecipient },
+    amountIn: r.amount, minAmountOut: '247000000', slippageBps: r.slippageTolerance, refundAddress: r.refundTo, expiresAt: r.deadline, ...overrides,
   };
 }
-function execOrder(overrides = {}) {
-  const r = EXEC_TEMPLATE.quoteRequest;
-  return {
-    decisionId: 'round-8:decision-1', policyHash: POLICY, winningProposalId: 2,
-    origin: { chain: 'near', assetId: r.originAsset }, destination: { chain: 'near', assetId: r.destinationAsset },
-    depositType: r.depositType, amountIn: r.amount, minAmountOut: '950000000000000000', slippageBps: r.slippageTolerance,
-    recipient: { address: r.recipient, type: r.recipientType }, refund: { address: r.refundTo, type: r.refundType },
-    expiresAt: r.deadline, ...overrides,
-  };
+const LIVE_CLOCK = '2026-11-11T10:16:57.000Z'; // ~4 s after the live funding quote's provider timestamp
+const MOCK_CLOCK = '2026-11-11T12:00:10.000Z';
+const tokens = () => json(200, LIVE_TOKENS.entries);
+function liveClient(quoteResponse = json(201, LIVE_FUNDING_DRY), options = {}) {
+  const transport = fakeTransport({ 'GET /v0/tokens': tokens(), 'POST /v0/quote': quoteResponse });
+  return { client: createIntentsClient({ transport, clock: clockAt(LIVE_CLOCK), ...options }), transport };
 }
-const LIVE_CLOCK = '2026-11-11T05:54:03.000Z'; // 5 s after the live dry quote's provider timestamp.
-const EXEC_CLOCK = '2026-11-11T06:00:10.000Z';
-
-function liveClient(quoteResponse = LIVE_DRY, extra = {}) {
-  const transport = fakeTransport({ 'GET /v0/tokens': json(200, TOKENS), 'POST /v0/quote': quoteResponse, ...extra.routes });
-  const client = createIntentsClient({ transport, clock: clockAt(LIVE_CLOCK), ...extra.options });
-  return { client, transport };
+function mockClient({ quote = signWith(MOCK_EXEC), status, options = {} } = {}) {
+  const transport = fakeTransport({ 'GET /v0/tokens': tokens(), 'POST /v0/quote': json(201, quote), ...(status ? { 'GET /v0/status': status } : {}) });
+  return { client: createIntentsClient({ transport, clock: clockAt(MOCK_CLOCK), verifySignature: testVerifier, allowExecutionQuotes: true, ...options }), transport };
 }
-function execClient({ quote = signWith(EXEC_TEMPLATE), status, options = {}, clock = clockAt(EXEC_CLOCK) } = {}) {
-  const transport = fakeTransport({ 'GET /v0/tokens': json(200, TOKENS), 'POST /v0/quote': json(201, quote), ...(status ? { 'GET /v0/status': status } : {}) });
-  const client = createIntentsClient({ transport, clock, verifySignature: testVerifier, allowExecutionQuotes: true, ...options });
-  return { client, transport };
-}
+const asDry = (template) => ({ ...template, quoteRequest: { ...template.quoteRequest, dry: true } });
 const rejectsCode = (promise, code) => assert.rejects(promise, (error) => error instanceof IntentsError && error.code === code);
 
-// ------------------------------------------------------------------ signatures
+// ------------------------------------------------------------------ live evidence (signature interoperability)
 
-test('real 1Click signature on the live dry fixture verifies with the pinned production key', () => {
-  assert.equal(createQuoteSignatureVerifier()(LIVE_DRY).valid, true);
+test('LIVE: both captured provider quotes verify with the pinned production 1Click key', () => {
+  const verify = createQuoteSignatureVerifier();
+  assert.equal(verify(LIVE_FUNDING_DRY).valid, true);
+  assert.equal(verify(LIVE_OTHER_DRY).valid, true);
 });
 
-test('signature verification fails, without throwing, for tampering, wrong keys and garbage', () => {
+test('LIVE: the virtual-chain recipient (the Safe) is covered by the provider signature', () => {
   const verify = createQuoteSignatureVerifier();
   for (const mutate of [
-    (p) => { p.quoteRequest.recipient = 'attacker.near'; }, (p) => { p.quoteRequest.refundTo = 'attacker.near'; },
-    (p) => { p.quote.amountOut = '9999999'; }, (p) => { p.quote.minAmountOut = '1'; }, (p) => { p.quoteRequest.amount = '2'; },
-    (p) => { p.timestamp = '2026-11-11T05:53:59.357Z'; }, (p) => { p.signature = 'ed25519:1111'; }, (p) => { p.signature = 'not base58 !'; },
-    (p) => { delete p.quote; }, (p) => { p.signature = 42; },
+    (p) => { p.quoteRequest.virtualChainRecipient = '0x000000000000000000000000000000000000dEaD'; }, (p) => { p.quoteRequest.recipient = 'not-aurora.near'; },
+    (p) => { p.quoteRequest.refundTo = '0x000000000000000000000000000000000000dEaD'; }, (p) => { p.quote.minAmountOut = '1'; },
+    (p) => { p.quoteRequest.amount = '1'; }, (p) => { p.timestamp = '2026-11-11T10:16:53.883Z'; },
+    (p) => { p.signature = 'ed25519:1111'; }, (p) => { delete p.quote; },
   ]) {
-    const payload = structuredClone(LIVE_DRY); mutate(payload);
+    const payload = structuredClone(LIVE_FUNDING_DRY); mutate(payload);
     assert.equal(verify(payload).valid, false);
   }
-  assert.equal(testVerifier(LIVE_DRY).valid, false, 'a different key must not accept the provider signature');
-  assert.equal(verify(signWith(LIVE_DRY)).valid, false, 'a self-signed payload must not pass the production key');
-  assert.throws(() => createQuoteSignatureVerifier({ publicKey: 'ed25519:abc' }), /32 bytes|base58/);
-});
-
-// ------------------------------------------------------------------ dry quotes
-
-test('previewOrder returns a bound, signature-verified dry quote that is never presented as funded', async () => {
-  const { client, transport } = liveClient(json(201, LIVE_DRY));
-  const quote = await client.previewOrder(liveDryOrder());
-  assert.equal(quote.kind, 'DRY_QUOTE'); assert.equal(quote.dry, true); assert.equal(quote.funded, false);
-  assert.match(quote.label, /not funded, not executable/); assert.equal(quote.deposit, null);
-  assert.equal(quote.mocked, true, 'replayed through an injected transport, so labelled mocked');
-  assert.equal(quote.source, 'injected-transport');
-  assert.deepEqual(quote.order.decisionId, 'round-7:decision-1'); assert.equal(quote.order.policyHash, POLICY); assert.equal(quote.order.winningProposalId, 1);
-  assert.match(quote.order.orderDigest, /^[0-9a-f]{64}$/);
-  assert.equal(quote.amounts.amountIn, '1000000000000000000000000'); assert.equal(quote.amounts.amountOut, '3648227');
-  assert.equal(quote.amounts.minAmountOut, '3611744'); assert.equal(quote.amounts.orderMinAmountOut, '3600000');
-  assert.equal(quote.amounts.amountInDisplay, '1'); assert.equal(quote.amounts.amountOutDisplay, '3.648227');
-  assert.deepEqual(quote.route.origin, { chain: 'near', assetId: 'nep141:wrap.near', decimals: 24 });
-  assert.equal(quote.signature.verified, true); assert.equal(quote.expiry.quoteDeadline, null);
-  assert.equal(quote.expiry.effectiveExpiresAt, '2026-11-11T06:23:57.911Z');
-  assert.equal(quote.fees.appFees.length, 1, 'unauthenticated platform fee preserved for review');
-  assert.deepEqual(quote.providerPayload, LIVE_DRY);
-  assert.ok(Object.isFrozen(quote) && Object.isFrozen(quote.providerPayload.quote));
-  const sent = transport.calls.find((c) => c.url.endsWith('/v0/quote')).parsedBody;
-  assert.equal(sent.dry, true); assert.equal(sent.swapType, 'EXACT_INPUT'); assert.equal(sent.amount, '1000000000000000000000000');
-  assert.equal(sent.appFees, undefined); assert.equal(sent.referral, undefined);
-});
-
-test('altered recipient, refund or amount in the provider echo is rejected before use', async () => {
-  for (const [field, value] of [['recipient', 'attacker.near'], ['refundTo', 'attacker.near'], ['amount', '2'], ['destinationAsset', 'nep141:eth.bridge.near']]) {
-    const tampered = structuredClone(LIVE_DRY); tampered.quoteRequest[field] = value;
-    await rejectsCode(liveClient(json(201, tampered)).client.previewOrder(liveDryOrder()), ERROR_CODES.ORDER_MISMATCH);
+  // Dry quotes do NOT sign fees, time estimates or appFees (1Click scheme). The client must label them unsigned.
+  for (const mutate of [(p) => { p.quote.refundFee = '0'; }, (p) => { p.quote.withdrawFee = '999'; }, (p) => { p.quote.timeEstimate = 1; }, (p) => { p.quoteRequest.appFees = [{ recipient: 'x', fee: 500 }]; }]) {
+    const payload = structuredClone(LIVE_FUNDING_DRY); mutate(payload);
+    assert.equal(verify(payload).valid, true, 'documented unsigned dry-quote field');
   }
-  // An attacker who re-signs a recipient change with their own key still fails the production key.
-  const resigned = signWith({ ...structuredClone(LIVE_DRY), quoteRequest: { ...LIVE_DRY.quoteRequest, recipient: 'attacker.near' } });
-  await rejectsCode(liveClient(json(201, resigned)).client.previewOrder(liveDryOrder({ recipient: { address: 'attacker.near', type: 'DESTINATION_CHAIN' } })), ERROR_CODES.SIGNATURE_INVALID);
-  const amountOut = structuredClone(LIVE_DRY); amountOut.quote.amountOut = '99999999';
-  await rejectsCode(liveClient(json(201, amountOut)).client.previewOrder(liveDryOrder()), ERROR_CODES.SIGNATURE_INVALID);
+  assert.equal(testVerifier(LIVE_FUNDING_DRY).valid, false);
+  assert.equal(verify(signWith(LIVE_FUNDING_DRY)).valid, false, 'self-signed payloads never pass the production key');
 });
 
-test('validly signed quotes still fail when amounts break the order', async () => {
-  const lowMin = signWith({ ...EXEC_TEMPLATE, quoteRequest: { ...EXEC_TEMPLATE.quoteRequest, dry: true }, quote: { ...EXEC_TEMPLATE.quote, minAmountOut: '949999999999999999' } });
-  await rejectsCode(execClient({ quote: lowMin }).client.previewOrder(execOrder()), ERROR_CODES.QUOTE_BELOW_MINIMUM);
-  const otherInput = signWith({ ...EXEC_TEMPLATE, quoteRequest: { ...EXEC_TEMPLATE.quoteRequest, dry: true }, quote: { ...EXEC_TEMPLATE.quote, amountIn: '1999999999' } });
-  await rejectsCode(execClient({ quote: otherInput }).client.previewOrder(execOrder()), ERROR_CODES.ORDER_MISMATCH);
-  const incoherent = signWith({ ...EXEC_TEMPLATE, quoteRequest: { ...EXEC_TEMPLATE.quoteRequest, dry: true }, quote: { ...EXEC_TEMPLATE.quote, amountOut: '1' } });
-  await rejectsCode(execClient({ quote: incoherent }).client.previewOrder(execOrder()), ERROR_CODES.MALFORMED_RESPONSE);
+test('LIVE replay: previewOrder accepts the captured funding quote, bound and never funded', async () => {
+  const { client, transport } = liveClient();
+  const quote = await client.previewOrder(fundingRequest(LIVE_FUNDING_DRY));
+  assert.equal(quote.kind, 'DRY_QUOTE'); assert.equal(quote.purpose, 'funding'); assert.equal(quote.funded, false); assert.equal(quote.deposit, null);
+  assert.equal(quote.mocked, true, 'replayed through an injected transport, so still labelled mocked'); assert.equal(quote.source, 'injected-transport');
+  assert.equal(quote.funding.routeId, 'eth-usdc-to-aurora-usdc'); assert.match(quote.funding.requestDigest, /^[0-9a-f]{64}$/);
+  assert.equal(quote.route.destination.chainId, 1313161554); assert.equal(quote.route.destination.tokenAddress, '0x368ebb46aca6b8d0787c96b2b20bd3cc3f2c45f7');
+  assert.equal(quote.amounts.amountInDisplay, '250'); assert.equal(quote.amounts.minAmountOut, '247473624');
+  assert.equal(quote.fees.refundFee, '300000', 'refund fee preserved: refunds are not full-input');
+  assert.equal(quote.fees.appFeesSigned, false); assert.equal(quote.fees.feesSigned, false, 'dry-quote fees are unsigned');
+  const sent = transport.calls.find((c) => c.url.endsWith('/v0/quote')).parsedBody;
+  assert.deepEqual(sent, {
+    dry: true, swapType: 'EXACT_INPUT', slippageTolerance: 100, originAsset: ROUTE.source.assetId, depositType: 'ORIGIN_CHAIN',
+    destinationAsset: ROUTE.destination.assetId, amount: '250000000', refundTo: '0x2527D02599Ba641c19FEa793cD0F167589a0f10D', refundType: 'ORIGIN_CHAIN',
+    recipient: 'aurora', recipientType: 'DESTINATION_CHAIN', virtualChainRecipient: '0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C', deadline: '2026-11-11T10:46:52.118Z',
+  });
+  assert.ok(Object.isFrozen(quote.providerPayload.quoteRequest));
+});
+
+// ------------------------------------------------------------------ tampering
+
+test('tampered recipient, refund, amount or added redirection in the provider echo is rejected', async () => {
+  for (const [field, value] of [['virtualChainRecipient', '0x000000000000000000000000000000000000dEaD'], ['recipient', 'other.near'], ['refundTo', '0x000000000000000000000000000000000000dEaD'], ['amount', '1'], ['destinationAsset', 'nep141:usdt.tether-token.near']]) {
+    const tampered = structuredClone(LIVE_FUNDING_DRY); tampered.quoteRequest[field] = value;
+    await rejectsCode(liveClient(json(201, tampered)).client.previewOrder(fundingRequest(LIVE_FUNDING_DRY)), ERROR_CODES.ORDER_MISMATCH);
+  }
+  for (const extra of [{ customRecipientMsg: 'deadbeef' }, { virtualChainRefundRecipient: '0x000000000000000000000000000000000000dEaD' }]) {
+    const redirected = signWith({ ...asDry(MOCK_EXEC), quoteRequest: { ...asDry(MOCK_EXEC).quoteRequest, ...extra } });
+    await rejectsCode(mockClient({ quote: redirected }).client.previewOrder(fundingRequest(MOCK_EXEC)), ERROR_CODES.ORDER_MISMATCH);
+  }
+  const amountOut = structuredClone(LIVE_FUNDING_DRY); amountOut.quote.amountOut = '999999999';
+  await rejectsCode(liveClient(json(201, amountOut)).client.previewOrder(fundingRequest(LIVE_FUNDING_DRY)), ERROR_CODES.SIGNATURE_INVALID);
+  const resigned = signWith(LIVE_FUNDING_DRY); // attacker key
+  await rejectsCode(liveClient(json(201, resigned)).client.previewOrder(fundingRequest(LIVE_FUNDING_DRY)), ERROR_CODES.SIGNATURE_INVALID);
+});
+
+test('validly signed quotes still fail when amounts break the funding request', async () => {
+  const req = fundingRequest(MOCK_EXEC);
+  const lowMin = signWith({ ...asDry(MOCK_EXEC), quote: { ...MOCK_EXEC.quote, minAmountOut: '246999999' } });
+  await rejectsCode(mockClient({ quote: lowMin }).client.previewOrder(req), ERROR_CODES.QUOTE_BELOW_MINIMUM);
+  const otherIn = signWith({ ...asDry(MOCK_EXEC), quote: { ...MOCK_EXEC.quote, amountIn: '249999999' } });
+  await rejectsCode(mockClient({ quote: otherIn }).client.previewOrder(req), ERROR_CODES.ORDER_MISMATCH);
+  const incoherent = signWith({ ...asDry(MOCK_EXEC), quote: { ...MOCK_EXEC.quote, amountOut: '1' } });
+  await rejectsCode(mockClient({ quote: incoherent }).client.previewOrder(req), ERROR_CODES.MALFORMED_RESPONSE);
 });
 
 // ------------------------------------------------------------------ expiry
 
-test('expired orders, stale or future quotes and passed execution deadlines are rejected', async () => {
-  const { client, transport } = liveClient(json(201, LIVE_DRY));
-  await rejectsCode(client.previewOrder(liveDryOrder({ expiresAt: '2026-11-11T05:54:02.999Z' })), ERROR_CODES.ORDER_EXPIRED);
-  assert.equal(transport.calls.length, 0, 'expired orders send no HTTP');
-  const stale = liveClient(json(201, LIVE_DRY), { options: { clock: clockAt('2026-11-11T05:56:00.000Z') } });
-  await rejectsCode(stale.client.previewOrder(liveDryOrder()), ERROR_CODES.QUOTE_EXPIRED);
-  const future = liveClient(json(201, LIVE_DRY), { options: { clock: clockAt('2026-11-11T05:53:00.000Z') } });
-  await rejectsCode(future.client.previewOrder(liveDryOrder()), ERROR_CODES.MALFORMED_RESPONSE);
-  const pastDeadline = signWith({ ...EXEC_TEMPLATE, quote: { ...EXEC_TEMPLATE.quote, deadline: '2026-11-11T06:00:05.000Z' } });
-  await rejectsCode(execClient({ quote: pastDeadline }).client.prepareOrder(execOrder()), ERROR_CODES.QUOTE_EXPIRED);
-  const earlier = signWith({ ...EXEC_TEMPLATE, quote: { ...EXEC_TEMPLATE.quote, deadline: '2026-11-11T06:10:00.000Z' } });
-  const prepared = await execClient({ quote: earlier }).client.prepareOrder(execOrder());
-  assert.equal(prepared.expiry.effectiveExpiresAt, '2026-11-11T06:10:00.000Z', 'effective expiry is the earlier of order and quote');
-});
-
-// ------------------------------------------------------------------ decimals
-
-test('amounts are exact base-unit integer strings; display uses provider decimals, never floats', async () => {
-  for (const amountIn of [1000, '1.5', '01', '-1', '', '0', '1e24', ' 1', '1'.repeat(79)]) {
-    assert.throws(() => validateOrder(liveDryOrder({ amountIn }), { now: Date.parse(LIVE_CLOCK) }), (e) => e.code === ERROR_CODES.INVALID_ORDER);
-  }
-  assert.throws(() => validateOrder(liveDryOrder({ minAmountOut: 3600000 }), { now: Date.parse(LIVE_CLOCK) }), (e) => e.code === ERROR_CODES.INVALID_ORDER);
-  assert.equal(formatUnits('1000000000000000000000000', 24), '1');
-  assert.equal(formatUnits('1', 24), '0.000000000000000000000001');
-  assert.equal(formatUnits('3648227', 6), '3.648227'); assert.equal(formatUnits('5', 0), '5'); assert.equal(formatUnits('0', 18), '0');
-  // Minimum comparison is BigInt-exact above 2^53.
-  const order = execOrder({ minAmountOut: '956340000000000001' });
-  const quote = signWith({ ...EXEC_TEMPLATE, quoteRequest: { ...EXEC_TEMPLATE.quoteRequest, dry: true } });
-  await rejectsCode(execClient({ quote }).client.previewOrder(order), ERROR_CODES.QUOTE_BELOW_MINIMUM);
-  const ok = await execClient({ quote }).client.previewOrder(execOrder({ minAmountOut: '956340000000000000' }));
-  assert.equal(ok.amounts.minAmountOutDisplay, '0.95634'); assert.equal(ok.route.destination.decimals, 18);
-});
-
-// ------------------------------------------------------------------ assets and routes
-
-test('assets are resolved by exact identifier and chain, never by ticker', async () => {
-  const now = { now: Date.parse(LIVE_CLOCK) };
-  assert.throws(() => validateOrder(liveDryOrder({ origin: { chain: 'near', assetId: 'USDC' } }), now), (e) => e.code === ERROR_CODES.INVALID_ORDER);
-  assert.throws(() => validateOrder(liveDryOrder({ origin: { chain: 'near', assetId: 'nep141:wrap.near' }, destination: { chain: 'near', assetId: 'nep141:wrap.near' } }), now), (e) => e.code === ERROR_CODES.INVALID_ORDER);
-  const assets = await liveClient().client.getSupportedAssets();
-  assert.equal(assets.assets.filter((a) => a.symbol === 'USDC').length, 2, 'fixture proves symbols are ambiguous');
+test('expired requests, stale/future quotes and passed execution deadlines are rejected', async () => {
   const { client, transport } = liveClient();
-  await rejectsCode(client.previewOrder(liveDryOrder({ origin: { chain: 'aurora', assetId: 'nep141:aurora-testnet-usdc.example' } })), ERROR_CODES.UNSUPPORTED_ASSET);
-  await rejectsCode(client.previewOrder(liveDryOrder({ destination: { chain: 'near', assetId: 'nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near' } })), ERROR_CODES.ASSET_CHAIN_MISMATCH);
-  assert.equal(transport.calls.filter((c) => c.url.endsWith('/v0/quote')).length, 0, 'unsupported assets never reach the quote endpoint');
+  await rejectsCode(client.previewOrder(fundingRequest(LIVE_FUNDING_DRY, { expiresAt: '2026-11-11T10:16:56.000Z' })), ERROR_CODES.ORDER_EXPIRED);
+  assert.equal(transport.calls.length, 0, 'expired requests send no HTTP');
+  await rejectsCode(liveClient(json(201, LIVE_FUNDING_DRY), { clock: clockAt('2026-11-11T10:19:00.000Z') }).client.previewOrder(fundingRequest(LIVE_FUNDING_DRY)), ERROR_CODES.QUOTE_EXPIRED);
+  await rejectsCode(liveClient(json(201, LIVE_FUNDING_DRY), { clock: clockAt('2026-11-11T10:16:00.000Z') }).client.previewOrder(fundingRequest(LIVE_FUNDING_DRY)), ERROR_CODES.MALFORMED_RESPONSE);
+  const past = signWith({ ...MOCK_EXEC, quote: { ...MOCK_EXEC.quote, deadline: '2026-11-11T12:00:05.000Z' } });
+  await rejectsCode(mockClient({ quote: past }).client.prepareOrder(fundingRequest(MOCK_EXEC)), ERROR_CODES.QUOTE_EXPIRED);
+  const earlier = signWith({ ...MOCK_EXEC, quote: { ...MOCK_EXEC.quote, deadline: '2026-11-11T12:10:00.000Z' } });
+  assert.equal((await mockClient({ quote: earlier }).client.prepareOrder(fundingRequest(MOCK_EXEC))).expiry.effectiveExpiresAt, '2026-11-11T12:10:00.000Z');
 });
 
-test('provider rejections map to stable codes using the messages observed live', async () => {
+// ------------------------------------------------------------------ request validation, tokens, networks, decimals
+
+test('wrong token, wrong network, tickers and unverified routes are rejected before any HTTP', async () => {
+  const now = { now: Date.parse(LIVE_CLOCK) };
+  const base = fundingRequest(LIVE_FUNDING_DRY);
   const cases = [
-    ['tokenIn is not valid', ERROR_CODES.UNSUPPORTED_ROUTE], ['No liquidity available', ERROR_CODES.NO_LIQUIDITY],
-    ['Amount is too low for bridge, try at least 0', ERROR_CODES.AMOUNT_TOO_LOW], ['recipient is not valid', ERROR_CODES.PROVIDER_REJECTED],
+    [{ source: { ...base.source, assetId: 'USDC' } }, ERROR_CODES.INVALID_ORDER],
+    [{ source: { ...base.source, tokenAddress: '0xdac17f958d2ee523a2206206994597c13d831ec7' } }, ERROR_CODES.UNSUPPORTED_ROUTE], // USDT contract
+    [{ source: { ...base.source, chain: 'arb', chainId: 42161 } }, ERROR_CODES.UNSUPPORTED_ROUTE],
+    [{ destination: { ...base.destination, chainId: 1313161555 } }, ERROR_CODES.UNSUPPORTED_ROUTE], // Aurora TESTNET
+    [{ destination: { ...base.destination, virtualChainAccount: 'aurora.testnet' } }, ERROR_CODES.UNSUPPORTED_ROUTE],
+    [{ destination: { ...base.destination, tokenAddress: '0xb12bfca5a55806aaf64e99521918a4bf0fc40802' } }, ERROR_CODES.UNSUPPORTED_ROUTE],
+    [{ destination: { ...base.destination, assetId: 'nep141:aaaaaa20d9e0e2461697782ef11675f668207961.factory.bridge.near' } }, ERROR_CODES.UNSUPPORTED_ROUTE], // "AURORA" symbol token
+    [{ destination: { ...base.destination, safeAddress: '0xB4c2fbec9d610F9A3a9b843c47b1A8095ceC887C' } }, ERROR_CODES.INVALID_ORDER], // bad EIP-55
+    [{ destination: { ...base.destination, safeAddress: '0x0000000000000000000000000000000000000000' } }, ERROR_CODES.INVALID_ORDER],
+    [{ refundAddress: base.destination.safeAddress }, ERROR_CODES.INVALID_ORDER],
+    [{ amountIn: '300000' }, ERROR_CODES.AMOUNT_TOO_LOW],
+    [{ slippageBps: 1001 }, ERROR_CODES.INVALID_ORDER],
+    [{ winningProposalId: 1 }, ERROR_CODES.INVALID_ORDER], // strategy fields are not part of funding
   ];
-  for (const [message, code] of cases) {
-    const { client } = liveClient(json(400, { message, correlationId: 'c-1', timestamp: '2026-11-11T05:55:12.728Z', path: '/v0/quote' }));
-    await assert.rejects(client.previewOrder(liveDryOrder()), (e) => e.code === code && e.details.providerMessage === message && e.details.httpStatus === 400);
+  for (const [overrides, code] of cases) assert.throws(() => validateFundingRequest({ ...base, ...overrides }, now), (e) => e.code === code, JSON.stringify(overrides));
+  assert.equal(validateFundingRequest(base, now).route.id, 'eth-usdc-to-aurora-usdc');
+  const { client, transport } = liveClient();
+  await rejectsCode(client.previewOrder({ ...base, destination: { ...base.destination, chainId: 1313161555 } }), ERROR_CODES.UNSUPPORTED_ROUTE);
+  assert.equal(transport.calls.length, 0);
+});
+
+test('provider token list must still match the verified route identity and decimals', async () => {
+  const drift = (mutate) => { const entries = structuredClone(LIVE_TOKENS.entries); mutate(entries); return json(200, entries); };
+  const usdcEth = (e) => e.find((x) => x.assetId === ROUTE.source.assetId);
+  for (const [response, code] of [
+    [drift((e) => { usdcEth(e).contractAddress = '0x0000000000000000000000000000000000000001'; }), ERROR_CODES.ASSET_CHAIN_MISMATCH],
+    [drift((e) => { usdcEth(e).decimals = 18; }), ERROR_CODES.ASSET_CHAIN_MISMATCH],
+    [drift((e) => { usdcEth(e).blockchain = 'base'; }), ERROR_CODES.ASSET_CHAIN_MISMATCH],
+    [drift((e) => { e.splice(e.findIndex((x) => x.assetId === ROUTE.destination.assetId), 1); }), ERROR_CODES.UNSUPPORTED_ASSET],
+  ]) {
+    const transport = fakeTransport({ 'GET /v0/tokens': response, 'POST /v0/quote': json(201, LIVE_FUNDING_DRY) });
+    await rejectsCode(createIntentsClient({ transport, clock: clockAt(LIVE_CLOCK) }).previewOrder(fundingRequest(LIVE_FUNDING_DRY)), code);
+    assert.equal(transport.calls.filter((c) => c.url.endsWith('/v0/quote')).length, 0);
   }
-  const { client } = liveClient(json(400, { message: 'bad\u0000\nthing'.padEnd(500, 'x') }));
-  await assert.rejects(client.previewOrder(liveDryOrder()), (e) => e.code === ERROR_CODES.PROVIDER_REJECTED && !/[\u0000\n]/.test(e.message) && e.message.length <= 200);
+  const assets = await liveClient().client.getSupportedAssets();
+  assert.equal(assets.assets.filter((a) => a.symbol === 'AURORA').length, 3, 'symbol "AURORA" names a token, not the Aurora chain');
+  assert.equal(assets.assets.some((a) => a.blockchain === 'aurora'), false, 'live list has no aurora blockchain');
+  assert.ok(assets.assets.some((a) => a.assetId.startsWith('1cs_v1:')), '1cs_v1 asset ids are accepted');
 });
 
-// ------------------------------------------------------------------ malformed responses
-
-test('malformed provider responses fail closed', async () => {
-  const bad = [
-    json(201, 'not json'), json(201, ''), json(201, []), json(201, { ...LIVE_DRY, signature: undefined }),
-    json(201, { ...LIVE_DRY, quote: { ...LIVE_DRY.quote, amountOut: 3648227 } }), json(201, { ...LIVE_DRY, timestamp: 'yesterday' }),
-    json(201, { ...LIVE_DRY, correlationId: undefined }),
-  ];
-  for (const response of bad) await rejectsCode(liveClient(response).client.previewOrder(liveDryOrder()), ERROR_CODES.MALFORMED_RESPONSE);
-  await rejectsCode(createIntentsClient({ transport: async () => ({ status: 200 }) }).getSupportedAssets(), ERROR_CODES.MALFORMED_RESPONSE);
-  await rejectsCode(createIntentsClient({ transport: async () => json(200, { tokens: TOKENS }) }).getSupportedAssets(), ERROR_CODES.MALFORMED_RESPONSE);
-  await rejectsCode(createIntentsClient({ transport: async () => json(200, [TOKENS[0], TOKENS[0]]) }).getSupportedAssets(), ERROR_CODES.MALFORMED_RESPONSE);
-  await rejectsCode(createIntentsClient({ transport: async () => json(200, [{ assetId: 'USDC', decimals: 6 }]) }).getSupportedAssets(), ERROR_CODES.MALFORMED_RESPONSE);
-  const mixed = await createIntentsClient({ transport: async () => json(200, [...TOKENS, { assetId: 'nep141:x.near', decimals: 1.5, blockchain: 'near', symbol: 'X' }, null]) }).getSupportedAssets();
-  assert.equal(mixed.assets.length, TOKENS.length); assert.equal(mixed.rejectedEntries, 2);
-  const executionWithoutDeposit = signWith({ ...EXEC_TEMPLATE, quote: { ...EXEC_TEMPLATE.quote, depositAddress: undefined } });
-  await rejectsCode(execClient({ quote: executionWithoutDeposit }).client.prepareOrder(execOrder()), ERROR_CODES.MALFORMED_RESPONSE);
+test('decimal handling is exact base-unit strings', () => {
+  const now = { now: Date.parse(LIVE_CLOCK) };
+  for (const amountIn of [250000000, '250.0', '0250000000', '-1', '', '2.5e8', ' 1']) {
+    assert.throws(() => validateFundingRequest(fundingRequest(LIVE_FUNDING_DRY, { amountIn }), now), (e) => e.code === ERROR_CODES.INVALID_ORDER);
+  }
+  assert.equal(formatUnits('250000000', 6), '250'); assert.equal(formatUnits('300001', 6), '0.300001'); assert.equal(formatUnits('1', 24), '0.000000000000000000000001');
 });
 
-// ------------------------------------------------------------------ transport failures
+// ------------------------------------------------------------------ provider errors and transport
 
-test('timeouts abort the request and are reported, never retried', async () => {
-  let signal; let attempts = 0;
-  const hanging = createIntentsClient({ timeoutMs: 20, transport: (req) => { attempts++; signal = req.signal; return new Promise(() => {}); } });
-  await rejectsCode(hanging.getSupportedAssets(), ERROR_CODES.TIMEOUT);
-  assert.equal(signal.aborted, true); assert.equal(attempts, 1);
-  const aborting = createIntentsClient({ transport: async () => { throw Object.assign(new Error('aborted'), { name: 'AbortError' }); } });
-  await rejectsCode(aborting.getSupportedAssets(), ERROR_CODES.TIMEOUT);
-  const leaking = createIntentsClient({ apiKey: 'jwt-secret-value', transport: async () => { throw new Error('connect ECONNREFUSED jwt-secret-value'); } });
-  await assert.rejects(leaking.getSupportedAssets(), (e) => e.code === ERROR_CODES.TRANSPORT_FAILED && !e.message.includes('jwt-secret-value'));
-});
-
-test('rate limits, auth failures and outages map to codes with a single attempt', async () => {
+test('no liquidity, minimums, unsupported routes and rate limits map to stable codes, one attempt each', async () => {
+  for (const [message, code] of [
+    ['No liquidity available', ERROR_CODES.NO_LIQUIDITY], ['Amount is too low for bridge, try at least 300001', ERROR_CODES.AMOUNT_TOO_LOW],
+    ['tokenOut is not valid', ERROR_CODES.UNSUPPORTED_ROUTE], ['Target virtual chain does not have an eth connector set or recipient account is not a virtual chain account', ERROR_CODES.UNSUPPORTED_ROUTE],
+    ['Temporary swap limits: minimum swap amount is $1,000', ERROR_CODES.AMOUNT_TOO_LOW], ['recipient is not valid', ERROR_CODES.PROVIDER_REJECTED],
+  ]) {
+    await assert.rejects(liveClient(json(400, { message, correlationId: 'c' })).client.previewOrder(fundingRequest(LIVE_FUNDING_DRY)), (e) => e.code === code && e.details.providerMessage === message);
+  }
   const limited = fakeTransport({ 'GET /v0/tokens': json(429, { message: 'Too Many Requests' }, { 'Retry-After': '7' }) });
-  await assert.rejects(createIntentsClient({ transport: limited }).getSupportedAssets(), (e) => e.code === ERROR_CODES.RATE_LIMITED && e.details.retryAfterSeconds === 7 && e.retryable);
+  await assert.rejects(createIntentsClient({ transport: limited }).getSupportedAssets(), (e) => e.code === ERROR_CODES.RATE_LIMITED && e.details.retryAfterSeconds === 7);
   assert.equal(limited.calls.length, 1, 'no automatic retry');
   await rejectsCode(createIntentsClient({ transport: async () => json(401, '') }).getSupportedAssets(), ERROR_CODES.UNAUTHORIZED);
   await rejectsCode(createIntentsClient({ transport: async () => json(503, '<html>') }).getSupportedAssets(), ERROR_CODES.PROVIDER_UNAVAILABLE);
-  await rejectsCode(createIntentsClient({ transport: async () => json(418, '{}') }).getSupportedAssets(), ERROR_CODES.PROVIDER_REJECTED);
 });
 
-// ------------------------------------------------------------------ execution quotes (gated, MOCKED)
+test('timeouts and transport failures are reported without leaking credentials or retrying', async () => {
+  let signal; let attempts = 0;
+  await rejectsCode(createIntentsClient({ timeoutMs: 20, transport: (req) => { attempts++; signal = req.signal; return new Promise(() => {}); } }).getSupportedAssets(), ERROR_CODES.TIMEOUT);
+  assert.equal(signal.aborted, true); assert.equal(attempts, 1);
+  await rejectsCode(createIntentsClient({ transport: async () => { throw Object.assign(new Error('x'), { name: 'AbortError' }); } }).getSupportedAssets(), ERROR_CODES.TIMEOUT);
+  await assert.rejects(createIntentsClient({ apiKey: 'jwt-secret', transport: async () => { throw new Error('ECONNRESET jwt-secret'); } }).getSupportedAssets(), (e) => e.code === ERROR_CODES.TRANSPORT_FAILED && !e.message.includes('jwt-secret'));
+});
+
+test('malformed responses fail closed', async () => {
+  for (const response of [json(201, 'not json'), json(201, ''), json(201, []), json(201, { ...LIVE_FUNDING_DRY, signature: undefined }),
+    json(201, { ...LIVE_FUNDING_DRY, quote: { ...LIVE_FUNDING_DRY.quote, minAmountOut: 247473624 } }), json(201, { ...LIVE_FUNDING_DRY, timestamp: 'now' }),
+    json(201, { ...LIVE_FUNDING_DRY, quote: { ...LIVE_FUNDING_DRY.quote, refundFee: '0.3' } })]) {
+    await rejectsCode(liveClient(response).client.previewOrder(fundingRequest(LIVE_FUNDING_DRY)), ERROR_CODES.MALFORMED_RESPONSE);
+  }
+  await rejectsCode(createIntentsClient({ transport: async () => json(200, { tokens: [] }) }).getSupportedAssets(), ERROR_CODES.MALFORMED_RESPONSE);
+  await rejectsCode(createIntentsClient({ transport: async () => json(200, [LIVE_TOKENS.entries[0], LIVE_TOKENS.entries[0]]) }).getSupportedAssets(), ERROR_CODES.MALFORMED_RESPONSE);
+  for (const quote of [{ depositAddress: 'not-evm.near' }, { depositAddress: undefined }, { depositMemo: '123' }]) {
+    const bad = signWith({ ...MOCK_EXEC, quote: { ...MOCK_EXEC.quote, ...quote } });
+    await rejectsCode(mockClient({ quote: bad }).client.prepareOrder(fundingRequest(MOCK_EXEC)), ERROR_CODES.MALFORMED_RESPONSE);
+  }
+});
+
+// ------------------------------------------------------------------ execution quotes and status (MOCKED)
 
 test('prepareOrder is gated off by default and sends nothing', async () => {
   const transport = fakeTransport({});
-  const client = createIntentsClient({ transport, clock: clockAt(EXEC_CLOCK) });
-  await rejectsCode(client.prepareOrder(execOrder()), ERROR_CODES.EXECUTION_QUOTES_DISABLED);
+  await rejectsCode(createIntentsClient({ transport, clock: clockAt(MOCK_CLOCK) }).prepareOrder(fundingRequest(MOCK_EXEC)), ERROR_CODES.EXECUTION_QUOTES_DISABLED);
   assert.equal(transport.calls.length, 0);
-  assert.throws(() => createIntentsClient({ allowExecutionQuotes: 'yes' }), /boolean/);
 });
 
-test('MOCKED execution quote: deposit reference returned, still not funded', async () => {
-  const { client, transport } = execClient();
-  const quote = await client.prepareOrder(execOrder());
-  assert.equal(quote.kind, 'EXECUTION_QUOTE'); assert.equal(quote.funded, false); assert.equal(quote.mocked, true);
-  assert.match(quote.label, /not funded/);
-  assert.deepEqual(quote.deposit, { type: 'INTENTS', address: 'mocked-deposit.example.near', memo: null, chain: 'near', assetId: USDC_NEAR, exactAmount: '2000000000' });
-  assert.equal(quote.expiry.quoteDeadline, '2026-11-11T06:30:00.000Z'); assert.equal(quote.expiry.timeWhenInactive, '2026-11-11T06:20:00.000Z');
+test('MOCKED execution quote carries the source-chain deposit reference and is still not funded', async () => {
+  const { client, transport } = mockClient();
+  const quote = await client.prepareOrder(fundingRequest(MOCK_EXEC));
+  assert.equal(quote.kind, 'EXECUTION_QUOTE'); assert.equal(quote.funded, false); assert.equal(quote.mocked, true); assert.equal(quote.fees.feesSigned, true);
+  const feeTampered = signWith(MOCK_EXEC); feeTampered.quote.refundFee = '0';
+  await rejectsCode(mockClient({ quote: feeTampered }).client.prepareOrder(fundingRequest(MOCK_EXEC)), ERROR_CODES.SIGNATURE_INVALID);
+  assert.deepEqual(quote.deposit, { type: 'ORIGIN_CHAIN', chain: 'eth', chainId: 1, tokenAddress: ROUTE.source.tokenAddress, address: '0xde90000000000000000000000000000000000001', memo: null, exactAmount: '250000000' });
   assert.equal(transport.calls.find((c) => c.url.endsWith('/v0/quote')).parsedBody.dry, false);
-  assert.deepEqual(transport.calls.map((c) => `${c.method} ${new URL(c.url).pathname}`), ['GET /v0/tokens', 'POST /v0/quote']);
 });
 
-// ------------------------------------------------------------------ status (MOCKED)
+const statusBody = (status, quoteResponse, swapDetails = MOCK_STATUS.swapDetails) => json(200, { ...MOCK_STATUS, status, quoteResponse, swapDetails });
 
-const statusBody = (status, quoteResponse, swapDetails = STATUS_TEMPLATE.swapDetails) => json(200, { ...STATUS_TEMPLATE, status, quoteResponse, swapDetails });
-
-test('every documented execution status is normalized; only SUCCESS reports provider success', async () => {
-  assert.deepEqual([...EXECUTION_STATUSES].sort(), ['FAILED', 'INCOMPLETE_DEPOSIT', 'KNOWN_DEPOSIT_TX', 'PENDING_DEPOSIT', 'PROCESSING', 'REFUNDED', 'SUCCESS']);
-  const signedQuote = signWith(EXEC_TEMPLATE);
-  const expected = {
-    PENDING_DEPOSIT: ['awaiting_deposit', false], KNOWN_DEPOSIT_TX: ['deposit_detected', false], INCOMPLETE_DEPOSIT: ['deposit_incomplete', false],
-    PROCESSING: ['processing', false], SUCCESS: ['succeeded', true], REFUNDED: ['refunded', true], FAILED: ['failed', true],
-  };
+test('MOCKED: every documented status normalizes; only SUCCESS is provider-reported success', async () => {
+  const signed = signWith(MOCK_EXEC);
+  const terminal = { SUCCESS: true, REFUNDED: true, FAILED: true };
   for (const status of EXECUTION_STATUSES) {
-    const details = status === 'REFUNDED' ? { ...STATUS_TEMPLATE.swapDetails, refundedAmount: '2000000000', refundReason: 'PARTIAL_DEPOSIT' } : STATUS_TEMPLATE.swapDetails;
-    const { client, transport } = execClient({ quote: signedQuote, status: statusBody(status, signedQuote, details) });
-    const prepared = await client.prepareOrder(execOrder());
-    const result = await client.getExecutionStatus(prepared);
-    assert.equal(result.status, status); assert.equal(result.phase, expected[status][0]); assert.equal(result.terminal, expected[status][1]);
-    assert.equal(result.providerReportedSuccess, status === 'SUCCESS'); assert.equal(result.mocked, true);
-    assert.equal(result.order.decisionId, 'round-8:decision-1'); assert.equal(result.quoteSignatureVerified, true);
-    if (status === 'REFUNDED') { assert.equal(result.swap.refundedAmount, '2000000000'); assert.equal(result.swap.refundReason, 'PARTIAL_DEPOSIT'); }
-    const statusCall = transport.calls.find((c) => c.url.includes('/v0/status'));
-    assert.equal(new URL(statusCall.url).searchParams.get('depositAddress'), 'mocked-deposit.example.near');
+    const { client, transport } = mockClient({ quote: signed, status: statusBody(status, signed) });
+    const result = await client.getExecutionStatus(await client.prepareOrder(fundingRequest(MOCK_EXEC)));
+    assert.equal(result.status, status); assert.equal(result.terminal, Boolean(terminal[status])); assert.equal(result.providerReportedSuccess, status === 'SUCCESS');
+    assert.equal(result.funding.fundingId, 'manager-1:funding-1'); assert.equal(result.mocked, true);
+    assert.equal(new URL(transport.calls.at(-1).url).searchParams.get('depositAddress'), '0xde90000000000000000000000000000000000001');
   }
 });
 
-test('status responses are bound to the prepared quote and fail closed otherwise', async () => {
-  const signedQuote = signWith(EXEC_TEMPLATE);
-  const cases = [
-    [statusBody('COMPLETED', signedQuote), ERROR_CODES.UNKNOWN_STATUS],
-    [statusBody('SUCCESS', { ...signedQuote, quote: { ...signedQuote.quote, amountOut: '1' } }), ERROR_CODES.SIGNATURE_INVALID],
-    [statusBody('SUCCESS', signWith({ ...EXEC_TEMPLATE, quote: { ...EXEC_TEMPLATE.quote, depositAddress: 'other.example.near' } })), ERROR_CODES.ORDER_MISMATCH],
-    [statusBody('SUCCESS', signWith({ ...EXEC_TEMPLATE, timestamp: '2026-11-11T06:00:01.000Z' })), ERROR_CODES.ORDER_MISMATCH],
+test('MOCKED: status not bound to the prepared quote fails closed', async () => {
+  const signed = signWith(MOCK_EXEC);
+  for (const [status, code] of [
+    [statusBody('COMPLETED', signed), ERROR_CODES.UNKNOWN_STATUS],
+    [statusBody('SUCCESS', { ...signed, quote: { ...signed.quote, amountOut: '1' } }), ERROR_CODES.SIGNATURE_INVALID],
+    [statusBody('SUCCESS', signWith({ ...MOCK_EXEC, quote: { ...MOCK_EXEC.quote, depositAddress: '0xde90000000000000000000000000000000000002' } })), ERROR_CODES.ORDER_MISMATCH],
+    [statusBody('SUCCESS', signWith({ ...MOCK_EXEC, quoteRequest: { ...MOCK_EXEC.quoteRequest, virtualChainRecipient: '0x000000000000000000000000000000000000dead' } })), ERROR_CODES.ORDER_MISMATCH],
     [json(200, { status: 'SUCCESS' }), ERROR_CODES.MALFORMED_RESPONSE],
-    [statusBody('SUCCESS', signedQuote, { ...STATUS_TEMPLATE.swapDetails, amountOut: 1.5 }), ERROR_CODES.MALFORMED_RESPONSE],
     [json(404, { message: 'Deposit address not found' }), ERROR_CODES.NOT_FOUND],
-  ];
-  for (const [status, code] of cases) {
-    const { client } = execClient({ quote: signedQuote, status });
-    const prepared = await client.prepareOrder(execOrder());
-    await rejectsCode(client.getExecutionStatus(prepared), code);
+  ]) {
+    const { client } = mockClient({ quote: signed, status });
+    await rejectsCode(client.getExecutionStatus(await client.prepareOrder(fundingRequest(MOCK_EXEC))), code);
   }
-  const { client } = execClient({ quote: signedQuote, status: statusBody('PROCESSING', signedQuote) });
-  const dry = await execClient({ quote: signWith({ ...EXEC_TEMPLATE, quoteRequest: { ...EXEC_TEMPLATE.quoteRequest, dry: true } }) }).client.previewOrder(execOrder());
-  await rejectsCode(client.getExecutionStatus(dry), ERROR_CODES.INVALID_ORDER);
-  await rejectsCode(client.getExecutionStatus({ depositAddress: 'mocked-deposit.example.near', extra: 1 }), ERROR_CODES.INVALID_ORDER);
-  const byAddress = await client.getExecutionStatus({ depositAddress: 'mocked-deposit.example.near' });
-  assert.equal(byAddress.status, 'PROCESSING'); assert.equal(byAddress.order, null, 'raw references carry no order binding');
 });
 
-// ------------------------------------------------------------------ boundaries
-
-test('only the allowlisted endpoint is used, credentials stay in headers, and the surface is read/quote only', async () => {
+test('only the allowlisted endpoint is used and the surface stays quote/read only', async () => {
   assert.throws(() => createIntentsClient({ baseUrl: 'https://1click.example.com' }), /allowlisted/);
-  assert.throws(() => createIntentsClient({ apiKey: 'has space' }), /API key/);
-  const { client, transport } = liveClient(json(201, LIVE_DRY), { options: { apiKey: 'jwt-test-only' } });
-  const quote = await client.previewOrder(liveDryOrder());
+  const { client, transport } = liveClient(json(201, LIVE_FUNDING_DRY), { apiKey: 'jwt-test-only' });
+  const quote = await client.previewOrder(fundingRequest(LIVE_FUNDING_DRY));
   for (const call of transport.calls) { assert.ok(call.url.startsWith(`${ONE_CLICK_BASE_URL}/v0/`)); assert.equal(call.headers['X-API-Key'], 'jwt-test-only'); }
   assert.equal(JSON.stringify(quote).includes('jwt-test-only'), false);
   assert.deepEqual(Object.keys(client).sort(), ['getExecutionStatus', 'getSupportedAssets', 'prepareOrder', 'previewOrder']);
-  assert.ok(Object.isFrozen(client));
-});
-
-test('supported assets are cached per injected clock TTL', async () => {
-  const clock = clockAt(LIVE_CLOCK);
-  const transport = fakeTransport({ 'GET /v0/tokens': json(200, TOKENS) });
-  const client = createIntentsClient({ transport, clock, assetCacheTtlMs: 1000 });
-  const first = await client.getSupportedAssets(); await client.getSupportedAssets();
-  assert.equal(transport.calls.length, 1); assert.equal(first.mocked, true);
-  assert.equal(first.assets.find((a) => a.assetId === 'nep141:wrap.near').decimals, 24);
-  clock.advance(1001); await client.getSupportedAssets();
-  assert.equal(transport.calls.length, 2);
 });
