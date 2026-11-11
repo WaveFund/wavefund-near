@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./funding.css";
 
 export const metadata: Metadata = {
   title: "Wavefund — treasury decision markets",

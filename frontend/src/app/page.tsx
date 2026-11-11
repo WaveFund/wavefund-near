@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl, decodeState, DemoState, phaseIndex, PHASES, probability, returnPercent, shortAddress, signedUnits, units } from "@/lib/state";
+import { JourneyNav } from "@/components/JourneyNav";
 
 function WaveMark() {
   return <svg aria-hidden="true" viewBox="0 0 32 32" fill="none"><path d="M3 19c4 0 4-8 8-8s4 12 8 12 4-10 10-10" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" /></svg>;
@@ -103,7 +104,7 @@ export default function Dashboard() {
   return <main className="shell">
     <header className="masthead">
       <a className="brand" href="/" aria-label="Wavefund home"><span className="brand-mark"><WaveMark /></span><span>wavefund<span className="brand-period">.</span></span></a>
-      <div className="header-right"><a href="/manager" style={{ fontSize: 11, color: "inherit" }}>Manage Safe</a><span className="network-tag">{aurora ? "AURORA" : "ANVIL"} <span>{aurora ? "1313161555" : "31337"}</span></span><span className={`connection ${connected ? "connected" : ""}`}><i />{connected ? (aurora ? "Testnet contracts connected" : "Local contracts connected") : "Local API offline"}</span></div>
+      <div className="header-right"><JourneyNav /><span className="network-tag">{aurora ? "AURORA" : "ANVIL"} <span>{aurora ? "1313161555" : "31337"}</span></span><span className={`connection ${connected ? "connected" : ""}`}><i />{connected ? (aurora ? "Testnet contracts connected" : "Local contracts connected") : "Local API offline"}</span></div>
     </header>
 
     <div className="simulation-notice"><span className="notice-label">{aurora ? "TESTNET MONITOR" : "LOCAL SIMULATION"}</span><span>{aurora ? "Read-only Aurora contracts · no server signing · owner actions through Safe" : modelDriven ? "Test assets and prices · model-generated decisions · real local contract transactions" : modelConfigured ? "Test assets and prices · model inference configured · real local contract transactions" : "Test assets · simulated agents and prices · real local contract transactions"}</span></div>

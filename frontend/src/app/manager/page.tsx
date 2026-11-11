@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { apiUrl, units } from "@/lib/state";
+import { JourneyNav } from "@/components/JourneyNav";
 
 type Manager = { chainId: number; blockNumber: string; contracts: { safe: string; module: string; engine: string }; owners: string[]; threshold: number; moduleEnabled: boolean; maxSlippageBps: number; activeRoundId: string; activeStatus: number | null; pendingAuthorization: string; currentRoundId: string; stableBalance: string; assetBalance: string; sponsorReserve: string; oracle: { usable: boolean }; unsignedOnly: boolean };
 type Prepared = { action: string; unsignedOnly: boolean; inspectedBlock: string; expiresAt: string; warning: string; safeTransactionBuilder: { chainId: string; transactions: Array<{ to: string; value: string; data: string }> } };
@@ -33,7 +34,7 @@ export default function ManagerPage() {
   function download() { if (!prepared) return; const link = document.createElement('a'); const url = URL.createObjectURL(new Blob([JSON.stringify(prepared.safeTransactionBuilder, null, 2)], { type: 'application/json' })); link.href = url; link.download = `wavefund-${prepared.action}-unsigned.json`; link.click(); URL.revokeObjectURL(url); }
   async function inspect(path: string, setter: (value: string) => void) { try { const response = await fetch(apiUrl(path), { cache: 'no-store', signal: AbortSignal.timeout(30000) }); const body = await response.json(); if (!response.ok) throw new Error(body.error ?? 'Inspection failed'); setter(JSON.stringify(body, null, 2)); } catch (e) { setError((e as Error).message); } }
   return <main className="shell manager-shell">
-    <header className="masthead"><a className="brand" href="/">wavefund.</a><a href="/">← Decision dashboard</a></header>
+    <header className="masthead"><a className="brand" href="/">wavefund.</a><JourneyNav /></header>
     <div className="simulation-notice"><span className="notice-label">OWNER REVIEW</span><span>Unsigned transaction preparation · no automatic wallet signatures or fund transfers</span></div>
     <section className="hero"><div className="hero-copy"><p className="eyebrow">MANAGER CONSOLE</p><h1>Your Safe.<br /><em>Your boundaries.</em></h1><p className="hero-description">Inspect the deployed module, prepare an owner action, then review it through your Safe. Investment funds remain separate from forecasting collateral.</p></div><div className="run-card"><h2>{state ? `Chain ${state.chainId}` : 'Connecting to contracts'}</h2><p>{state ? `Safe threshold ${state.threshold}; ${state.owners.length} owner(s). Inspected at block ${state.blockNumber}.` : 'No addresses, balances or permissions are assumed.'}</p><button className="primary-button" onClick={() => void refresh()}>Refresh contract checks</button><button className="secondary-button" disabled={!state} onClick={() => void connect()}>Check browser wallet owner</button>{wallet && <p>{wallet}</p>}</div></section>
     {error && <aside className="error-notice" role="alert">{error}</aside>}
