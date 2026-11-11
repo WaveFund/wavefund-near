@@ -109,7 +109,11 @@ export function verifyFundingDelivery({
   const deposited = srcOk.length ? sumOf(src) : (status.swap.depositedAmount !== null ? BigInt(status.swap.depositedAmount) : null);
   const amounts = (extra = {}) => ({ requestedIn: quote.amounts.amountIn, minAmountOut: quote.amounts.minAmountOut,
     deposited: deposited === null ? null : deposited.toString(), depositedSource: srcOk.length ? 'source-receipt' : (deposited === null ? null : 'provider'), ...extra });
-  if (src.some((o) => o.usable && o.linked && o.confirmed) && sumOf(src) < amountIn) reasons.push(`Source deposit ${sumOf(src)} is below the quoted input ${amountIn} (partial deposit)`);
+  // EXACT_INPUT: the verified source leg must equal the quoted input exactly to support a proven delivery.
+  const verifiedSourceAmount = srcOk.length ? sumOf(src) : null;
+  const sourceAmountExact = verifiedSourceAmount !== null && verifiedSourceAmount === amountIn;
+  if (verifiedSourceAmount !== null && verifiedSourceAmount < amountIn) reasons.push(`Source deposit ${verifiedSourceAmount} is below the quoted input ${amountIn} (partial deposit)`);
+  if (verifiedSourceAmount !== null && verifiedSourceAmount > amountIn) reasons.push(`Source deposit ${verifiedSourceAmount} exceeds the quoted input ${amountIn} (over-deposit)`);
   if (contradicts(src) || contradicts(dst) || contradicts(ref)) {
     reasons.push('A provider-linked transaction does not show the expected transfer (wrong token, network, recipient or reverted)');
     return result('ambiguous', 'provider-claim-only', { amounts: amounts() });
@@ -129,13 +133,19 @@ export function verifyFundingDelivery({
       return result('pending', srcOk.length ? 'provider-linked-one-leg' : 'provider-claim-only', { amounts: amounts({ providerReportedOut: reported?.toString() ?? null }) });
     }
     const delivered = sumOf(dst);
+    if (verifiedSourceAmount !== null && !sourceAmountExact) {
+      check('source amount equals quoted input', false, `verified source ${verifiedSourceAmount}, quoted input ${amountIn}`);
+      reasons.push('Verified source deposit conflicts with the exact quoted input; delivery is not proven and requires review');
+      return result('ambiguous', 'provider-linked-one-leg', { amounts: amounts({ delivered: delivered.toString(), providerReportedOut: reported?.toString() ?? null }) });
+    }
     if (delivered < minOut || (reported !== null && delivered !== reported)) {
       check('delivered amount', false, `delivered ${delivered}, provider reported ${reported}, minimum ${minOut}`);
       reasons.push('Delivered amount conflicts with the provider report or is below the signed minimum');
       return result('ambiguous', 'provider-linked-one-leg', { amounts: amounts({ delivered: delivered.toString(), providerReportedOut: reported?.toString() ?? null }) });
     }
     check('delivered amount', true, `delivered ${delivered} >= minimum ${minOut}`);
-    return result('delivered', srcOk.length ? 'provider-linked-both-legs' : 'provider-linked-one-leg', { amounts: amounts({ delivered: delivered.toString(), providerReportedOut: reported?.toString() ?? null }) });
+    if (sourceAmountExact) check('source amount equals quoted input', true, `verified source ${verifiedSourceAmount}`);
+    return result('delivered', sourceAmountExact ? 'provider-linked-both-legs' : 'provider-linked-one-leg', { amounts: amounts({ delivered: delivered.toString(), providerReportedOut: reported?.toString() ?? null }) });
   }
   if (s === 'REFUNDED') {
     if (dstOk.length) { reasons.push('Provider reports REFUNDED but a linked delivery to the Safe exists (conflicting observations)'); return result('ambiguous', 'provider-linked-one-leg', { amounts: amounts() }); }

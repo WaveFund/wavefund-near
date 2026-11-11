@@ -315,3 +315,32 @@ test('SHARED: a record that disagrees with its archived signed quote is rejected
     await assert.rejects(f.verifiers.verifyRefund({ transactionHash: DST_TX }, copy), (e) => e.code === ERROR_CODES.ORDER_MISMATCH);
   }
 });
+
+// Regression (review of 3104f6e): EXACT_INPUT delivery must not be proven on both legs unless the
+// verified source deposit equals the quoted input exactly.
+test('REGRESSION: SUCCESS with a 1-unit source deposit is not delivered on both legs', async () => {
+  const { quote, status } = await scenario('SUCCESS');
+  const result = verify({ quote, status, sourceReceipts: [deposit('1')], destinationReceipts: [delivery()] });
+  assert.notEqual(result.outcome, 'delivered');
+  assert.equal(result.outcome, 'ambiguous', 'conflicting source amount requires review');
+  assert.notEqual(result.evidenceQuality, 'provider-linked-both-legs');
+});
+
+test('REGRESSION: SUCCESS with an over-deposit (250000001) is not delivered on both legs', async () => {
+  const { quote, status } = await scenario('SUCCESS');
+  const result = verify({ quote, status, sourceReceipts: [deposit('250000001')], destinationReceipts: [delivery()] });
+  assert.notEqual(result.outcome, 'delivered');
+  assert.equal(result.outcome, 'ambiguous', 'conflicting source amount requires review');
+  assert.notEqual(result.evidenceQuality, 'provider-linked-both-legs');
+});
+
+test('REGRESSION: exact source deposit still delivers; incomplete deposits stay pending', async () => {
+  const { quote, status } = await scenario('SUCCESS');
+  assert.equal(verify({ quote, status, sourceReceipts: [deposit('250000000')], destinationReceipts: [delivery()] }).outcome, 'delivered');
+  const split = verify({ quote, status, sourceReceipts: [receipt(SRC_TX, 1, [...deposit('100000000').receipt.logs, ...deposit('150000000').receipt.logs])], destinationReceipts: [delivery()] });
+  assert.equal(split.outcome, 'delivered', 'transfers in the linked deposit tx are summed exactly');
+  for (const s of ['KNOWN_DEPOSIT_TX', 'INCOMPLETE_DEPOSIT', 'PROCESSING']) {
+    const p = await scenario(s);
+    assert.equal(verify({ quote: p.quote, status: p.status, sourceReceipts: [deposit('1')] }).outcome, 'pending', s);
+  }
+});

@@ -166,7 +166,9 @@ verifyFundingDelivery({ quote, status, statusError, sourceReceipts, destinationR
 |---|---|
 | Non-terminal status | `pending` |
 | `SUCCESS` without a counted Safe receipt | `pending` (provider claim only) |
-| `SUCCESS` with a counted Safe receipt whose amount equals the provider `amountOut` and is ≥ the signed `minAmountOut` | `delivered` |
+| `SUCCESS` with a counted Safe receipt whose amount equals the provider `amountOut` and is ≥ the signed `minAmountOut` | `delivered`. It is `provider-linked-both-legs` only if the verified source deposit **equals** the quoted `amountIn` exactly (EXACT_INPUT). |
+| `SUCCESS` but the verified source deposit is below or above the quoted input (e.g. 1 or 250000001 for a 250000000 quote) | `ambiguous` (review), even when the destination evidence matches |
+| Non-terminal status with an incomplete deposit | `pending` (partial or over-deposit noted in `reasons`) |
 | `REFUNDED` | `refunded`, with `refunded` taken from the provider's `refundedAmount` (never assumed to be the input), the `refundShortfall` and the quoted `refundFee` |
 | `FAILED` | `failed`. The fund location is not established, and it is not a refund. |
 | A provider-linked transaction that does not show the expected transfer (wrong token, wrong network, wrong recipient or reverted), delivery and refund both observed, amounts that disagree, or a refund with no amount | `ambiguous` |
@@ -260,8 +262,8 @@ No dependency was added. EIP-55 checksum validation uses `viem`, which is alread
 
 - **Tests:**
   - `runtime/test/intents-provider.test.mjs`: 24 tests.
-  - `runtime/test/intents-delivery.test.mjs`: 18 tests, including an end-to-end run through A's real `createFundingService` and `createFundingStore` (quoted → submitted → delivered) and review paths.
-  - Full runtime and funding suite (`runtime/test`, `runtime/funding`, `scripts/lib`): **132/132** (42 of them Intents tests).
+  - `runtime/test/intents-delivery.test.mjs`: 21 tests, including an end-to-end run through A's real `createFundingService` and `createFundingStore` (quoted → submitted → delivered) and review paths.
+  - Full runtime and funding suite (`runtime/test`, `runtime/funding`, `scripts/lib`): **135/135** (45 of them Intents tests).
 - **Container:** run in Docker image `node:22.11.0-bookworm-slim` (`node@sha256:f035ba7ffee18f67200e2eb8018e0f13c954ec16338f264940f701997e3c12da`) with `--network none --read-only --cap-drop ALL --security-opt no-new-privileges`, as user `node`, with no host environment variables. Dependencies were installed with `npm ci --ignore-scripts` in a separate, networked step before the tests ran.
 - **Mutation check:** 20 mutants, all killed:
   - echo binding;
@@ -291,5 +293,9 @@ No dependency was added. EIP-55 checksum validation uses `viem`, which is alread
   - loose confirmation defaults; delivery-level sender filter; `QUOTING_UNAVAILABLE` mapping.
 
   One mutant is equivalent and survives: returning the provider-reported refund instead of the observed refund. The verifier already requires the two to be equal.
+- **Exact-input source regression** (review of `3104f6e`): 1-unit and 250000001-unit source deposits previously produced `delivered`/`provider-linked-both-legs`.
+  - Both regressions failed before the fix and pass after it.
+  - Guard mutation check: 6 mutants, all killed, with a no-op baseline that survives: guard removed, over-deposit allowed, under-deposit allowed, any amount allowed, and `pending` instead of review.
+  - One equivalent mutant (`both-legs` quality based on source presence) survives, because the guard has already returned for any non-exact source.
 - **Evidence and gating mutation check:** 4 mutants, all killed, with a no-op baseline that survives: marking the route `deliveryProven: true`, enabling executable quotes by default, altering the signed `virtualChainRecipient` in the index, and flipping the index's `deliveryProven` flag.
 - **Fixtures:** `fixtures/intents/live/` holds unmodified production captures. `fixtures/intents/mocked/` and every receipt built in the tests are synthetic. See `fixtures/intents/README.md`.
