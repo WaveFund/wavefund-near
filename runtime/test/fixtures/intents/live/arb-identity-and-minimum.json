@@ -1,0 +1,33 @@
+{
+  "capturedAt": "2026-11-11T15:17:52.826Z",
+  "tokenListTotal": 229,
+  "arbitrumUsdcEntry": {
+    "assetId": "nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near",
+    "decimals": 6,
+    "blockchain": "arb",
+    "symbol": "USDC",
+    "price": 0.99955,
+    "priceUpdatedAt": "2026-11-11T15:17:01.224Z",
+    "contractAddress": "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
+    "coingeckoId": "usd-coin"
+  },
+  "minimumProbe": {
+    "httpStatus": 400,
+    "request": {
+      "dry": true,
+      "swapType": "EXACT_INPUT",
+      "slippageTolerance": 100,
+      "originAsset": "nep141:arb-0xaf88d065e77c8cc2239327c5edb3a432268e5831.omft.near",
+      "depositType": "ORIGIN_CHAIN",
+      "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+      "amount": "1",
+      "refundTo": "0x37f91aa1e24aafc7b3843e281650aa884a6651e2",
+      "refundType": "ORIGIN_CHAIN",
+      "recipient": "aurora",
+      "recipientType": "DESTINATION_CHAIN",
+      "virtualChainRecipient": "0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c",
+      "deadline": "2026-11-11T15:47:52.000Z"
+    },
+    "responseText": "{\"message\":\"Amount is too low for bridge, try at least 5301\",\"correlationId\":\"99615451-23e7-43f5-ae92-37f7ca2bed71\",\"timestamp\":\"2026-11-11T15:17:52.696Z\",\"path\":\"/v0/quote\"}"
+  }
+}
