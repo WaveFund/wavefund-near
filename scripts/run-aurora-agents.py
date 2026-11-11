@@ -14,7 +14,7 @@ import subprocess
 import sys
 
 p = argparse.ArgumentParser()
-p.add_argument('--phase', required=True, choices=['prepare', 'snapshot', 'plan', 'run'])
+p.add_argument('--phase', required=True, choices=['prepare', 'snapshot', 'plan', 'run', 'recover-cancel'])
 p.add_argument('--directory', type=Path, default=Path('.run/aurora-agents/round2'))
 p.add_argument('--manifest', type=Path, default=Path('deployments/aurora-testnet.json'))
 p.add_argument('--wallet', type=Path, default=Path('secrets/aurora-testnet-wallet.json'))

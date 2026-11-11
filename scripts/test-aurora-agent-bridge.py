@@ -53,6 +53,16 @@ class AgentBridgeSafety(unittest.TestCase):
             self.assertIn('no concurrent signing or inference', self.run_bridge('--run-inference').stderr)
         self.assertIn('snapshot.json', self.run_bridge('--run-inference').stderr)
 
+    def test_recovery_phase_is_explicit_and_still_blocks_unknown_broadcast(self):
+        command = self.command.copy()
+        command[command.index('plan')] = 'recover-cancel'
+        journal = self.root / 'journal.jsonl'
+        journal.write_text(json.dumps({'stage': 'prepared', 'hash': '0xabc'}) + '\n')
+        result = subprocess.run(command, capture_output=True, text=True, timeout=10)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('Unresolved transaction', result.stderr)
+        self.assertNotIn('invalid choice', result.stderr)
+
 
 if __name__ == '__main__':
     unittest.main()

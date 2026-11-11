@@ -6,6 +6,7 @@ import { makeAuroraPlan, validateAuroraPlan } from '../runtime/agents/aurora-pla
 import { chooseTrade } from '../runtime/agents/policy.mjs';
 import { collectResearch } from '../runtime/operator/research.mjs';
 import { namedOutputs } from '../runtime/chain.mjs';
+import { recoverInterruptedRound } from '../runtime/agents/interrupted-round.mjs';
 
 const lines = readline.createInterface({ input: process.stdin, crlfDelay: Infinity });
 const iterator = lines[Symbol.asyncIterator]();
@@ -28,6 +29,9 @@ try {
     const chain = createAuroraChain({ ...config, emit, acknowledge });
     delete config.privateKey; delete config.actorKeys;
     const { contracts, accounts, client, abi, read, tx, send, ownerCall, refresh, waitUntil } = chain;
+    if (config.phase === 'recover-cancel') {
+      await recoverInterruptedRound({ chain: { ...chain, roundRecord: async id => namedOutputs(abi('engine'), 'rounds', await read('engine', 'rounds', [id])) }, events: config.events, emit });
+    } else {
     const state = await chain.inspect();
     const nextId = BigInt(state.currentRoundId) + 1n;
     const prefix = `round${nextId}`;
@@ -141,6 +145,7 @@ try {
         provider: plan.provider, recordHashes: plan.records.map(r => ({ name: r.name, inputHash: r.inputHash, outputHash: r.outputHash })),
         scope: 'Four separate agent wallets and four separately prompted calls to the same NEAR AI model; test assets, no verified attestation, no forced winner or trade.' });
     } else throw new Error('Unknown phase');
+    }
   }
 } catch (error) {
   emit({ stage, status: 'failed', errorName: error.name, reason: error.shortMessage ?? (error.name === 'Error' ? error.message : 'Inspect the known prepared hash; no automatic retry') });

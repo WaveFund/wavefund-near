@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-11",
+  "baseCommit": "a5df495422e18cf271d2c12f6e67b6f9bae77f3e",
+  "branch": "feat/funding-core",
+  "environment": "Existing network-isolated Node 22 and Python 3.12 containers; scratch source copies; no credentials",
+  "runtime": { "passed": 81, "failed": 0, "skipped": 0, "baseline": 60, "new": 21 },
+  "pythonBridges": { "passed": 7, "failed": 0, "baseline": 6, "new": 1 },
+  "mutationChecks": {
+    "killed": 17,
+    "survived": 0,
+    "cases": [
+      "wrong-safe", "wrong-refund", "quote-expiry", "one-attempt",
+      "duplicate-reservation", "submission-identity", "api-success",
+      "delivery-recipient", "delivery-minimum", "delivery-finality",
+      "balance-delta", "round-network", "fixture-readiness",
+      "fee-scale", "recovery-unresolved", "conflict-refund", "review-reason"
+    ],
+    "method": "Each intentional source mutation ran the funding/reliability tests in a separate scratch copy; required actual assertion failures, not syntax/import errors. Original source restored by using independent copies."
+  },
+  "workerSyntaxCheck": "node --check scripts/aurora-agent-round.mjs passed",
+  "pythonSyntaxCheck": "python3 -m py_compile run-aurora-agents.py passed in container",
+  "solidity": "Unchanged; historical 432 executions not rerun or counted as fresh evidence",
+  "liveFunding": false,
+  "liveInference": false,
+  "mainnetDeployment": false,
+  "providerIntegration": false,
+  "frontendIntegration": false,
+  "limitations": [
+    "All new receipts, route configuration and verifier adapters in tests are synthetic, including tests of live-verified branches.",
+    "Production approved-routes.json contains no enabled routes.",
+    "A verified 1Click route and authenticated delivery/refund adapters remain required from Developer B.",
+    "A verified Aurora mainnet Wavefund deployment and trusted pinned-block snapshot adapter are required before live round readiness.",
+    "The readiness primitive is not wired into existing testnet preparation, which intentionally retains its existing network guards.",
+    "One-use readiness reservations have no automatic post-round release or recovery endpoint.",
+    "Recovery orchestration is fixture-tested, not a newly executed public testnet cancellation.",
+    "Fee scenarios supply deterministic arithmetic references; they do not correct or guarantee a model's forecast."
+  ]
+}
