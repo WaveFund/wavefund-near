@@ -447,3 +447,20 @@ test('LIVE Arbitrum happy path (15:19 UTC): shared request -> live client dry qu
   const replay = await createIntentsClient({ transport, clock: clockAt(summary.expiry.quotedAt) }).previewOrder(mapped);
   assert.equal(replay.mocked, true); assert.deepEqual(replay.amounts, summary.amounts);
 });
+
+test('LIVE actual Safe (16:18 UTC): 1 USDC Arbitrum dry quote to 0xe788...5d06 verifies; Safe is Safe 1.4.1 on Aurora; executable disabled', async () => {
+  const { summary, providerPayload } = fixture('live/quote-dry-arb-usdc-to-real-safe.json');
+  assert.match(summary.destinationLabel, /ACTUAL Wavefund Aurora-mainnet Safe/);
+  assert.equal(summary.auroraRpc.chainId, '0x4e454152'); assert.equal(summary.auroraRpc.safeVersion, '1.4.1'); assert.ok(summary.auroraRpc.safeCodeBytes > 0);
+  assert.equal(summary.safeChecksumValid, true); assert.equal(summary.managerChecksumValid, true);
+  assert.equal(summary.source, 'live-provider'); assert.equal(summary.funded, false); assert.equal(summary.prepareOrder, 'EXECUTION_QUOTES_DISABLED');
+  assert.equal(createQuoteSignatureVerifier()(providerPayload).valid, true, 'real 1Click signature');
+  const q = providerPayload.quoteRequest;
+  assert.equal(q.dry, true); assert.equal(q.amount, '1000000'); assert.equal(q.recipient, 'aurora');
+  assert.equal(q.virtualChainRecipient, '0xe7889338fdc4962f5d1280e0e4267a0566e05d06');
+  assert.equal(q.refundTo, '0x37f91aa1e24aafc7b3843e281650aa884a6651e2');
+  assert.equal(q.originAsset, ROUTE.source.assetId); assert.equal(q.destinationAsset, ROUTE.destination.assetId);
+  const transport = fakeTransport({ 'GET /v0/tokens': tokens(), 'POST /v0/quote': json(201, providerPayload) });
+  const replay = await createIntentsClient({ transport, clock: clockAt(providerPayload.timestamp) }).previewOrder(toProviderFundingRequest(summary.sharedRequest));
+  assert.deepEqual(replay.amounts, summary.amounts); assert.equal(replay.amounts.minAmountOut, '989800');
+});
