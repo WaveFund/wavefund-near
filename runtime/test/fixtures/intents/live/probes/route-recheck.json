@@ -1,0 +1,412 @@
+{
+  "purpose": "Dry-only recheck from the isolated container, about 30 minutes after the successful funding-shape quotes",
+  "tokenList": {
+    "httpStatus": 200,
+    "total": 229,
+    "hasAuroraBlockchain": false,
+    "routeAssets": [
+      {
+        "assetId": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+        "decimals": 6,
+        "blockchain": "eth",
+        "symbol": "USDC",
+        "price": 0.999602,
+        "priceUpdatedAt": "2026-11-11T10:42:01.123Z",
+        "contractAddress": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "coingeckoId": "usd-coin"
+      },
+      {
+        "assetId": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "decimals": 6,
+        "blockchain": "near",
+        "symbol": "USDC",
+        "price": 0.999602,
+        "priceUpdatedAt": "2026-11-11T10:42:01.123Z",
+        "contractAddress": "17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "coingeckoId": "usd-coin"
+      }
+    ]
+  },
+  "results": [
+    {
+      "name": "funding-shape-lowercase",
+      "capturedAt": "2026-11-11T10:42:37.364Z",
+      "httpStatus": 400,
+      "request": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "amount": "250000000",
+        "refundTo": "0x2527d02599ba641c19fea793cd0f167589a0f10d",
+        "refundType": "ORIGIN_CHAIN",
+        "recipient": "aurora",
+        "recipientType": "DESTINATION_CHAIN",
+        "virtualChainRecipient": "0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c",
+        "deadline": "2026-11-11T11:12:37.000Z"
+      },
+      "response": {
+        "message": "Quoting for this pair is not available",
+        "correlationId": "1cd18549-62fa-4f50-b1fb-fdc7c602690a",
+        "timestamp": "2026-11-11T10:42:37.265Z",
+        "path": "/v0/quote"
+      }
+    },
+    {
+      "name": "checksummed-virtual",
+      "capturedAt": "2026-11-11T10:42:54.887Z",
+      "httpStatus": 400,
+      "request": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "amount": "250000000",
+        "refundType": "ORIGIN_CHAIN",
+        "recipientType": "DESTINATION_CHAIN",
+        "deadline": "2026-11-11T11:12:54.000Z",
+        "refundTo": "0x2527D02599Ba641c19FEa793cD0F167589a0f10D",
+        "recipient": "aurora",
+        "virtualChainRecipient": "0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C"
+      },
+      "response": {
+        "message": "Quoting for this pair is not available",
+        "correlationId": "89cfbd2a-b17b-4c57-b4a9-2f58c00fcd6e",
+        "timestamp": "2026-11-11T10:42:54.781Z",
+        "path": "/v0/quote"
+      }
+    },
+    {
+      "name": "lowercase-virtual",
+      "capturedAt": "2026-11-11T10:42:55.429Z",
+      "httpStatus": 400,
+      "request": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "amount": "250000000",
+        "refundType": "ORIGIN_CHAIN",
+        "recipientType": "DESTINATION_CHAIN",
+        "deadline": "2026-11-11T11:12:54.000Z",
+        "refundTo": "0x2527d02599ba641c19fea793cd0f167589a0f10d",
+        "recipient": "aurora",
+        "virtualChainRecipient": "0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c"
+      },
+      "response": {
+        "message": "Quoting for this pair is not available",
+        "correlationId": "1f68be8a-a34c-4a25-8e8b-34668d3af894",
+        "timestamp": "2026-11-11T10:42:55.331Z",
+        "path": "/v0/quote"
+      }
+    },
+    {
+      "name": "control-near-recipient",
+      "capturedAt": "2026-11-11T10:42:55.649Z",
+      "httpStatus": 400,
+      "request": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "amount": "250000000",
+        "refundType": "ORIGIN_CHAIN",
+        "recipientType": "DESTINATION_CHAIN",
+        "deadline": "2026-11-11T11:12:54.000Z",
+        "refundTo": "0x2527D02599Ba641c19FEa793cD0F167589a0f10D",
+        "recipient": "your-account.near"
+      },
+      "response": {
+        "message": "Quoting for this pair is not available",
+        "correlationId": "90b256b0-106e-45b2-a6ac-64235e652775",
+        "timestamp": "2026-11-11T10:42:55.544Z",
+        "path": "/v0/quote"
+      }
+    },
+    {
+      "name": "control-eth-usdc-to-eth-usdt",
+      "capturedAt": "2026-11-11T10:42:55.862Z",
+      "httpStatus": 400,
+      "request": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:eth-0xdac17f958d2ee523a2206206994597c13d831ec7.omft.near",
+        "amount": "250000000",
+        "refundType": "ORIGIN_CHAIN",
+        "recipientType": "DESTINATION_CHAIN",
+        "deadline": "2026-11-11T11:12:54.000Z",
+        "refundTo": "0x2527D02599Ba641c19FEa793cD0F167589a0f10D",
+        "recipient": "0x2527D02599Ba641c19FEa793cD0F167589a0f10D"
+      },
+      "response": {
+        "message": "Quoting for this pair is not available",
+        "correlationId": "bdab851d-dc65-4dd7-bcda-31fa8c2489ad",
+        "timestamp": "2026-11-11T10:42:55.750Z",
+        "path": "/v0/quote"
+      }
+    },
+    {
+      "name": "checksummed-virtual (repeat)",
+      "capturedAt": "2026-11-11T10:43:16.968Z",
+      "httpStatus": 400,
+      "request": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "amount": "250000000",
+        "refundType": "ORIGIN_CHAIN",
+        "recipientType": "DESTINATION_CHAIN",
+        "deadline": "2026-11-11T11:13:16.000Z",
+        "refundTo": "0x2527D02599Ba641c19FEa793cD0F167589a0f10D",
+        "recipient": "aurora",
+        "virtualChainRecipient": "0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C"
+      },
+      "response": {
+        "message": "Quoting for this pair is not available",
+        "correlationId": "9ed31a7d-7505-4ab7-a2ed-a46577eaf875",
+        "timestamp": "2026-11-11T10:43:16.862Z",
+        "path": "/v0/quote"
+      }
+    },
+    {
+      "name": "lowercase-virtual (repeat)",
+      "capturedAt": "2026-11-11T10:43:17.565Z",
+      "httpStatus": 400,
+      "request": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "amount": "250000000",
+        "refundType": "ORIGIN_CHAIN",
+        "recipientType": "DESTINATION_CHAIN",
+        "deadline": "2026-11-11T11:13:16.000Z",
+        "refundTo": "0x2527d02599ba641c19fea793cd0f167589a0f10d",
+        "recipient": "aurora",
+        "virtualChainRecipient": "0xb4c2fbec9d610f9a3a9b843c47b1a8095cec887c"
+      },
+      "response": {
+        "message": "Quoting for this pair is not available",
+        "correlationId": "42e6b910-d44e-4084-a4e5-c35c3470cf2b",
+        "timestamp": "2026-11-11T10:43:17.466Z",
+        "path": "/v0/quote"
+      }
+    },
+    {
+      "name": "control-near-recipient (repeat)",
+      "capturedAt": "2026-11-11T10:43:17.759Z",
+      "httpStatus": 400,
+      "request": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "amount": "250000000",
+        "refundType": "ORIGIN_CHAIN",
+        "recipientType": "DESTINATION_CHAIN",
+        "deadline": "2026-11-11T11:13:16.000Z",
+        "refundTo": "0x2527D02599Ba641c19FEa793cD0F167589a0f10D",
+        "recipient": "your-account.near"
+      },
+      "response": {
+        "message": "Quoting for this pair is not available",
+        "correlationId": "2a578d55-e98f-4db3-ad6d-928cb89b4302",
+        "timestamp": "2026-11-11T10:43:17.662Z",
+        "path": "/v0/quote"
+      }
+    },
+    {
+      "name": "control-eth-usdc-to-eth-usdt (repeat)",
+      "capturedAt": "2026-11-11T10:43:17.957Z",
+      "httpStatus": 400,
+      "request": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "originAsset": "nep141:eth-0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48.omft.near",
+        "depositType": "ORIGIN_CHAIN",
+        "destinationAsset": "nep141:eth-0xdac17f958d2ee523a2206206994597c13d831ec7.omft.near",
+        "amount": "250000000",
+        "refundType": "ORIGIN_CHAIN",
+        "recipientType": "DESTINATION_CHAIN",
+        "deadline": "2026-11-11T11:13:16.000Z",
+        "refundTo": "0x2527D02599Ba641c19FEa793cD0F167589a0f10D",
+        "recipient": "0x2527D02599Ba641c19FEa793cD0F167589a0f10D"
+      },
+      "response": {
+        "message": "Quoting for this pair is not available",
+        "correlationId": "9961c780-f847-4e50-8090-ee7610b29413",
+        "timestamp": "2026-11-11T10:43:17.862Z",
+        "path": "/v0/quote"
+      }
+    },
+    {
+      "name": "near-wnear-to-near-usdt",
+      "capturedAt": "2026-11-11T10:43:39.733Z",
+      "httpStatus": 201,
+      "request": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "depositType": "ORIGIN_CHAIN",
+        "refundType": "ORIGIN_CHAIN",
+        "recipientType": "DESTINATION_CHAIN",
+        "deadline": "2026-11-11T11:13:38.000Z",
+        "originAsset": "nep141:wrap.near",
+        "destinationAsset": "nep141:usdt.tether-token.near",
+        "amount": "1000000000000000000000000",
+        "refundTo": "your-account.near",
+        "recipient": "your-account.near"
+      },
+      "response": {
+        "quote": {
+          "amountIn": "1000000000000000000000000",
+          "amountInFormatted": "1.0",
+          "amountInUsd": "3.650000000000",
+          "minAmountIn": "1000000000000000000000000",
+          "amountOut": "3628454",
+          "amountOutFormatted": "3.628454",
+          "amountOutUsd": "3.625761687132",
+          "minAmountOut": "3592169",
+          "timeEstimate": 20,
+          "refundFee": "0",
+          "withdrawFee": "4566"
+        },
+        "signature": "ed25519:638ofYMK9vMpMxuG6RKLnNGmn7nHDWbMYjuh3NfMHBDEM3SnZV5dgbyb91nbkNje4ufEaTNXV4Fbx83L3MsiEH5G",
+        "timestamp": "2026-11-11T10:43:39.180Z",
+        "correlationId": "e3d2f415-42dd-4365-be60-c328b57c15a5",
+        "echoedRequest": {
+          "dry": true,
+          "depositMode": "SIMPLE",
+          "swapType": "EXACT_INPUT",
+          "slippageTolerance": 100,
+          "originAsset": "nep141:wrap.near",
+          "depositType": "ORIGIN_CHAIN",
+          "destinationAsset": "nep141:usdt.tether-token.near",
+          "amount": "1000000000000000000000000",
+          "refundTo": "your-account.near",
+          "refundType": "ORIGIN_CHAIN",
+          "recipient": "your-account.near",
+          "recipientType": "DESTINATION_CHAIN",
+          "deadline": "2026-11-11T11:13:38.000Z",
+          "confidentiality": "public",
+          "quoteWaitingTimeMs": 0,
+          "insured": false,
+          "appFees": [
+            {
+              "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+              "fee": 20
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "near-usdc-to-aurora-virtual",
+      "capturedAt": "2026-11-11T10:43:40.964Z",
+      "httpStatus": 201,
+      "request": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "depositType": "ORIGIN_CHAIN",
+        "refundType": "ORIGIN_CHAIN",
+        "recipientType": "DESTINATION_CHAIN",
+        "deadline": "2026-11-11T11:13:38.000Z",
+        "originAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "destinationAsset": "nep141:usdt.tether-token.near",
+        "amount": "250000000",
+        "refundTo": "your-account.near",
+        "recipient": "aurora",
+        "virtualChainRecipient": "0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C"
+      },
+      "response": {
+        "quote": {
+          "amountIn": "250000000",
+          "amountInFormatted": "250.0",
+          "amountInUsd": "249.900500000000",
+          "minAmountIn": "250000000",
+          "amountOut": "250178797",
+          "amountOutFormatted": "250.178797",
+          "amountOutUsd": "249.900500000000",
+          "minAmountOut": "247677009",
+          "timeEstimate": 20,
+          "refundFee": "0",
+          "withdrawFee": "0"
+        },
+        "signature": "ed25519:2eNFWDvLN5yhNA81kwUjZMNoK72yik2AaioJjqBZFY8HN57bN6f8nSqXaAVjJrqo7GG41BFVUx6BUHY1ajV9Xu1B",
+        "timestamp": "2026-11-11T10:43:40.195Z",
+        "correlationId": "735d42d6-af79-4d2e-8a54-e89ef2342387",
+        "echoedRequest": {
+          "dry": true,
+          "depositMode": "SIMPLE",
+          "swapType": "EXACT_INPUT",
+          "slippageTolerance": 100,
+          "originAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+          "depositType": "ORIGIN_CHAIN",
+          "destinationAsset": "nep141:usdt.tether-token.near",
+          "amount": "250000000",
+          "refundTo": "your-account.near",
+          "refundType": "ORIGIN_CHAIN",
+          "recipient": "aurora",
+          "virtualChainRecipient": "0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C",
+          "recipientType": "DESTINATION_CHAIN",
+          "deadline": "2026-11-11T11:13:38.000Z",
+          "confidentiality": "public",
+          "quoteWaitingTimeMs": 0,
+          "insured": false,
+          "appFees": [
+            {
+              "recipient": "5880ad2b362620fadf759cbceb1cd5737ce8c6ed7fb8e9942881e6731f9247dd",
+              "fee": 1
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "base-usdc-to-near-usdc-aurora-virtual",
+      "capturedAt": "2026-11-11T10:43:41.190Z",
+      "httpStatus": 400,
+      "request": {
+        "dry": true,
+        "swapType": "EXACT_INPUT",
+        "slippageTolerance": 100,
+        "depositType": "ORIGIN_CHAIN",
+        "refundType": "ORIGIN_CHAIN",
+        "recipientType": "DESTINATION_CHAIN",
+        "deadline": "2026-11-11T11:13:38.000Z",
+        "originAsset": "nep141:base-0x833589fcd6edb6e08f4c7c32d4f71b54bda02913.omft.near",
+        "destinationAsset": "nep141:17208628f84f5d6ad33f0da3bbbeb27ffcb398eac501a31bd6ad2011e36133a1",
+        "amount": "250000000",
+        "refundTo": "0x2527D02599Ba641c19FEa793cD0F167589a0f10D",
+        "recipient": "aurora",
+        "virtualChainRecipient": "0xb4c2fbec9d610F9A3a9b843c47b1A8095ceC887C"
+      },
+      "response": {
+        "message": "Quoting for this pair is not available",
+        "correlationId": "ead80f87-228d-4fb5-a43c-56f0f7ea94ed",
+        "timestamp": "2026-11-11T10:43:41.088Z",
+        "path": "/v0/quote"
+      }
+    }
+  ]
+}
