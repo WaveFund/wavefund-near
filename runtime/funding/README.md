@@ -125,9 +125,28 @@ Balance/block numbers are raw integer strings; flags are booleans. Check both th
 engine lifecycle and module authorization. `compatible:true` is a trusted adapter
 assertion, never a caller-supplied or provider-supplied API boolean.
 
-**Not wired yet:** the existing manager reader deliberately permits only Anvil and
-Aurora testnet. This core does not widen it or pretend a mainnet deployment exists.
-Until a separately verified mainnet deployment/snapshot adapter and B's verified
+The exported `createAuroraFundingSnapshotReader({publicClient,manifest,clock})`
+now implements a separate **read-only**, Aurora-mainnet-only snapshot adapter. It
+does not construct a transport/wallet or change the existing manager reader.
+Its manifest requires exactly `schemaVersion`, `chainId`, `contracts`, `codeHashes`,
+`safeSingleton`, `safeSingletonCodeHash`. `contracts` and `codeHashes` each require
+the 13 keys: safe, stable, asset, module, engine, tracker, oracle, router, market,
+tokens, registry, poolManager, hook. Hashes are reviewed runtime-bytecode keccak256
+pins, not source hashes or values copied blindly from an untrusted RPC. The Safe
+proxy's singleton address and runtime code are additionally checked.
+
+This first adapter supports a Safe 1.4.1 with exactly one configured manager owner
+and threshold one, matching the current demo model. It checks both engine and
+module round state, module authority, full forecasting/execution bindings and fresh
+oracle data. Reads are pinned to one block, whose canonical hash and RPC network
+are rechecked after the reads. Wrong code, owner, binding, network, stale data or a
+reorg fails closed. It does not attest to arbitrary token proxy implementations,
+future upgrades, off-chain verifier security, contract audits or honest RPCs.
+
+**Not wired yet:** no reviewed mainnet manifest/deployment exists here. The existing
+manager reader deliberately permits only Anvil and Aurora testnet. This core does
+not widen it or pretend a mainnet deployment exists.
+Until a separately verified mainnet deployment/manifest and B's verified
 route are available, keep production routes empty and wallet send disabled.
 Existing local/testnet round preparation stays unchanged; it must not be fed a
 mainnet funding record. The new readiness gate must be called by the future funded

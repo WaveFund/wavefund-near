@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-11",
+  "baseCommit": "678c24e",
+  "scope": "Separate read-only Aurora mainnet deployment snapshot adapter; no provider/frontend changes",
+  "runtime": { "passed": 90, "failed": 0, "skipped": 0, "newSnapshotTests": 9 },
+  "newMutationChecks": {
+    "killed": 9,
+    "survived": 0,
+    "cases": ["code-pins", "owner", "module-authority", "decimals", "bindings", "engine-active", "reorg", "oracle-age", "singleton"],
+    "method": "Independent scratch copies inside network-isolated Node container; required assertion failures, excluded syntax/import failures"
+  },
+  "previousChecks": "17 funding/agent mutants and 7 Python bridge tests passed in the preceding implementation; not rerun because their implementation did not change",
+  "evidenceType": "Synthetic pinned-block RPC responses, including positive mainnet-identity fixtures; not an actual mainnet deployment check",
+  "liveCalls": false,
+  "deployment": false,
+  "fundsMoved": false,
+  "remaining": [
+    "Verified provider funding route and quote/receipt adapters from Developer B",
+    "Reviewed real mainnet deployment manifest, Safe singleton and runtime bytecode pins",
+    "Final provider/service/dashboard integration and explicit live-funding authorization",
+    "Explicit repeated-round readiness closure integration"
+  ]
+}
