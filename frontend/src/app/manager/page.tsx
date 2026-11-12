@@ -1,14 +1,28 @@
 "use client";
 import { useEffect, useState } from "react";
 import { apiUrl, units } from "@/lib/state";
+import { AppShell } from "@/components/AppShell";
+import { CopyText, Icon, type IconName } from "@/components/funding/primitives";
+import { Badge, Button, Card, CardHeader, DescriptionList, EmptyState, Notice, PageHeader, Skeleton, Stat } from "@/components/ui";
 
 type Manager = { chainId: number; blockNumber: string; contracts: { safe: string; module: string; engine: string }; owners: string[]; threshold: number; moduleEnabled: boolean; maxSlippageBps: number; activeRoundId: string; activeStatus: number | null; pendingAuthorization: string; currentRoundId: string; stableBalance: string; assetBalance: string; sponsorReserve: string; oracle: { usable: boolean }; unsignedOnly: boolean };
 type Prepared = { action: string; unsignedOnly: boolean; inspectedBlock: string; expiresAt: string; warning: string; safeTransactionBuilder: { chainId: string; transactions: Array<{ to: string; value: string; data: string }> } };
 
+const ACTIONS: Array<{ id: string; label: string; icon: IconName; hint: string }> = [
+  { id: "policy", label: "Slippage policy", icon: "sliders", hint: "Set the module's maximum swap slippage." },
+  { id: "enable", label: "Enable module", icon: "bolt", hint: "Enable the verified Trading Safe module on your Safe." },
+  { id: "seed", label: "Fund sponsorship", icon: "layers", hint: "Move USDC from the Safe into the forecasting sponsor reserve." },
+  { id: "withdraw-seed", label: "Return sponsorship", icon: "refund", hint: "Return unallocated sponsorship to the Safe." },
+  { id: "authorize", label: "Authorize round", icon: "check", hint: "Approve exact timing and payout bounds for the next round." },
+  { id: "revoke", label: "Revoke authorization", icon: "cross", hint: "Cancel a pending round authorization." },
+  { id: "disable", label: "Disable module", icon: "lock", hint: "Disable the module. Does not settle an existing round." },
+];
+
 export default function ManagerPage() {
-  const [state, setState] = useState<Manager | null>(null); const [error, setError] = useState<string | null>(null); const [action, setAction] = useState("policy"); const [slippage, setSlippage] = useState("100"); const [sponsorAmount, setSponsorAmount] = useState("100"); const [prepared, setPrepared] = useState<Prepared | null>(null); const [busy, setBusy] = useState(false); const [wallet, setWallet] = useState<string | null>(null); const [audit, setAudit] = useState<string | null>(null); const [research, setResearch] = useState<string | null>(null);
+  const [state, setState] = useState<Manager | null>(null); const [error, setError] = useState<string | null>(null); const [action, setAction] = useState("policy"); const [slippage, setSlippage] = useState("100"); const [sponsorAmount, setSponsorAmount] = useState("100"); const [prepared, setPrepared] = useState<Prepared | null>(null); const [busy, setBusy] = useState(false); const [wallet, setWallet] = useState<string | null>(null); const [audit, setAudit] = useState<string | null>(null); const [research, setResearch] = useState<string | null>(null); const [loading, setLoading] = useState(true);
   async function refresh() {
-    try { const response = await fetch(apiUrl('/api/manager'), { cache: 'no-store', signal: AbortSignal.timeout(15000) }); const body = await response.json(); if (!response.ok) throw new Error(body.error ?? 'Manager inspection failed'); if (![31337, 1313161555].includes(body.chainId) || body.unsignedOnly !== true || !Array.isArray(body.owners)) throw new Error('Invalid manager network or response'); setState(body); setError(null); } catch (e) { setError((e as Error).message); setState(null); }
+    setLoading(true);
+    try { const response = await fetch(apiUrl('/api/manager'), { cache: 'no-store', signal: AbortSignal.timeout(15000) }); const body = await response.json(); if (!response.ok) throw new Error(body.error ?? 'Manager inspection failed'); if (![31337, 1313161555].includes(body.chainId) || body.unsignedOnly !== true || !Array.isArray(body.owners)) throw new Error('Invalid manager network or response'); setState(body); setError(null); } catch (e) { setError((e as Error).message); setState(null); } finally { setLoading(false); }
   }
   useEffect(() => { void refresh(); }, []);
   async function prepare() {
@@ -32,14 +46,69 @@ export default function ManagerPage() {
   }
   function download() { if (!prepared) return; const link = document.createElement('a'); const url = URL.createObjectURL(new Blob([JSON.stringify(prepared.safeTransactionBuilder, null, 2)], { type: 'application/json' })); link.href = url; link.download = `wavefund-${prepared.action}-unsigned.json`; link.click(); URL.revokeObjectURL(url); }
   async function inspect(path: string, setter: (value: string) => void) { try { const response = await fetch(apiUrl(path), { cache: 'no-store', signal: AbortSignal.timeout(30000) }); const body = await response.json(); if (!response.ok) throw new Error(body.error ?? 'Inspection failed'); setter(JSON.stringify(body, null, 2)); } catch (e) { setError((e as Error).message); } }
-  return <main className="shell manager-shell">
-    <header className="masthead"><a className="brand" href="/">wavefund.</a><a href="/">← Decision dashboard</a></header>
-    <div className="simulation-notice"><span className="notice-label">OWNER REVIEW</span><span>Unsigned transaction preparation · no automatic wallet signatures or fund transfers</span></div>
-    <section className="hero"><div className="hero-copy"><p className="eyebrow">MANAGER CONSOLE</p><h1>Your Safe.<br /><em>Your boundaries.</em></h1><p className="hero-description">Inspect the deployed module, prepare an owner action, then review it through your Safe. Investment funds remain separate from forecasting collateral.</p></div><div className="run-card"><h2>{state ? `Chain ${state.chainId}` : 'Connecting to contracts'}</h2><p>{state ? `Safe threshold ${state.threshold}; ${state.owners.length} owner(s). Inspected at block ${state.blockNumber}.` : 'No addresses, balances or permissions are assumed.'}</p><button className="primary-button" onClick={() => void refresh()}>Refresh contract checks</button><button className="secondary-button" disabled={!state} onClick={() => void connect()}>Check browser wallet owner</button>{wallet && <p>{wallet}</p>}</div></section>
-    {error && <aside className="error-notice" role="alert">{error}</aside>}
-    {state && <><div className="capital-grid"><article className="capital-card"><p className="eyebrow">SAFE INVESTMENT CAPITAL</p><div className="balance">{units(state.stableBalance, 6)} <span>USDC</span></div><p>{units(state.assetBalance, 18, 5)} investment asset</p><code className="manager-address">{state.contracts.safe}</code></article><article className="capital-card"><p className="eyebrow">EXECUTION MODULE</p><h2>{state.moduleEnabled ? 'Enabled' : 'Disabled'}</h2><p>Maximum slippage: {state.maxSlippageBps / 100}%</p><p>Oracle: {state.oracle.usable ? 'Usable on this chain' : 'Unavailable / stale'}</p><code className="manager-address">{state.contracts.module}</code></article><article className="capital-card"><p className="eyebrow">FORECAST SPONSOR RESERVE</p><div className="balance">{units(state.sponsorReserve, 6)} <span>USDC</span></div><p>Pending authorization: {state.pendingAuthorization}. Current round: {state.currentRoundId}. Active status: {state.activeStatus ?? 'none'}.</p></article></div>
-    <section className="manager-actions run-card"><p className="eyebrow">PREPARE ONE OWNER ACTION</p><h2>Review before execution.</h2><label>Action<select value={action} onChange={(e) => { setAction(e.target.value); setPrepared(null); }}><option value="policy">Set slippage policy</option><option value="enable">Enable the verified module</option><option value="seed">Fund forecast sponsorship from Safe</option><option value="withdraw-seed">Return unallocated sponsorship to Safe</option><option value="authorize">Authorize next round</option><option value="revoke">Revoke pending authorization</option><option value="disable">Disable the module</option></select></label>{action === 'policy' && <label>Slippage in basis points (100 = 1%)<input value={slippage} onChange={(e) => setSlippage(e.target.value)} type="number" min="0" max="1000" /></label>}{['seed', 'withdraw-seed'].includes(action) && <label>USDC amount<input value={sponsorAmount} onChange={(e) => setSponsorAmount(e.target.value)} inputMode="decimal" /><span>Funding reduces the investment Safe balance. Only unallocated sponsorship can be returned.</span></label>}{action === 'authorize' && <p>Trading: 120 seconds; averaging: 30 seconds; execution grace: 60 seconds; evaluation: 180 seconds after trading. Payout bounds: −5% / +5%; these do not limit investment losses. Preparing this authorization does not start a keeper.</p>}<button className="primary-button" disabled={busy} onClick={() => void prepare()}>{busy ? 'Checking contracts…' : 'Prepare unsigned transaction'}</button>{prepared && <div className="manager-prepared"><p>{prepared.warning}</p><p>Prepared from block {prepared.inspectedBlock}. Refresh within five minutes; this advisory expiry is not a Safe signature deadline.</p><pre>{JSON.stringify(prepared.safeTransactionBuilder, null, 2)}</pre><button className="secondary-button" onClick={download}>Download unsigned Safe JSON</button></div>}</section></>}
-    <section className="manager-tools"><article className="run-card"><h2>Inspect receipt recovery</h2><p>Read the chain before deciding what happened. This tool never retries transactions or changes the journal.</p><button className="secondary-button" onClick={() => void inspect('/api/recovery', setAudit)}>Audit recorded transactions</button>{audit && <pre>{audit}</pre>}</article><article className="run-card"><h2>Inspect research data</h2><p>Public market research can inform agents. It cannot authorize oracle settlement.</p><button className="secondary-button" onClick={() => void inspect('/api/research', setResearch)}>Check research snapshot</button>{research && <pre>{research}</pre>}</article></section>
-    <footer><p>Local single-Safe integration. Supporting another Safe requires its own deployed stack and funding. No universal vault compatibility is claimed.</p></footer>
-  </main>;
+  const current = ACTIONS.find((item) => item.id === action) ?? ACTIONS[0];
+  const aurora = state?.chainId === 1313161555;
+
+  return <AppShell
+    network={aurora ? { label: "Aurora testnet", chainId: 1313161555, tone: "testnet" } : { label: "Anvil local", chainId: state?.chainId ?? 31337, tone: "local" }}
+    status={{ label: state ? `Block ${state.blockNumber}` : loading ? "Connecting" : "API offline", tone: state ? "ok" : loading ? "pending" : "off" }}>
+    <PageHeader title="Admin"
+      description="Inspect the deployed Safe and module, then prepare one owner action as an unsigned Safe transaction. You review and sign it in your Safe; nothing is signed here."
+      meta={<><Badge tone="info">Owner review</Badge><span>Unsigned transactions only · no automatic signatures or transfers</span></>}
+      actions={<><Button icon="wallet" disabled={!state} onClick={() => void connect()}>Check wallet owner</Button><Button variant="primary" icon="shield" loading={loading} onClick={() => void refresh()}>Refresh checks</Button></>} />
+
+    {error ? <div className="page-notice"><Notice tone="warning" title={state ? "Action failed" : "Local services are not ready"}><p>{error}</p></Notice></div> : null}
+    {wallet ? <div className="page-notice"><Notice tone="neutral" icon="wallet"><p>{wallet}</p></Notice></div> : null}
+
+    {!state ? <Card>{loading ? <div className="card-body stack">{[0, 1, 2].map((i) => <Skeleton key={i} height={40} />)}</div> : <EmptyState icon="safe" title="Contracts not reachable">No addresses, balances or permissions are assumed. Start the demo and refresh.</EmptyState>}</Card> : <>
+      <div className="stats three" aria-label="Safe overview">
+        <Stat label={<><Icon name="safe" />Safe investment capital</>} value={units(state.stableBalance, 6)} unit="USDC" sub={`${units(state.assetBalance, 18, 5)} investment asset`} />
+        <Stat label={<><Icon name="bolt" />Execution module</>} value={state.moduleEnabled ? "Enabled" : "Disabled"} sub={`Max slippage ${state.maxSlippageBps / 100}% · oracle ${state.oracle.usable ? "usable" : "stale"}`} />
+        <Stat label={<><Icon name="layers" />Sponsor reserve</>} value={units(state.sponsorReserve, 6)} unit="USDC" sub={`Round ${state.currentRoundId} · status ${state.activeStatus ?? "none"}`} />
+      </div>
+
+      <div className="detail-layout section">
+        <Card>
+          <CardHeader title="Prepare an owner action" icon="sliders" actions={<Badge tone="warning">Unsigned only</Badge>} />
+          <div className="settings">
+            <nav className="settings-nav" aria-label="Owner actions">
+              {ACTIONS.map((item) => <button type="button" key={item.id} aria-current={item.id === action ? "true" : undefined} className={item.id === action ? "active" : undefined} onClick={() => { setAction(item.id); setPrepared(null); }}><Icon name={item.icon} />{item.label}</button>)}
+            </nav>
+            <div className="settings-body">
+              <h3>{current.label}</h3>
+              <p className="muted">{current.hint}</p>
+              {action === "policy" && <label className="field">Slippage in basis points <small>100 = 1%, maximum 1000</small><input className="input" value={slippage} onChange={(e) => setSlippage(e.target.value)} type="number" min="0" max="1000" /></label>}
+              {["seed", "withdraw-seed"].includes(action) && <label className="field">USDC amount <small>Funding reduces the Safe's investment balance. Only unallocated sponsorship can be returned.</small><input className="input" value={sponsorAmount} onChange={(e) => setSponsorAmount(e.target.value)} inputMode="decimal" /></label>}
+              {action === "authorize" && <><DescriptionList items={[
+                { label: "Trading window", value: "120 s" }, { label: "Averaging window", value: "30 s" }, { label: "Execution grace", value: "60 s" },
+                { label: "Evaluation", value: "180 s" }, { label: "Payout bounds", value: "−5% / +5%" },
+              ]} /><p className="panel-foot">Payout bounds do not limit investment losses. Preparing this authorization does not start a keeper.</p></>}
+              <div><Button variant="primary" icon="receipt" loading={busy} disabled={busy} onClick={() => void prepare()}>{busy ? "Checking contracts…" : "Prepare unsigned transaction"}</Button></div>
+              {prepared && <div className="stack">
+                <Notice icon="shield"><p>{prepared.warning}</p><p>Prepared from block {prepared.inspectedBlock}. Refresh within five minutes; this advisory expiry is not a Safe signature deadline.</p></Notice>
+                <div className="code-block"><div className="code-head"><span>Safe Transaction Builder JSON · chain {prepared.safeTransactionBuilder.chainId}</span><Button size="sm" icon="download" onClick={download}>Download</Button></div><pre>{JSON.stringify(prepared.safeTransactionBuilder, null, 2)}</pre></div>
+              </div>}
+            </div>
+          </div>
+        </Card>
+        <aside className="detail-side">
+          <Card><CardHeader title="Contract checks" icon="shield" actions={<Badge tone="success" dot>Bindings verified</Badge>} />
+            <div className="card-body"><DescriptionList items={[
+              { label: "Safe", value: <CopyText value={state.contracts.safe} label="Safe address" /> },
+              { label: "Module", value: <CopyText value={state.contracts.module} label="module address" /> },
+              { label: "Engine", value: <CopyText value={state.contracts.engine} label="engine address" /> },
+              { label: "Owners", value: `${state.threshold} of ${state.owners.length} required` },
+              { label: "Pending authorization", value: state.pendingAuthorization },
+              { label: "Inspected at", value: `Block ${state.blockNumber}` },
+            ]} /></div>
+          </Card>
+          <Card><CardHeader title="Maintenance" icon="eye" />
+            <details className="disclosure first"><summary>Receipt recovery</summary><div className="disclosure-body"><p>Read the chain before deciding what happened. This never retries transactions or changes the journal.</p><Button size="sm" icon="eye" onClick={() => void inspect("/api/recovery", setAudit)}>Audit recorded transactions</Button>{audit && <div className="code-block"><pre>{audit}</pre></div>}</div></details>
+            <details className="disclosure"><summary>Research snapshot</summary><div className="disclosure-body"><p>Public market research can inform agents. It cannot authorize oracle settlement.</p><Button size="sm" icon="eye" onClick={() => void inspect("/api/research", setResearch)}>Check research snapshot</Button>{research && <div className="code-block"><pre>{research}</pre></div>}</div></details>
+          </Card>
+        </aside>
+      </div>
+    </>}
+    <p className="page-foot">Local single-Safe integration. Supporting another Safe requires its own deployed stack and funding.</p>
+  </AppShell>;
 }

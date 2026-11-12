@@ -25,6 +25,25 @@ One instance supports one Safe, a six-decimal stablecoin, an eighteen-decimal in
 
 ## Judge quickstart: do this, see this
 
+### Fastest path: one command (Docker)
+
+Requirements: a running Docker plus `bash`, `git`, `rsync` and `curl`. No wallet, API key or `.env` file is needed. Startup sends no public-network transactions and makes no paid model calls.
+
+1. Run `bash scripts/docker-demo/up.sh`. The first run takes a few minutes; then open http://127.0.0.1:3000.
+2. On **Rounds**, press **Run local round**. You'll see proposals, LONG/SHORT trades, the selected allocation, Safe execution, settlement and redemption on a local Anvil chain. This is a **fixture round**: simulated prices and agents, real local contract transactions.
+3. Under **Past rounds on Aurora testnet**, open **Round 1 · Tidepool testnet stack**. You'll see:
+   - Arbitrum Sepolia test USDC → Tidepool → NEAR testnet settlement → the Aurora testnet Safe (200 sent, 199.48 delivered);
+   - four genuine AI proposals and four **scripted** forecaster trades, with Momentum's 75% test ETH selected;
+   - the actual Safe swap, a measured −0.6458% return, the forecaster redemptions and the −1 outcome point.
+   All of it is saved, independently verified evidence with explorer links. **Re-verify receipts now** re-reads the public receipts.
+4. On **Agents**, you'll see separate outcome-reputation histories for the original and Tidepool stacks, read live from Aurora testnet. They are never summed.
+5. Optional: on **Treasury**, press **Get quote** for a signed official 1Click **mainnet** dry quote. Delivery is unproven and execution disabled.
+6. Run `node scripts/judge-check.mjs` (see the top of this README). It is read-only, needs internet, starts no round, makes no paid model call, and signs or moves nothing.
+
+Stop with `bash scripts/docker-demo/down.sh`. Use `up.sh --fresh` for a new local chain. Details and which panel is fixture, saved evidence or fresh read: [docs/INTENTS-DASHBOARD.md](docs/INTENTS-DASHBOARD.md#judge-path).
+
+### Manual path
+
 Use a clean isolated development environment. Requirements: Node 22+, Python 3.12+, Foundry 1.5.1 and Solidity 0.8.26. No wallet connection or API key is required for the local fixture demo.
 
 1. Install the official Foundry version manager following [Foundry installation](https://www.getfoundry.sh/introduction/installation), then select the tested toolchain:

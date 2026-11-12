@@ -3,6 +3,10 @@ import { pathToFileURL } from 'node:url';
 import { createAuroraRuntime } from './operator/aurora.mjs';
 import { createRuntime } from './demo.mjs';
 import { json, safeError } from './config.mjs';
+import { fundingReadModelFromEnvironment, handleFundingRequest } from './operator/funding-readonly.mjs';
+import { handleReputationRequest, reputationBoardsFromEnvironment } from './operator/reputation-api.mjs';
+import { handleTidepoolDemoRequest, tidepoolDemoFromEnvironment } from './operator/tidepool-demo.mjs';
+import { handleEvidenceRequest, roundEvidenceFromEnvironment } from './operator/round-evidence.mjs';
 
 export const UI_ORIGINS = new Set(['http://localhost:3000', 'http://127.0.0.1:3000']);
 export function validHost(value) {
@@ -16,6 +20,14 @@ export async function startServer(options = {}) {
   if (!['127.0.0.1', 'localhost', '::1'].includes(host) && !(host === '0.0.0.0' && process.env.WAVEFUND_CONTAINER === '1')) throw new Error('Public listening is disabled; container binding requires explicit local-container mode');
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid API port');
   const runtime = options.runtime ?? (process.env.WAVEFUND_NETWORK === 'aurora-testnet' ? await createAuroraRuntime({ manifestPath: process.env.AURORA_MANIFEST ?? 'deployments/aurora-testnet.json', artifactsDir: process.env.CONTRACT_ARTIFACTS ?? 'out' }) : await createRuntime({ rpcUrl: process.env.LOCAL_RPC_URL, manifestPath: process.env.LOCAL_MANIFEST ?? 'deployments/local.json', journalPath: process.env.LOCAL_JOURNAL ?? '.run/local-demo/journal.json', artifactsDir: process.env.CONTRACT_ARTIFACTS ?? 'out', marketDataPath: process.env.WAVEFUND_MARKET_DATA_FILE, ...options }));
+  // Funding-before-round read model. Disabled (no /api/funding routes) unless explicitly configured.
+  const funding = options.funding !== undefined ? options.funding : await fundingReadModelFromEnvironment();
+  // Read-only Aurora testnet outcome reputation through the shared reader, one board per stack (WAVEFUND_REPUTATION=disabled turns it off).
+  const reputation = options.reputation !== undefined ? options.reputation : await reputationBoardsFromEnvironment();
+  // Validated projection of the published Aurora testnet round evidence (WAVEFUND_EVIDENCE=disabled turns it off).
+  const evidence = options.evidence !== undefined ? options.evidence : await roundEvidenceFromEnvironment();
+  // Completed Tidepool community-testnet demonstration: saved evidence plus an on-demand read-only fresh check.
+  const tidepoolDemo = options.tidepoolDemo !== undefined ? options.tidepoolDemo : await tidepoolDemoFromEnvironment();
   const server = createServer(async (request, response) => {
     const origin = request.headers.origin;
     function send(status, value) {
@@ -27,6 +39,10 @@ export async function startServer(options = {}) {
     let url;
     try { url = new URL(request.url, 'http://localhost'); } catch { return send(400, { error: 'Invalid URL' }); }
     try {
+      if (url.pathname === '/api/funding' || url.pathname.startsWith('/api/funding/')) return await handleFundingRequest(funding, request, url, send);
+      if (url.pathname === '/api/agents' || url.pathname.startsWith('/api/agents/')) return await handleReputationRequest(reputation, request, url, send);
+      if (url.pathname === '/api/evidence' || url.pathname.startsWith('/api/evidence/')) return await handleEvidenceRequest(evidence, request, url, send);
+      if (url.pathname === '/api/tidepool' || url.pathname.startsWith('/api/tidepool/')) return await handleTidepoolDemoRequest(tidepoolDemo, request, url, send);
       if (request.method === 'GET' && url.pathname === '/api/health') return send(200, { ok: true, ...(runtime.metadata ?? { mode: 'local-simulation', chainId: 31337 }) });
       if (request.method === 'GET' && url.pathname === '/api/state') return send(200, await runtime.state());
       if (request.method === 'GET' && url.pathname === '/api/manager') return send(200, await runtime.manager.inspect());
