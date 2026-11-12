@@ -6,7 +6,34 @@
 
 This is not cross-chain execution of a winning strategy. The existing strategy and forecasting screens, the Trading Safe model, the AI agents, Uniswap v4 forecasting and Trisolaris execution are unchanged. Funding comes before them; it does not replace them.
 
-**Status (2026-11-12, branch `feat/funding-dashboard`, base `71b193b`):** implemented and verified in network-isolated Node 22 containers on scratch copies (results under [Verification](#verification-in-the-isolated-container)). Sending stays disabled. Tidepool testnet funding is shown as a **pending integration** lane: identities only, with no route, quote or live status.
+**Status (2026-11-12, branch `feat/funding-dashboard`, base `71b193b`):** implemented and verified in network-isolated Node 22 containers on scratch copies (results under [Verification](#verification-in-the-isolated-container)). Sending stays disabled. The completed **Tidepool community-testnet demonstration** (funding → strategy round → outcome → reputation) is shown from saved, independently verified evidence. Official production 1Click delivery remains unproven.
+
+## Judge path
+
+1. **Start the local demo:** run `bash scripts/docker-demo/up.sh` (Docker only) and open http://127.0.0.1:3000. Running it again while the demo is up only reports the URL. Use `--fresh` for a new chain.
+2. **Run the local fixture round:** on **Rounds**, press **Run local round**. It uses a local Anvil chain, test assets and scripted agents and prices; the contract transactions are real but local. Its +4.68% is **fixture data, not investment performance**.
+3. **Inspect the Tidepool testnet round:** on **Rounds → Past rounds on Aurora testnet**, open **Round 1 · Tidepool testnet stack**. The story strip shows funding → decision → execution → outcome. The **Funding** tab covers Arbitrum Sepolia → Tidepool → NEAR testnet settlement → the Aurora testnet Safe, with the 0.52 bridge cost kept separate.
+4. **Open transaction links:** every hash links to `sepolia.arbiscan.io`, `explorer.testnet.aurora.dev` or `testnet.nearblocks.io`. **Re-verify receipts now** runs an optional read-only fresh check through the existing `runtime/tidepool/read-model.mjs`.
+5. **Inspect the result, payouts and reputation:**
+   - The **Outcome** tab shows −0.6458% (exact factor 0.993541889635073190) as "executed and settled", not as a failure, plus the separate money buckets and the forecaster redemptions (9.934985 / 10.0207 / 10 / 9.981677).
+   - **Agents** shows each stack's own −1 for Momentum; the two are never summed.
+6. **Optional, official mainnet:** on **Treasury**, keep **NEAR Intents 1Click** selected and press **Get quote** for a signed dry quote. It is a mainnet preview; delivery is unproven and execution disabled.
+7. **Run `node scripts/judge-check.mjs`** (after `npm ci --ignore-scripts`):
+   - it is read-only and needs internet for the public checks;
+   - it does not start a round, call a paid model, sign or move funds.
+
+## Where each value comes from
+
+| Panel | Source | Label in the UI |
+|---|---|---|
+| Rounds → current round, stats, activity | Local Anvil chain, scripted agents and simulated prices | "Local simulation" |
+| Treasury → Fixtures source | In-browser synthetic records with fake addresses | "Fixture" |
+| Rounds → past rounds and round detail (7, 8, Tidepool 1) | `docs/test-evidence/*`, validated by the API | "Saved evidence" (verified when recorded) |
+| Tidepool funding, swap and NEAR settlement | `deployments/aurora-testnet-tidepool.json` and `docs/test-evidence/tidepool-v1/*` | "Saved evidence" |
+| Tidepool relayer status | The Tidepool status saved in the funding proof | "Provider-reported" |
+| Re-verify receipts now | Public Arbitrum Sepolia and Aurora testnet RPCs plus the Tidepool status API, read on click | "Fresh read · time" (or unavailable) |
+| Agents → both reputation stacks | Shared reputation reader against Aurora testnet, on page load | "Live read" (stale or unavailable shown as such) |
+| Treasury → NEAR Intents 1Click | Signed dry quotes from 1Click, mainnet | "Live quotes" (preview only) |
 
 ## Network truth
 
@@ -15,7 +42,7 @@ This is not cross-chain execution of a winning strategy. The existing strategy a
 | Funding destination (NEAR Intents) | Aurora mainnet | 1313161554 |
 | Verified Wavefund round deployment | Aurora testnet | 1313161555 |
 | Strategy Safe / stable token (from `deployments/aurora-testnet.json`, not independently verified) | Aurora testnet | `0x7814…0ad1` / `0x8be4…915c`, 6 decimals |
-| Tidepool community funding (pending) | Arbitrum Sepolia → Aurora testnet | 421614 → 1313161555 (announced, not configured) |
+| Tidepool community testnet (completed demonstration; not an official NEAR Intents testnet) | Arbitrum Sepolia → Aurora testnet, NEAR testnet settlement | 421614 → 1313161555 (Safe `0x3794…0f11`, Tidepool test USDC `0x38d8…a252`, engine `0xba96…4a14`) |
 
 NEAR Intents has no testnet. The UI and API therefore:
 
@@ -34,10 +61,38 @@ The existing frontend network validation (`decodeState`: Anvil 31337 or Aurora t
 | Lane | Network | What it shows | Status source |
 |---|---|---|---|
 | **Official 1Click** | Aurora mainnet | Live, signed 1Click dry quotes for the trusted mainnet funding Safe; tracker for funding-service records | The local API's configuration and capabilities |
-| **Tidepool community** | Aurora testnet | A ladder: **Minted test USDC ≠ Bridge delivery ≠ Strategy ready**, every step “not connected” in this build. The **current strategy stack** (original testnet deployment, explicitly *not* the Tidepool destination), beside “Tidepool would deliver: not configured” for source network, recipient (chosen by A/B), delivered token (Tidepool test USDC, which differs from the strategy token) and status feed. | Always **Pending integration** (`laneStatus` forces it, whatever a server reports) |
+| **Tidepool testnet demo** | Aurora testnet | The completed transfer as history: the ladder **Minted test USDC ≠ Bridge delivery (verified) ≠ Strategy round (settled)**, the funding flow with saved, provider-reported and fresh-read labels, the funding → strategy linkage, and a link to the round. No deposit control | Always **Testnet demo · history** (`laneStatus` forces it, whatever a server reports) |
 | **Labelled fixtures** | none | 16 synthetic states with fake addresses | Always **Synthetic** |
 
-Links: `/fund` (official), `/fund?lane=tidepool`, `/fund?fixtures=1`. The Tidepool lane hard-codes no route, asset id, provider URL or token, and shows no quote or deposit address. It warns that Tidepool's test token may differ from the strategy token. Its readiness card never shows a record tracked on another lane. Arbitrum Sepolia is named in the network allowlist but gets **no explorer link** until B confirms one.
+Links: `/fund` (official), `/fund?lane=tidepool`, `/fund?fixtures=1`.
+- The Tidepool source reads its identities and amounts from the reviewed manifest and evidence through `GET /api/tidepool/demo`; nothing is hand-written.
+- It is never wired into `FundingRecordV1`, which stays production-mainnet only, and it never feeds mainnet readiness.
+- Arbitrum Sepolia links use `sepolia.arbiscan.io`, the explorer named in the verified Tidepool evidence.
+
+## Tidepool testnet demonstration (`GET /api/tidepool/demo`)
+
+`runtime/operator/tidepool-demo.mjs` projects the completed demonstration from `deployments/aurora-testnet-tidepool.json` and `docs/test-evidence/tidepool-v1/` (funding proof, NEAR settlement, capital linkage, swap check, round report).
+
+It rejects evidence that:
+- is labelled official 1Click or not testnet-only;
+- names a source other than Arbitrum Sepolia, or a destination other than Aurora testnet;
+- names a different Safe or token from the manifest;
+- disagrees with the manifest's transaction hashes or delivered amount;
+- has a NEAR settlement that isn't final or isn't at `verifier.tidepool-sandbox.testnet`;
+- names a different engine or capital in the linkage;
+- names a different swap.
+
+Values it shows:
+- 200 test USDC sent, 199.48 delivered, 0.52 bridge cost;
+- NEAR settlement `93tneP…CVYC`;
+- swap 149.61 USDC → 0.071692173391461052 test ETH;
+- round key `1313161555:0xba96…4a14:1`.
+
+`GET /api/tidepool/demo/fresh-check` re-reads the public receipts on demand through the existing `readTidepoolFundingProof`:
+- it is cached for a minute and labelled `fresh-rpc-read` with its timestamp;
+- a failure or mismatch is shown as such, and the saved evidence is never relabelled fresh;
+- there is no signing, sending, retry or cancel route under `/api/tidepool`;
+- `WAVEFUND_TIDEPOOL_DEMO=disabled` removes it.
 
 ## Delivered ≠ strategy ready
 
@@ -59,7 +114,9 @@ The strategy identity comes from `deployments/aurora-testnet.json`, read by `fun
 
 It is exposed as `config.strategy`. Decimals are 6, because `ProposerRegistry` rejects any other stable. The API projection now also keeps A's `readiness.snapshot` (balances, tokens, compatibility and round flags), with each field validated.
 
-## Performance reputation (`GET /api/agents/reputation`)
+## Outcome reputation (`GET /api/agents/reputation` and `/api/agents/reputation/tidepool`)
+
+There are two separate contract histories: the original stack (`deployments/aurora-testnet-reputation.json`, contract `0xac9c…9488`) and the Tidepool stack (`deployments/aurora-testnet-tidepool-reputation.json`, contract `0xfa71…4e92`), each read with its own pinned manifest. The same Momentum wallet has −1 on each, from different rounds. They are shown side by side and never summed, and there is no combined endpoint.
 
 `runtime/operator/reputation-api.mjs` serves the on-chain `AgentReputation` history of the four trusted proposers (Conservative `0x5613…0345`, Balanced `0xcBF9…0Cb8`, Momentum `0x8B6a…888F`, HighBeta `0x1Ba3…EA0a`).
 
@@ -131,7 +188,9 @@ Both cards list limitations ("no TEE attestation verified", the same model for e
 | One-command Docker demo | `scripts/docker-demo/` (Dockerfile, `up.sh`, `down.sh`, README) |
 | Performance reputation API | `runtime/operator/reputation-api.mjs`, `runtime/test/reputation-api.test.mjs` |
 | Testnet round evidence API | `runtime/operator/round-evidence.mjs`, `runtime/test/round-evidence.test.mjs` |
-| Track record page | `frontend/src/app/record/*`, `frontend/src/components/record/RecordParts.tsx`, `frontend/src/lib/record/*`, `frontend/src/app/record.css`, `frontend/test/record-model.test.mjs` |
+| Agents (outcome reputation, two stacks) | `frontend/src/app/record/*`, `frontend/src/components/record/RecordParts.tsx`, `frontend/src/lib/record/*`, `frontend/test/record-model.test.mjs` |
+| Tidepool demonstration | `runtime/operator/tidepool-demo.mjs`, `runtime/test/tidepool-demo.test.mjs`, `frontend/src/lib/tidepool/*`, `frontend/src/components/tidepool/TidepoolParts.tsx`, `frontend/test/tidepool-model.test.mjs` |
+| Round detail (network + engine + round) | `frontend/src/app/rounds/[id]/*`, `frontend/src/components/rounds/RoundEvidence.tsx` |
 | Local demo usability | `scripts/local-demo.mjs`, `scripts/lib/local-demo-preflight.test.mjs` |
 | Screenshot helper | `frontend/scripts/capture-funding-states.mjs` (Playwright, fixture mode, loopback only) |
 
@@ -206,11 +265,13 @@ Dependencies were installed with `npm ci --ignore-scripts` in `node:22-bookworm-
 
 | Check | Result |
 |---|---|
-| `npm run test:runtime` (after merging `main` `89d8408`; includes 5 reputation-API and 4 round-evidence tests) | **215 / 215 passed** |
-| `npm test --workspace @wavefund/frontend` | **29 / 29 passed** |
+| `npm run test:runtime` (`main` `89d8408` merged; includes the reputation, round-evidence and Tidepool-demo tests) | **222 / 222 passed** |
+| `npm test --workspace @wavefund/frontend` | **34 / 34 passed** |
 | `npm run frontend:typecheck` | passed |
 | `npm run frontend:build` | passed; `/fund` 24.1 kB (129 kB first load); `/` and `/manager` unchanged in function |
-| Mutation checks (tables below) | **13 / 13** (first round), **17 / 17** (lanes and readiness) and **19 / 19** (reputation, evidence, Tidepool ladder) killed; suites green after restore |
+| Mutation and guard checks (tables below) | **13 / 13**, **17 / 17**, **19 / 19** and **20 / 20** (Tidepool, round identity, reputation stacks), plus the launcher restart guard; suites green after restore |
+| Docker (`check-restart.sh --include-fresh`, then a local round) | A repeated start left the demo intact; `--fresh` replaced only this demo; `down.sh` stopped it. A stale session and a busy port fail without stopping anything. The local round completed 27/27 |
+| Read-only checks against the running demo | `/api/tidepool/demo`, the fresh check (verified against public receipts), both reputation stacks and the evidence all return 200; `/api/tidepool/send` and `sign`, `/api/agents/reputation/all` and `POST /api/tidepool/demo` return 404 |
 | Screenshots (`frontend/scripts/capture-funding-states.mjs`, Playwright 1.65.0 image, fixture mode) | 12 states × desktop/mobile captured to `.run/screenshots` |
 
 Screenshot review caught a real UI bug: the scenario label switched before its record loaded, briefly pairing the new label with the old record. It is fixed; the label now changes together with the record.
@@ -281,6 +342,19 @@ Reputation, evidence and Tidepool ladder (2026-11-12). There were 19 mutants in 
 | Give invalid hashes explorer links | frontend evidence test |
 | Let Tidepool follow the API status / claim delivery connected | frontend Tidepool ladder and lane tests |
 
+Tidepool, round identity and reputation stacks (2026-11-12). There were 20 guard breaks, and each was caught by the named suite:
+
+| Guard broken | Caught by |
+|---|---|
+| Wrong Safe / wrong token / official-1Click record / mainnet destination / NEAR receiver accepted | runtime "wrong Safe, token, network, route type or NEAR receiver is rejected…" and frontend mixing test |
+| Fresh check labelled saved, or a mismatch reported verified | runtime "the fresh check is on demand, labelled fresh…" |
+| Plan engine or Safe not checked; duplicate round keys; key without engine | runtime "evidence naming another Safe, engine…" and "identified by network + engine + round id" |
+| Scripted forecasters unflagged | runtime and frontend round tests |
+| Tidepool reputation path served by the original board; a summed total added | runtime "separate contract histories and are never summed" |
+| UI accepts an official-1Click demo, shows saved evidence as fresh, skips the bridge-cost recomputation, unbinds the round identity from its engine, or resolves an ambiguous bare round number | frontend tidepool-model tests |
+| Tidepool ladder claims delivery without evidence | frontend ladder test |
+| Launcher: the "already running" guard removed | `check-restart.sh` failed ("a second normal start returned non-zero"); it passes again once restored |
+
 ## Local demo
 
 `npm run demo:local` now checks `forge`, `anvil` and the Next.js binary before starting anything, and reports every missing prerequisite with guidance. It never installs tools. A missing command exits with 127; other child failures keep the child's exit code. Spawn errors become handled rejections. Shutdown stops only processes the launcher started (SIGTERM, then SIGKILL after a grace period). The funding page is available at `/fund`, and the fixture explorer at `/fund?fixtures=1`.
@@ -289,38 +363,24 @@ Reputation, evidence and Tidepool ladder (2026-11-12). There were 19 mutants in 
 
 1. **No reviewed Aurora mainnet Wavefund deployment**: funding can never be round-eligible today.
 2. **Route not live-verified**: delivery has never been observed, and production `approved-routes.json` is empty.
-3. **Executable quotes and wallet signing**: disabled pending review by A and B.
-4. **Tidepool lane**: pending B's read-only interface, A's verified testnet configuration and the schema decision below.
+3. **Executable quotes and wallet signing**: disabled until the integrated route is reviewed.
 
-## Proposed shared-schema changes (not implemented; for A)
+The Tidepool community-testnet funding, NEAR testnet settlement and strategy round are complete and independently verified. Only **official production-mainnet delivery** remains unproven.
 
-A's `approvedRoute` currently requires `destination.chainId === 1313161554` (`DESTINATION_NOT_AURORA_MAINNET`), so no Tidepool testnet funding record can exist. Proposal, for A to accept or reject before anyone implements it:
+## Shared schema
 
-1. **Lane discriminator.** Add `lane` (`"official-1click-mainnet"` or `"tidepool-community-testnet"`) to approved routes and records. Each lane gets its own allowed destination chain: mainnet for official (unchanged), testnet 1313161555 for Tidepool. Keep `official1Click: false` and a testnet-only flag on Tidepool records.
-2. **Explicit strategy token.** Add `strategySafe` and `strategyToken` to the route. `prepareRound` would then also require `route.destination.token === strategyToken` and `snapshot.stableToken === strategyToken`. A Tidepool delivery of a different test USDC could then be delivered, but never consumed as readiness. The dashboard already enforces this from `config.strategy` and `readiness.snapshot`.
-3. **Delivery shape.** Map B's Tidepool delivery proof onto the existing `delivery` fields (`requestHash`, `quoteHash`, `sourceTransactionHash`, `transactionHash`, `chainId`, `token`, `recipient`, `amount`, `confirmations`, `observedAt`, `evidenceQuality`), so the tracker needs no new state machine.
-
-No field of `FundingRecordV1` was changed. The dashboard only reads the existing `readiness.snapshot`.
+No change is needed. `FundingRecordV1` intentionally supports production mainnet only, and the dashboard keeps that boundary. The completed Tidepool demonstration is shown through a dedicated read-only projection (`tidepool-demo.mjs`), not as funding records. The earlier lane-discriminator proposal is withdrawn for now.
 
 ## Integration dependencies
 
-- **B (provider):** a read-only Tidepool interface for the local API. It needs:
-  - a route descriptor: source and destination chain, asset id, token and decimals, recipient Safe, limits, confirmation policy, and the `liveVerified`/`deliveryProven` flags;
-  - a dry-quote preview, like `previewOrder`;
-  - delivery verification in the shape above;
-  - confirmation of the Arbitrum Sepolia explorer base.
-- **A (funding core):**
-  - accept or reject the schema proposal;
-  - provide a verified testnet route configuration;
-  - wire the store so `GET /api/funding/:id` and the optional `submitted` endpoint expose real records;
-  - provide a snapshot adapter for the strategy stack.
-- **A/B (Tidepool):** the adapter, signature verification, compatible contracts and pool, and bridge execution are theirs. Tidepool has minted test USDC and permitted test-only pool usage; the dashboard shows that only as "minted ≠ delivered ≠ ready", with nothing connected.
-- **Optional:** a read-only `ProposerRegistry.roundsWon` reader if the team wants on-chain selection wins. Until then, selections appear only per round from the evidence, separate from points.
-- **Runtime availability:** live reputation depends on public `testnet.aurora.dev`. When it is down, the board shows "unavailable" or "stale", never zeros.
-- **Team decision:** which Safe the Tidepool lane funds.
-  - `main` already has a separate token-compatible Tidepool stack (`deployments/aurora-testnet-tidepool.json`: Safe `0x3794…0f11`, stable = Tidepool test USDC `0x38d8…a252`).
-  - The original strategy Safe `0x7814…0ad1` uses stable `0x8be4…915c`. A Tidepool delivery into that Safe can never make it ready, by design.
-  - This branch reads only the original manifest. Pointing the lane at the Tidepool stack is a configuration change once the team decides.
+- **Official production 1Click:**
+  - delivery evidence for a mainnet route;
+  - an approved route in `approved-routes.json`;
+  - a connected funding record store for `GET /api/funding/:id`.
+  Until then mainnet stays a dry-quote preview.
+- **Optional:** a read-only `ProposerRegistry.roundsWon` reader if the team wants on-chain selection wins. Until then, selections appear per round from the evidence, separate from points.
+- **Runtime availability:** live reputation and the Tidepool fresh check depend on public RPCs (`testnet.aurora.dev`, `sepolia-rollup.arbitrum.io`) and the Tidepool status API. When they are down, the UI shows "unavailable" or "stale", never zeros and never "fresh".
+
 ## End-to-end run in a container
 
 The API server also needs the local-demo (or Aurora-monitor) runtime, so live funding preview runs alongside the full demo. In an isolated container with Node 22, Foundry 1.5.1, restored dependencies and compiled contracts:
@@ -342,8 +402,19 @@ Verified on 2026-11-12, driven through the real dashboard in Playwright:
 [`scripts/docker-demo/`](../scripts/docker-demo/README.md) wraps the steps above. It needs only a running Docker and `bash`, `git`, `rsync` and `curl`:
 
 ```sh
-bash scripts/docker-demo/up.sh          # --fresh for a new chain, --no-funding-preview for no provider requests
-bash scripts/docker-demo/down.sh
+bash scripts/docker-demo/up.sh          # again while running: reports the URL and leaves it alone
+bash scripts/docker-demo/up.sh --fresh  # reset only this demo's disposable chain/session
+bash scripts/docker-demo/down.sh        # stop only this demo
+bash scripts/docker-demo/check-restart.sh --include-fresh   # self-test of the above
 ```
+
+Behaviour:
+- A second normal start never stops a working demo.
+- A stale session asks for `--fresh` before anything is stopped.
+- A busy port names the process holding it.
+- A failed start keeps the stopped container for `docker logs`.
+- Files deleted from the repository are removed from the disposable copy, while dependency and compiler caches are kept.
+- Anything that looks like a secret (`.env*`, keys, keystores, `secrets/`) is never copied.
+- There are no public-network transactions: the local Anvil chain signs and deploys disposable local contracts only, and startup makes no paid model calls.
 
 It syncs tracked and new non-ignored files into the git-ignored `.run/docker-demo/workspace`, then installs with lifecycle scripts disabled, fetches checksum-pinned sources and compiles, all in digest-pinned containers. It starts the demo with `WAVEFUND_CONTAINER=1 WAVEFUND_FUNDING=live-preview` and publishes only `127.0.0.1:3000/3001`. No credentials or env files are mounted. The owner of `docs/LOCAL-DEMO.md` may want to link it from there.
