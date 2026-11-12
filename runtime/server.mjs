@@ -5,6 +5,7 @@ import { createRuntime } from './demo.mjs';
 import { json, safeError } from './config.mjs';
 import { fundingReadModelFromEnvironment, handleFundingRequest } from './operator/funding-readonly.mjs';
 import { handleReputationRequest, reputationBoardFromEnvironment } from './operator/reputation-api.mjs';
+import { handleEvidenceRequest, roundEvidenceFromEnvironment } from './operator/round-evidence.mjs';
 
 export const UI_ORIGINS = new Set(['http://localhost:3000', 'http://127.0.0.1:3000']);
 export function validHost(value) {
@@ -22,6 +23,8 @@ export async function startServer(options = {}) {
   const funding = options.funding !== undefined ? options.funding : await fundingReadModelFromEnvironment();
   // Read-only Aurora testnet performance reputation through the shared reader (WAVEFUND_REPUTATION=disabled turns it off).
   const reputation = options.reputation !== undefined ? options.reputation : await reputationBoardFromEnvironment();
+  // Validated projection of the published Aurora testnet round evidence (WAVEFUND_EVIDENCE=disabled turns it off).
+  const evidence = options.evidence !== undefined ? options.evidence : await roundEvidenceFromEnvironment();
   const server = createServer(async (request, response) => {
     const origin = request.headers.origin;
     function send(status, value) {
@@ -35,6 +38,7 @@ export async function startServer(options = {}) {
     try {
       if (url.pathname === '/api/funding' || url.pathname.startsWith('/api/funding/')) return await handleFundingRequest(funding, request, url, send);
       if (url.pathname === '/api/agents' || url.pathname.startsWith('/api/agents/')) return await handleReputationRequest(reputation, request, url, send);
+      if (url.pathname === '/api/evidence' || url.pathname.startsWith('/api/evidence/')) return await handleEvidenceRequest(evidence, request, url, send);
       if (request.method === 'GET' && url.pathname === '/api/health') return send(200, { ok: true, ...(runtime.metadata ?? { mode: 'local-simulation', chainId: 31337 }) });
       if (request.method === 'GET' && url.pathname === '/api/state') return send(200, await runtime.state());
       if (request.method === 'GET' && url.pathname === '/api/manager') return send(200, await runtime.manager.inspect());
