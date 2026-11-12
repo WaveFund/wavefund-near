@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { TIDEPOOL, validateTidepoolQuote } from '../tidepool/client.mjs';
 
 // Developer C: read-only projection of the completed Tidepool community-testnet demonstration
 // (Arbitrum Sepolia test USDC -> Tidepool -> Aurora testnet Trading Safe -> strategy round). Tidepool is a community
@@ -47,6 +48,14 @@ export function projectTidepoolDemo({ manifest, funding, near, capital, swap, ro
   const sourceAmount = uint(funding.source.amount, 'source amount'); const delivered = uint(funding.destination.amount, 'delivered amount');
   check(manifest.funding?.deliveredAmount === delivered, 'the manifest and funding proof disagree on the delivered amount');
   check(BigInt(delivered) <= BigInt(sourceAmount) && BigInt(delivered) >= BigInt(uint(funding.minAmountOut, 'minimum out')), 'the delivered amount is outside the quoted bounds');
+  // The saved signed quote paid this Safe directly (no virtualChainRecipient) and still verifies offline with Tidepool's
+  // own signing key through the existing runtime/tidepool/client.mjs. Nothing is re-requested or re-sent.
+  const response = funding.status?.quoteResponse; const request = response?.quoteRequest;
+  check(isObject(request) && same(request.recipient, safe) && request.recipientType === 'DESTINATION_CHAIN' && !Object.hasOwn(request, 'virtualChainRecipient'), 'the quote does not pay the Safe directly');
+  check(request.amount === sourceAmount, 'the quote amount differs from the source amount');
+  let quote = null;
+  try { quote = validateTidepoolQuote(response, request, { now: Math.ceil(Date.parse(response.timestamp) / 1000) }); } catch { quote = null; }
+  check(quote?.signatureVerified === true && quote.testnetOnly === true && quote.official1Click === false, 'the saved Tidepool quote signature or terms did not verify');
   check(funding.safeBalance?.before === '0' && funding.safeBalance?.delta === delivered && funding.safeBalance?.after === delivered, 'the Safe balance delta does not match the delivery');
   // Native NEAR testnet settlement reported for this transfer, and its saved final transaction.
   check(isObject(near) && near.final_execution_status === 'FINAL' && isObject(near.transaction) && near.transaction.receiver_id === NEAR_RECEIVER, 'the NEAR settlement is not a final transaction to the Tidepool verifier');
@@ -54,6 +63,7 @@ export function projectTidepoolDemo({ manifest, funding, near, capital, swap, ro
   const reported = Array.isArray(funding.status?.swapDetails?.destinationChainTxHashes) ? funding.status.swapDetails.destinationChainTxHashes.map((item) => (typeof item === 'string' ? item : item?.hash)) : [];
   check(reported.includes(nearHash) && reported.some((item) => same(item, destinationTx)), 'the provider did not link the NEAR settlement and the Aurora delivery');
   check(typeof near.transaction.signer_id === 'string' && NEAR_ACCOUNT.test(near.transaction.signer_id), 'the NEAR signer is malformed');
+  check(near.transaction.public_key === TIDEPOOL.publicKey, "the NEAR settlement was not signed with Tidepool's key");
   // The delivered capital is the capital the strategy round prepared and executed.
   check(isObject(capital) && capital.chainId === AURORA_TESTNET && same(capital.safe, safe) && same(capital.engine, engine) && capital.fundedAmount === delivered && capital.sameSafeAndCapital === true, 'the strategy round did not use this Safe and capital');
   const swapTx = hash(capital.executionHash, 'execution hash');
@@ -80,6 +90,7 @@ export function projectTidepoolDemo({ manifest, funding, near, capital, swap, ro
     provider: { name: 'Tidepool community relayer', reportedStatus: typeof funding.status?.status === 'string' ? funding.status.status.slice(0, 20) : null,
       reportedAt: typeof funding.status?.updatedAt === 'string' ? funding.status.updatedAt.slice(0, 40) : null, providerReported: true },
     nearSettlement: { hash: nearHash, receiver: NEAR_RECEIVER, signer: near.transaction.signer_id, status: 'FINAL' },
+    quote: { signatureVerified: true, verification: 'offline, existing validateTidepoolQuote', signer: TIDEPOOL.publicKey, recipient: safe, recipientType: 'DESTINATION_CHAIN', virtualChainRecipient: null },
     strategy: { roundId, roundKey: `${AURORA_TESTNET}:${engine}:${roundId}`, roundSlug: `${AURORA_TESTNET}-${engine}-${roundId}`, preparedStableAmount: uint(capital.preparedStableAmount, 'prepared stable') },
     swap: { hash: swapTx, blockNumber: uint(swap.blockNumber, 'swap block'), stableIn: (BigInt(stableBefore) - BigInt(stableAfter)).toString(), stableAfter, assetOut: assetAfter, slippageBps: swap.slippageBps },
     observedAt: null,

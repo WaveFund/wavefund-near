@@ -29,6 +29,8 @@ test('the saved Tidepool demonstration matches the reviewed manifest and cross-c
   assert.equal(demo.swap.stableIn, '149610000'); assert.equal(demo.swap.assetOut, '71692173391461052');
   assert.equal(demo.strategy.roundSlug, '1313161555-0xba96a117f4de33c38df72002651f11024ed14a14-1', 'the round identity includes network and engine');
   assert.equal(demo.provider.providerReported, true, 'provider status is labelled as provider-reported');
+  assert.deepEqual(demo.quote, { signatureVerified: true, verification: 'offline, existing validateTidepoolQuote', signer: 'ed25519:U1Mu4u1nHnHmgABpCkfDGXt2FZj8k29UGqhkMAu4iWY',
+    recipient: '0x37947266fc1c2b20ffa36869af5dd531f2d80f11', recipientType: 'DESTINATION_CHAIN', virtualChainRecipient: null }, 'the Safe is the direct recipient, signed with Tidepool\'s own key');
   assert.equal(demo.observedAt, null, 'saved evidence never claims a fresh observation');
 });
 
@@ -43,6 +45,10 @@ test('wrong Safe, token, network, route type or NEAR receiver is rejected instea
     ['docs/test-evidence/tidepool-v1/near-settlement.json', (n) => { n.transaction.receiver_id = 'intents.near'; }, /Tidepool verifier/],
     ['docs/test-evidence/tidepool-v1/capital-linkage.json', (c) => { c.engine = '0x825b31dbc1af25b230d31caf5210c2b5a8fe22af'; }, /this Safe and capital/],
     ['deployments/aurora-testnet-tidepool.json', (m) => { m.chainId = 1313161554; }, /Tidepool Aurora testnet stack/],
+    [FUNDING, (f) => { f.status.quoteResponse.quoteRequest.recipient = '0x781430393ec48f5c2af78be63ae273875b180ad1'; }, /pay the Safe directly/],
+    [FUNDING, (f) => { f.status.quoteResponse.quoteRequest.virtualChainRecipient = 'safe.near'; }, /pay the Safe directly/],
+    [FUNDING, (f) => { f.status.quoteResponse.quote.minAmountOut = '1'; }, /signature or terms did not verify/],
+    ['docs/test-evidence/tidepool-v1/near-settlement.json', (n) => { n.transaction.public_key = 'ed25519:11111111111111111111111111111111'; }, /Tidepool's key/],
   ];
   for (const [file, mutate, expected] of cases) await assert.rejects(loadTidepoolDemo({ read: tampered(file, mutate) }), expected, String(expected));
   // The production mainnet funding read model still refuses any testnet Safe: the two integrations cannot be mixed.
