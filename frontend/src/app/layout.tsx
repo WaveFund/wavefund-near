@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   description: "Agents propose. Forecasters take positions. A manager-controlled Safe executes the selected strategy within its approved limits.",
 };
 
-export const viewport: Viewport = { themeColor: "#08090a", colorScheme: "dark light" };
+export const viewport: Viewport = { themeColor: "#06121a", colorScheme: "dark light" };
 
 // Applies a saved light/dark choice before the first paint so pages never flash the other theme.
 // Without a saved choice the dashboard uses its dark theme.

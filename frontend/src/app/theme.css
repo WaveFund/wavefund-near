@@ -1,38 +1,38 @@
-/* Night Ledger: calm near-black canvas (warm paper in light), cream ink, mono numerals, glass cards, one ambient glow.
-   Colour carries meaning: mint = money, success and the primary action; violet = AI and selection/focus;
-   amber = in progress or attention; rose = rare negative states. Loaded after the older sheets, so it only
+/* Tidewater (Night Ledger structure): deep ocean-ink canvas (sea-mist paper in light), sand ink, mono numerals, glass cards, one ambient glow.
+   Colour carries meaning: sea-glass = money, success and the primary action; coral = AI and selection/focus;
+   gold = in progress or attention; rose-pink = rare negative states. Loaded after the older sheets, so it only
    re-points their tokens and adds the few shared pieces the v2 screens use. */
 
 :root {
-  --bg: #08090a; --surface: #111214; --surface-2: #191a1d; --surface-3: #1f2023; --surface-raised: #24262a; --surface-solid: #0d0e10;
-  --hairline: #1d1f22; --border: #26282c; --border-strong: #3a3d42;
-  --text: #f1ece1; --text-2: #d9d4c9; --muted: #9b978d; --subtle: #85827a; --faint: #5d5a54;
+  --bg: #06121a; --surface: #0c1d28; --surface-2: #122633; --surface-3: #17303f; --surface-raised: #1c3747; --surface-solid: #09171f;
+  --hairline: #152a36; --border: #1b3341; --border-strong: #2c4a5b;
+  --text: #efe6d6; --text-2: #d6cebf; --muted: #8fa6b1; --subtle: #7a909b; --faint: #4f6570;
 
-  --brand: #b77bff; --brand-hover: #c796ff; --brand-fg: #c596ff; --on-brand: #140622;
-  --brand-50: color-mix(in srgb, #b77bff 13%, transparent); --brand-100: color-mix(in srgb, #b77bff 36%, transparent); --brand-700: #dcc2ff;
-  --ring: #b77bff; --money: #34e0a1; --on-signal: #03140d;
-  --cta-bg: #f1ece1; --cta-fg: #08090a; --cta-hover: #fffaf0;
-  --btn-bg: color-mix(in srgb, #f1ece1 8%, transparent); --btn-hover: color-mix(in srgb, #f1ece1 13%, transparent);
+  --brand: #ff7a63; --brand-hover: #ff9581; --brand-fg: #ff8d78; --on-brand: #2a0a04;
+  --brand-50: color-mix(in srgb, #ff7a63 13%, transparent); --brand-100: color-mix(in srgb, #ff7a63 36%, transparent); --brand-700: #ffc4b8;
+  --ring: #ff7a63; --money: #5ee6d0; --on-signal: #022019;
+  --cta-bg: #efe6d6; --cta-fg: #06121a; --cta-hover: #fff6e8;
+  --btn-bg: color-mix(in srgb, #efe6d6 8%, transparent); --btn-hover: color-mix(in srgb, #efe6d6 13%, transparent);
 
-  --success: #34e0a1; --success-50: color-mix(in srgb, #34e0a1 12%, transparent); --success-200: color-mix(in srgb, #34e0a1 32%, transparent); --success-500: #34e0a1;
-  --warning: #ffbd5a; --warning-50: color-mix(in srgb, #ffbd5a 12%, transparent); --warning-200: color-mix(in srgb, #ffbd5a 32%, transparent); --warning-500: #ffbd5a;
-  --danger: #ff8592; --danger-50: color-mix(in srgb, #ff8592 12%, transparent); --danger-200: color-mix(in srgb, #ff8592 32%, transparent); --danger-500: #ff8592;
-  --neutral: #9b978d; --neutral-50: color-mix(in srgb, #f1ece1 6%, transparent); --neutral-200: color-mix(in srgb, #f1ece1 15%, transparent);
-  --mainnet: #34e0a1; --testnet: #b77bff; --local: #ffbd5a;
+  --success: #5ee6d0; --success-50: color-mix(in srgb, #5ee6d0 12%, transparent); --success-200: color-mix(in srgb, #5ee6d0 32%, transparent); --success-500: #5ee6d0;
+  --warning: #ffd36b; --warning-50: color-mix(in srgb, #ffd36b 12%, transparent); --warning-200: color-mix(in srgb, #ffd36b 32%, transparent); --warning-500: #ffd36b;
+  --danger: #ff8fa3; --danger-50: color-mix(in srgb, #ff8fa3 12%, transparent); --danger-200: color-mix(in srgb, #ff8fa3 32%, transparent); --danger-500: #ff8fa3;
+  --neutral: #8fa6b1; --neutral-50: color-mix(in srgb, #efe6d6 6%, transparent); --neutral-200: color-mix(in srgb, #efe6d6 15%, transparent);
+  --mainnet: #5ee6d0; --testnet: #ff7a63; --local: #ffd36b;
 
-  --header-bg: color-mix(in srgb, #08090a 80%, transparent);
-  --selected-bg: color-mix(in srgb, #b77bff 7%, transparent); --skeleton-hi: #1f2023;
-  --alloc: #b77bff; --alloc-rest: color-mix(in srgb, #f1ece1 14%, transparent);
-  --dither-1: #34e0a1; --dither-2: #7fa0d8; --dither-3: #b77bff;
+  --header-bg: color-mix(in srgb, #06121a 80%, transparent);
+  --selected-bg: color-mix(in srgb, #ff7a63 7%, transparent); --skeleton-hi: #17303f;
+  --alloc: #ff7a63; --alloc-rest: color-mix(in srgb, #efe6d6 14%, transparent);
+  --dither-1: #5ee6d0; --dither-2: #4fb6d6; --dither-3: #ff7a63;
 
   /* Night Ledger names, for the v2 screens */
   --sunken: var(--surface-2); --line: var(--border); --ink: var(--text);
-  --accent: #34e0a1; --accent-ink: #03140d; --accent-soft: color-mix(in srgb, #34e0a1 13%, #111214);
-  --ai: #b77bff; --ai-ink: #140622; --ai-soft: color-mix(in srgb, #b77bff 15%, #111214);
-  --warn: #ffbd5a; --warn-soft: color-mix(in srgb, #ffbd5a 13%, #111214);
-  --bad: #ff8592; --bad-soft: color-mix(in srgb, #ff8592 13%, #111214);
-  --glow-a: color-mix(in srgb, #34e0a1 20%, transparent); --glow-b: color-mix(in srgb, #b77bff 22%, transparent);
-  --dot-c: color-mix(in srgb, #f1ece1 13%, transparent);
+  --accent: #5ee6d0; --accent-ink: #022019; --accent-soft: color-mix(in srgb, #5ee6d0 13%, #0c1d28);
+  --ai: #ff7a63; --ai-ink: #2a0a04; --ai-soft: color-mix(in srgb, #ff7a63 15%, #0c1d28);
+  --warn: #ffd36b; --warn-soft: color-mix(in srgb, #ffd36b 13%, #0c1d28);
+  --bad: #ff8fa3; --bad-soft: color-mix(in srgb, #ff8fa3 13%, #0c1d28);
+  --glow-a: color-mix(in srgb, #5ee6d0 20%, transparent); --glow-b: color-mix(in srgb, #ff7a63 22%, transparent);
+  --dot-c: color-mix(in srgb, #efe6d6 13%, transparent);
   --card-sheen: linear-gradient(180deg, color-mix(in srgb, #fff 4.5%, transparent), color-mix(in srgb, #fff 1.5%, transparent));
   --card-inset: inset 0 1px 0 color-mix(in srgb, #fff 5%, transparent);
   --radius-lg: 14px;
@@ -42,29 +42,29 @@
 }
 
 :root[data-theme="light"] {
-  --bg: #f4f0e6; --surface: #fbf8f1; --surface-2: #ece6d8; --surface-3: #e4dccb; --surface-raised: #fffdf8; --surface-solid: #fbf8f1;
-  --hairline: #e6dfcf; --border: #ddd5c3; --border-strong: #c4baa5;
-  --text: #1c1b18; --text-2: #2f2d28; --muted: #6b665b; --subtle: #7a7468; --faint: #a59e90;
-  --brand: #7a34d4; --brand-hover: #8a48e0; --brand-fg: #7a34d4; --on-brand: #fbf7ff;
-  --brand-50: color-mix(in srgb, #7a34d4 9%, transparent); --brand-100: color-mix(in srgb, #7a34d4 26%, transparent); --brand-700: #5b22a6;
-  --ring: #7a34d4; --money: #0a8a5e; --on-signal: #f6fffa;
-  --cta-bg: #1c1b18; --cta-fg: #f4f0e6; --cta-hover: #34322c;
-  --btn-bg: color-mix(in srgb, #1c1b18 6%, transparent); --btn-hover: color-mix(in srgb, #1c1b18 10%, transparent);
-  --success: #0a8a5e; --success-50: color-mix(in srgb, #0a8a5e 11%, transparent); --success-200: color-mix(in srgb, #0a8a5e 30%, transparent); --success-500: #0a8a5e;
-  --warning: #93590a; --warning-50: color-mix(in srgb, #e39b2d 16%, transparent); --warning-200: color-mix(in srgb, #e39b2d 40%, transparent); --warning-500: #c27a14;
-  --danger: #b93a45; --danger-50: color-mix(in srgb, #b93a45 10%, transparent); --danger-200: color-mix(in srgb, #b93a45 30%, transparent); --danger-500: #b93a45;
-  --neutral: #6b665b; --neutral-50: color-mix(in srgb, #1c1b18 5%, transparent); --neutral-200: color-mix(in srgb, #1c1b18 14%, transparent);
-  --mainnet: #0a8a5e; --testnet: #7a34d4; --local: #c27a14;
-  --header-bg: color-mix(in srgb, #f4f0e6 82%, transparent);
-  --selected-bg: color-mix(in srgb, #7a34d4 5%, transparent); --skeleton-hi: #f7f3ea;
-  --alloc: #7a34d4; --alloc-rest: color-mix(in srgb, #1c1b18 12%, transparent);
-  --dither-1: #0a8a5e; --dither-2: #5a77ad; --dither-3: #7a34d4;
-  --accent: #0a8a5e; --accent-ink: #f6fffa; --accent-soft: color-mix(in srgb, #0a8a5e 12%, #fbf8f1);
-  --ai: #7a34d4; --ai-ink: #fbf7ff; --ai-soft: color-mix(in srgb, #7a34d4 11%, #fbf8f1);
-  --warn: #93590a; --warn-soft: color-mix(in srgb, #e39b2d 17%, #fbf8f1);
-  --bad: #b93a45; --bad-soft: color-mix(in srgb, #b93a45 11%, #fbf8f1);
-  --glow-a: color-mix(in srgb, #0a8a5e 22%, transparent); --glow-b: color-mix(in srgb, #7a34d4 18%, transparent);
-  --dot-c: color-mix(in srgb, #1c1b18 16%, transparent);
+  --bg: #eef2ef; --surface: #f8faf8; --surface-2: #e2eae7; --surface-3: #d8e3df; --surface-raised: #ffffff; --surface-solid: #f8faf8;
+  --hairline: #dde6e3; --border: #cfdcda; --border-strong: #a9bdbb;
+  --text: #0d2330; --text-2: #21394a; --muted: #5a6f78; --subtle: #6a7f88; --faint: #9aaab0;
+  --brand: #d1462f; --brand-hover: #de5a43; --brand-fg: #d1462f; --on-brand: #fff6f3;
+  --brand-50: color-mix(in srgb, #d1462f 9%, transparent); --brand-100: color-mix(in srgb, #d1462f 26%, transparent); --brand-700: #9c2f1d;
+  --ring: #d1462f; --money: #0d8a7c; --on-signal: #f2fffc;
+  --cta-bg: #0d2330; --cta-fg: #eef2ef; --cta-hover: #21394a;
+  --btn-bg: color-mix(in srgb, #0d2330 6%, transparent); --btn-hover: color-mix(in srgb, #0d2330 10%, transparent);
+  --success: #0d8a7c; --success-50: color-mix(in srgb, #0d8a7c 11%, transparent); --success-200: color-mix(in srgb, #0d8a7c 30%, transparent); --success-500: #0d8a7c;
+  --warning: #8a6300; --warning-50: color-mix(in srgb, #d9a21f 16%, transparent); --warning-200: color-mix(in srgb, #d9a21f 40%, transparent); --warning-500: #b98a10;
+  --danger: #b2324f; --danger-50: color-mix(in srgb, #b2324f 10%, transparent); --danger-200: color-mix(in srgb, #b2324f 30%, transparent); --danger-500: #b2324f;
+  --neutral: #5a6f78; --neutral-50: color-mix(in srgb, #0d2330 5%, transparent); --neutral-200: color-mix(in srgb, #0d2330 14%, transparent);
+  --mainnet: #0d8a7c; --testnet: #d1462f; --local: #b98a10;
+  --header-bg: color-mix(in srgb, #eef2ef 82%, transparent);
+  --selected-bg: color-mix(in srgb, #d1462f 5%, transparent); --skeleton-hi: #f2f6f4;
+  --alloc: #d1462f; --alloc-rest: color-mix(in srgb, #0d2330 12%, transparent);
+  --dither-1: #0d8a7c; --dither-2: #2f8fb0; --dither-3: #d1462f;
+  --accent: #0d8a7c; --accent-ink: #f2fffc; --accent-soft: color-mix(in srgb, #0d8a7c 12%, #f8faf8);
+  --ai: #d1462f; --ai-ink: #fff6f3; --ai-soft: color-mix(in srgb, #d1462f 11%, #f8faf8);
+  --warn: #8a6300; --warn-soft: color-mix(in srgb, #d9a21f 17%, #f8faf8);
+  --bad: #b2324f; --bad-soft: color-mix(in srgb, #b2324f 11%, #f8faf8);
+  --glow-a: color-mix(in srgb, #0d8a7c 22%, transparent); --glow-b: color-mix(in srgb, #d1462f 18%, transparent);
+  --dot-c: color-mix(in srgb, #0d2330 16%, transparent);
   --card-sheen: none; --card-inset: none;
   color-scheme: light;
 }
@@ -164,3 +164,15 @@ dialog.drawer::backdrop { background: rgb(0 0 0 / .45); }
 }
 .footer .theme-toggle { display: none; }
 @media (max-width: 720px) { .footer .theme-toggle { display: inline-grid; } }
+
+/* Tidewater: LONG/SHORT, asset and agent hues re-tuned to the ocean palette (green/violet removed). */
+:root {
+  --long: #6fe3c9; --long-bg: color-mix(in srgb, #6fe3c9 9%, transparent); --long-bd: color-mix(in srgb, #6fe3c9 30%, transparent);
+  --short: #ff8fa3; --short-bg: color-mix(in srgb, #ff8fa3 9%, transparent); --short-bd: color-mix(in srgb, #ff8fa3 30%, transparent);
+  --asset-risk: #6cc4ff; --a-balanced: #9fd8cb; --a-quant: #f2c38b; --a-conservative: #6cc4ff;
+}
+:root[data-theme="light"] {
+  --long: #0d7f72; --long-bg: color-mix(in srgb, #0d8a7c 8%, transparent); --long-bd: color-mix(in srgb, #0d8a7c 30%, transparent);
+  --short: #b2324f; --short-bg: color-mix(in srgb, #b2324f 7%, transparent); --short-bd: color-mix(in srgb, #b2324f 28%, transparent);
+  --asset-risk: #1f78b4; --a-balanced: #2f7d70; --a-quant: #9a5a14; --a-conservative: #1f78b4;
+}
