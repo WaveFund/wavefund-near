@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { Icon, type IconName } from "@/components/funding/primitives";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export type ShellNetwork = { label: string; chainId: number | null; tone: "mainnet" | "testnet" | "local" };
 export type ShellStatus = { label: string; tone: "ok" | "warn" | "off" | "pending" };
@@ -35,6 +36,7 @@ export function AppShell({ network, status, children }: { network: ShellNetwork;
         <div className="header-right">
           {status ? <span className="conn-status" role="status"><i className={`dot ${status.tone}`} />{status.label}</span> : null}
           <span className="network-chip" title={network.chainId === null ? "No network" : `Chain ID ${network.chainId}`}><i className={`dot ${network.tone}`} />{network.label}{network.chainId === null ? null : <code>{network.chainId}</code>}</span>
+          <ThemeToggle />
         </div>
       </div>
     </header>

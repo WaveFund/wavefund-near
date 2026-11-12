@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { explorerUrl, formatDuration, formatUnits, isAddress, shortHex } from "@/lib/funding/model.mjs";
 
 export type IconName = "wallet" | "intents" | "aurora" | "safe" | "check" | "cross" | "lock" | "alert" | "arrow" | "copy" | "external" | "refund" | "clock" | "shield" | "spark" | "eye"
-  | "fund" | "chart" | "sliders" | "down" | "bolt" | "receipt" | "users" | "trophy" | "pulse" | "route" | "play" | "chevron" | "download" | "layers";
+  | "fund" | "chart" | "sliders" | "down" | "bolt" | "receipt" | "users" | "trophy" | "pulse" | "route" | "play" | "chevron" | "download" | "layers" | "sun" | "moon";
 
 const stroke = { fill: "none", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
 const PATHS: Record<IconName, ReactNode> = {
@@ -38,6 +38,8 @@ const PATHS: Record<IconName, ReactNode> = {
   chevron: <path d="m9 6 6 6-6 6" {...stroke} />,
   download: <><path d="M12 4v11m-4.5-4.5L12 15l4.5-4.5" {...stroke} /><path d="M5 19.5h14" {...stroke} /></>,
   layers: <><path d="m12 4 8.5 4.5L12 13 3.5 8.5 12 4Z" {...stroke} /><path d="m3.5 13 8.5 4.5 8.5-4.5" {...stroke} /></>,
+  sun: <><circle cx="12" cy="12" r="4" {...stroke} /><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" {...stroke} /></>,
+  moon: <path d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6Z" {...stroke} />,
 };
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {
