@@ -8,7 +8,7 @@ export type TidepoolDemo = {
   nearSettlement: { hash: string; receiver: string; url: string | null };
   quote: { signatureVerified: true; signer: string; recipient: string; virtualChainRecipient: null };
   strategy: { roundId: string | null; roundSlug: string };
-  swap: { hash: string; blockNumber: string | null; stableIn: string; assetOut: string };
+  swap: { hash: string; blockNumber: string | null; stableIn: string; assetOut: string; stableAfter: string | null };
 };
 export type FreshCheck = { status: 'verified'; observedAt: number; deliveredAmount: string; providerStatus: string | null } | { status: 'mismatch' | 'unavailable'; code: string; observedAt: number | null };
 export declare function nearTestnetTxUrl(hash: unknown): string | null;

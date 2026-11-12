@@ -1,4 +1,4 @@
-/* Page layouts built on the design system in globals.css. */
+/* Page layouts built on the design system in globals.css (dark by default, light on request). */
 
 .page-notice { margin-bottom: 16px; }
 .page-foot { margin-top: 28px; text-align: center; font-size: 12.5px; color: var(--subtle); }
@@ -116,7 +116,7 @@
 .route-step-text { display: flex; flex-direction: column; min-width: 0; }
 .route-step-text b { font-size: 12.5px; font-weight: 600; }
 .route-step-text small { font-size: 11.5px; color: var(--subtle); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.route-step.done .route-step-index { background: var(--success-500); color: #fff; }
+.route-step.done .route-step-index { background: var(--success-500); color: var(--on-signal); }
 .route-step.active { border-color: var(--brand-100); } .route-step.active .route-step-index { background: var(--brand); color: #fff; }
 .route-step.preview { border-style: dashed; border-color: var(--brand-100); } .route-step.preview .route-step-index { background: var(--brand-50); color: var(--brand-700); }
 .route-step.halted { border-color: var(--warning-200); } .route-step.halted .route-step-index { background: var(--warning-50); color: var(--warning); }
@@ -218,3 +218,6 @@
   .summary-grid > div:first-child { border-top: 0; }
   .amount-input input { font-size: 24px; }
 }
+
+/* Long status labels wrap inside narrow summary cells instead of spilling past the card edge. */
+.summary-grid .badge, .summary-grid .pill { white-space: normal; height: auto; min-height: 22px; padding-top: 4px; padding-bottom: 4px; line-height: 1.3; max-width: 100%; }

@@ -149,6 +149,15 @@ function projectRound(source, files, stack, manifest, reputationManifest) {
   });
   const swap = swapFor(source, files, stack, manifest, transactions);
   const realisedReturnX18 = uint(round.realisedReturn, 'realised return');
+  // The round's own market terms, read from the completion record: the trading/evaluation window, the TWAP window used for
+  // selection, the performance-to-payout bounds and the LONG settlement ratio. Displayed as recorded, never assumed globally.
+  const market = {
+    tradingStart: uint(round.tradingStart, 'trading start'), tradingEnd: uint(round.tradingEnd, 'trading end'), evaluationEnd: uint(round.evaluationEnd, 'evaluation end'),
+    twapWindowSeconds: uint(round.twapWindow, 'TWAP window'), returnBounds: { minX18: uint(round.rMin, 'return lower bound'), maxX18: uint(round.rMax, 'return upper bound') },
+    longPayoutX18: uint(round.pi, 'LONG payout ratio'),
+  };
+  check(BigInt(market.tradingStart) < BigInt(market.tradingEnd) && BigInt(market.tradingEnd) < BigInt(market.evaluationEnd) && BigInt(market.twapWindowSeconds) > 0n
+    && BigInt(market.returnBounds.minX18) < 10n ** 18n && BigInt(market.returnBounds.maxX18) > 10n ** 18n && BigInt(market.longPayoutX18) <= 10n ** 18n, 'the round timing or payout bounds are inconsistent');
   const usage = isObject(report.modelUsage) ? { inputTokens: count(report.modelUsage.inputTokens, 'input tokens'), outputTokens: count(report.modelUsage.outputTokens, 'output tokens') } : null;
   return {
     key: roundKey(CHAIN_ID, stack.engine, source.roundId), slug: roundSlug(CHAIN_ID, stack.engine, source.roundId), roundId: source.roundId,
@@ -157,7 +166,7 @@ function projectRound(source, files, stack, manifest, reputationManifest) {
     genuineModelCalls: count(report.genuineModelCalls, 'genuine model calls'), scriptedForecasters: count(report.scriptedForecasters, 'scripted forecasters'),
     model: text(completion.provider?.model, 'model', 80), attestationVerified: completion.provider?.attestationVerified === true, modelUsage: usage,
     proposals, proposers, winner: { proposalId: winner.id, name: winner.name, allocationBps: winner.allocationBps, isHold: winner.id === '0' },
-    forecasters, swap, realisedReturnX18,
+    forecasters, swap, realisedReturnX18, market,
     totals: { deposits: uint(round.totalDeposits, 'total deposits'), paid: uint(round.totalPaid, 'total paid') },
     // Forecasting collateral is separate from the Safe: deposits plus the sponsor seed sit in the market until redemption.
     collateral: typeof independent.collateralAtCollapse === 'string' && typeof independent.endingCollateral === 'string' ? {

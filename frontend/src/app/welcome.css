@@ -1,0 +1,33 @@
+/* Welcome screen (wl-). Hero + one real-data stat card. Nothing below. */
+.wl-hero { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 48px; align-items: center; min-height: min(620px, calc(100dvh - 220px)); padding: 24px 0 48px; }
+.wl-hero h1 { font-size: 2.6rem; line-height: 1.02; margin-top: 18px; letter-spacing: -0.04em; }
+.wl-hero h1 .wl-accent { color: var(--accent); }
+.wl-line { margin-top: 18px; max-width: 520px; font-size: 16px; line-height: 1.5; color: var(--muted); }
+.wl-line b { font-weight: 500; color: var(--ai); }
+.wl-actions { margin-top: 28px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
+.wl-actions .btn-hero { background: var(--ink); border-color: var(--ink); color: var(--bg); }
+.wl-actions .btn-hero:hover { opacity: .88; }
+.wl-actions .wl-quiet { background: transparent; border-color: transparent; height: 48px; padding: 0 12px; color: var(--muted); font-size: 14px; border-radius: 10px; }
+.wl-actions .wl-quiet:hover { color: var(--ink); background: var(--sunken); }
+
+.wl-card { padding: 22px; }
+.wl-big { margin-top: 14px; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.wl-big .num { font-size: 40px; line-height: 1; color: var(--accent); }
+.wl-big small { font-size: 12.5px; color: var(--muted); }
+.wl-rows { margin-top: 18px; border-top: 1px solid var(--line); }
+.wl-rows > div { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; padding: 11px 0; border-bottom: 1px solid var(--line); font-size: 13.5px; }
+.wl-rows > div:last-child { border-bottom: 0; padding-bottom: 0; }
+.wl-rows dt { color: var(--muted); flex: none; }
+.wl-rows dd { margin: 0; text-align: right; min-width: 0; overflow-wrap: anywhere; display: inline-flex; align-items: center; gap: 8px; justify-content: flex-end; }
+.wl-rows .ai { color: var(--ai); }
+.wl-unavailable { color: var(--muted); font-size: 13.5px; margin-top: 14px; }
+
+.wl-how { display: flex; flex-direction: column; gap: 22px; }
+.wl-how section { display: flex; flex-direction: column; gap: 8px; }
+.wl-how h3 { font-size: 13px; font-family: var(--mono); font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.wl-how ol, .wl-how ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 8px; line-height: 1.5; }
+.wl-how li::marker { color: var(--muted); }
+.wl-how p { margin: 0; line-height: 1.5; }
+
+@media (min-width: 900px) { .wl-hero h1 { font-size: 3.75rem; } }
+@media (max-width: 899px) { .wl-hero { grid-template-columns: minmax(0, 1fr); gap: 32px; min-height: 0; padding-top: 8px; } }

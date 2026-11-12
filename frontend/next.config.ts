@@ -5,6 +5,18 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // The floating dev-tools badge overlaps the mobile tab bar during local demos.
   devIndicators: false,
+  // Earlier routes keep working. v2 navigation is Rounds / Portfolio / Agents; query strings carry over.
+  async redirects() {
+    return [
+      { source: "/arena", destination: "/rounds", permanent: false },
+      { source: "/demo", destination: "/rounds/local", permanent: false },
+      { source: "/safe", destination: "/portfolio", permanent: false },
+      { source: "/safe/fund", destination: "/portfolio/fund", permanent: false },
+      { source: "/fund", destination: "/portfolio/fund", permanent: false },
+      { source: "/record", destination: "/agents", permanent: false },
+      { source: "/manager", destination: "/advanced", permanent: false },
+    ];
+  },
 };
 
 export default nextConfig;

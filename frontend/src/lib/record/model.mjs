@@ -126,6 +126,7 @@ function round(item) {
     side: f.side === 'long' || f.side === 'short' ? f.side : null,
     proposalId: typeof f.proposalId === 'string' && /^\d{1,3}$/.test(f.proposalId) ? f.proposalId : null,
     reason: safeText(f.reason, 200), scripted: f.scripted === true,
+    credits: isIntegerString(f.credits) ? f.credits : null,
   }));
   const payouts = (Array.isArray(item.payouts) ? item.payouts : []).filter(isObject).map((p) => ({
     name: typeof p.name === 'string' && NAME.test(p.name) ? p.name : 'Forecaster',
@@ -137,12 +138,18 @@ function round(item) {
     transactionHash: item.swap.transactionHash.toLowerCase(), url: explorerUrl(AURORA_TESTNET, 'tx', item.swap.transactionHash),
     stableDelta: isSignedInteger(item.swap.stableDelta) ? item.swap.stableDelta : null, assetDelta: isSignedInteger(item.swap.assetDelta) ? item.swap.assetDelta : null,
     independentlyChecked: item.swap.independentlyChecked === true,
+    slippageBps: Number.isSafeInteger(item.swap.slippageBps) && item.swap.slippageBps >= 0 && item.swap.slippageBps <= 10_000 ? item.swap.slippageBps : null,
   } : null;
   const reputation = isObject(item.reputation) && isAddress(item.reputation.agent) && isSignedInteger(item.reputation.score) && isTxHash(item.reputation.transactionHash) ? {
     agent: item.reputation.agent.toLowerCase(), score: item.reputation.score, transactionHash: item.reputation.transactionHash.toLowerCase(),
     url: explorerUrl(AURORA_TESTNET, 'tx', item.reputation.transactionHash),
   } : null;
   const checks = isObject(item.checks) ? item.checks : {};
+  // The round's own terms. Bounds must straddle a flat return and the window must run forward, or no terms are shown.
+  const m = isObject(item.market) ? item.market : null;
+  const market = m && isObject(m.returnBounds) && [m.tradingStart, m.tradingEnd, m.evaluationEnd, m.twapWindowSeconds, m.returnBounds.minX18, m.returnBounds.maxX18, m.longPayoutX18].every(isIntegerString)
+    && BigInt(m.tradingStart) < BigInt(m.tradingEnd) && BigInt(m.tradingEnd) < BigInt(m.evaluationEnd) && BigInt(m.returnBounds.minX18) < 10n ** 18n && BigInt(m.returnBounds.maxX18) > 10n ** 18n && BigInt(m.longPayoutX18) <= 10n ** 18n
+    ? { tradingStart: m.tradingStart, tradingEnd: m.tradingEnd, evaluationEnd: m.evaluationEnd, twapWindowSeconds: m.twapWindowSeconds, returnBounds: { minX18: m.returnBounds.minX18, maxX18: m.returnBounds.maxX18 }, longPayoutX18: m.longPayoutX18 } : null;
   const collateral = isObject(item.collateral) && isIntegerString(item.collateral.atCollapse) && isIntegerString(item.collateral.ending) && isIntegerString(item.collateral.seed)
     ? { atCollapse: item.collateral.atCollapse, ending: item.collateral.ending, seed: item.collateral.seed } : null;
   return {
@@ -154,7 +161,7 @@ function round(item) {
     genuineModelCalls: Number.isSafeInteger(item.genuineModelCalls) ? item.genuineModelCalls : null,
     scriptedForecasters: Number.isSafeInteger(item.scriptedForecasters) ? item.scriptedForecasters : null,
     model: safeText(item.model, 80), attestationVerified: item.attestationVerified === true,
-    proposals, winner: { ...winner, isHold: winner.id === '0' }, forecasters, swap,
+    proposals, winner: { ...winner, isHold: winner.id === '0' }, forecasters, swap, market,
     realisedReturnX18: isIntegerString(item.realisedReturnX18) ? item.realisedReturnX18 : null,
     payouts, transactions, droppedTransactions: (Array.isArray(item.transactions) ? item.transactions.length : 0) - transactions.length, reputation,
     checks: { independentPassed: checks.independentPassed === true, returnRecomputed: checks.returnRecomputed === true, payoutsRecomputed: checks.payoutsRecomputed === true, swapChecked: checks.swapChecked === true ? true : checks.swapChecked === false ? false : null },

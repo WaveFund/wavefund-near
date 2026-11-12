@@ -32,6 +32,7 @@ export type DemoState = {
   agentRecords?: Array<{ name: string; role: string; provider: string; model: string; inputHash: string; outputHash: string }>;
   agents: Array<{ name: string; role: string; rationale: string; action?: string; risks?: string[]; evidenceIds?: string[]; forecasts?: Array<{ proposalId: number; expectedReturnBps: number; confidenceBps: number; rationale: string; risks: string[] }> }>;
   receipts: Receipt[];
+  messages?: Array<{ timestamp: string; stage: string; message: string }>;
   round?: {
     status?: string | number;
     tradingEnd?: string | null;

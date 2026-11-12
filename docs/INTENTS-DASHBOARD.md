@@ -6,34 +6,76 @@
 
 This is not cross-chain execution of a winning strategy. The existing strategy and forecasting screens, the Trading Safe model, the AI agents, Uniswap v4 forecasting and Trisolaris execution are unchanged. Funding comes before them; it does not replace them.
 
-**Status (2026-11-12, branch `feat/funding-dashboard`, base `71b193b`):** implemented and verified in network-isolated Node 22 containers on scratch copies (results under [Verification](#verification-in-the-isolated-container)). Sending stays disabled. The completed **Tidepool community-testnet demonstration** (funding → strategy round → outcome → reputation) is shown from saved, independently verified evidence. Official production 1Click delivery remains unproven.
+**Status (2026-11-13, branch `feat/strategy-arena-ui`, UI v2):** implemented and verified in network-isolated Node 22 containers on scratch copies (results under [Verification](#verification-in-the-isolated-container)). Sending stays disabled. The completed **Tidepool community-testnet demonstration** (funding → strategy round → outcome → reputation) is shown from saved, independently verified evidence. Official production 1Click delivery remains unproven.
 
 ## Judge path
 
 1. **Start the local demo:** run `bash scripts/docker-demo/up.sh` (Docker only) and open http://127.0.0.1:3000. Running it again while the demo is up only reports the URL. Use `--fresh` for a new chain.
-2. **Run the local fixture round:** on **Rounds**, press **Run local round**. It uses a local Anvil chain, test assets and scripted agents and prices; the contract transactions are real but local. Its +4.68% is **fixture data, not investment performance**.
-3. **Inspect the Tidepool testnet round:** on **Rounds → Past rounds on Aurora testnet**, open **Round 1 · Tidepool testnet stack**. The story strip shows funding → decision → execution → outcome. The **Funding** tab covers Arbitrum Sepolia → Tidepool → NEAR testnet settlement → the Aurora testnet Safe, with the 0.52 bridge cost kept separate.
-4. **Open transaction links:** every hash links to `sepolia.arbiscan.io`, `explorer.testnet.aurora.dev` or `testnet.nearblocks.io`. **Re-verify receipts now** runs an optional read-only fresh check through the existing `runtime/tidepool/read-model.mjs`.
+2. **Run the local fixture round:** on **Home**, press **Run local demo**. The **Demo** page follows the round live through Funded → Proposals → Forecasting → Selected → Executed → Evaluated → Redeemed. It uses a local Anvil chain, test assets, scripted agents and simulated prices; the contract transactions are real but local. Its +4.685% is **fixture data, not investment performance**.
+3. **Inspect the Tidepool testnet round:** press **Explore completed testnet run** (or **Arena → Round 1 · Tidepool testnet stack**). The same seven steps answer one question each. **Funded** shows Quote → Source deposit → In transit → Delivery verified for Arbitrum Sepolia → Tidepool → the Aurora testnet Safe, with the 0.52 bridge cost kept separate.
+4. **Open transaction links:** each step's **Technical details** list its transactions, linking to `sepolia.arbiscan.io`, `explorer.testnet.aurora.dev` or `testnet.nearblocks.io`. **Re-verify receipts now** runs an optional read-only fresh check through the existing `runtime/tidepool/read-model.mjs`.
 5. **Inspect the result, payouts and reputation:**
-   - The **Outcome** tab shows −0.6458% (exact factor 0.993541889635073190) as "executed and settled", not as a failure, plus the separate money buckets and the forecaster redemptions (9.934985 / 10.0207 / 10 / 9.981677).
+   - **Executed** shows 149.61 test USDC → 0.071692173391461052 test ETH; **Evaluated** shows −0.6458% (exact factor 0.993541889635073190) on the round's recorded −5% to +5% payout range, as a measured outcome, not a failure.
+   - **Redeemed** shows the forecaster redemptions (9.934985 / 10.0207 / 10 / 9.981677) and Momentum's −1 outcome point.
    - **Agents** shows each stack's own −1 for Momentum; the two are never summed.
-6. **Optional, official mainnet:** on **Treasury**, keep **NEAR Intents 1Click** selected and press **Get quote** for a signed dry quote. It is a mainnet preview; delivery is unproven and execution disabled.
+6. **Optional, official mainnet:** on **Portfolio → Funding → Funding preview** (`/portfolio/fund`), keep **NEAR Intents · mainnet preview** selected and press **Get quote** for a signed dry quote. It is a mainnet preview; delivery is unproven and execution disabled.
 7. **Run `node scripts/judge-check.mjs`** (after `npm ci --ignore-scripts`):
    - it is read-only and needs internet for the public checks;
    - it does not start a round, call a paid model, sign or move funds.
+
+## Product flow: strategy arena (UI v2)
+
+One sentence leads: *"Agents propose. Forecasters take positions. Your Safe executes the selected strategy."* Navigation is **Rounds | Portfolio | Agents**; a header context selector switches between the completed testnet run, the local simulation (only when a local backend runs) and the separate mainnet funding preview. Every round uses one journey, **Funded → Proposals → Forecasting → Selected → Executed → Evaluated → Redeemed**, but only ONE stage body is shown at a time; receipts, rationale, definitions and evidence open in drawers or tooltips.
+
+### Screen map
+
+- **Welcome** `/`: hero, saved-run stat card, one "How it works" drawer. Primary: **Explore a round**; secondary: **View portfolio**.
+- **Rounds** `/rounds` → **Round workspace** `/rounds/{network}-{engine}-{round}?stage=…`: header (≤3 metrics + provenance), stage selector, one stage body, summary column with Observer / Recorded participant, "Activity & receipts" and "About this evidence" drawers. Settled rounds open on **Result** with **Replay journey** (view navigation only).
+  - **Local simulation** `/rounds/local`: unavailable unless the backend is the local simulation; Start only when idle.
+- **Portfolio** `/portfolio?safe=tidepool|original|local&tab=overview|funding|history|permissions`: "Demo portfolio", one tab body at a time.
+  - **Funding preview** `/portfolio/fund`: NEAR Intents mainnet dry quotes, the completed Tidepool transfer, labelled example states.
+- **Agents** `/agents?stack=tidepool|original`: ranking table; row drawer with cumulative score vs each round's own delta.
+- **Advanced** `/advanced` (header icon): unsigned owner transactions for the local Safe.
+
+Earlier routes redirect (query strings kept): `/arena` → `/rounds`, `/demo` → `/rounds/local`, `/safe` → `/portfolio`, `/safe/fund` and `/fund` → `/portfolio/fund`, `/record` → `/agents`, `/manager` → `/advanced`.
+
+### Capability table
+
+| Capability | Status |
+|---|---|
+| Product explanation, roles, separate money buckets | **Available now** |
+| Run a local simulation round and follow each step live | **Available now** (local chain, fixture agents and prices) |
+| Completed testnet rounds (7, 8, Tidepool round 1) as journeys | **Read-only**: saved, independently verified evidence |
+| Re-verify the Tidepool receipts | **Read-only**, on demand (`/api/tidepool/demo/fresh-check`) |
+| Official 1Click quote | **Read-only** public dry quote; no deposit address, nothing sent |
+| Funding-record tracking | **Read-only**, only when the shared funding service is injected |
+| Agent outcome reputation, per stack | **Read-only** live contract reads |
+| Owner actions (policy, module, sponsorship, round authorization) | **Prepares unsigned** Safe Transaction Builder JSON; the owner signs in their Safe |
+| Deposit into a Safe | **Needs new wallet integration** (disabled) |
+| Deposit forecast collateral, take LONG/SHORT, redeem | **Needs new wallet integration**: the contracts support it; the UI is explanatory and read-only |
+| A forecaster's own credits, claims and redeemable amounts | **Needs new wallet integration** |
+| Connect any Safe (self-service onboarding) | **Future feature**; only the configured demo Safes are shown |
+| In-app withdrawal | **Future feature**; the owner keeps Safe controls |
+
+### Missing interfaces (raised, not built)
+
+- **Local round terms.** `/api/state` does not expose the round's payout bounds or TWAP window, although `runtime/demo.mjs` opens rounds with `rMin = 0.95e18`, `rMax = 1.05e18` and the manifest window. Requested: `round.returnBounds: { minX18, maxX18 }` and `round.twapWindowSeconds` (integer strings) in `/api/state`. Until then the local journey shows no payout-range scale.
+- **Per-strategy signals for saved rounds.** The completion records hold the winner but not each proposal's final-window average, so the selection step for saved rounds shows the rule, not a signal board. Requested: `proposals[].probabilityTwapX18` in the saved completion record (QuantumRound stores `probabilityTwap` at collapse).
+- **Wallet-connected forecasting** needs balances, a quote, units, costs, slippage, a deadline and wallet authorization, and a separate integration review.
 
 ## Where each value comes from
 
 | Panel | Source | Label in the UI |
 |---|---|---|
-| Rounds → current round, stats, activity | Local Anvil chain, scripted agents and simulated prices | "Local simulation" |
-| Treasury → Fixtures source | In-browser synthetic records with fake addresses | "Fixture" |
-| Rounds → past rounds and round detail (7, 8, Tidepool 1) | `docs/test-evidence/*`, validated by the API | "Saved evidence" (verified when recorded) |
+| Demo → local round journey | Local Anvil chain, scripted agents and simulated prices | "Local simulation" |
+| Fund a Safe → Example states | In-browser synthetic records with fake addresses | "Example data" / "Fixture" |
+| Arena → round journeys (7, 8, Tidepool 1) | `docs/test-evidence/*`, validated by the API | "Saved evidence" (verified when recorded) |
 | Tidepool funding, swap and NEAR settlement | `deployments/aurora-testnet-tidepool.json` and `docs/test-evidence/tidepool-v1/*` | "Saved evidence" |
 | Tidepool relayer status | The Tidepool status saved in the funding proof | "Provider-reported" |
 | Re-verify receipts now | Public Arbitrum Sepolia and Aurora testnet RPCs plus the Tidepool status API, read on click | "Fresh read · time" (or unavailable) |
 | Agents → both reputation stacks | Shared reputation reader against Aurora testnet, on page load | "Live read" (stale or unavailable shown as such) |
-| Treasury → NEAR Intents 1Click | Signed dry quotes from 1Click, mainnet | "Live quotes" (preview only) |
+| Fund a Safe → NEAR Intents mainnet preview | Signed dry quotes from 1Click, mainnet | "Live preview quotes" (preview only) |
+| Portfolio → Permissions (local Safe) | `/api/manager` on the local chain | "Live · local" |
 
 ## Network truth
 
@@ -56,7 +98,7 @@ The existing frontend network validation (`decodeState`: Anvil 31337 or Aurora t
 
 ## Funding lanes
 
-`/fund` opens with a **Funding source** selector. The three lanes never share networks, tokens or evidence:
+`/portfolio/fund` opens with a **Funding source** selector. The three lanes never share networks, tokens or evidence:
 
 | Lane | Network | What it shows | Status source |
 |---|---|---|---|
@@ -64,7 +106,7 @@ The existing frontend network validation (`decodeState`: Anvil 31337 or Aurora t
 | **Tidepool testnet demo** | Aurora testnet | The completed transfer as history: the ladder **Minted test USDC ≠ Bridge delivery (verified) ≠ Strategy round (settled)**, the funding flow with saved, provider-reported and fresh-read labels, the funding → strategy linkage, and a link to the round. No deposit control | Always **Testnet demo · history** (`laneStatus` forces it, whatever a server reports) |
 | **Labelled fixtures** | none | 16 synthetic states with fake addresses | Always **Synthetic** |
 
-Links: `/fund` (official), `/fund?lane=tidepool`, `/fund?fixtures=1`.
+Links: `/portfolio/fund` (official), `/portfolio/fund?lane=tidepool`, `/portfolio/fund?fixtures=1`.
 - The Tidepool source reads its identities and amounts from the reviewed manifest and evidence through `GET /api/tidepool/demo`; nothing is hand-written.
 - It is never wired into `FundingRecordV1`, which stays production-mainnet only, and it never feeds mainnet readiness.
 - Arbitrum Sepolia links use `sepolia.arbiscan.io`, the explorer named in the verified Tidepool evidence.
@@ -134,7 +176,7 @@ What it returns:
 - Every agent has `status: ok` with the reader's integer-string `score`, `samples`, `positive`, `negative`, `flat`, `blockNumber` and `blockTimestamp`.
 - A failed read has `status: unavailable`, `reputation: null` and the reader's code. It is never a zero score.
 
-`/record` (journey tab **Record 04**) shows signed **performance points**, the evaluated strategy count and positive/negative/flat outcomes, with five distinct states:
+`/agents` shows signed **outcome points** per stack, the evaluated strategy count and positive/negative/flat outcomes, with five distinct states:
 - **Scored**;
 - **No evaluated strategies**: 0 points, "no point and no penalty";
 - **Unavailable**: no number, "no data · not zero", plus the code;
@@ -162,7 +204,7 @@ Validation rules:
 
 Tampered evidence is rejected. Report/independent disagreements are surfaced in `checks`, not hidden. Invalid evidence answers 503 without stopping the server; `WAVEFUND_EVIDENCE=disabled` removes the endpoint.
 
-The `/record` cards present the rounds as they happened:
+The round journeys (`/rounds/…`) present the rounds as they happened:
 - **Round 7, hybrid test:**
   - four genuine NEAR AI proposals (5/45/75/95% ETH, operator-assigned mandates);
   - four forecasters flagged **scripted** that targeted proposal 3;
@@ -183,7 +225,7 @@ Both cards list limitations ("no TEE attestation verified", the same model for e
 | Funding read model / projection | `runtime/operator/funding-readonly.mjs` (new) |
 | API wiring | `runtime/server.mjs`: one import, one optional dependency, one route branch |
 | API tests | `runtime/test/funding-api.test.mjs` |
-| UI: “Fund your Trading Safe” | `frontend/src/app/fund/*`, `frontend/src/components/funding/*`, `frontend/src/app/funding.css` |
+| UI: “Funding preview” | `frontend/src/app/portfolio/fund/*`, `frontend/src/components/funding/*` |
 | UI logic (pure, tested) | `frontend/src/lib/funding/model.mjs` (+ `.d.mts`) |
 | Labelled fixtures + loader | `frontend/src/lib/funding/fixtures.mjs`, `loader.ts` |
 | UI logic tests | `frontend/test/funding-model.test.mjs` (`npm test --workspace @wavefund/frontend`) |
@@ -192,9 +234,10 @@ Both cards list limitations ("no TEE attestation verified", the same model for e
 | One-command Docker demo | `scripts/docker-demo/` (Dockerfile, `up.sh`, `down.sh`, README) |
 | Performance reputation API | `runtime/operator/reputation-api.mjs`, `runtime/test/reputation-api.test.mjs` |
 | Testnet round evidence API | `runtime/operator/round-evidence.mjs`, `runtime/test/round-evidence.test.mjs` |
-| Agents (outcome reputation, two stacks) | `frontend/src/app/record/*`, `frontend/src/components/record/RecordParts.tsx`, `frontend/src/lib/record/*`, `frontend/test/record-model.test.mjs` |
+| Agents (outcome reputation, two stacks) | `frontend/src/app/agents/*`, `frontend/src/lib/record/*`, `frontend/test/record-model.test.mjs` |
 | Tidepool demonstration | `runtime/operator/tidepool-demo.mjs`, `runtime/test/tidepool-demo.test.mjs`, `frontend/src/lib/tidepool/*`, `frontend/src/components/tidepool/TidepoolParts.tsx`, `frontend/test/tidepool-model.test.mjs` |
-| Round detail (network + engine + round) | `frontend/src/app/rounds/[id]/*`, `frontend/src/components/rounds/RoundEvidence.tsx` |
+| Round journey (network + engine + round) | `frontend/src/app/rounds/*`, `frontend/src/components/arena/{workspace,stages}.tsx` |
+| Strategy-arena flow | `frontend/src/app/{page,rounds,portfolio,agents,advanced}`, `frontend/src/components/arena/*`, `frontend/src/app/arena.css`, `frontend/src/lib/arena/*`, `frontend/test/arena-model.test.mjs` |
 | Local demo usability | `scripts/local-demo.mjs`, `scripts/lib/local-demo-preflight.test.mjs` |
 | Screenshot helper | `frontend/scripts/capture-funding-states.mjs` (Playwright, fixture mode, loopback only) |
 
@@ -259,7 +302,7 @@ Monetary values are rendered from integer strings with BigInt. Missing values sh
 
 ## Fixture versus live
 
-- `/fund?fixtures=1`, or the **Labelled fixtures** lane, opens an in-browser fixture explorer labelled “FIXTURE · synthetic data, not live evidence”. Safe, wallet, deposit and transaction values are fake and recognisable (`0x5afe…`, `0xfeed…`, `0xf1f1…`). The fixture strategy Safe is `0x7e57…`, its token `0x57ab…`, and a foreign token is `0x0dd0…`. Only public token identities are real. Fixture records are never labelled `live-verified` and never get explorer links.
+- `/portfolio/fund?fixtures=1`, or the **Example states** lane, opens an in-browser fixture explorer labelled “FIXTURE · synthetic data, not live evidence”. Safe, wallet, deposit and transaction values are fake and recognisable (`0x5afe…`, `0xfeed…`, `0xf1f1…`). The fixture strategy Safe is `0x7e57…`, its token `0x57ab…`, and a foreign token is `0x0dd0…`. Only public token identities are real. Fixture records are never labelled `live-verified` and never get explorer links.
 - Live mode shows the trusted mainnet funding Safe and real dry quotes. No live funding record can exist yet: production routes are empty and executable quotes are disabled.
 - The fixture model lives entirely in the frontend's own files, behind the `FundingLoader` interface, so it can be replaced.
 

@@ -26,10 +26,11 @@ bash scripts/docker-demo/up.sh
 
 The first run takes several minutes, because it installs dependencies and compiles the contracts. Later runs reuse the cache. When the launcher prints `✓ Ready`, open:
 
-- `http://127.0.0.1:3000`: **Decide**. Select **Run local round**.
-- `http://127.0.0.1:3000/fund`: **Fund your Trading Safe**, with live NEAR Intents 1Click dry quotes. Signing is disabled.
-- `http://127.0.0.1:3000/manager`: the owner console.
-- `http://127.0.0.1:3000/record`: the track record. It reads live performance reputation from public Aurora testnet, read-only, and shows the published round 7 and 8 evidence.
+- `http://127.0.0.1:3000/rounds/local`: press **Run local simulation** to run a round on the local chain and follow it stage by stage.
+- `http://127.0.0.1:3000/rounds`: the completed Aurora testnet rounds (including the Tidepool-funded round), each opening on its result recap with a stage-by-stage replay.
+- `http://127.0.0.1:3000/safe`: **My Safe**, and `/safe/fund` to **fund a Safe** with live NEAR Intents 1Click dry quotes. Sending and signing are disabled.
+- `http://127.0.0.1:3000/agents`: outcome reputation, read live and read-only from public Aurora testnet, per reputation contract.
+- `http://127.0.0.1:3000/advanced`: owner tools (unsigned transactions only).
 
 Stop the demo with:
 
@@ -43,7 +44,7 @@ bash scripts/docker-demo/down.sh
 |---|---|
 | `up.sh` again while the demo runs | Reports the URL and leaves the running demo untouched. It never stops a working demo. |
 | `up.sh --fresh` | Resets only this demo's disposable state (its container, local chain journal, local deployment and broadcast) and starts a new chain. Use it to run another round, to load code changes, or after the container stopped. |
-| `up.sh --no-funding-preview` | Starts without `/api/funding/*`, so no request goes to NEAR Intents. `/fund` then offers the labelled fixture explorer. |
+| `up.sh --no-funding-preview` | Starts without `/api/funding/*`, so no request goes to NEAR Intents. `/safe/fund` then offers the labelled example states. |
 | `up.sh --help` | Prints the usage summary. |
 
 ## What it does

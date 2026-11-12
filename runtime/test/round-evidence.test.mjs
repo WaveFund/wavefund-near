@@ -52,6 +52,9 @@ test('tampered or malformed evidence is rejected instead of displayed', async ()
     ['docs/test-evidence/round7-hybrid/report.json', (r) => { r.completion.payouts[0].profitLoss = '0'; }, /payout arithmetic/],
     ['docs/test-evidence/round8-swarm/report.json', (r) => { r.completion.payouts[0].payout = 10000000; }, /integer string/],
     ['docs/test-evidence/round7-hybrid/report.json', (r) => { r.confirmedTransactions[0].label = '<img src=x>'; }, /label/],
+    ['docs/test-evidence/round7-hybrid/report.json', (r) => { r.completion.round.rMin = '1000000000000000000'; }, /payout bounds are inconsistent/],
+    ['docs/test-evidence/round8-swarm/report.json', (r) => { r.completion.round.evaluationEnd = r.completion.round.tradingStart; }, /payout bounds are inconsistent/],
+    ['docs/test-evidence/tidepool-v1/happy-path.json', (r) => { delete r.completion.round.twapWindow; }, /TWAP window/],
   ];
   for (const [file, mutate, expected] of cases) await assert.rejects(loadRoundEvidence({ read: tampered(file, mutate) }), expected, String(expected));
   // A report/independent disagreement that is structurally valid is surfaced, not hidden.
@@ -93,6 +96,8 @@ test('the Tidepool round is identified by network + engine + round id and keeps 
   assert.equal(tidepool.swap.transactionHash, '0x4dc76edba6d01cb0eacb6bcd8538ce9d5071b4e24d2872a8c4ed13da61a2de40');
   assert.equal(tidepool.swap.stableDelta, '-149610000'); assert.equal(tidepool.swap.assetDelta, '71692173391461052');
   assert.equal(tidepool.realisedReturnX18, '993541889635073190');
+  assert.deepEqual(tidepool.market, { tradingStart: '1794434097', tradingEnd: '1794434503', evaluationEnd: '1794434683', twapWindowSeconds: '90',
+    returnBounds: { minX18: '950000000000000000', maxX18: '1050000000000000000' }, longPayoutX18: '435418896350731900' }, 'the round terms are read from its own completion record');
   assert.deepEqual(tidepool.payouts.map((item) => [item.name, item.payout]), [['Quant', '9934985'], ['Guardian', '10020700'], ['FeeAnalyst', '10000000'], ['StressAnalyst', '9981677']]);
   assert.deepEqual([tidepool.reputation.score, tidepool.reputation.contract], ['-1', '0xfa71a652547284d1034ae6813ed4a882cb354e92']);
   assert.deepEqual(tidepool.checks, { independentPassed: true, returnRecomputed: true, payoutsRecomputed: true, swapChecked: true });
