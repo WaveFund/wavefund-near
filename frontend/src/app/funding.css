@@ -368,3 +368,14 @@ button.route-option:hover:not(:disabled){background:rgba(255,255,255,.04)}
   .bridge-actions .btn-lg{height:auto;min-height:56px;padding:10px 16px;white-space:normal;text-align:center;line-height:1.3}
   .token-box-foot>span:first-child{flex-basis:100%}
 }
+
+/* ---------- Tidepool minted ≠ delivered ≠ ready */
+.tide-ladder{list-style:none;margin:0 0 14px;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tide-step{position:relative;display:flex;min-width:0}
+.tide-step>div{display:flex;flex-direction:column;gap:4px;width:100%;padding:10px 11px;border-radius:12px;border:1px dashed var(--line-2);background:rgba(255,255,255,.015)}
+.tide-step b{font-size:12.5px}
+.tide-step p{font-size:11px;line-height:1.45;color:var(--muted)}
+.tide-step-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:4px}
+.tide-step-foot small{font-size:10px;color:var(--dim)}
+.tide-neq{position:absolute;left:-9px;top:50%;transform:translate(-50%,-50%);font-size:16px;color:var(--amber)}
+@media(max-width:640px){.tide-ladder{grid-template-columns:minmax(0,1fr);gap:14px}.tide-neq{left:50%;top:-8px;transform:translate(-50%,-50%)}}

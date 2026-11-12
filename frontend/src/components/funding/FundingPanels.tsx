@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import {
-  AURORA_MAINNET, AURORA_TESTNET, FUNDING_LANES, LANE_ORDER, READINESS_FAILURES, compareRaw, formatDuration, formatUnits, networkName, parseUnits, roundEligibility,
+  AURORA_MAINNET, AURORA_TESTNET, FUNDING_LANES, LANE_ORDER, READINESS_FAILURES, compareRaw, tidepoolLadder, formatDuration, formatUnits, networkName, parseUnits, roundEligibility,
   type DeliverySummary, type FundingConfig, type FundingPreview, type FundingRoute, type FundingStrategy, type LaneId, type LaneStatus,
   type StrategyReadiness, type SummaryTone,
 } from "@/lib/funding/model.mjs";
@@ -69,36 +69,43 @@ export function TidepoolLaneCard({ strategy, live, notice }: { strategy: Funding
       <div className="bridge-tags"><Pill tone="violet">Community</Pill><Pill tone="warning">Pending integration</Pill></div>
     </div>
     <p className="lane-note">A community relayer from a testnet source chain into Aurora testnet, including Safe payouts. Worthless test assets. Not official NEAR Intents 1Click settlement.</p>
+    <ol className="tide-ladder" aria-label="Minted is not delivered, delivered is not ready">
+      {tidepoolLadder().map((step, index) => <li key={step.id} className={`tide-step ${step.state}`}>
+        {index > 0 ? <span className="tide-neq" aria-hidden="true">≠</span> : null}
+        <div><b>{step.title}</b><p>{step.detail}</p><span className="tide-step-foot"><small>{step.owner}</small><Pill tone="muted">{step.label}</Pill></span></div>
+      </li>)}
+    </ol>
     <div className="identity-pair">
       <div className="identity-box">
-        <span className="identity-head"><i className="chain-dot testnet" />Strategy needs</span>
+        <span className="identity-head"><i className="chain-dot testnet" />Current strategy stack</span>
         <dl>
           <div><dt>Network</dt><dd>Aurora testnet <code>{AURORA_TESTNET}</code></dd></div>
           <div><dt>Strategy Safe</dt><dd>{strategy ? <Address value={strategy.safe} chainId={strategy.chainId} label="strategy Safe" live={live} /> : missing}</dd></div>
           <div><dt>Stable token</dt><dd>{strategy ? <><span>{strategy.symbol ?? "token"}</span><Address value={strategy.token} chainId={strategy.chainId} label="strategy token" live={live} /></> : missing}</dd></div>
           <div><dt>Decimals</dt><dd>{strategy ? strategy.decimals : "—"}</dd></div>
         </dl>
-        <small>{strategy ? strategySource(strategy, live) : notice ?? "Loads from the local funding API."}</small>
+        <small>{strategy ? `${strategySource(strategy, live)} · original testnet deployment, not the Tidepool destination` : notice ?? "Loads from the local funding API."}</small>
       </div>
       <div className="identity-box pending">
         <span className="identity-head"><Icon name="clock" />Tidepool would deliver</span>
         <dl>
           <div><dt>Source network</dt><dd>{pending}<small>announced: Arbitrum Sepolia</small></dd></div>
-          <div><dt>Recipient Safe</dt><dd>{pending}</dd></div>
-          <div><dt>Delivered token</dt><dd>{pending}</dd></div>
+          <div><dt>Recipient Safe</dt><dd>{pending}<small>Tidepool strategy stack chosen by A/B</small></dd></div>
+          <div><dt>Delivered token</dt><dd>{pending}<small>Tidepool test USDC · differs from the current strategy token</small></dd></div>
           <div><dt>Status feed</dt><dd><span className="unavailable">Not connected</span></dd></div>
         </dl>
         <small>Supplied by B’s interface and A’s verified configuration.</small>
       </div>
     </div>
-    <div className="compat-note" role="note"><Icon name="alert" /><div><b>Tidepool’s test token may differ from the strategy token.</b><p>A delivery of any other token never makes the strategy ready. Readiness comes only from the funding service, for this Safe and this token.</p></div></div>
+    <div className="compat-note" role="note"><Icon name="alert" /><div><b>Tidepool’s test USDC is not the current strategy token.</b><p>Test-only pool usage is permitted for A/B’s compatible stack, which is theirs to deliver and is not implemented here. A delivery of any other token never makes a strategy ready.</p></div></div>
     <div className="bridge-actions"><button type="button" className="btn btn-locked btn-lg" disabled><Icon name="lock" /><span>No Tidepool quote · integration pending</span></button></div>
     <details className="why-locked">
       <summary><Icon name="lock" />What unlocks this lane?</summary>
       <ol>
-        <li><Icon name="lock" />B: a read-only Tidepool quote, status and receipt interface for the local API</li>
+        <li><Icon name="lock" />A/B: the Tidepool adapter, signature verification, compatible contracts and pool, and bridge execution</li>
+        <li><Icon name="lock" />A/B: a read-only route, status and receipt interface for the local API</li>
         <li><Icon name="lock" />A: a verified testnet route and funding-record support for Aurora testnet</li>
-        <li><Icon name="lock" />Team: confirm the recipient Safe and the token the strategy accepts</li>
+        <li><Icon name="lock" />Team: confirm the destination Safe and the token that strategy accepts</li>
         <li><Icon name="lock" />Review: executable quotes, signing and sending stay disabled</li>
       </ol>
       <p>Until then this lane shows identities only. It invents no route, quote or live status.</p>

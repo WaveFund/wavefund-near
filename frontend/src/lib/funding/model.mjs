@@ -414,7 +414,7 @@ export function laneFromSearch(search) {
 // Tidepool is pending in this build whatever any server reports: B has not provided its interface and A has
 // no verified testnet configuration, so no route, quote or live status may be shown for it.
 export function laneStatus(id, { source = null, phase = null, config = null } = {}) {
-  if (id === 'tidepool') return { tone: 'warning', label: 'Pending integration', detail: 'No route, quote or status until B provides its interface and A a verified configuration.' };
+  if (id === 'tidepool') return { tone: 'warning', label: 'Pending integration', detail: 'Tidepool has minted test USDC, but no route, quote or status is connected until A/B deliver the integrated adapter and configuration.' };
   if (id === 'fixtures') return { tone: 'fixture', label: 'Synthetic', detail: 'Every funding state with fake values. Never live evidence.' };
   if (id !== 'official') return { tone: 'muted', label: 'Unknown', detail: 'Unknown funding lane.' };
   if (source !== 'api') return { tone: 'muted', label: 'Not connected', detail: 'Select to connect to the local funding API.' };
@@ -425,6 +425,16 @@ export function laneStatus(id, { source = null, phase = null, config = null } = 
   if (config.capabilities.preview) return { tone: 'live', label: 'Live dry quotes', detail: 'Signed 1Click dry quotes for the trusted Safe. Sending is disabled.' };
   if (config.capabilities.records) return { tone: 'live', label: 'Service records', detail: 'Funding service records. Sending is disabled.' };
   return { tone: 'neutral', label: 'Read-only', detail: 'Configuration only.' };
+}
+
+// Three separate facts for Tidepool, each owned elsewhere. In this build none of them is connected, so every step
+// reports that; a minted wallet balance can never be shown as delivery, and delivery never as readiness.
+export function tidepoolLadder() {
+  return [
+    { id: 'minted', title: 'Minted test USDC', detail: 'Tidepool has minted test USDC to wallets. A wallet balance is not a bridge delivery.', owner: 'Tidepool', state: 'not-tracked', label: 'Not tracked here' },
+    { id: 'delivered', title: 'Bridge delivery', detail: 'A verified receipt into the configured strategy Safe, from the integrated route.', owner: 'B · receipt verification', state: 'not-connected', label: 'Not connected' },
+    { id: 'ready', title: 'Strategy ready', detail: 'Only the funding service, for that Safe and that strategy token.', owner: 'A · funding service', state: 'not-connected', label: 'Not connected' },
+  ];
 }
 
 // ---------------------------------------------------------------- delivered ≠ strategy ready

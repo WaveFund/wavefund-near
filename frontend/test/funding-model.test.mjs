@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   ARBITRUM_SEPOLIA, AURORA_MAINNET, AURORA_TESTNET, FUNDING_LANES, LANE_ORDER, classifyFunding, deliverySummary, explorerUrl, formatUnits, laneFromSearch,
-  laneStatus, networkName, parseUnits, percentOf, roundEligibility, safeText, strategyReadiness, validateFundingConfig, validatePreview,
+  laneStatus, networkName, parseUnits, percentOf, roundEligibility, safeText, strategyReadiness, tidepoolLadder, validateFundingConfig, validatePreview,
 } from '../src/lib/funding/model.mjs';
 import { fixtureConfig, fixturePreview, fixtureScenarios } from '../src/lib/funding/fixtures.mjs';
 
@@ -354,4 +354,14 @@ test('today’s configuration: mainnet 1Click funding can never make the testnet
   assert.equal(deliverySummary(foreignDisplay).state, 'unconfirmed');
   assert.equal(strategyReadiness(foreign, foreignDisplay, cfg).state, 'not-delivered');
   assert.equal(deliverySummary(null).state, 'none');
+});
+
+test('Tidepool: minted wallet tokens are not delivery, delivery is not readiness, and nothing claims progress yet', () => {
+  const ladder = tidepoolLadder();
+  assert.deepEqual(ladder.map((step) => step.id), ['minted', 'delivered', 'ready']);
+  assert.ok(ladder.every((step) => ['not-tracked', 'not-connected'].includes(step.state)), 'no step is shown as reached in this build');
+  assert.match(ladder[0].detail, /not a bridge delivery/);
+  assert.match(ladder[2].owner, /funding service/);
+  assert.match(laneStatus('tidepool').detail, /minted test USDC/);
+  assert.equal(laneStatus('tidepool', { source: 'api', phase: 'ready', config: { ...config(), evidence: 'live' } }).label, 'Pending integration');
 });
