@@ -112,7 +112,7 @@ docker run -d --name "$NAME" --user "$(id -u):$(id -g)" -e HOME=/work/.run/home 
   -p 127.0.0.1:3000:3000 -p 127.0.0.1:3001:3001 -v "$WORK:/work" -w /work "$IMAGE" node scripts/local-demo.mjs >/dev/null
 for _ in $(seq 1 240); do
   if healthy; then
-    echo "✓ Ready: $URL  (funding: /fund · agents: /record · admin: /manager · stop: bash scripts/docker-demo/down.sh)"
+    echo "✓ Ready: $URL  (demo: /demo · my Safe: /safe · arena: /arena · agents: /agents · stop: bash scripts/docker-demo/down.sh)"
     exit 0
   fi
   if [ "$(docker inspect -f '{{.State.Running}}' "$NAME" 2>/dev/null)" != "true" ]; then
