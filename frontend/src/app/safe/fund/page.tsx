@@ -203,7 +203,7 @@ export default function FundPage() {
       </div>
       <FreshCheckRow fresh={fresh} freshing={freshing} onFresh={() => void tidepoolFreshCheck()} now={now} />
       <Button variant="locked" size="lg" block icon="lock" disabled>No live Tidepool route · history only</Button>
-      <details className="tech" style={{ margin: "0 -20px -20px" }}><summary><Icon name="chevron" />Technical details: quote, recipient, settlement and receipts</summary><div className="tech-body"><TidepoolEvidence demo={tidepool} /></div></details>
+      <details className="tech bleed"><summary><Icon name="chevron" />Technical details: quote, recipient, settlement and receipts</summary><div className="tech-body"><TidepoolEvidence demo={tidepool} /></div></details>
     </div>
     : tidepoolError ? <Notice tone="warning" title="Tidepool evidence unavailable"><p>{tidepoolError}</p></Notice> : <div className="stack">{[0, 1, 2].map((i) => <Skeleton key={i} height={44} />)}</div>;
 
