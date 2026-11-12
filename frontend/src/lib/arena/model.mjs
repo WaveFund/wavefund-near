@@ -2,8 +2,11 @@
 // They map real backend states onto one timeline and never invent a step: no return before evaluation, no payout before
 // settlement, Hold is a valid outcome with no swap, and a halted round stays halted. Integer maths only for money.
 import { formatUnits, isIntegerString } from '../funding/model.mjs';
+import { backendKind, canStartLocalRound, localAvailability } from './capabilities.mjs';
 
 const ONE = 10n ** 18n;
+export const HOLD_APPLIED = 'Hold applied · no swap needed';
+export const HOLD_AWAITING = 'Awaiting execution confirmation';
 const MINUS = '−';
 
 /** QuantumRound.EPSILON: the best challenger's final-window average must beat Hold's by more than this (0.5 points). */
@@ -130,7 +133,7 @@ export function localJourney(state) {
   const running = Boolean(state?.running) || (stage !== 'idle' && !complete && !halted);
   const status = (index) => {
     if (index === 0) return funded ? 'done' : 'upcoming';
-    if (complete || index < progress) return index === 4 && isHold ? 'skipped' : 'done';
+    if (complete || index < progress) return 'done';
     if (index === progress) return halted ? 'halted' : running ? 'current' : 'upcoming';
     return 'upcoming';
   };
@@ -139,7 +142,7 @@ export function localJourney(state) {
     progress >= 1 && challengers ? `${challengers} strategies + Hold` : null,
     progress >= 2 && depositors ? `${depositors} forecasters` : null,
     winner ? (isHold ? 'Hold kept' : `${percentFromBps(winner.allocationBps)} test ETH`) : null,
-    progress >= 5 ? (isHold ? 'No swap' : 'Swap executed') : null,
+    progress >= 5 ? (isHold ? HOLD_APPLIED : 'Swap executed') : null,
     evaluated ? shortReturnX18(state.round.realisedReturnX18) : null,
     complete ? `${paid} redeemed` : null,
   ];
@@ -211,19 +214,22 @@ export function savedJourney(round, demo = null) {
   const challengers = round.proposals.filter((item) => item.id !== '0').length;
   const spent = round.swap?.stableDelta && round.swap.stableDelta.startsWith('-') ? round.swap.stableDelta.slice(1) : null;
   const received = round.swap?.assetDelta && !round.swap.assetDelta.startsWith('-') ? round.swap.assetDelta : null;
+  const transactions = groupSavedTransactions(round.transactions);
+  // Hold is a completed execution decision with no swap: done only when an execution transaction is recorded.
+  const holdRecorded = transactions.executed.length > 0;
   const summaries = [
     linked ? `${formatUnits(linked.funding.deliveredAmount, 6)} USDC delivered` : 'Safe funded earlier',
     `${challengers} strategies + Hold`,
     buys ? `${buys} positions` : 'All abstained',
     isHold ? 'Hold kept' : `${round.winner.name} · ${percentFromBps(round.winner.allocationBps)}`,
-    isHold ? 'No swap' : spent && received ? `${formatUnits(spent, 6, { maxFraction: 2 })} USDC → ${formatUnits(received, 18, { maxFraction: 6 })} ETH` : 'Executed',
+    isHold ? (holdRecorded ? HOLD_APPLIED : HOLD_AWAITING) : spent && received ? `${formatUnits(spent, 6, { maxFraction: 2 })} USDC → ${formatUnits(received, 18, { maxFraction: 6 })} ETH` : 'Executed',
     shortReturnX18(round.realisedReturnX18) ?? 'Not recorded',
     `${redeemed} redeemed`,
   ];
   return {
     mode: 'saved', progress: 7, halted: false, running: false, complete: true, funded: true, winnerId: round.winner.id, isHold, evaluated: round.realisedReturnX18 !== null,
-    linkedDemo: linked, transactions: groupSavedTransactions(round.transactions), returnX18: round.realisedReturnX18, longPayoutX18: round.market?.longPayoutX18 ?? null,
-    stages: STAGES.map((item, index) => ({ ...item, status: index === 4 && isHold ? 'skipped' : 'done', summary: summaries[index] })),
+    linkedDemo: linked, transactions, returnX18: round.realisedReturnX18, longPayoutX18: round.market?.longPayoutX18 ?? null,
+    stages: STAGES.map((item, index) => ({ ...item, status: index === 4 && isHold && !holdRecorded ? 'upcoming' : 'done', summary: summaries[index] })),
   };
 }
 
@@ -241,3 +247,75 @@ export function positionGroups(proposals, forecasters) {
 }
 
 export { STAGE_INDEX };
+
+// ---------------------------------------------------------------- stage selection (view navigation only)
+
+export const RESULT_STAGE = 'result';
+
+/** The stage a round workspace opens on: Result when finished, the live or halted stage while running, otherwise Funded. */
+export function defaultStage(journey) {
+  if (!journey || !Array.isArray(journey.stages)) return 'funded';
+  if (journey.complete) return RESULT_STAGE;
+  const active = journey.stages.find((stage) => stage.status === 'halted') ?? (journey.running ? journey.stages.find((stage) => stage.status === 'current') : null);
+  return active ? active.id : 'funded';
+}
+
+/** Selector order: a leading Result entry exists only for a finished round. */
+export function stageOrder(journey) {
+  return [...(journey?.complete ? [RESULT_STAGE] : []), ...STAGES.map((stage) => stage.id)];
+}
+
+/** A requested stage (for example from ?stage=) if it exists for this round, otherwise null. */
+export function resolveStage(requested, journey) {
+  return typeof requested === 'string' && stageOrder(journey).includes(requested) ? requested : null;
+}
+
+/** Previous/next stage for replay controls. Replay only moves the view; it stops at the ends instead of wrapping. */
+export function stepStage(current, delta) {
+  const order = STAGES.map((stage) => stage.id);
+  const at = order.indexOf(current);
+  if (at === -1) return delta > 0 ? order[0] : null;
+  const next = at + delta;
+  return next < 0 || next >= order.length ? null : order[next];
+}
+
+// ---------------------------------------------------------------- round summary, settlement and participants
+
+/** Header metrics for a saved round. Missing data stays null instead of becoming a plausible value. */
+export function roundSummary(round) {
+  const isHold = round.winner.isHold === true;
+  const allocation = isHold ? 'Hold selected' : percentFromBps(round.winner.allocationBps) ? `${percentFromBps(round.winner.allocationBps)} ETH selected` : null;
+  const trades = round.forecasters.filter((item) => item.action === 'buy' && (item.side === 'long' || item.side === 'short')).length;
+  return {
+    isHold, selectedName: isHold ? 'Hold' : round.winner.name, allocation, measured: shortReturnX18(round.realisedReturnX18),
+    trades, tradesText: `${trades} recorded trade${trades === 1 ? '' : 's'}`, strategies: round.proposals.filter((item) => item.id !== '0').length,
+  };
+}
+
+/** LONG and SHORT settlement shares from the recorded LONG payout, e.g. "43.54%" and "56.46%". Null unless it is within 0–100%. */
+export function settlementShares(longPayoutX18) {
+  if (!isIntegerString(longPayoutX18) || BigInt(longPayoutX18) > ONE) return null;
+  const pct = (raw) => { const hundredths = raw / 10n ** 14n; return `${hundredths / 100n}.${(hundredths % 100n).toString().padStart(2, '0')}%`; };
+  return { long: pct(BigInt(longPayoutX18)), short: pct(ONE - BigInt(longPayoutX18)) };
+}
+
+/** Everything the recorded-participant view shows for one scripted forecaster of a saved round. */
+export function participantViews(round) {
+  const nameOf = (id) => (id === '0' ? 'Hold' : round.proposals.find((item) => item.id === id)?.name ?? `#${id}`);
+  const paid = new Map(round.payouts.map((item) => [item.name, item]));
+  return round.forecasters.map((item) => {
+    const payout = paid.get(item.name);
+    return {
+      name: item.name, scripted: item.scripted === true, deposit: payout?.deposit ?? null, redeemed: payout?.payout ?? null, net: payout?.profitLoss ?? null,
+      abstained: item.action === 'abstain', reason: item.action === 'abstain' ? item.reason ?? null : null,
+      position: item.action === 'buy' && (item.side === 'long' || item.side === 'short') ? { side: item.side, strategy: nameOf(item.proposalId), credits: isIntegerString(item.credits) ? item.credits : null } : null,
+    };
+  });
+}
+
+/** What the local simulation page may do: shown only on a local backend, and Start only when that backend is idle. */
+export function localWorkspaceAccess(state, status = {}) {
+  const availability = localAvailability(state, status);
+  const local = backendKind(state, status) === 'local';
+  return { available: local && availability.available, reason: availability.reason, canStart: local && canStartLocalRound(state) };
+}

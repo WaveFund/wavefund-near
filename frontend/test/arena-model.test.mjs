@@ -3,8 +3,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  QUALIFYING_MARGIN_X18, STAGES, describeSavedTx, groupLocalReceipts, groupSavedTransactions, localJourney, percentFromBps, positionGroups,
-  returnOnScale, roundWindows, savedJourney, savedTxStage, selectionSignals, shortReturnX18,
+  HOLD_APPLIED, HOLD_AWAITING, QUALIFYING_MARGIN_X18, STAGES, defaultStage, describeSavedTx, groupLocalReceipts, groupSavedTransactions, localJourney,
+  localWorkspaceAccess, participantViews, percentFromBps, positionGroups, resolveStage, returnOnScale, roundSummary, roundWindows, savedJourney, savedTxStage,
+  selectionSignals, settlementShares, shortReturnX18, stageOrder, stepStage,
 } from '../src/lib/arena/model.mjs';
 import { validateRoundEvidence } from '../src/lib/record/model.mjs';
 import { validateTidepoolDemo } from '../src/lib/tidepool/model.mjs';
@@ -73,7 +74,8 @@ test('in-progress local states never show a return, a payout or a winner early',
 test('Hold is a valid outcome with no swap, and a halted round stays halted', () => {
   const hold = localJourney({ ...completedLocal(), round: { ...completedLocal().round, winnerId: 0 } });
   assert.equal(hold.isHold, true);
-  assert.equal(hold.stages[4].status, 'skipped'); assert.equal(summary(hold, 'executed'), 'No swap');
+  assert.equal(hold.stages[4].status, 'done', 'a completed Hold round has applied its decision; the step is not skipped');
+  assert.equal(summary(hold, 'executed'), 'Hold applied · no swap needed');
   const failed = localJourney({ ...completedLocal(), stage: 'failed', receipts: completedLocal().receipts.slice(0, 10) });
   assert.deepEqual(statuses(failed), ['done', 'done', 'halted', 'upcoming', 'upcoming', 'upcoming', 'upcoming'], 'the step with the last receipts is halted');
   assert.equal(failed.returnX18, null);
@@ -131,7 +133,8 @@ test('saved public rounds map onto the journey from validated evidence; Tidepool
 
   const hold = savedJourney(r8);
   assert.equal(hold.isHold, true);
-  assert.equal(hold.stages[4].status, 'skipped'); assert.equal(summary(hold, 'executed'), 'No swap');
+  assert.equal(hold.stages[4].status, 'done'); assert.equal(summary(hold, 'executed'), HOLD_APPLIED);
+  assert.ok(hold.transactions.executed.length > 0, 'the Hold round records its execute transaction');
   assert.equal(summary(hold, 'forecasting'), 'All abstained');
 });
 
@@ -188,4 +191,78 @@ test('numbers render with integer maths and honest edges', () => {
   assert.equal(returnOnScale('900000000000000000', bounds), 0, 'a return below the bounds pins to the edge');
   assert.equal(returnOnScale('1000000000000000000', { minX18: '1', maxX18: '1' }), null);
   assert.deepEqual(roundWindows({ tradingStart: '1794434097', tradingEnd: '1794434503', evaluationEnd: '1794434683', twapWindowSeconds: '90' }), { trading: '7 min', evaluation: '3 min', twap: '90 s' });
+});
+
+test('Hold execution is done only when execution is recorded, locally and in saved evidence', async () => {
+  const evidence = validateRoundEvidence(JSON.parse(JSON.stringify(await loadRoundEvidence())));
+  const holdRound = evidence.rounds[1];
+  const unrecorded = { ...holdRound, transactions: holdRound.transactions.filter((item) => !/:(execute|oracle:execute)$/.test(item.label)) };
+  const awaiting = savedJourney(unrecorded);
+  assert.equal(awaiting.stages[4].status, 'upcoming'); assert.equal(summary(awaiting, 'executed'), HOLD_AWAITING);
+  const swapRound = savedJourney({ ...evidence.rounds[2], transactions: [] });
+  assert.equal(swapRound.stages[4].status, 'done', 'only Hold depends on a recorded execution to count as applied');
+  const hold = (stage, extra = {}) => localJourney({ ...completedLocal(), stage, running: stage !== 'completed', round: { ...completedLocal().round, winnerId: 0 }, ...extra });
+  const executing = hold('executing', { receipts: completedLocal().receipts.slice(0, 12) });
+  assert.notEqual(executing.stages[4].status, 'done', 'Hold is not applied before execution is reached');
+  assert.notEqual(summary(executing, 'executed'), HOLD_APPLIED);
+  const evaluating = hold('evaluating');
+  assert.equal(evaluating.stages[4].status, 'done'); assert.equal(summary(evaluating, 'executed'), HOLD_APPLIED);
+  assert.equal(summary(localJourney({ ...completedLocal(), stage: 'evaluating', running: true }), 'executed'), 'Swap executed', 'a non-Hold winner still reports the swap');
+});
+
+test('defaultStage opens Result for finished rounds, the live stage while running, Funded otherwise', async () => {
+  const evidence = validateRoundEvidence(JSON.parse(JSON.stringify(await loadRoundEvidence())));
+  assert.equal(defaultStage(savedJourney(evidence.rounds[2])), 'result');
+  assert.equal(defaultStage(localJourney(completedLocal())), 'result');
+  const at = (stage, extra = {}) => defaultStage(localJourney({ ...completedLocal(), stage, running: true, ...extra }));
+  assert.equal(at('forecasting'), 'forecasting'); assert.equal(at('executing'), 'executed'); assert.equal(at('settling'), 'evaluated');
+  assert.equal(defaultStage(localJourney({ ...completedLocal(), stage: 'failed', running: false, receipts: completedLocal().receipts.slice(0, 10) })), 'forecasting', 'a halted round opens on the stage that halted');
+  assert.equal(defaultStage(localJourney({ ...completedLocal(), stage: 'idle', running: false, round: null, receipts: [], proposals: [] })), 'funded');
+  assert.equal(defaultStage(null), 'funded');
+});
+
+test('stage selection: Result exists only for finished rounds and a bad ?stage= is ignored', async () => {
+  const evidence = validateRoundEvidence(JSON.parse(JSON.stringify(await loadRoundEvidence())));
+  const saved = savedJourney(evidence.rounds[2]); const running = localJourney({ ...completedLocal(), stage: 'forecasting', running: true });
+  assert.deepEqual(stageOrder(saved), ['result', ...STAGES.map((item) => item.id)]);
+  assert.deepEqual(stageOrder(running), STAGES.map((item) => item.id));
+  assert.equal(resolveStage('executed', saved), 'executed'); assert.equal(resolveStage('result', saved), 'result');
+  assert.equal(resolveStage('result', running), null, 'a running round has no Result view'); assert.equal(resolveStage('nope', saved), null); assert.equal(resolveStage(null, saved), null);
+  assert.equal(stepStage('funded', 1), 'proposals'); assert.equal(stepStage('redeemed', 1), null, 'replay stops at the end'); assert.equal(stepStage('funded', -1), null);
+  assert.equal(stepStage('result', 1), 'funded', 'replay starts from Funded'); assert.equal(stepStage('result', -1), null);
+});
+
+test('round summary metrics come from the record; Hold and zero-trade rounds are stated plainly', async () => {
+  const evidence = validateRoundEvidence(JSON.parse(JSON.stringify(await loadRoundEvidence())));
+  const tide = roundSummary(evidence.rounds[2]);
+  assert.deepEqual([tide.allocation, tide.measured, tide.tradesText, tide.selectedName], ['75% ETH selected', `${MINUS}0.6458%`, '4 recorded trades', 'Momentum']);
+  const hold = roundSummary(evidence.rounds[1]);
+  assert.deepEqual([hold.allocation, hold.tradesText, hold.selectedName], ['Hold selected', '0 recorded trades', 'Hold']);
+  assert.equal(roundSummary({ ...evidence.rounds[2], realisedReturnX18: null }).measured, null, 'no return is invented before measurement');
+  const one = roundSummary({ ...evidence.rounds[2], forecasters: evidence.rounds[2].forecasters.slice(0, 1) });
+  assert.equal(one.tradesText, '1 recorded trade');
+});
+
+test('settlement shares and participant views keep LONG/SHORT and per-person numbers exact', async () => {
+  assert.deepEqual(settlementShares('435418896350731900'), { long: '43.54%', short: '56.45%' });
+  assert.deepEqual(settlementShares('0'), { long: '0.00%', short: '100.00%' });
+  assert.equal(settlementShares('1000000000000000001'), null); assert.equal(settlementShares(null), null);
+  const evidence = validateRoundEvidence(JSON.parse(JSON.stringify(await loadRoundEvidence())));
+  const quant = participantViews(evidence.rounds[2]).find((item) => item.name === 'Quant');
+  assert.deepEqual([quant.scripted, quant.deposit, quant.redeemed, quant.net], [true, '10000000', '9934985', '-65015']);
+  assert.deepEqual(quant.position, { side: 'long', strategy: 'Momentum', credits: '400000' });
+  const abstainer = participantViews(evidence.rounds[1])[0];
+  assert.equal(abstainer.abstained, true); assert.equal(abstainer.position, null); assert.ok(abstainer.reason);
+});
+
+test('the local workspace is available, and startable, only on an idle local backend', () => {
+  const local = (extra = {}) => ({ mode: 'local-simulation', chainId: 31337, stage: 'idle', running: false, ...extra });
+  assert.deepEqual(localWorkspaceAccess(local()), { available: true, reason: 'Ready to start on a local chain', canStart: true });
+  assert.equal(localWorkspaceAccess(local({ running: true, stage: 'forecasting' })).canStart, false, 'a running round cannot be started again');
+  assert.equal(localWorkspaceAccess(local({ stage: 'completed' })).canStart, false);
+  assert.equal(localWorkspaceAccess(local({ stage: 'completed' })).available, true, 'a finished local round can still be inspected');
+  const aurora = localWorkspaceAccess({ mode: 'aurora-testnet-readonly', chainId: 1313161555, stage: 'idle', running: false });
+  assert.deepEqual([aurora.available, aurora.canStart], [false, false]); assert.match(aurora.reason, /read-only/);
+  assert.deepEqual([localWorkspaceAccess(null).available, localWorkspaceAccess(null).canStart], [false, false]);
+  assert.equal(localWorkspaceAccess({ mode: 'mystery', chainId: 1, stage: 'idle' }).canStart, false);
 });

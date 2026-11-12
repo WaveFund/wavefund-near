@@ -5,6 +5,7 @@ import { percentFromBps, returnOnScale, shortReturnX18, type JourneyStage, type 
 import { formatUnits } from "@/lib/funding/model.mjs";
 import { formatReturnX18 } from "@/lib/record/model.mjs";
 import { CopyText, ExplorerLink, Icon, type IconName } from "@/components/funding/primitives";
+import { Tip } from "@/components/v2";
 
 // ---------------------------------------------------------------- identity
 
@@ -50,11 +51,10 @@ const STAGE_ICON: Record<StageId, IconName> = { funded: "safe", proposals: "laye
 function nodeContent(stage: JourneyStage, index: number): ReactNode {
   if (stage.status === "done") return <Icon name="check" />;
   if (stage.status === "halted") return <Icon name="alert" />;
-  if (stage.status === "skipped") return <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M7 12h10" /></svg>;
   if (stage.status === "current") return <Icon name={STAGE_ICON[stage.id]} />;
   return <span style={{ fontSize: 12, fontWeight: 700 }}>{index + 1}</span>;
 }
-const STATUS_WORD: Record<JourneyStage["status"], string> = { done: "done", current: "in progress", upcoming: "not reached", skipped: "skipped", halted: "halted" };
+const STATUS_WORD: Record<JourneyStage["status"], string> = { done: "done", current: "in progress", upcoming: "not reached", halted: "halted" };
 
 /** The round's seven steps. Each links to its section further down the page. */
 export function JourneyTrack({ stages, label = "Round journey" }: { stages: JourneyStage[]; label?: string }) {
@@ -70,35 +70,19 @@ export function JourneyTrack({ stages, label = "Round journey" }: { stages: Jour
 
 /** Compact progress bar for round cards. */
 export function MiniTrack({ stages }: { stages: JourneyStage[] }) {
-  return <div className="mini-track" role="img" aria-label={`${stages.filter((stage) => stage.status === "done" || stage.status === "skipped").length} of ${stages.length} steps complete`}>
+  return <div className="mini-track" role="img" aria-label={`${stages.filter((stage) => stage.status === "done").length} of ${stages.length} steps complete`}>
     {stages.map((stage) => <i key={stage.id} className={stage.status} />)}
   </div>;
-}
-
-/** One journey step: the question it answers, its visual, and (collapsed) its technical evidence. */
-export function StageSection({ stage, index, status, children, tech, techLabel, waiting }: {
-  stage: JourneyStage; index: number; status?: ReactNode; children?: ReactNode; tech?: ReactNode; techLabel?: string; waiting?: string;
-}) {
-  const reached = stage.status !== "upcoming";
-  return <section className={`stage ${reached ? "" : "is-upcoming"}`} id={`stage-${stage.id}`} aria-labelledby={`stage-${stage.id}-title`}>
-    <header className="stage-head">
-      <div className="stage-title"><span className="stage-num" aria-hidden="true">{index + 1}</span>
-        <div><small>{stage.label}</small><h3 id={`stage-${stage.id}-title`}>{stage.question}</h3></div></div>
-      {status}
-    </header>
-    {reached ? <div className="stage-body">{children}</div> : <p className="stage-wait">{waiting ?? "Not reached yet."}</p>}
-    {reached && tech ? <details className="tech"><summary><Icon name="chevron" />{techLabel ?? "Technical details"}</summary><div className="tech-body">{tech}</div></details> : null}
-  </section>;
 }
 
 // ---------------------------------------------------------------- strategies and positions
 
 export type StrategyView = { id: string; name: string; allocationBps: number; rationale: string; source: "ai" | "fixture" | "baseline" };
 
-export function StrategyCard({ strategy, selected = false, dim = false, compact = false }: { strategy: StrategyView; selected?: boolean; dim?: boolean; compact?: boolean }) {
+export function StrategyCard({ strategy, selected = false, dim = false, compact = false, onSelect }: { strategy: StrategyView; selected?: boolean; dim?: boolean; compact?: boolean; onSelect?: () => void }) {
   const hold = strategy.id === "0";
   const thesis = strategy.rationale.replace(/^SIMULATED AGENT:\s*/i, "");
-  return <article className={`strategy ${hold ? "is-hold" : ""} ${selected ? "is-selected" : ""} ${dim ? "is-dim" : ""}`} aria-label={`${hold ? "Keep current allocation" : strategy.name}${selected ? ", selected" : ""}`}>
+  return <article className={`strategy ${hold ? "is-hold" : ""} ${selected ? "is-selected" : ""} ${dim ? "is-dim" : ""} ${onSelect ? "is-pickable" : ""}`} onClick={onSelect} aria-label={`${hold ? "Keep current allocation" : strategy.name}${selected ? ", selected" : ""}`}>
     {selected ? <span className="selected-flag"><Icon name="check" />Selected</span> : null}
     <div className="strategy-top">
       <AgentAvatar name={strategy.name} kind={hold ? "hold" : "proposer"} />
@@ -112,6 +96,7 @@ export function StrategyCard({ strategy, selected = false, dim = false, compact 
       : thesis ? (thesis.length > 150 ? <details><summary>Read the thesis</summary><p>{thesis}</p></details> : <p className="strategy-thesis">{thesis}</p>) : null) : null}
     <div className="strategy-foot">
       {strategy.source === "baseline" ? <Chip tone="plain">Baseline</Chip> : strategy.source === "ai" ? <Chip tone="ai" icon="spark">AI-generated</Chip> : <Chip tone="fixture">Simulated agent</Chip>}
+      {onSelect ? <button type="button" className="btn btn-sm btn-ghost strategy-open" onClick={(event) => { event.stopPropagation(); onSelect(); }}>Rationale<Icon name="arrow" /></button> : null}
     </div>
   </article>;
 }
@@ -181,7 +166,7 @@ export function ResultPanel({ returnX18, bounds, caption, children }: { returnX1
       {bounds && at !== null ? <div className="scale">
         <div className="scale-bar" role="img" aria-label={`Return ${exact} within payout bounds ${shortReturnX18(bounds.minX18)} to ${shortReturnX18(bounds.maxX18)}`}><span className="mid" /><span className="scale-marker" style={{ left: `${at}%` }} /></div>
         <div className="scale-ends"><span>{shortReturnX18(bounds.minX18)}</span><span>0%</span><span>{shortReturnX18(bounds.maxX18)}</span></div>
-        <p className="scale-caption">This round&apos;s payout range. Inside it, LONG settles higher as the return rises and SHORT higher as it falls.</p>
+        <p className="scale-caption">Payout range <Tip label="About the payout range">These bounds map the measured return to what each claim is worth: LONG settles higher as the return rises, SHORT as it falls. They are not the selection margin.</Tip></p>
       </div> : null}
       {children}
     </div>

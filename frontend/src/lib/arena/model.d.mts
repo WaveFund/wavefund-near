@@ -3,7 +3,7 @@ import type { RoundMarket, TestnetRound } from '../record/model.mjs';
 import type { TidepoolDemo } from '../tidepool/model.mjs';
 
 export type StageId = 'funded' | 'proposals' | 'forecasting' | 'selected' | 'executed' | 'evaluated' | 'redeemed';
-export type StageStatus = 'done' | 'current' | 'upcoming' | 'skipped' | 'halted';
+export type StageStatus = 'done' | 'current' | 'upcoming' | 'halted';
 export type StageInfo = { id: StageId; label: string; question: string };
 export type JourneyStage = StageInfo & { status: StageStatus; summary: string | null };
 export type TxGroups<T> = Record<'setup' | StageId, T[]>;
@@ -41,3 +41,21 @@ export declare function describeSavedTx(label: unknown): string;
 export declare function groupSavedTransactions<T extends { label: string }>(transactions: T[] | null | undefined): TxGroups<T>;
 export declare function savedJourney(round: TestnetRound, demo?: TidepoolDemo | null): SavedJourney;
 export declare function positionGroups(proposals: Array<{ id: string | number }>, forecasters: Array<{ name: string; action: string; side?: string | null; proposalId?: string | null; credits?: string | null; reason?: string | null; scripted?: boolean }>): PositionGroups;
+
+export type StageSelection = 'result' | StageId;
+export type RoundSummary = { isHold: boolean; selectedName: string; allocation: string | null; measured: string | null; trades: number; tradesText: string; strategies: number };
+export type ParticipantView = {
+  name: string; scripted: boolean; deposit: string | null; redeemed: string | null; net: string | null; abstained: boolean; reason: string | null;
+  position: { side: 'long' | 'short'; strategy: string; credits: string | null } | null;
+};
+export declare const HOLD_APPLIED: string;
+export declare const HOLD_AWAITING: string;
+export declare const RESULT_STAGE: 'result';
+export declare function defaultStage(journey: { complete: boolean; running: boolean; stages: JourneyStage[] } | null | undefined): StageSelection;
+export declare function stageOrder(journey: { complete: boolean } | null | undefined): StageSelection[];
+export declare function resolveStage(requested: unknown, journey: { complete: boolean } | null | undefined): StageSelection | null;
+export declare function stepStage(current: StageSelection, delta: number): StageId | null;
+export declare function roundSummary(round: TestnetRound): RoundSummary;
+export declare function settlementShares(longPayoutX18: unknown): { long: string; short: string } | null;
+export declare function participantViews(round: TestnetRound): ParticipantView[];
+export declare function localWorkspaceAccess(state: { mode?: string; chainId?: number; stage?: string; running?: boolean } | null | undefined, status?: { loading?: boolean; error?: string | null }): { available: boolean; reason: string; canStart: boolean };

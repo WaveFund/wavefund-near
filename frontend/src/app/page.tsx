@@ -68,7 +68,7 @@ export default function HomePage() {
           <dl className="wl-rows">
             <div><dt>Selected</dt><dd>{round ? <><b>{round.winner.name}</b><span className="num">{percentFromBps(round.winner.allocationBps) ?? "unavailable"} ETH</span></> : na}</dd></div>
             <div><dt>Measured result</dt><dd>{result ? <span className="num">{result}</span> : na}</dd></div>
-            <div><dt>Proposals</dt><dd className="ai">{round && round.genuineModelCalls !== null ? <><span className="num">{round.genuineModelCalls}</span> genuine AI</> : na}</dd></div>
+            <div><dt>AI model calls</dt><dd className="ai">{round && round.genuineModelCalls !== null ? <><span className="num">{round.genuineModelCalls}</span> genuine</> : na}</dd></div>
             <div><dt>Forecasters</dt><dd>{round && round.scriptedForecasters !== null ? <><span className="num">{round.scriptedForecasters}</span> scripted</> : na}</dd></div>
             <div><dt>Swap</dt><dd>{swapIn && eth ? <span className="num">{swapIn} USDC → {eth} ETH</span> : na}</dd></div>
           </dl></>}
