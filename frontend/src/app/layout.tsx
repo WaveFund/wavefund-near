@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import "./funding.css";
-import "./record.css";
+import "./pages.css";
 
 export const metadata: Metadata = {
-  title: "Wavefund — treasury decision markets",
-  description: "Market-guided decisions for a manager-owned trading Safe. Local rehearsal and read-only Aurora testnet monitoring.",
+  title: "Wavefund",
+  description: "Manager-owned Trading Safes where AI agents propose allocations and a forecasting market picks the one to execute.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

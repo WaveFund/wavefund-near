@@ -8,47 +8,42 @@ import { Icon, type IconName } from "@/components/funding/primitives";
 export type ShellNetwork = { label: string; chainId: number | null; tone: "mainnet" | "testnet" | "local" };
 export type ShellStatus = { label: string; tone: "ok" | "warn" | "off" | "pending" };
 
-const NAV: Array<{ href: string; label: string; step: string; icon: IconName; hint: string }> = [
-  { href: "/fund", label: "Fund", step: "01", icon: "fund", hint: "Fund your Trading Safe through NEAR Intents" },
-  { href: "/", label: "Decide", step: "02", icon: "chart", hint: "Proposals, forecasts, execution and settlement" },
-  { href: "/manager", label: "Manage", step: "03", icon: "sliders", hint: "Owner-reviewed Safe actions" },
-  { href: "/record", label: "Record", step: "04", icon: "trophy", hint: "Performance reputation and published testnet rounds" },
+const NAV: Array<{ href: string; label: string; icon: IconName; match: (path: string) => boolean }> = [
+  { href: "/", label: "Rounds", icon: "chart", match: (path) => path === "/" || path.startsWith("/rounds") },
+  { href: "/record", label: "Agents", icon: "users", match: (path) => path.startsWith("/record") },
+  { href: "/fund", label: "Treasury", icon: "safe", match: (path) => path.startsWith("/fund") },
+  { href: "/manager", label: "Admin", icon: "sliders", match: (path) => path.startsWith("/manager") },
 ];
 
 export function WaveMark() {
-  return <svg aria-hidden="true" viewBox="0 0 32 32" fill="none"><path d="M3 19c4 0 4-8 8-8s4 12 8 12 4-10 10-10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>;
+  return <svg aria-hidden="true" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="currentColor" /><path d="M5.5 16.5c2.6 0 2.6-5 5.2-5s2.6 6 5.2 6 2.6-5 6.6-5" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" /></svg>;
 }
 
-/** App frame shared by every page: journey tabs, network truth and connection state are always visible. */
+/** App frame shared by every page: section navigation, the network in use and the connection state. */
 export function AppShell({ network, status, children }: { network: ShellNetwork; status?: ShellStatus; children: ReactNode }) {
   const path = usePathname() ?? "/";
-  const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
-  const links = (className: string) => NAV.map((item) => {
-    const active = isActive(item.href);
-    return <Link key={item.href} href={item.href} title={item.hint} className={active ? `${className} active` : className} aria-current={active ? "page" : undefined}>
-      <Icon name={item.icon} /><span>{item.label}</span><span className="tab-step">{item.step}</span>
-    </Link>;
-  });
   return <div className="app">
-    <div className="bg-ambient" aria-hidden="true" />
-    <header className="topbar">
-      <div className="topbar-inner">
-        <Link className="brand" href="/" aria-label="Wavefund home"><span className="brand-mark"><WaveMark /></span><span className="brand-name">wavefund</span><small>on Aurora</small></Link>
-        <nav className="tabs" aria-label="Wavefund journey">{links("tab")}</nav>
-        <div className="topbar-right">
-          <span className="chip-network" title={network.chainId === null ? "No network" : `Chain ID ${network.chainId}`}><i className={`chain-dot ${network.tone}`} />{network.label}{network.chainId === null ? null : <code>{network.chainId}</code>}</span>
-          {status && <span className={`chip-status tone-${status.tone}`} role="status"><i />{status.label}</span>}
+    <header className="header">
+      <div className="header-inner">
+        <Link className="brand" href="/" aria-label="Wavefund home"><WaveMark />Wavefund</Link>
+        <nav className="nav" aria-label="Sections">
+          {NAV.map((item) => {
+            const active = item.match(path);
+            return <Link key={item.href} href={item.href} className={active ? "active" : undefined} aria-current={active ? "page" : undefined}><Icon name={item.icon} />{item.label}</Link>;
+          })}
+        </nav>
+        <div className="header-right">
+          {status ? <span className="conn-status" role="status"><i className={`dot ${status.tone}`} />{status.label}</span> : null}
+          <span className="network-chip" title={network.chainId === null ? "No network" : `Chain ID ${network.chainId}`}><i className={`dot ${network.tone}`} />{network.label}{network.chainId === null ? null : <code>{network.chainId}</code>}</span>
         </div>
       </div>
     </header>
-    <main className="page">{children}</main>
-    <footer className="site-footer">
+    <main className="main">{children}</main>
+    <footer className="footer">
       <div className="footer-inner">
-        <span className="brand footer-brand"><span className="brand-mark small"><WaveMark /></span>wavefund</span>
-        <p>Manager-owned Trading Safes, AI strategy proposals and forecasting markets on Aurora, funded through NEAR Intents. Test assets on testnet and local chains; funding sends are disabled pending review.</p>
-        <span className="footer-tag">OWNER CONTROL · MARKET CONVICTION</span>
+        <span>Wavefund · manager-owned Trading Safes with market-selected AI strategies on Aurora.</span>
+        <span>Test assets on testnet and local chains · deposits disabled pending review</span>
       </div>
     </footer>
-    <nav className="bottom-tabs" aria-label="Wavefund journey, mobile">{links("bottom-tab")}</nav>
   </div>;
 }

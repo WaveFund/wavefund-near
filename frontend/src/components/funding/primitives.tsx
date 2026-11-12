@@ -41,7 +41,7 @@ const PATHS: Record<IconName, ReactNode> = {
 };
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {
-  return <svg aria-hidden="true" viewBox="0 0 24 24" className={className}>{PATHS[name]}</svg>;
+  return <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16" className={className}>{PATHS[name]}</svg>;
 }
 
 export type PillTone = "neutral" | "live" | "fixture" | "warning" | "danger" | "success" | "muted" | "violet";
