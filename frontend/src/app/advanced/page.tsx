@@ -52,7 +52,7 @@ export default function ManagerPage() {
 
   return <AppShell source={aurora ? { label: "Aurora testnet", tone: "testnet", detail: "read-only" } : { label: "Local simulation", tone: "local", detail: state ? `block ${state.blockNumber}` : loading ? "connecting" : "offline", status: state ? "ok" : loading ? "pending" : "off" }}>
     <PageHeader title="Advanced · owner tools"
-      breadcrumb={<Link className="breadcrumb" href="/safe?safe=local"><Icon name="chevron" />My Safe</Link>}
+      breadcrumb={<Link className="breadcrumb" href="/portfolio?tab=permissions"><Icon name="chevron" />Portfolio</Link>}
       description="For the Safe owner. Inspect the deployed Safe and module, then prepare one owner action as an unsigned Safe transaction to review and sign in your own Safe. Nothing is signed or sent here."
       meta={<><Badge tone="warning">Unsigned only</Badge><span>Not part of the everyday flow · no automatic signatures or transfers</span></>}
       actions={<><Button icon="wallet" disabled={!state} onClick={() => void connect()}>Check wallet owner</Button><Button variant="primary" icon="shield" loading={loading} onClick={() => void refresh()}>Refresh checks</Button></>} />
