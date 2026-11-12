@@ -2,18 +2,26 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { apiUrl, decodeState, DemoState, phaseIndex, returnPercent, shortAddress, units } from "@/lib/state";
+import { apiUrl, decodeState, DemoState, phaseIndex, returnPercent, units } from "@/lib/state";
 import { AppShell } from "@/components/AppShell";
-import { AgentFeed, KpiTile, Lifecycle, MarketCard, OutcomeCard, ReceiptsTable } from "@/components/decide/DecideParts";
-import { Icon, Pill } from "@/components/funding/primitives";
+import { ActivityTable, AgentFeed, ForecasterTable, OutcomeSummary, PastRounds, ProposalList, RoundTimeline, roundStage } from "@/components/decide/DecideParts";
+import { CopyText, Icon } from "@/components/funding/primitives";
+import { Badge, Button, Card, CardHeader, DescriptionList, EmptyState, Notice, PageHeader, Skeleton, Stat, TabPanel, Tabs } from "@/components/ui";
+import { loadRoundEvidence } from "@/lib/record/loader";
+import type { TestnetRound } from "@/lib/record/model.mjs";
 
-export default function Dashboard() {
+type RoundTab = "proposals" | "forecasters" | "reasoning" | "activity";
+
+export default function RoundsPage() {
   const [data, setData] = useState<DemoState | null>(null);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
+  const [tab, setTab] = useState<RoundTab>("proposals");
+  const [past, setPast] = useState<TestnetRound[] | null>(null);
+  const [pastError, setPastError] = useState<string | null>(null);
   const mounted = useRef(true);
   const requestSerial = useRef(0);
 
@@ -26,11 +34,7 @@ export default function Dashboard() {
       const body = await response.json();
       if (!response.ok) throw new Error(typeof body.error === "string" ? body.error : "The local contracts are not ready yet.");
       const next = decodeState(body);
-      if (mounted.current && requestId === requestSerial.current) {
-        setData(next);
-        setConnectionError(null);
-        setUpdatedAt(new Date());
-      }
+      if (mounted.current && requestId === requestSerial.current) { setData(next); setConnectionError(null); setUpdatedAt(new Date()); }
     } catch (error) {
       if (mounted.current && requestId === requestSerial.current) setConnectionError(error instanceof Error && error.name !== "AbortError" ? error.message : "The local API did not respond. Check that the demo services are running.");
     } finally {
@@ -43,27 +47,26 @@ export default function Dashboard() {
     mounted.current = true;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let disposed = false;
-    async function poll() {
-      await refresh();
-      if (!disposed) timer = setTimeout(poll, 1800);
-    }
+    async function poll() { await refresh(); if (!disposed) timer = setTimeout(poll, 1800); }
     void poll();
     return () => { disposed = true; mounted.current = false; clearTimeout(timer); };
   }, [refresh]);
 
+  useEffect(() => {
+    let active = true;
+    loadRoundEvidence().then((rounds) => { if (active) setPast(rounds); }, (error) => { if (active) setPastError(error instanceof Error ? error.message : "Past rounds are unavailable."); });
+    return () => { active = false; };
+  }, []);
+
   async function startRound() {
-    setStarting(true);
-    setActionError(null);
+    setStarting(true); setActionError(null);
     try {
       const response = await fetch(apiUrl("/api/demo/start"), { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}", credentials: "omit", signal: AbortSignal.timeout(10_000) });
       const body = await response.json();
       if (!response.ok) throw new Error(typeof body.error === "string" ? body.error : "The local round could not be started.");
     } catch (error) {
       setActionError(error instanceof Error ? error.message : "The local round could not be started.");
-    } finally {
-      await refresh();
-      setStarting(false);
-    }
+    } finally { await refresh(); setStarting(false); }
   }
 
   const aurora = data?.mode === "aurora-testnet-readonly";
@@ -78,93 +81,93 @@ export default function Dashboard() {
   const winnerKnown = currentPhase >= 4 || ["2", "3", "4", "collapsed", "settled", "cancelled"].includes(String(data?.round?.status ?? "").toLowerCase());
   const winner = winnerKnown && data?.round?.winnerId != null ? String(data.round.winnerId) : null;
   const error = actionError ?? data?.error ?? connectionError;
-  const stageText = aurora ? "Read-only monitoring" : loading ? "Connecting" : !connected ? "Waiting for local services" : completed ? "Round complete" : interrupted ? "Needs attention" : data?.running ? "Round in progress" : "Ready to run";
-  const roundLabel = data?.roundId && data.roundId !== "0" ? `Round ${data.roundId}` : "No active round";
-  const statusTone = interrupted ? "warn" : !connected ? (loading ? "pending" : "off") : "ok";
+  const stage = roundStage(data, { connected, loading });
   const returnText = settled ? returnPercent(data?.round?.realisedReturnX18) : "—";
+  const hasRound = Boolean(data?.roundId && data.roundId !== "0");
+  const buttonLabel = aurora ? "Owner execution through Safe" : starting ? "Starting local round…" : completed ? "Round complete" : data?.running ? "Running local round…" : interrupted ? "Reset required in CLI" : "Run local round";
+  const dataNote = aurora ? "Read-only Aurora testnet contracts. This server never signs; owner actions go through the Safe."
+    : modelDriven ? "Local chain with test assets and simulated prices. Agent decisions are model-generated; contract transactions are real."
+    : "Local chain with test assets, simulated prices and scripted agents. Every contract transaction is real.";
 
   return <AppShell
     network={aurora ? { label: "Aurora testnet", chainId: 1313161555, tone: "testnet" } : { label: "Anvil local", chainId: 31337, tone: "local" }}
-    status={{ label: connected ? (aurora ? "Testnet contracts" : "Local contracts") : loading ? "Connecting" : "API offline", tone: statusTone }}>
+    status={{ label: connected ? (aurora ? "Testnet contracts" : "Local contracts") : loading ? "Connecting" : "API offline", tone: interrupted ? "warn" : connected ? "ok" : loading ? "pending" : "off" }}>
 
-    <div className={`mode-strip ${aurora ? "tone-testnet" : "tone-local"}`}>
-      <span className="mode-label">{aurora ? "TESTNET MONITOR" : "LOCAL SIMULATION"}</span>
-      <span>{aurora ? "Read-only Aurora contracts · no server signing · owner actions through Safe" : modelDriven ? "Test assets and prices · model-generated decisions · real local contract transactions" : modelConfigured ? "Test assets and prices · model inference configured · real local contract transactions" : "Test assets · simulated agents and prices · real local contract transactions"}</span>
+    <PageHeader title="Rounds"
+      description="AI agents propose how the Safe should be allocated. Forecasters back or doubt each proposal with their own collateral, and the market's choice executes inside the owner's limits."
+      meta={<><Badge tone={aurora ? "info" : "warning"}>{aurora ? "Testnet monitor" : "Local simulation"}</Badge><span>{dataNote}</span></>}
+      actions={aurora ? <Badge>Read-only</Badge> : <Button variant={completed || interrupted ? "secondary" : "primary"} size="lg" icon={completed ? "check" : interrupted ? "alert" : "play"} loading={starting || Boolean(data?.running)} disabled={disabled} onClick={() => void startRound()}>{buttonLabel}</Button>} />
+
+    {error ? <div className="page-notice"><Notice tone="warning" title={connected ? "The round needs attention" : "Local services are not ready"}><p>{error}</p>{!connected ? <p>Start the demo with <code>bash scripts/docker-demo/up.sh</code>. Balances appear once the API reads the deployed contracts.</p> : null}</Notice></div> : null}
+
+    <div className="stats" aria-label="Balances">
+      <Stat label={<><Icon name="safe" />Treasury (Safe)</>} value={data?.safe.valueUsdX18 == null ? units(data?.safe.stableBalance, 6) : `$${units(data.safe.valueUsdX18, 18)}`} unit={data?.safe.valueUsdX18 == null ? "USDC" : undefined}
+        sub={`${units(data?.safe.stableBalance, 6)} USDC · ${units(data?.safe.assetBalance, 18, 5)} ${aurora ? "asset" : "test ETH"}`} />
+      <Stat label={<><Icon name="users" />Forecast escrow</>} value={units(data?.forecast.escrow, 6)} unit="USDC" sub={`${units(data?.forecast.deposits, 6)} USDC deposited this round`} />
+      <Stat label={<><Icon name="layers" />Sponsor reserve</>} value={units(data?.sponsor.reserve, 6)} unit="USDC" sub="Funds forecaster rewards" />
+      <Stat label={<><Icon name="pulse" />Measured return</>} value={returnText} tone={returnText.startsWith("+") ? "pos" : returnText.startsWith("−") ? "neg" : undefined} sub={settled ? "Recorded at settlement" : "After settlement"} />
     </div>
+    <p className="stats-note"><Icon name="shield" />Three separate balances, never pooled. Forecaster collateral and sponsor funds never touch the Safe's investments.</p>
 
-    <section className="hero-split">
-      <div className="hero-copy">
-        <span className="kicker">Step 02 · Market-guided decision</span>
-        <h1>Competing views.<br /><span className="grad-text">One accountable decision.</span></h1>
-        <p className="lede">AI strategies propose allocations for the manager’s Safe. Forecasters back their views with separate collateral in Uniswap v4 markets, and the winning allocation executes inside the owner’s rules.</p>
-        <div className="hero-badges">
-          <span><Icon name="safe" />Owner keeps custody</span>
-          <span><Icon name="chart" />Market selects</span>
-          <span><Icon name="receipt" />Every step on-chain</span>
-          <Link href="/record" className="hero-record-link"><Icon name="trophy" />Testnet track record<Icon name="arrow" /></Link>
+    <section className="section" aria-labelledby="current-heading">
+      <div className="section-title"><h2 id="current-heading">Current round</h2><p>{updatedAt ? `Updated ${updatedAt.toLocaleTimeString("en-GB")}${connectionError ? " · connection lost" : ""}` : "Waiting for the local deployment"}</p></div>
+      <div className="detail-layout">
+        <div className="card round-card">
+          <header className="round-head">
+            <div>
+              <span className="eyebrow">{aurora ? "Aurora testnet" : "Local rehearsal"}</span>
+              <h3>{hasRound ? `Round ${data?.roundId}` : "No round yet"}</h3>
+            </div>
+            <Badge tone={stage.tone} dot>{stage.label}</Badge>
+          </header>
+          <Tabs idBase="round" label="Round details" value={tab} onChange={setTab} tabs={[
+            { id: "proposals", label: "Proposals", count: data?.proposals.length ?? null },
+            { id: "forecasters", label: "Forecasters", count: data?.forecast.participants?.length ?? null },
+            { id: "reasoning", label: "Reasoning" },
+            { id: "activity", label: "Activity", count: data?.receipts.length ?? null },
+          ]} />
+          <TabPanel idBase="round" tab={tab}>
+            {!data ? <div className="card-body stack">{[0, 1, 2].map((i) => <Skeleton key={i} height={56} />)}</div>
+              : tab === "proposals" ? (data.proposals.length
+                ? <><p className="panel-note"><Icon name="eye" />Market support is what forecasters' trades imply, not a promised return. A challenger must beat Hold's final-window average by more than 0.5 points.</p><ProposalList proposals={data.proposals} winner={winner} /></>
+                : <EmptyState icon="chart" title="No proposals yet">{aurora ? "No proposals are recorded for the monitored round." : "Use Run local round above to create the Hold baseline and the competing allocations on-chain."}</EmptyState>)
+              : tab === "forecasters" ? <ForecasterTable data={data} settled={settled} />
+              : tab === "reasoning" ? <div className="card-body">
+                <AgentFeed agents={data.agents} emptyText={aurora ? "Agent records are not attached to this monitoring server." : "Agent reasoning appears when the round runs."} />
+                {data.inference ? <p className="panel-foot">Inference: {data.inference.mode}{data.inference.model ? ` · ${data.inference.model}` : ""} · {data.inference.status}. Hardware attestation is not verified.</p> : null}
+                {data.agentRecords?.length ? <details className="feed-more"><summary>{data.agentRecords.length} decision records</summary>{data.agentRecords.map((record, index) => <p key={`${record.name}-${index}`}>{record.name} · {record.provider} · <code title={record.outputHash}>{record.outputHash.slice(0, 16)}…</code></p>)}</details> : null}
+              </div>
+              : <ActivityTable receipts={data.receipts} />}
+          </TabPanel>
         </div>
+
+        <aside className="detail-side">
+          <Card><CardHeader title="Lifecycle" icon="route" />
+            <div className="card-body">{aurora ? <p className="muted">On-chain round status: <b>{String(data?.round?.status ?? "no round")}</b>. Monitoring does not infer steps that are not recorded.</p>
+              : <RoundTimeline current={currentPhase} running={Boolean(data?.running)} halted={interrupted} />}</div>
+          </Card>
+          <Card><CardHeader title="Outcome" icon="pulse" actions={<Badge tone={settled ? "success" : "neutral"}>{settled ? "Settled" : "Pending"}</Badge>} />
+            <div className="card-body"><OutcomeSummary data={data} settled={settled} winner={winner} /></div>
+          </Card>
+          <Card><CardHeader title="Details" icon="layers" />
+            <div className="card-body"><DescriptionList items={[
+              { label: "Safe", value: data?.safe.address ? <CopyText value={data.safe.address} label="Safe address" /> : <span className="unavailable">Not deployed</span> },
+              { label: "Network", value: aurora ? "Aurora testnet" : "Anvil local · 31337" },
+              { label: "Agents", value: modelConfigured ? `${data?.inference?.mode} model` : aurora ? "Not attached" : "Scripted rehearsal" },
+              { label: "Attestation", value: "Not verified" },
+            ]} /></div>
+          </Card>
+        </aside>
       </div>
-      <div className="card round-card">
-        <div className="round-card-top">
-          <span className="kicker muted">{aurora ? "Aurora monitoring" : "Your local rehearsal"}</span>
-          <span className={`chip-status tone-${completed ? "ok" : interrupted ? "warn" : data?.running ? "pending" : connected ? "ok" : "off"}`}><i />{stageText}</span>
-        </div>
-        <h2>{data?.roundId && data.roundId !== "0" ? `Decision round ${data.roundId}` : "From proposal to payout"}</h2>
-        <p>{aurora ? "Inspect the verified contract state. Prepare owner-reviewed actions in the manager console; this server never signs testnet transactions." : completed ? "The selected strategy has been measured and the forecasting positions redeemed. Review the receipts below." : interrupted ? "The runtime stopped safely. Review the error and receipts before resetting the local demo through the CLI." : "Run the complete cycle on disposable local accounts: proposals, forecasts, Safe execution, settlement and redemption. No wallet or real money needed."}</p>
-        <button type="button" className="btn btn-primary btn-lg" onClick={() => void startRound()} disabled={disabled} aria-busy={starting || Boolean(data?.running)}>
-          {starting || data?.running ? <span className="spinner" /> : <Icon name={completed ? "check" : "play"} />}
-          <span>{aurora ? "Owner execution through Safe" : starting ? "Starting local round…" : completed ? "Round complete" : data?.running ? "Running local round…" : interrupted ? "Reset required in CLI" : "Run local round"}</span>
-        </button>
-        <div className="round-card-foot"><Icon name="clock" />{updatedAt ? `Snapshot ${updatedAt.toLocaleTimeString("en-GB")}${connectionError ? " · connection lost" : ""}` : "Waiting for the local deployment"}</div>
-      </div>
     </section>
 
-    {error && <aside className="alert alert-warn" role="alert"><Icon name="alert" /><div><b>{connected ? "The demo needs attention" : "Local services are not ready"}</b><p>{error}</p>{!connected && <p className="alert-sub">Start the local demo from the repository. Balances appear after the API reads the deployed contracts.</p>}</div></aside>}
-
-    <section className="kpis" aria-label="Three separate balances and the round">
-      <KpiTile icon="safe" tone="mint" label="Manager capital"
-        value={data?.safe.valueUsdX18 == null ? units(data?.safe.stableBalance, 6) : `$${units(data.safe.valueUsdX18, 18)}`} unit={data?.safe.valueUsdX18 == null ? "USDC" : undefined}
-        sub={<>{units(data?.safe.stableBalance, 6)} USDC · {units(data?.safe.assetBalance, 18, 5)} {aurora ? "asset" : "test ETH"}</>} />
-      <KpiTile icon="users" tone="violet" label="Forecast escrow" value={units(data?.forecast.escrow, 6)} unit="USDC" sub={<>{units(data?.forecast.deposits, 6)} USDC deposited this round</>} />
-      <KpiTile icon="layers" tone="amber" label="Sponsor seed" value={units(data?.sponsor.reserve, 6)} unit="USDC" sub="Unallocated protocol reserve" />
-      <KpiTile icon="bolt" label="Round" value={data?.roundId && data.roundId !== "0" ? `#${data.roundId}` : "—"} sub={stageText} />
-      <KpiTile icon="pulse" tone={returnText.startsWith("+") ? "up" : returnText.startsWith("−") ? "down" : "default"} label="Measured return"
-        value={returnText} sub={settled ? "Recorded strategy return" : "After settlement"} />
-    </section>
-    <p className="capital-note"><Icon name="shield" />Three separate balances, never pooled: the manager’s Safe <code>{shortAddress(data?.safe.address)}</code>, forecaster escrow and explicitly funded sponsor seed.</p>
-
-    <section className="card section-card" aria-labelledby="lifecycle-heading">
-      <div className="card-head"><h2 id="lifecycle-heading" className="card-title"><Icon name="route" />Decision lifecycle</h2><Pill tone={completed ? "success" : data?.running ? "live" : "muted"}>{roundLabel}</Pill></div>
-      <div className="card-pad"><Lifecycle current={currentPhase} aurora={aurora} status={String(data?.round?.status ?? "no round")} /></div>
-    </section>
-
-    <section className="section" aria-labelledby="markets-heading">
-      <div className="section-head">
-        <div><span className="kicker">Competing allocations</span><h2 id="markets-heading">Let the strategies make their case.</h2></div>
-        <p>The market signal is a forecast, not a guaranteed investment return. A challenger must beat Hold’s final-window average by more than 0.5 points.</p>
-      </div>
-      {data?.proposals.length ? <div className="markets">{data.proposals.map((proposal) => <MarketCard key={proposal.id} proposal={proposal} selected={winner === String(proposal.id)} />)}</div>
-        : <div className="card empty"><span className="empty-ico"><Icon name="chart" /></span><div><h3>No proposals to compare yet</h3><p>Run the local round to create the baseline and competing allocations on-chain. Market odds appear here as forecasters trade.</p></div></div>}
-    </section>
-
-    <div className="split">
-      <section className="card" aria-labelledby="agents-heading">
-        <div className="card-head">
-          <h2 id="agents-heading" className="card-title"><Icon name="users" />Agents · visible reasoning</h2>
-          <Pill tone={modelConfigured ? "live" : "fixture"}>{modelConfigured ? `${data?.inference?.mode} · ${data?.inference?.status}` : aurora ? "Records not attached" : "Deterministic rehearsal"}</Pill>
-        </div>
-        <div className="card-pad">
-          <AgentFeed agents={data?.agents ?? []} emptyText={aurora ? "Agent execution records are not attached to this monitoring server. On-chain proposal rationales appear above." : modelConfigured ? "Validated model summaries will appear after inference completes. Research inputs and assets remain simulated." : "The local agents’ reasoning appears when the scenario runs. This rehearsal does not claim live AI inference."} />
-          {data?.inference && modelDriven ? <p className="fine-print">Model: {data.inference.model}. Research inputs: {data.inference.evidenceSource ?? "not yet read"}. Response hashes are recorded; hardware attestation is not verified.</p> : null}
-          {data?.agentRecords?.length ? <details className="agent-more"><summary>{data.agentRecords.length} validated decision records</summary>{data.agentRecords.map((record, index) => <p key={`${record.name}-${index}`}>{record.name} · {record.provider} · <code title={record.outputHash}>{record.outputHash.slice(0, 16)}</code></p>)}</details> : null}
-        </div>
-      </section>
-      <OutcomeCard settled={settled} data={data} winner={winner} />
-    </div>
-
-    <section className="card section-card" aria-labelledby="receipts-heading">
-      <div className="card-head"><h2 id="receipts-heading" className="card-title"><Icon name="receipt" />On-chain activity</h2><Pill tone="neutral">{data?.receipts.length ?? 0} receipts</Pill></div>
-      <ReceiptsTable receipts={data?.receipts ?? []} />
+    <section className="section" aria-labelledby="past-heading">
+      <div className="section-title"><h2 id="past-heading">Past rounds on Aurora testnet</h2><Link className="link" href="/record">Agent track record<Icon name="arrow" /></Link></div>
+      <Card>
+        {past ? <PastRounds rounds={past} />
+          : pastError ? <EmptyState icon="alert" title="Past rounds unavailable">{pastError}</EmptyState>
+          : <div className="card-body stack">{[0, 1].map((i) => <Skeleton key={i} height={40} />)}</div>}
+      </Card>
     </section>
   </AppShell>;
 }
