@@ -41,7 +41,8 @@ bash scripts/docker-demo/down.sh
 
 | Command | Effect |
 |---|---|
-| `up.sh --fresh` | Discards the previous disposable session (journal, local deployment, broadcast) and starts a new chain. Use it after a round has completed or after the container stopped. |
+| `up.sh` again while the demo runs | Reports the URL and leaves the running demo untouched. It never stops a working demo. |
+| `up.sh --fresh` | Resets only this demo's disposable state (its container, local chain journal, local deployment and broadcast) and starts a new chain. Use it to run another round, to load code changes, or after the container stopped. |
 | `up.sh --no-funding-preview` | Starts without `/api/funding/*`, so no request goes to NEAR Intents. `/fund` then offers the labelled fixture explorer. |
 | `up.sh --help` | Prints the usage summary. |
 
@@ -53,7 +54,15 @@ bash scripts/docker-demo/down.sh
 4. Runs `npm ci --ignore-scripts` (only when `package-lock.json` changed), `scripts/fetch-deps.py` and `forge build` in throwaway containers, as your user ID.
 5. Starts the `wavefund-demo` container with `WAVEFUND_CONTAINER=1`, which binds the API and dashboard inside the container, and `WAVEFUND_FUNDING=live-preview`, which enables dry quotes only.
 
-The containers mount only the disposable workspace. Nothing is signed, funded, pushed or deployed. The published ports listen on loopback, so other machines on your network cannot reach the demo.
+The containers mount only the disposable workspace, never the Docker socket or host credentials.
+
+- **No public-network transactions.** The local Anvil chain signs and deploys disposable local contracts only, and startup makes no paid model calls.
+- **Outbound requests are public reads only:** 1Click dry quotes on **Get quote**, Aurora testnet reputation reads, and the Tidepool fresh check on **Re-verify receipts now**.
+- **Loopback only.** The published ports listen on 127.0.0.1, so other machines on your network cannot reach the demo.
+- **No stale code.** Files deleted from the repository are removed from the disposable copy on the next start. Dependency and compiler caches are kept.
+- **No secrets copied.** Anything that looks like a secret (`.env*`, keys, keystores, `secrets/`) is never copied.
+
+`bash scripts/docker-demo/check-restart.sh --include-fresh` self-tests the restart behaviour: a repeated start keeps the same container, `--fresh` replaces it, and `down.sh` stops only this demo.
 
 ## Troubleshooting
 
@@ -61,7 +70,8 @@ The containers mount only the disposable workspace. Nothing is signed, funded, p
 |---|---|
 | `Docker is installed but its daemon is not running` | Start Docker Desktop and wait until it reports that it is running. |
 | `Port 3000 … is already in use` | Stop the other process, for example a previous `npm run dev` or another launcher. |
-| `A previous disposable session exists` | Run `bash scripts/docker-demo/up.sh --fresh`. The previous chain lived only in the old container. |
+| `A previous local session exists … Nothing was stopped.` | Run `bash scripts/docker-demo/up.sh --fresh`. The previous chain lived only in the old container. |
+| `The wavefund-demo container is running but not answering yet` | It may still be starting. Wait and retry, check `docker logs wavefund-demo`, or use `--fresh`. Nothing was stopped. |
 | `The demo stopped during start-up` | The last 40 log lines are printed above the message. `docker logs wavefund-demo` shows the full log while the container exists. |
 
 To reclaim the disk space completely, stop the demo, then delete `.run/docker-demo/` and the `wavefund-demo` image.
