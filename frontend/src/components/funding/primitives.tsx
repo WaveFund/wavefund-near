@@ -57,7 +57,7 @@ export function CopyText({ value, label }: { value: string; label?: string }) {
     try { await navigator.clipboard.writeText(value); setCopied(true); setTimeout(() => setCopied(false), 1600); } catch { setCopied(false); }
   }
   return <button type="button" className="copy-text" onClick={() => void copy()} title={value} aria-label={`Copy ${label ?? "value"} ${value}`}>
-    <code>{shortHex(value)}</code><Icon name={copied ? "check" : "copy"} />
+    <code>{/^0x[0-9a-fA-F]+$/.test(value) ? shortHex(value) : value.length > 14 ? `${value.slice(0, 6)}…${value.slice(-4)}` : value}</code><Icon name={copied ? "check" : "copy"} />
   </button>;
 }
 

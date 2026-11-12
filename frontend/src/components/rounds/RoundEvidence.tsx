@@ -2,6 +2,8 @@
 
 import { AURORA_TESTNET, formatUnits } from "@/lib/funding/model.mjs";
 import { formatPoints, formatReturnX18, formatSignedUnits, type TestnetRound } from "@/lib/record/model.mjs";
+import type { TidepoolDemo } from "@/lib/tidepool/model.mjs";
+import { MoneyFlow } from "@/components/tidepool/TidepoolParts";
 import { CopyText, ExplorerLink, Icon } from "@/components/funding/primitives";
 import { Avatar, Badge, DescriptionList, EmptyState, Timeline, type TimelineItem } from "@/components/ui";
 
@@ -53,13 +55,15 @@ export function EvidenceForecasters({ round }: { round: TestnetRound }) {
   </>;
 }
 
-export function EvidenceOutcome({ round }: { round: TestnetRound }) {
+export function EvidenceOutcome({ round, demo = null }: { round: TestnetRound; demo?: TidepoolDemo | null }) {
   const ret = formatReturnX18(round.realisedReturnX18);
   const checks: Array<[string, boolean | null]> = [
     ["Independent recomputation passed", round.checks.independentPassed], ["Recorded return matches the recomputation", round.checks.returnRecomputed],
     ["Payouts match the recomputation", round.checks.payoutsRecomputed], ["Safe balance deltas match the swap", round.checks.swapChecked],
   ];
+  const loss = !round.winner.isHold && ret?.startsWith(MINUS);
   return <div className="card-body stack-lg">
+    {loss ? <p className="result-line"><Badge tone="success" dot>Executed and settled</Badge><span>The strategy ran as designed and lost value. A negative return is a measured outcome, not a failed transaction.</span></p> : null}
     <DescriptionList items={[
       { label: "Selected", value: round.winner.isHold ? "Hold · keep current holdings" : `${round.winner.name} · ${bpsPercent(round.winner.allocationBps)} test ETH` },
       { label: "Investment swap", value: round.swap ? <Tx hash={round.swap.transactionHash} /> : <span className="muted">None, Hold was selected</span> },
@@ -67,6 +71,11 @@ export function EvidenceOutcome({ round }: { round: TestnetRound }) {
         value: <b className={round.winner.isHold ? "subtle" : ret?.startsWith(MINUS) ? "neg" : "pos"}>{ret ?? "Unavailable"}</b> },
       { label: "Performance points", value: round.reputation ? <span className="tx-inline"><b className={round.reputation.score.startsWith("-") ? "neg" : "pos"}>{round.winner.name} {formatPoints(round.reputation.score)}</b><ExplorerLink chainId={AURORA_TESTNET} kind="tx" value={round.reputation.transactionHash} enabled /></span> : <span className="muted">None · Hold rounds never score</span> },
     ]} />
+    <div>
+      <h4 className="mini-title">Money flow · separate buckets</h4>
+      <MoneyFlow demo={demo} round={round} />
+      <p className="panel-foot">Forecaster payouts and the fund&apos;s return are different calculations. Payouts depend on each forecaster&apos;s LONG/SHORT positions, the selected world and the payout bounds; the fund&apos;s return is the Safe&apos;s measured portfolio change.</p>
+    </div>
     <div>
       <h4 className="mini-title">Independent checks</h4>
       <ul className="check-list">{checks.filter(([, value]) => value !== null).map(([label, value]) => <li key={label} className={value ? "ok" : "no"}><Icon name={value ? "check" : "cross"} /><div><b>{label}</b></div></li>)}</ul>
@@ -99,7 +108,7 @@ const MILESTONES: Array<{ key: string; title: string; test: (step: string) => bo
   { key: "settle", title: "Return measured and settled", test: (step) => step === "settle" },
   { key: "redeem", title: "Collateral redeemed", test: (step) => step.startsWith("redeem:"), last: true },
 ];
-export function EvidenceTimeline({ round }: { round: TestnetRound }) {
+export function EvidenceTimeline({ round, demo = null }: { round: TestnetRound; demo?: TidepoolDemo | null }) {
   const steps = round.transactions.map((item) => ({ ...item, step: item.label.replace(/^round\d+:/, "") }));
   const items: TimelineItem[] = MILESTONES.map((milestone) => {
     const matches = steps.filter((item) => milestone.test(item.step));
@@ -107,5 +116,7 @@ export function EvidenceTimeline({ round }: { round: TestnetRound }) {
     return { key: milestone.key, title: milestone.key === "execute" && round.winner.isHold ? "Hold kept, nothing traded" : milestone.title, state: hit ? "done" : "upcoming",
       detail: hit ? <span className="tx-inline">Block {hit.blockNumber}<ExplorerLink chainId={AURORA_TESTNET} kind="tx" value={hit.transactionHash} enabled /></span> : "Not recorded" };
   });
-  return <Timeline items={items} label={`Round ${round.roundId} milestones`} />;
+  const funding: TimelineItem[] = demo ? [{ key: "funded", title: "Safe funded via Tidepool", state: "done",
+    detail: <span className="tx-inline">Block {demo.funding.destinationTransaction.blockNumber ?? "—"}<ExplorerLink chainId={AURORA_TESTNET} kind="tx" value={demo.funding.destinationTransaction.hash} enabled /></span> }] : [];
+  return <Timeline items={[...funding, ...items]} label={`Round ${round.roundId} milestones`} />;
 }

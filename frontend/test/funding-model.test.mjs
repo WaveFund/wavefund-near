@@ -237,14 +237,15 @@ test('fixture data is recognisably synthetic and never labelled live', () => {
 
 // ---------------------------------------------------------------- funding lanes and strategy readiness
 
-test('funding lanes stay separate: Tidepool is pending whatever the API reports, fixtures are always synthetic', () => {
+test('funding lanes stay separate: Tidepool is testnet history whatever the API reports, fixtures are always synthetic', () => {
   assert.deepEqual([...LANE_ORDER], ['official', 'tidepool', 'fixtures']);
   assert.equal(FUNDING_LANES.official.chainId, AURORA_MAINNET);
   assert.equal(FUNDING_LANES.tidepool.chainId, AURORA_TESTNET);
   assert.equal(FUNDING_LANES.fixtures.chainId, null);
   const liveConfig = { ...config(), evidence: 'live', capabilities: { ...config().capabilities, preview: true, records: true } };
   for (const context of [{}, { source: 'api', phase: 'ready', config: liveConfig }, { source: 'fixture', phase: 'ready', config: config() }]) {
-    assert.equal(laneStatus('tidepool', context).label, 'Pending integration');
+    assert.equal(laneStatus('tidepool', context).label, 'Testnet demo · history');
+    assert.notEqual(laneStatus('tidepool', context).tone, 'live', 'Tidepool history is never shown as a live route');
     assert.equal(laneStatus('fixtures', context).tone, 'fixture');
   }
   assert.equal(laneStatus('official', { source: 'api', phase: 'ready', config: liveConfig }).label, 'Live dry quotes');
@@ -261,7 +262,7 @@ test('funding lanes stay separate: Tidepool is pending whatever the API reports,
   const testnetRoute = fixtureConfig(NOW); testnetRoute.routes[0].destination.chainId = AURORA_TESTNET;
   assert.equal(validateFundingConfig(testnetRoute).ok, false);
   assert.equal(networkName(ARBITRUM_SEPOLIA), 'Arbitrum Sepolia');
-  assert.equal(explorerUrl(ARBITRUM_SEPOLIA, 'tx', `0x${'ab'.repeat(32)}`), null, 'no explorer link until B confirms one');
+  assert.equal(explorerUrl(ARBITRUM_SEPOLIA, 'tx', `0x${'ab'.repeat(32)}`), `https://sepolia.arbiscan.io/tx/0x${'ab'.repeat(32)}`, 'the explorer named in the verified Tidepool evidence');
 });
 
 test('the strategy identity is validated and must match the round network', () => {
@@ -356,12 +357,12 @@ test('today’s configuration: mainnet 1Click funding can never make the testnet
   assert.equal(deliverySummary(null).state, 'none');
 });
 
-test('Tidepool: minted wallet tokens are not delivery, delivery is not readiness, and nothing claims progress yet', () => {
-  const ladder = tidepoolLadder();
-  assert.deepEqual(ladder.map((step) => step.id), ['minted', 'delivered', 'ready']);
-  assert.ok(ladder.every((step) => ['not-tracked', 'not-connected'].includes(step.state)), 'no step is shown as reached in this build');
-  assert.match(ladder[0].detail, /not a bridge delivery/);
-  assert.match(ladder[2].owner, /funding service/);
-  assert.match(laneStatus('tidepool').detail, /minted test USDC/);
-  assert.equal(laneStatus('tidepool', { source: 'api', phase: 'ready', config: { ...config(), evidence: 'live' } }).label, 'Pending integration');
+test('Tidepool: minted tokens are not delivery, delivery is not readiness, and missing evidence is unavailable', () => {
+  const saved = tidepoolLadder({ evidence: 'saved-independently-verified', official1Click: false });
+  assert.deepEqual(saved.map((step) => [step.id, step.state]), [['minted', 'not-tracked'], ['delivered', 'saved-verified'], ['round', 'saved-settled']]);
+  assert.match(saved[0].detail, /not a bridge delivery/);
+  assert.ok(saved.every((step) => step.id !== 'ready'), 'no strategy-readiness step is derived from delivery');
+  assert.deepEqual(tidepoolLadder(null).map((step) => step.state), ['not-tracked', 'unavailable', 'unavailable']);
+  assert.deepEqual(tidepoolLadder({ evidence: 'saved-independently-verified', official1Click: true }).map((step) => step.state), ['not-tracked', 'unavailable', 'unavailable'], 'anything labelled official 1Click is not Tidepool history');
+  assert.equal(laneStatus('tidepool', { source: 'api', phase: 'ready', config: { ...config(), evidence: 'live' } }).label, 'Testnet demo · history');
 });

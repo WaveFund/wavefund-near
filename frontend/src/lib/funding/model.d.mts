@@ -192,5 +192,5 @@ export type StrategyReadiness = {
 export declare const READINESS_FAILURES: Readonly<Record<string, string>>;
 export declare function strategyReadiness(record: unknown, display: FundingDisplay | null, config: FundingConfig | null): StrategyReadiness;
 
-export type LadderStep = { id: 'minted' | 'delivered' | 'ready'; title: string; detail: string; owner: string; state: 'not-tracked' | 'not-connected'; label: string };
-export declare function tidepoolLadder(): LadderStep[];
+export type LadderStep = { id: 'minted' | 'delivered' | 'round'; title: string; detail: string; owner: string; state: 'not-tracked' | 'saved-verified' | 'saved-settled' | 'unavailable'; label: string };
+export declare function tidepoolLadder(demo?: { evidence: string; official1Click: boolean } | null): LadderStep[];

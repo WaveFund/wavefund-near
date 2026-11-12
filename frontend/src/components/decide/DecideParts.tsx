@@ -160,8 +160,8 @@ export function PastRounds({ rounds }: { rounds: TestnetRound[] }) {
     <thead><tr><th>Round</th><th>Outcome</th><th className="num">Return</th><th className="num">AI calls</th><th>Date</th><th>Status</th></tr></thead>
     <tbody>{[...rounds].reverse().map((round) => {
       const ret = formatReturnX18(round.realisedReturnX18);
-      return <tr key={round.roundId} className="row-link" onClick={() => router.push(`/rounds/${round.roundId}`)}>
-        <td><Link href={`/rounds/${round.roundId}`} className="round-link" onClick={(event) => event.stopPropagation()}><b>Round {round.roundId}</b><span>{round.title}</span></Link></td>
+      return <tr key={round.slug} className="row-link" onClick={() => router.push(`/rounds/${round.slug}`)}>
+        <td><Link href={`/rounds/${round.slug}`} className="round-link" onClick={(event) => event.stopPropagation()}><b>Round {round.roundId} · {round.stack.label}</b><span>{round.title}</span><small className="cell-note mono" title={`Engine ${round.stack.engine}`}>engine {round.stack.engine.slice(0, 6)}…{round.stack.engine.slice(-4)}</small></Link></td>
         <td>{round.winner.isHold ? <Badge>Hold kept · no swap</Badge> : <Badge tone="brand">{round.winner.name} · {bpsPercent(round.winner.allocationBps)} ETH</Badge>}</td>
         <td className={`num ${round.winner.isHold ? "subtle" : ret?.startsWith("−") ? "neg" : "pos"}`}>{ret ?? "—"}{round.winner.isHold ? <small className="cell-note">not scored</small> : null}</td>
         <td className="num">{round.genuineModelCalls ?? "—"}{(round.scriptedForecasters ?? 0) > 0 ? <small className="cell-note">+{round.scriptedForecasters} scripted</small> : null}</td>

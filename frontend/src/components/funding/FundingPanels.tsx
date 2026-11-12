@@ -2,10 +2,13 @@
 
 import type { ReactNode } from "react";
 import {
-  AURORA_MAINNET, AURORA_TESTNET, READINESS_FAILURES, compareRaw, formatDuration, formatUnits, networkName, parseUnits, roundEligibility, tidepoolLadder,
-  type DeliverySummary, type FundingConfig, type FundingPreview, type FundingRoute, type FundingStrategy, type StrategyReadiness, type SummaryTone,
+  AURORA_MAINNET, READINESS_FAILURES, compareRaw, formatDuration, formatUnits, networkName, parseUnits, roundEligibility, tidepoolLadder,
+  type DeliverySummary, type FundingConfig, type FundingPreview, type FundingRoute, type StrategyReadiness, type SummaryTone,
 } from "@/lib/funding/model.mjs";
+import Link from "next/link";
 import { FIXTURE_LABEL, type FixtureScenario } from "@/lib/funding/fixtures.mjs";
+import type { FreshCheck, TidepoolDemo } from "@/lib/tidepool/model.mjs";
+import { TidepoolFunding } from "@/components/tidepool/TidepoolParts";
 import { Address, Amount, CountdownRing, Icon, identiconStyle } from "./primitives";
 import { Badge, Button, DescriptionList, Notice, type Tone } from "@/components/ui";
 
@@ -134,47 +137,24 @@ export function QuoteSummary({ preview, route, config, now }: { preview: Funding
   </div>;
 }
 
-export function TidepoolPanel({ strategy, live, notice }: { strategy: FundingStrategy | null; live: boolean; notice: string | null }) {
-  const pending = <span className="unavailable">Not configured</span>;
+// Completed community-testnet demonstration, shown as history from saved evidence. No live route, quote or send exists.
+export function TidepoolPanel({ demo, error, fresh, freshing, onFresh, now }: { demo: TidepoolDemo | null; error: string | null; fresh: FreshCheck | null; freshing: boolean; onFresh: () => void; now: number }) {
   return <div className="tidepool">
-    <p className="muted">A community relayer from a testnet source chain into Aurora testnet, including Safe payouts. Test assets only; this is not official NEAR Intents settlement.</p>
-    <ol className="ladder" aria-label="Minted is not delivered, delivered is not ready">
-      {tidepoolLadder().map((step, index) => <li key={step.id} className="ladder-step">
+    <p className="muted">A completed Tidepool community-testnet transfer: Arbitrum Sepolia test USDC into an Aurora testnet Trading Safe, followed by a strategy round on that Safe. Tidepool is a community relayer, not an official NEAR Intents testnet, and the tokens have no value.</p>
+    <ol className="ladder" aria-label="Minted is not delivered, delivered is not strategy readiness">
+      {tidepoolLadder(demo).map((step, index) => <li key={step.id} className="ladder-step">
         <span className="ladder-index">{index + 1}</span>
         <div><b>{step.title}</b><p>{step.detail}</p><small>{step.owner}</small></div>
-        <Badge>{step.label}</Badge>
+        <Badge tone={step.state === "saved-verified" || step.state === "saved-settled" ? "success" : "neutral"}>{step.label}</Badge>
       </li>)}
     </ol>
-    <div className="identity-cols">
-      <div>
-        <h4 className="mini-title">Current strategy stack</h4>
-        <DescriptionList items={[
-          { label: "Network", value: <>Aurora testnet <code>{AURORA_TESTNET}</code></> },
-          { label: "Strategy Safe", value: strategy ? <Address value={strategy.safe} chainId={strategy.chainId} label="strategy Safe" live={live} /> : <span className="unavailable">Unavailable</span> },
-          { label: "Stable token", value: strategy ? <>{strategy.symbol ?? "token"} <Address value={strategy.token} chainId={strategy.chainId} label="strategy token" live={live} /></> : <span className="unavailable">Unavailable</span> },
-        ]} />
-        <p className="panel-foot">{strategy ? `${live ? `${strategy.source ?? "Trusted configuration"} · not independently verified` : "Fixture identity"}. Original testnet deployment, not the Tidepool destination.` : notice ?? "Loads from the local funding API."}</p>
-      </div>
-      <div>
-        <h4 className="mini-title">Tidepool would deliver</h4>
-        <DescriptionList items={[
-          { label: "Source network", hint: "announced: Arbitrum Sepolia", value: pending },
-          { label: "Recipient Safe", hint: "chosen by A/B", value: pending },
-          { label: "Delivered token", hint: "differs from the strategy token", value: pending },
-          { label: "Status feed", value: <span className="unavailable">Not connected</span> },
-        ]} />
-      </div>
-    </div>
-    <Notice tone="warning" title="Tidepool's test USDC is not the current strategy token"><p>Test-only pool usage is permitted for A/B's compatible stack, which is theirs to deliver. A delivery of another token never makes a strategy ready.</p></Notice>
-    <Button variant="locked" size="lg" block icon="lock" disabled>No Tidepool quote · integration pending</Button>
+    {demo ? <TidepoolFunding demo={demo} fresh={fresh} freshing={freshing} onFresh={onFresh} now={now} />
+      : error ? <Notice tone="warning" title="Tidepool evidence unavailable"><p>{error}</p></Notice> : <p className="subtle">Loading the saved Tidepool evidence…</p>}
+    {demo ? <Link className="link" href={`/rounds/${demo.strategy.roundSlug}`}>Open the Tidepool strategy round<Icon name="arrow" /></Link> : null}
+    <Button variant="locked" size="lg" block icon="lock" disabled>No live Tidepool route · history only</Button>
     <details className="disclosure flush">
-      <summary>What unlocks this source?</summary>
-      <div className="disclosure-body"><ul className="check-list">
-        <li className="wait"><Icon name="lock" /><div><b>A/B: Tidepool adapter, signature verification, compatible contracts and pool, bridge execution</b></div></li>
-        <li className="wait"><Icon name="lock" /><div><b>A/B: a read-only route, status and receipt interface for the local API</b></div></li>
-        <li className="wait"><Icon name="lock" /><div><b>A: a verified testnet route and funding-record support for Aurora testnet</b></div></li>
-        <li className="wait"><Icon name="lock" /><div><b>Team: the destination Safe and the token that strategy accepts</b></div></li>
-      </ul><p>Until then this source shows identities only. It invents no route, quote or live status.</p></div>
+      <summary>Why is there no deposit button?</summary>
+      <div className="disclosure-body"><p>This source shows one completed testnet demonstration. It is kept separate from the production 1Click funding records and never feeds mainnet readiness. Sending, signing and executable quotes stay disabled until an integrated route is reviewed.</p></div>
     </details>
   </div>;
 }

@@ -133,3 +133,17 @@ export function avatarClass(name: string): string {
 export function Avatar({ name, small = false }: { name: string; small?: boolean }) {
   return <span className={`avatar ${small ? "sm" : ""} ${avatarClass(name)}`} aria-hidden="true">{name.slice(0, 1).toUpperCase()}</span>;
 }
+
+export type EvidenceKind = "saved" | "fresh" | "provider" | "fixture" | "live";
+const EVIDENCE: Record<EvidenceKind, { tone: Tone; label: string; title: string }> = {
+  saved: { tone: "neutral", label: "Saved evidence", title: "Recorded and independently verified at the time; not re-read now" },
+  fresh: { tone: "info", label: "Fresh read", title: "Read from public RPCs just now" },
+  provider: { tone: "warning", label: "Provider-reported", title: "Reported by the relayer or provider; not proof on its own" },
+  fixture: { tone: "warning", label: "Fixture", title: "Synthetic data for demonstration" },
+  live: { tone: "info", label: "Live read", title: "Read from a public RPC when the page loaded" },
+};
+/** Labels where a value comes from, so saved proofs never look like fresh verification. */
+export function EvidenceBadge({ kind, detail }: { kind: EvidenceKind; detail?: string }) {
+  const item = EVIDENCE[kind];
+  return <Badge tone={item.tone} title={item.title}>{item.label}{detail ? ` · ${detail}` : ""}</Badge>;
+}

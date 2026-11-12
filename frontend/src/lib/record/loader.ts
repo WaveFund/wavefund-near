@@ -1,6 +1,7 @@
 import { apiUrl } from "@/lib/state";
 import { safeText } from "@/lib/funding/model.mjs";
 import { validateReputationBoard, validateRoundEvidence, type ReputationBoard, type TestnetRound } from "@/lib/record/model.mjs";
+import { validateFreshCheck, validateTidepoolDemo, type FreshCheck, type TidepoolDemo } from "@/lib/tidepool/model.mjs";
 
 // Reads the two read-only record endpoints from the local loopback API. A 404 means the capability is not enabled,
 // which is shown differently from an offline API or a malformed response.
@@ -28,8 +29,9 @@ async function getJson(path: string): Promise<unknown> {
   return body;
 }
 
-export async function loadReputation(): Promise<ReputationBoard> {
-  const checked = validateReputationBoard(await getJson("/api/agents/reputation"));
+export type ReputationStackId = "original" | "tidepool";
+export async function loadReputation(stack: ReputationStackId = "original"): Promise<ReputationBoard> {
+  const checked = validateReputationBoard(await getJson(stack === "original" ? "/api/agents/reputation" : "/api/agents/reputation/tidepool"));
   if (!checked.ok) throw new RecordUnavailable(checked.error, "invalid");
   return checked.board;
 }
@@ -38,4 +40,16 @@ export async function loadRoundEvidence(): Promise<TestnetRound[]> {
   const checked = validateRoundEvidence(await getJson("/api/evidence/testnet-rounds"));
   if (!checked.ok) throw new RecordUnavailable(checked.error, "invalid");
   return checked.rounds;
+}
+
+export async function loadTidepoolDemo(): Promise<TidepoolDemo> {
+  const checked = validateTidepoolDemo(await getJson("/api/tidepool/demo"));
+  if (!checked.ok) throw new RecordUnavailable(checked.error, "invalid");
+  return checked.demo;
+}
+
+/** Runs the read-only fresh receipt check on demand. Failures come back as an unavailable result, never as verified. */
+export async function runTidepoolFreshCheck(): Promise<FreshCheck> {
+  try { return validateFreshCheck(await getJson("/api/tidepool/demo/fresh-check")); }
+  catch { return { status: "unavailable", code: "FRESH_CHECK_UNAVAILABLE", observedAt: null }; }
 }

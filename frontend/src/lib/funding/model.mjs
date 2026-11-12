@@ -6,10 +6,10 @@ export const AURORA_TESTNET = 1313161555;
 export const ARBITRUM_SEPOLIA = 421614;
 
 // Allowlisted, network-specific explorers. Unknown networks never get a link. A null explorer names the
-// network without linking anywhere until its explorer is confirmed (Arbitrum Sepolia: pending B).
+// network without linking anywhere. Arbitrum Sepolia uses the explorer named in the verified Tidepool evidence.
 export const NETWORKS = Object.freeze({
   42161: Object.freeze({ chainId: 42161, name: 'Arbitrum One', short: 'Arbitrum', explorer: 'https://arbiscan.io', testnet: false }),
-  [ARBITRUM_SEPOLIA]: Object.freeze({ chainId: ARBITRUM_SEPOLIA, name: 'Arbitrum Sepolia', short: 'Arb Sepolia', explorer: null, testnet: true }),
+  [ARBITRUM_SEPOLIA]: Object.freeze({ chainId: ARBITRUM_SEPOLIA, name: 'Arbitrum Sepolia', short: 'Arb Sepolia', explorer: 'https://sepolia.arbiscan.io', testnet: true }),
   [AURORA_MAINNET]: Object.freeze({ chainId: AURORA_MAINNET, name: 'Aurora mainnet', short: 'Aurora', explorer: 'https://explorer.aurora.dev', testnet: false }),
   [AURORA_TESTNET]: Object.freeze({ chainId: AURORA_TESTNET, name: 'Aurora testnet', short: 'Aurora testnet', explorer: 'https://explorer.testnet.aurora.dev', testnet: true }),
 });
@@ -400,7 +400,7 @@ export const BUCKET_LABELS = Object.freeze({
 export const LANE_ORDER = Object.freeze(['official', 'tidepool', 'fixtures']);
 export const FUNDING_LANES = Object.freeze({
   official: Object.freeze({ id: 'official', kind: 'official', title: 'Official 1Click', provider: 'NEAR Intents 1Click', chainId: AURORA_MAINNET, network: 'Aurora mainnet', assets: 'Real assets · dry quotes only' }),
-  tidepool: Object.freeze({ id: 'tidepool', kind: 'community', title: 'Tidepool community', provider: 'Community testnet relayer', chainId: AURORA_TESTNET, network: 'Aurora testnet', assets: 'Worthless test assets' }),
+  tidepool: Object.freeze({ id: 'tidepool', kind: 'community', title: 'Tidepool testnet demo', provider: 'Community testnet relayer (not official NEAR Intents)', chainId: AURORA_TESTNET, network: 'Aurora testnet', assets: 'Worthless test assets' }),
   fixtures: Object.freeze({ id: 'fixtures', kind: 'fixture', title: 'Labelled fixtures', provider: 'Synthetic, in-browser', chainId: null, network: 'No network', assets: 'Fake values' }),
 });
 
@@ -411,10 +411,10 @@ export function laneFromSearch(search) {
   return 'official';
 }
 
-// Tidepool is pending in this build whatever any server reports: B has not provided its interface and A has
-// no verified testnet configuration, so no route, quote or live status may be shown for it.
+// Tidepool is shown as a completed community-testnet demonstration from saved evidence, whatever any server reports.
+// It is history, not a live route: no quote, deposit or send exists for it, and it never feeds mainnet readiness.
 export function laneStatus(id, { source = null, phase = null, config = null } = {}) {
-  if (id === 'tidepool') return { tone: 'warning', label: 'Pending integration', detail: 'Tidepool has minted test USDC, but no route, quote or status is connected until A/B deliver the integrated adapter and configuration.' };
+  if (id === 'tidepool') return { tone: 'neutral', label: 'Testnet demo · history', detail: 'A completed Tidepool testnet transfer and strategy round, shown from saved evidence. No live route; sending is disabled.' };
   if (id === 'fixtures') return { tone: 'fixture', label: 'Synthetic', detail: 'Every funding state with fake values. Never live evidence.' };
   if (id !== 'official') return { tone: 'muted', label: 'Unknown', detail: 'Unknown funding lane.' };
   if (source !== 'api') return { tone: 'muted', label: 'Not connected', detail: 'Select to connect to the local funding API.' };
@@ -427,13 +427,15 @@ export function laneStatus(id, { source = null, phase = null, config = null } = 
   return { tone: 'neutral', label: 'Read-only', detail: 'Configuration only.' };
 }
 
-// Three separate facts for Tidepool, each owned elsewhere. In this build none of them is connected, so every step
-// reports that; a minted wallet balance can never be shown as delivery, and delivery never as readiness.
-export function tidepoolLadder() {
+// Three separate facts for the completed Tidepool demonstration. A minted wallet balance is never shown as delivery, and
+// delivery is never shown as strategy readiness: the round is its own saved record. Without validated evidence every
+// step is unavailable rather than assumed.
+export function tidepoolLadder(demo = null) {
+  const saved = demo && demo.evidence === 'saved-independently-verified' && demo.official1Click === false;
   return [
-    { id: 'minted', title: 'Minted test USDC', detail: 'Tidepool has minted test USDC to wallets. A wallet balance is not a bridge delivery.', owner: 'Tidepool', state: 'not-tracked', label: 'Not tracked here' },
-    { id: 'delivered', title: 'Bridge delivery', detail: 'A verified receipt into the configured strategy Safe, from the integrated route.', owner: 'B · receipt verification', state: 'not-connected', label: 'Not connected' },
-    { id: 'ready', title: 'Strategy ready', detail: 'Only the funding service, for that Safe and that strategy token.', owner: 'A · funding service', state: 'not-connected', label: 'Not connected' },
+    { id: 'minted', title: 'Minted test USDC', detail: 'Tidepool minted test USDC to wallets. A wallet balance is not a bridge delivery.', owner: 'Tidepool', state: 'not-tracked', label: 'Not tracked here' },
+    { id: 'delivered', title: 'Bridge delivery', detail: saved ? 'Arbitrum Sepolia to the Aurora testnet Safe, proven by linked canonical receipts.' : 'No validated delivery evidence.', owner: 'Saved evidence', state: saved ? 'saved-verified' : 'unavailable', label: saved ? 'Verified when recorded' : 'Unavailable' },
+    { id: 'round', title: 'Strategy round', detail: saved ? 'The same Safe and capital ran a separate strategy round, which settled.' : 'No validated round evidence.', owner: 'Saved evidence', state: saved ? 'saved-settled' : 'unavailable', label: saved ? 'Settled' : 'Unavailable' },
   ];
 }
 

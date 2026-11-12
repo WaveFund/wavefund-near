@@ -5,10 +5,12 @@ import { AppShell } from "@/components/AppShell";
 import { flowSteps, type FlowState } from "@/components/funding/RouteFlow";
 import { StatusTracker } from "@/components/funding/StatusTracker";
 import { DepositForm, ReadinessCard, ScenarioPicker, TidepoolPanel, TreasurySummary, amountValidation } from "@/components/funding/FundingPanels";
-import { useNow } from "@/components/funding/primitives";
-import { Badge, Button, Card, CardHeader, EmptyState, Notice, PageHeader, SegmentedControl, Skeleton } from "@/components/ui";
+import { Address, useNow } from "@/components/funding/primitives";
+import { loadTidepoolDemo, runTidepoolFreshCheck } from "@/lib/record/loader";
+import type { FreshCheck, TidepoolDemo } from "@/lib/tidepool/model.mjs";
+import { Badge, Button, Card, CardHeader, DescriptionList, EmptyState, EvidenceBadge, Notice, PageHeader, SegmentedControl, Skeleton } from "@/components/ui";
 import {
-  AURORA_MAINNET, AURORA_TESTNET, LANE_ORDER, classifyFunding, deliverySummary, laneFromSearch, laneStatus, networkName, shortHex, strategyReadiness,
+  AURORA_MAINNET, AURORA_TESTNET, LANE_ORDER, classifyFunding, deliverySummary, formatUnits, laneFromSearch, laneStatus, networkName, shortHex, strategyReadiness,
   type FundingConfig, type FundingPreview, type LaneId, type LaneStatus,
 } from "@/lib/funding/model.mjs";
 import { FIXTURE_LABEL } from "@/lib/funding/fixtures.mjs";
@@ -41,6 +43,10 @@ export default function FundPage() {
   const [tracking, setTracking] = useState(false);
   const [pollTick, setPollTick] = useState(0);
   const [lane, setLane] = useState<LaneId>("official");
+  const [tidepool, setTidepool] = useState<TidepoolDemo | null>(null);
+  const [tidepoolError, setTidepoolError] = useState<string | null>(null);
+  const [fresh, setFresh] = useState<FreshCheck | null>(null);
+  const [freshing, setFreshing] = useState(false);
   // The data source most recently requested; the loader state lags behind it while a connection is in flight.
   const wanted = useRef<FundingSource | null>(null);
   // Request counters: a response is applied only if no newer connect/preview/record request has started since.
@@ -84,6 +90,15 @@ export default function FundPage() {
     if (next === "tidepool") url.searchParams.set("lane", "tidepool");
     window.history.replaceState(null, "", url);
   }
+
+  // The Tidepool demonstration is loaded only for its own source and never mixed into the 1Click funding state.
+  useEffect(() => {
+    if (lane !== "tidepool" || tidepool) return;
+    let active = true;
+    loadTidepoolDemo().then((next) => { if (active) { setTidepool(next); setTidepoolError(null); } }, (error) => { if (active) setTidepoolError(error instanceof Error ? error.message : "Tidepool evidence is unavailable."); });
+    return () => { active = false; };
+  }, [lane, tidepool]);
+  async function tidepoolFreshCheck() { setFreshing(true); try { setFresh(await runTidepoolFreshCheck()); } finally { setFreshing(false); } }
 
   const route = config?.routes.find((item) => item.routeId === routeId) ?? null;
   const isFixture = loader?.source === "fixture";
@@ -155,7 +170,7 @@ export default function FundPage() {
     : { step: 0, halted: false, bucket: null, preview: Boolean(shownPreview), verified: false, evidence: liveConfig ? "none" : "fixture" };
   const steps = flowSteps(flow, route ? `${networkName(route.source.chainId)} · ${route.source.symbol ?? "token"}` : "Supported source chain", config ? `Aurora · ${shortHex(config.destination.safe)}` : "Aurora");
 
-  const mode = lane === "tidepool" ? { tone: "warning" as const, label: "Pending integration", text: "Tidepool community testnet source: identities only, no route, quote or live status." }
+  const mode = lane === "tidepool" ? { tone: "neutral" as const, label: "Testnet demo · history", text: "A completed Tidepool community-testnet transfer and strategy round, from saved evidence. Not official NEAR Intents; no live route." }
     : phase === "connecting" ? { tone: "neutral" as const, label: "Connecting", text: "Checking the local funding API…" }
     : isFixture ? { tone: "warning" as const, label: "Fixture data", text: `${FIXTURE_LABEL}. Safe, wallet and transaction values are fake.` }
     : phase === "ready" && !liveConfig ? { tone: "warning" as const, label: "API fixture data", text: "The local API reports fixture-quality configuration. Nothing here is live evidence." }
@@ -164,20 +179,20 @@ export default function FundPage() {
       : { tone: "success" as const, label: "Funding service", text: "Shared funding service records. Deposits are disabled during review." })
     : phase === "unavailable" ? { tone: "warning" as const, label: "API not connected", text: notice ?? "The local funding API is not available." }
     : { tone: "danger" as const, label: "Configuration rejected", text: notice ?? "The funding configuration was rejected." };
-  const status = lane === "tidepool" ? { label: "Integration pending", tone: "warn" as const }
+  const status = lane === "tidepool" ? { label: tidepool ? "Saved evidence" : tidepoolError ? "Evidence unavailable" : "Loading", tone: tidepool ? "ok" as const : tidepoolError ? "off" as const : "pending" as const }
     : phase === "ready" ? (liveConfig ? { label: "Live quotes", tone: "ok" as const } : { label: "Fixture data", tone: "warn" as const })
     : phase === "connecting" ? { label: "Connecting", tone: "pending" as const } : { label: "API offline", tone: "off" as const };
   const shellNetwork = lane === "tidepool" ? { label: "Aurora testnet", chainId: AURORA_TESTNET, tone: "testnet" as const }
     : lane === "fixtures" ? { label: "Fixture data", chainId: null, tone: "local" as const }
     : { label: "Aurora mainnet", chainId: AURORA_MAINNET, tone: "mainnet" as const };
   const laneOptions = LANE_ORDER.map((id) => ({ id, label: id === "official" ? "NEAR Intents 1Click" : id === "tidepool" ? "Tidepool · testnet" : "Fixtures",
-    badge: id === "tidepool" ? <Badge tone="warning">Pending</Badge> : undefined }));
+    badge: id === "tidepool" ? <Badge>History</Badge> : undefined }));
   const laneLine = lane === "official" ? "Official cross-chain deposits into the Safe on Aurora mainnet. Real assets, preview quotes only."
-    : lane === "tidepool" ? "Community relayer into Aurora testnet. Worthless test assets."
+    : lane === "tidepool" ? "Completed community-testnet demonstration into Aurora testnet. Worthless test assets."
     : "Synthetic states with fake values, to see every outcome without moving money.";
 
   const depositBody = lane === "tidepool"
-    ? <TidepoolPanel strategy={phase === "ready" ? config?.strategy ?? null : null} live={liveConfig} notice={phase === "ready" ? null : notice} />
+    ? <TidepoolPanel demo={tidepool} error={tidepoolError} fresh={fresh} freshing={freshing} onFresh={() => void tidepoolFreshCheck()} now={now} />
     : phase === "connecting" ? <div className="stack">{[0, 1, 2].map((i) => <Skeleton key={i} height={44} />)}</div>
     : phase !== "ready" || !config ? <EmptyState icon={phase === "rejected" ? "alert" : "route"} title={phase === "rejected" ? "The funding configuration was rejected" : "The funding API is not connected"}
         action={<div className="page-actions"><Button variant="primary" icon="layers" onClick={() => selectLane("fixtures")}>Explore labelled fixtures</Button><Button icon="refund" onClick={() => void connect(createApiFundingLoader())}>Retry local API</Button></div>}>
@@ -218,11 +233,15 @@ export default function FundPage() {
           {trackError ? <div className="card-body"><p className="field-error" role="alert">{trackError}</p></div> : null}
           {trackForm ? <div className="card-footer">{trackForm}</div> : !isFixture ? <div className="card-footer">Funding records are not connected to this API yet. Preview quotes never create a record.</div> : null}
         </StatusTracker> : null}
-        {config && phase === "ready"
-          ? <ReadinessCard config={config} live={liveConfig}
-            delivery={lane === "tidepool" ? deliverySummary(null) : delivery}
-            readiness={lane === "tidepool" ? strategyReadiness(null, null, config) : readiness} />
-          : lane === "tidepool" ? <Notice tone="neutral"><p>Strategy identities load from the local funding API, which is not connected. Nothing on this source is simulated.</p></Notice> : null}
+        {lane === "tidepool"
+          ? (tidepool ? <Card><CardHeader title="Funding to strategy" icon="route" actions={<EvidenceBadge kind="saved" />} sub="The delivered capital is the capital the strategy round prepared and executed." />
+              <div className="card-body"><DescriptionList items={[
+                { label: "Same Safe and capital", value: <Badge tone="success" dot>Yes</Badge> },
+                { label: "Prepared for the round", value: `${formatUnits(tidepool.funding.deliveredAmount, 6) ?? "—"} test USDC` },
+                { label: "Round", value: <>Round {tidepool.strategy.roundId ?? "—"} · engine <Address value={tidepool.contracts.engine} chainId={AURORA_TESTNET} label="engine" live /></> },
+                { label: "Investment pool", value: <Address value={tidepool.contracts.investmentPair} chainId={AURORA_TESTNET} label="investment pool" live /> },
+              ]} /><p className="panel-foot">Mainnet readiness is unaffected: this testnet history is never wired into the production funding records.</p></div></Card> : null)
+          : config && phase === "ready" ? <ReadinessCard config={config} live={liveConfig} delivery={delivery} readiness={readiness} /> : null}
       </div>
     </div>
   </AppShell>;

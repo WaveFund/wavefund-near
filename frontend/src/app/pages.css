@@ -164,6 +164,19 @@
 .reasons li { display: flex; gap: 8px; flex-wrap: wrap; align-items: baseline; font-size: 12.5px; color: var(--muted); }
 .reasons code { font-size: 11px; color: var(--danger); background: var(--danger-50); border: 1px solid var(--danger-200); padding: 1px 6px; border-radius: 4px; }
 
+/* ---------- Tidepool demonstration */
+.story { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 20px; }
+.story > li { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); box-shadow: var(--shadow-xs); min-width: 0; }
+.story-index { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; background: var(--brand-50); color: var(--brand-fg); }
+.story-index svg { width: 15px; height: 15px; }
+.story-step { font-size: 12.5px; font-weight: 600; color: var(--text); }
+.story p { margin-top: 2px; font-size: 12.5px; color: var(--muted); }
+.fresh-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid var(--border); font-size: 12.5px; }
+.fresh-row > div { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.fresh-result { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 12.5px; color: var(--muted); }
+.result-line { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.meta-engine { display: inline-flex; align-items: center; gap: 4px; }
+
 /* ---------- admin */
 .settings { display: grid; grid-template-columns: 220px minmax(0, 1fr); }
 .settings-nav { display: flex; flex-direction: column; gap: 2px; padding: 10px; border-right: 1px solid var(--border); }
@@ -177,6 +190,7 @@
 .settings-body .field { max-width: 360px; }
 
 @media (max-width: 1080px) {
+  .story { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .treasury-layout { grid-template-columns: minmax(0, 1fr); }
   .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .summary-grid > div + div { border-left: 0; }
@@ -196,6 +210,7 @@
   .settings-body { padding: 16px; }
   .identity-cols, .fact-pair { grid-template-columns: minmax(0, 1fr); }
   .col-outcomes { display: none; }
+  .story { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 520px) {
   .summary-grid { grid-template-columns: minmax(0, 1fr); }

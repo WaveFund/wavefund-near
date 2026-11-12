@@ -366,6 +366,8 @@ details > summary::-webkit-details-marker { display: none; }
   .footer-inner { padding: 16px; }
 }
 @media (max-width: 520px) {
+  .dl > div { flex-wrap: wrap; row-gap: 4px; }
+  .dl dd { justify-content: flex-start; text-align: left; }
   .stats { grid-template-columns: minmax(0, 1fr); }
   .stat + .stat { border-left: 0; border-top: 1px solid var(--border); }
   .network-chip code { display: none; }

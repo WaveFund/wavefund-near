@@ -63,8 +63,10 @@ export function validateReputationBoard(input) {
       blockNumber: r.blockNumber, blockTimestamp: r.blockTimestamp, hasEvaluatedStrategies: r.samples !== '0',
     } };
   });
+  const stack = isObject(input.stack) && ['original', 'tidepool'].includes(input.stack.id)
+    ? { id: input.stack.id, label: safeText(input.stack.label, 60) ?? input.stack.id, engine: isAddress(input.stack.engine) ? input.stack.engine.toLowerCase() : null } : null;
   return { ok: true, board: {
-    label: 'Performance reputation', contract: isAddress(input.contract) ? input.contract.toLowerCase() : null,
+    label: 'Outcome reputation', stack, contract: isAddress(input.contract) ? input.contract.toLowerCase() : null,
     observedAt: isTime(input.observedAt) ? input.observedAt : null, notCreditScore: input.notCreditScore === true, selectionWinsIncluded: false,
     status: ['ok', 'partial', 'unavailable'].includes(input.status) ? input.status : 'unavailable', agents,
   } };
@@ -108,8 +110,12 @@ function proposal(item) {
   return { id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: safeText(item.rationale, 320) ?? '' };
 }
 
+const SLUG = /^1313161555-0x[0-9a-f]{40}-\d{1,6}$/;
 function round(item) {
   if (!isObject(item) || typeof item.roundId !== 'string' || !/^\d{1,6}$/.test(item.roundId) || !isObject(item.winner)) return null;
+  // A round without a valid network + engine identity is not shown: "Round 1" alone is ambiguous across engines.
+  if (typeof item.slug !== 'string' || !SLUG.test(item.slug) || !item.slug.endsWith(`-${item.roundId}`) || !isObject(item.stack) || !isAddress(item.stack.engine)
+    || item.slug !== `1313161555-${item.stack.engine.toLowerCase()}-${item.roundId}` || !['original', 'tidepool'].includes(item.stack.id)) return null;
   const proposals = (Array.isArray(item.proposals) ? item.proposals : []).map(proposal);
   if (!proposals.length || proposals.includes(null)) return null;
   const winner = proposals.find((p) => p.id === item.winner.proposalId);
@@ -137,8 +143,14 @@ function round(item) {
     url: explorerUrl(AURORA_TESTNET, 'tx', item.reputation.transactionHash),
   } : null;
   const checks = isObject(item.checks) ? item.checks : {};
+  const collateral = isObject(item.collateral) && isIntegerString(item.collateral.atCollapse) && isIntegerString(item.collateral.ending) && isIntegerString(item.collateral.seed)
+    ? { atCollapse: item.collateral.atCollapse, ending: item.collateral.ending, seed: item.collateral.seed } : null;
   return {
-    roundId: item.roundId, title: safeText(item.title, 120) ?? `Round ${item.roundId}`, date: safeText(item.date, 20), kind: safeText(item.kind, 80),
+    slug: item.slug, roundId: item.roundId, collateral,
+    totals: isObject(item.totals) && isIntegerString(item.totals.deposits) && isIntegerString(item.totals.paid) ? { deposits: item.totals.deposits, paid: item.totals.paid } : { deposits: null, paid: null },
+    stack: { id: item.stack.id, label: safeText(item.stack.label, 60) ?? item.stack.id, engine: item.stack.engine.toLowerCase(), safe: isAddress(item.stack.safe) ? item.stack.safe.toLowerCase() : null, reputation: isAddress(item.stack.reputation) ? item.stack.reputation.toLowerCase() : null },
+    evidence: item.evidence === 'saved-independently-verified' ? 'saved-independently-verified' : 'unlabelled',
+    title: safeText(item.title, 120) ?? `Round ${item.roundId}`, date: safeText(item.date, 20), kind: safeText(item.kind, 80),
     genuineModelCalls: Number.isSafeInteger(item.genuineModelCalls) ? item.genuineModelCalls : null,
     scriptedForecasters: Number.isSafeInteger(item.scriptedForecasters) ? item.scriptedForecasters : null,
     model: safeText(item.model, 80), attestationVerified: item.attestationVerified === true,
@@ -152,10 +164,28 @@ function round(item) {
 }
 
 export function validateRoundEvidence(input) {
-  if (!isObject(input) || input.schemaVersion !== 1 || input.network?.chainId !== AURORA_TESTNET || !Array.isArray(input.rounds)) {
+  if (!isObject(input) || ![1, 2].includes(input.schemaVersion) || input.network?.chainId !== AURORA_TESTNET || !Array.isArray(input.rounds)) {
     return { ok: false, error: 'The testnet round evidence is missing or is not from Aurora testnet.' };
   }
   const rounds = input.rounds.map(round).filter(Boolean);
   if (!rounds.length) return { ok: false, error: 'No valid testnet round evidence was returned.' };
+  if (new Set(rounds.map((item) => item.slug)).size !== rounds.length) return { ok: false, error: 'Two rounds share one network + engine + round id.' };
   return { ok: true, rounds };
+}
+
+// Finds a round by its network + engine + round slug. A bare round number is accepted only when exactly one round has it.
+export function findRound(rounds, param) {
+  if (!Array.isArray(rounds) || typeof param !== 'string') return { round: null, ambiguous: false };
+  const bySlug = rounds.find((item) => item.slug === param.toLowerCase());
+  if (bySlug) return { round: bySlug, ambiguous: false };
+  if (!/^\d{1,6}$/.test(param)) return { round: null, ambiguous: false };
+  const matches = rounds.filter((item) => item.roundId === param);
+  return matches.length === 1 ? { round: matches[0], ambiguous: false } : { round: null, ambiguous: matches.length > 1 };
+}
+
+// Exact decimal for an x18 return factor, e.g. "0.993541889635073190" (no rounding).
+export function exactFactorX18(x18) {
+  if (!isIntegerString(x18)) return null;
+  const value = BigInt(x18); const whole = value / 10n ** 18n; const fraction = (value % 10n ** 18n).toString().padStart(18, '0');
+  return `${whole}.${fraction}`;
 }
