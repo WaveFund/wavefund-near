@@ -49,7 +49,7 @@ export function projectTidepoolDemo({ manifest, funding, near, capital, swap, ro
   check(manifest.funding?.deliveredAmount === delivered, 'the manifest and funding proof disagree on the delivered amount');
   check(BigInt(delivered) <= BigInt(sourceAmount) && BigInt(delivered) >= BigInt(uint(funding.minAmountOut, 'minimum out')), 'the delivered amount is outside the quoted bounds');
   // The saved signed quote paid this Safe directly (no virtualChainRecipient) and still verifies offline with Tidepool's
-  // own signing key through the existing runtime/tidepool/client.mjs. Nothing is re-requested or re-sent.
+  // quote-signing key through the existing runtime/tidepool/client.mjs. Nothing is re-requested or re-sent.
   const response = funding.status?.quoteResponse; const request = response?.quoteRequest;
   check(isObject(request) && same(request.recipient, safe) && request.recipientType === 'DESTINATION_CHAIN' && !Object.hasOwn(request, 'virtualChainRecipient'), 'the quote does not pay the Safe directly');
   check(request.amount === sourceAmount, 'the quote amount differs from the source amount');
@@ -57,13 +57,14 @@ export function projectTidepoolDemo({ manifest, funding, near, capital, swap, ro
   try { quote = validateTidepoolQuote(response, request, { now: Math.ceil(Date.parse(response.timestamp) / 1000) }); } catch { quote = null; }
   check(quote?.signatureVerified === true && quote.testnetOnly === true && quote.official1Click === false, 'the saved Tidepool quote signature or terms did not verify');
   check(funding.safeBalance?.before === '0' && funding.safeBalance?.delta === delivered && funding.safeBalance?.after === delivered, 'the Safe balance delta does not match the delivery');
-  // Native NEAR testnet settlement reported for this transfer, and its saved final transaction.
+  // Native NEAR testnet settlement reported for this transfer, verified separately from the quote by its own saved
+  // final on-chain result. It is deliberately not tied to the quote-signing key.
   check(isObject(near) && near.final_execution_status === 'FINAL' && isObject(near.transaction) && near.transaction.receiver_id === NEAR_RECEIVER, 'the NEAR settlement is not a final transaction to the Tidepool verifier');
+  check(isObject(near.status) && Object.hasOwn(near.status, 'SuccessValue'), 'the NEAR settlement did not succeed on-chain');
   const nearHash = near.transaction.hash; check(typeof nearHash === 'string' && NEAR_HASH.test(nearHash), 'the NEAR settlement hash is malformed');
   const reported = Array.isArray(funding.status?.swapDetails?.destinationChainTxHashes) ? funding.status.swapDetails.destinationChainTxHashes.map((item) => (typeof item === 'string' ? item : item?.hash)) : [];
   check(reported.includes(nearHash) && reported.some((item) => same(item, destinationTx)), 'the provider did not link the NEAR settlement and the Aurora delivery');
   check(typeof near.transaction.signer_id === 'string' && NEAR_ACCOUNT.test(near.transaction.signer_id), 'the NEAR signer is malformed');
-  check(near.transaction.public_key === TIDEPOOL.publicKey, "the NEAR settlement was not signed with Tidepool's key");
   // The delivered capital is the capital the strategy round prepared and executed.
   check(isObject(capital) && capital.chainId === AURORA_TESTNET && same(capital.safe, safe) && same(capital.engine, engine) && capital.fundedAmount === delivered && capital.sameSafeAndCapital === true, 'the strategy round did not use this Safe and capital');
   const swapTx = hash(capital.executionHash, 'execution hash');

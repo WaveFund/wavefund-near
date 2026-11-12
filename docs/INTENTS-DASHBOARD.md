@@ -88,7 +88,9 @@ Values it shows:
 - swap 149.61 USDC → 0.071692173391461052 test ETH;
 - round key `1313161555:0xba96…4a14:1`.
 
-The saved signed quote is re-verified offline with the existing `validateTidepoolQuote` (`runtime/tidepool/client.mjs`) and Tidepool's own signing key (`ed25519:U1Mu…iWY`, which also signed the NEAR settlement). It pays the Safe directly (`recipientType: DESTINATION_CHAIN`, no `virtualChainRecipient`). Nothing is re-requested or re-sent, and no client was rebuilt.
+The saved signed quote is re-verified offline with the existing `validateTidepoolQuote` (`runtime/tidepool/client.mjs`) and Tidepool's quote-signing key (`ed25519:U1Mu…iWY`). It pays the Safe directly (`recipientType: DESTINATION_CHAIN`, no `virtualChainRecipient`). Nothing is re-requested or re-sent, and no client was rebuilt.
+
+The NEAR settlement is verified separately, on-chain: a final, successful `execute_intents` transaction to `verifier.tidepool-sandbox.testnet`, which the provider links to the Aurora delivery. It is not tied to the quote-signing key.
 
 `GET /api/tidepool/demo/fresh-check` re-reads the public receipts on demand through the existing `readTidepoolFundingProof`:
 - it is cached for a minute and labelled `fresh-rpc-read` with its timestamp;
