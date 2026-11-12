@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { apiUrl, decodeState, DemoState, phaseIndex, returnPercent, shortAddress, units } from "@/lib/state";
 import { AppShell } from "@/components/AppShell";
@@ -100,6 +101,7 @@ export default function Dashboard() {
           <span><Icon name="safe" />Owner keeps custody</span>
           <span><Icon name="chart" />Market selects</span>
           <span><Icon name="receipt" />Every step on-chain</span>
+          <Link href="/record" className="hero-record-link"><Icon name="trophy" />Testnet track record<Icon name="arrow" /></Link>
         </div>
       </div>
       <div className="card round-card">

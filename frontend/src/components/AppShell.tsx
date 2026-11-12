@@ -12,6 +12,7 @@ const NAV: Array<{ href: string; label: string; step: string; icon: IconName; hi
   { href: "/fund", label: "Fund", step: "01", icon: "fund", hint: "Fund your Trading Safe through NEAR Intents" },
   { href: "/", label: "Decide", step: "02", icon: "chart", hint: "Proposals, forecasts, execution and settlement" },
   { href: "/manager", label: "Manage", step: "03", icon: "sliders", hint: "Owner-reviewed Safe actions" },
+  { href: "/record", label: "Record", step: "04", icon: "trophy", hint: "Performance reputation and published testnet rounds" },
 ];
 
 export function WaveMark() {
