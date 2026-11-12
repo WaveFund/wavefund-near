@@ -20,6 +20,7 @@ test('the Tidepool demonstration validates as saved community-testnet history wi
   assert.equal(checked.demo.funding.bridgeCost, '520000');
   assert.equal(checked.demo.nearSettlement.url, 'https://testnet.nearblocks.io/txns/93tnePQQPVsRDV4xFiQ4eeEYFUZWbQEr1YQXANatCVYC');
   assert.ok(checked.demo.strategy.roundSlug.includes(TIDEPOOL_ENGINE));
+  assert.deepEqual([checked.demo.quote.recipient, checked.demo.quote.virtualChainRecipient], [checked.demo.contracts.safe, null], 'the Safe is the direct recipient');
   assert.equal(nearTestnetTxUrl('javascript:alert(1)'), null);
 });
 
@@ -31,6 +32,8 @@ test('mainnet and Tidepool records cannot be mixed, and wrong or missing values 
     (d) => { d.networks.source.chainId = 42161; }, (d) => { d.funding.bridgeCost = '0'; }, (d) => { d.contracts.safe = 'javascript:alert(1)'; },
     (d) => { delete d.funding.deliveredAmount; }, (d) => { d.strategy.roundSlug = '1313161555-0x825b31dbc1af25b230d31caf5210c2b5a8fe22af-1'; },
     (d) => { d.nearSettlement.hash = '<img>'; },
+    (d) => { d.quote.signatureVerified = false; }, (d) => { d.quote.virtualChainRecipient = 'safe.near'; },
+    (d) => { d.quote.recipient = '0x781430393ec48f5c2af78be63ae273875b180ad1'; }, (d) => { delete d.quote; },
   ];
   for (const mutate of cases) { const copy = structuredClone(base); mutate(copy); assert.equal(validateTidepoolDemo(copy).ok, false, mutate.toString()); }
   // The production 1Click model rejects a testnet destination and a Tidepool-shaped record never classifies as verified.

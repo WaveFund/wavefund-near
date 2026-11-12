@@ -6,6 +6,7 @@ export type TidepoolDemo = {
   funding: { sourceAmount: string; deliveredAmount: string; bridgeCost: string; sourceTransaction: { hash: string; blockNumber: string | null }; destinationTransaction: { hash: string; blockNumber: string | null }; safeBalance: { before: string | null; after: string | null } };
   provider: { name: string; reportedStatus: string | null; reportedAt: string | null };
   nearSettlement: { hash: string; receiver: string; url: string | null };
+  quote: { signatureVerified: true; signer: string; recipient: string; virtualChainRecipient: null };
   strategy: { roundId: string | null; roundSlug: string };
   swap: { hash: string; blockNumber: string | null; stableIn: string; assetOut: string };
 };

@@ -34,6 +34,8 @@ export function TidepoolFunding({ demo, fresh, freshing, onFresh, now }: { demo:
   return <div className="stack">
     <DescriptionList items={[
       { label: "Source · Arbitrum Sepolia", value: <><b>{usdc(demo.funding.sourceAmount)} test USDC</b><Tx chainId={ARBITRUM_SEPOLIA} hash={demo.funding.sourceTransaction.hash} /></> },
+      { label: "Signed quote", hint: "verified offline with Tidepool's own key", value: <><Badge tone="success"><Icon name="check" />Signature verified</Badge><CopyText value={demo.quote.signer} label="Tidepool signing key" /></> },
+      { label: "Recipient", hint: "the Safe directly · no virtualChainRecipient", value: <Address value={demo.quote.recipient} chainId={AURORA_TESTNET} label="recipient Safe" live /> },
       { label: "Relayer · Tidepool", hint: "community relayer, not official NEAR Intents", value: <><EvidenceBadge kind="provider" />{demo.provider.reportedStatus ?? <span className="unavailable">No status</span>}</> },
       { label: "Settlement · NEAR testnet", hint: `execute_intents at ${demo.nearSettlement.receiver}`, value: <span className="tx-inline"><CopyText value={demo.nearSettlement.hash} label="NEAR transaction" />{demo.nearSettlement.url ? <a className="explorer-link" href={demo.nearSettlement.url} target="_blank" rel="noopener noreferrer" title="Open in NEAR testnet explorer"><Icon name="external" /><span className="sr-only">Open in explorer</span></a> : null}</span> },
       { label: "Delivered · Aurora testnet Safe", value: <><b>{usdc(demo.funding.deliveredAmount)} test USDC</b><Tx chainId={AURORA_TESTNET} hash={demo.funding.destinationTransaction.hash} /></> },

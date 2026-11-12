@@ -25,6 +25,10 @@ export function validateTidepoolDemo(input) {
   if ((BigInt(f.sourceAmount) - BigInt(f.deliveredAmount)).toString() !== f.bridgeCost) return reject('The bridge cost does not match the source and delivered amounts.');
   if (![f.sourceTransaction?.hash, f.destinationTransaction?.hash, w.hash].every(isTxHash) || !NEAR_HASH.test(n.hash ?? '') || !NEAR_ACCOUNT.test(n.receiver ?? '')) return reject('A Tidepool transaction reference is malformed.');
   if (typeof st.roundSlug !== 'string' || !SLUG.test(st.roundSlug) || !st.roundSlug.includes(lower(c.engine))) return reject('The strategy round is not identified by network + engine + round id.');
+  const q = input.quote ?? {};
+  if (q.signatureVerified !== true || q.virtualChainRecipient !== null || !isAddress(q.recipient) || lower(q.recipient) !== lower(c.safe) || typeof q.signer !== 'string' || !/^ed25519:[1-9A-HJ-NP-Za-km-z]{32,64}$/.test(q.signer)) {
+    return reject('The Tidepool quote is not a verified quote paying the Safe directly.');
+  }
   return { ok: true, demo: {
     evidence: input.evidence === 'saved-independently-verified' ? 'saved-independently-verified' : 'unlabelled', official1Click: false,
     method: safeText(input.method, 200), note: safeText(input.note, 240),
@@ -36,6 +40,7 @@ export function validateTidepoolDemo(input) {
       safeBalance: { before: isIntegerString(f.safeBalance?.before) ? f.safeBalance.before : null, after: isIntegerString(f.safeBalance?.after) ? f.safeBalance.after : null } },
     provider: { name: safeText(input.provider?.name, 60) ?? 'Tidepool community relayer', reportedStatus: safeText(input.provider?.reportedStatus, 20), reportedAt: safeText(input.provider?.reportedAt, 40) },
     nearSettlement: { hash: n.hash, receiver: n.receiver, url: nearTestnetTxUrl(n.hash) },
+    quote: { signatureVerified: true, signer: q.signer, recipient: lower(q.recipient), virtualChainRecipient: null },
     strategy: { roundId: safeText(st.roundId, 8), roundSlug: st.roundSlug },
     swap: { hash: lower(w.hash), blockNumber: isIntegerString(w.blockNumber) ? w.blockNumber : null, stableIn: w.stableIn, assetOut: w.assetOut },
   } };
