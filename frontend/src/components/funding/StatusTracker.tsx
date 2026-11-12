@@ -14,7 +14,7 @@ const asRecord = (value: unknown): FundingRecordView | null => (value && typeof 
 
 function outcomeFor(display: FundingDisplay): { title: string; state: TimelineState; detail: string } {
   switch (display.bucket) {
-    case "delivered": return { title: display.verified ? "Delivery verified on Aurora" : "Delivery evidence complete", state: "done", detail: display.verified ? "Bound, final Aurora receipt to your Safe." : "Complete evidence, but fixture data, not live." };
+    case "delivered": return { title: display.verified ? "Delivery verified on Aurora" : "Delivery evidence complete", state: "done", detail: display.verified ? "Bound, final Aurora receipt to the Safe." : "Complete evidence, but fixture data, not live." };
     case "refunded": return { title: "Refund recorded", state: "done", detail: display.verified ? "Verified refund receipt to the manager wallet." : "Fixture refund evidence." };
     case "refund-partial": return { title: "Partial refund · needs reconciliation", state: "halted", detail: "The actual returned amount is shown below." };
     case "refund-pending": return { title: "Refund receipt not yet verified", state: "halted", detail: "Not shown as refunded until verified." };
@@ -66,7 +66,7 @@ function Evidence({ kind, view, config, live }: { kind: "delivery" | "refund"; v
   const rows: Array<{ label: string; ok: boolean; value: ReactNode }> = [
     { label: "Network", ok: !failures.has("WRONG_NETWORK"), value: networkName(chainId) },
     { label: "Receipt", ok: !failures.has("TRANSACTION_MISSING"), value: tx ? <span className="tx-inline"><CopyText value={tx} label="receipt" /><ExplorerLink chainId={chainId} kind="tx" value={tx} enabled={live} /></span> : <span className="unavailable">Unavailable</span> },
-    { label: kind === "delivery" ? "Recipient (your Safe)" : "Recipient (manager wallet)", ok: !failures.has("WRONG_RECIPIENT"), value: <Address value={item.recipient} chainId={chainId} label="recipient" live={live} /> },
+    { label: kind === "delivery" ? "Recipient (the Safe)" : "Recipient (manager wallet)", ok: !failures.has("WRONG_RECIPIENT"), value: <Address value={item.recipient} chainId={chainId} label="recipient" live={live} /> },
     { label: "Asset", ok: !failures.has("WRONG_TOKEN"), value: <Address value={item.token} chainId={chainId} label="token" live={live} /> },
     { label: kind === "delivery" ? "Amount vs signed minimum" : "Amount vs amount sent", ok: !["AMOUNT_MISSING", "BELOW_MINIMUM", "REFUND_EXCEEDS_INPUT"].some((code) => failures.has(code)),
       value: <><Amount raw={item.amount} decimals={decimals} symbol="USDC" /><small className="subtle">&nbsp;{kind === "delivery" ? `min ${formatUnits(view.quote?.minAmountOut, request?.destination?.decimals) ?? "?"}` : `${percentOf(item.amount, request?.amountIn) ?? "—"} of sent`}</small></> },

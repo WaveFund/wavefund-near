@@ -72,7 +72,7 @@ export function DepositForm({ config, live, route, onRoute, amountText, onAmount
       </div>
     </div>
     <div className="receive-box">
-      <div><span>Your Trading Safe receives</span><b className="tnum">{preview ? <Amount raw={preview.amounts.amountOut} decimals={route.destination.decimals} symbol={route.destination.symbol ?? "token"} /> : <span className="subtle">Get a quote to see the amount</span>}</b></div>
+      <div><span>The Trading Safe receives</span><b className="tnum">{preview ? <Amount raw={preview.amounts.amountOut} decimals={route.destination.decimals} symbol={route.destination.symbol ?? "token"} /> : <span className="subtle">Get a quote to see the amount</span>}</b></div>
       <span className="receive-meta"><i className="dot mainnet" />Aurora mainnet · via NEAR Intents 1Click</span>
     </div>
 

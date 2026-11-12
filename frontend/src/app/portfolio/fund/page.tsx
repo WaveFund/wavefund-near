@@ -8,6 +8,7 @@ import Link from "next/link";
 import { DepositForm, ReadinessCard, ScenarioPicker, TreasurySummary, amountValidation } from "@/components/funding/FundingPanels";
 import { FreshCheckRow, TidepoolEvidence, TidepoolFundingSteps } from "@/components/tidepool/TidepoolParts";
 import { Chip } from "@/components/arena/parts";
+import { PageHead } from "@/components/v2";
 import { Address, Icon, useNow } from "@/components/funding/primitives";
 import { loadTidepoolDemo, runTidepoolFreshCheck } from "@/lib/record/loader";
 import type { FreshCheck, TidepoolDemo } from "@/lib/tidepool/model.mjs";
@@ -215,13 +216,10 @@ export default function FundPage() {
     </form> : null;
 
   return <AppShell source={source}>
-    <Link className="breadcrumb" href={lane === "tidepool" ? "/safe?safe=tidepool" : "/safe"}><Icon name="chevron" />My Safe</Link>
-    <header className="round-hero">
-      <h1>Fund a Safe</h1>
-      <p className="lede">Money reaches the manager&apos;s Safe in four steps: quote, source deposit, transit and verified delivery. Funding and readiness always refer to the same Safe, network and token.</p>
-    </header>
+    <Link className="breadcrumb" href="/portfolio?tab=funding"><Icon name="chevron" />Portfolio</Link>
+    <PageHead eyebrow="Funding preview" title="Funding" line={laneLine} />
     <div className="section-head">
-      <div><SegmentedControl label="Funding source" options={laneOptions} value={lane} onChange={selectLane} /><p style={{ marginTop: 10 }}>{laneLine}</p></div>
+      <SegmentedControl label="Funding source" options={laneOptions} value={lane} onChange={selectLane} />
     </div>
 
     {config && phase === "ready" && lane !== "tidepool" ? <Card className="summary-card"><TreasurySummary config={config} live={liveConfig} />

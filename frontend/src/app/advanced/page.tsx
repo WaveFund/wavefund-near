@@ -11,7 +11,7 @@ type Prepared = { action: string; unsignedOnly: boolean; inspectedBlock: string;
 
 const ACTIONS: Array<{ id: string; label: string; icon: IconName; hint: string }> = [
   { id: "policy", label: "Slippage policy", icon: "sliders", hint: "Set the module's maximum swap slippage." },
-  { id: "enable", label: "Enable module", icon: "bolt", hint: "Enable the verified Trading Safe module on your Safe." },
+  { id: "enable", label: "Enable module", icon: "bolt", hint: "Enable the verified Trading Safe module on the Safe." },
   { id: "seed", label: "Fund sponsorship", icon: "layers", hint: "Move USDC from the Safe into the forecasting sponsor reserve." },
   { id: "withdraw-seed", label: "Return sponsorship", icon: "refund", hint: "Return unallocated sponsorship to the Safe." },
   { id: "authorize", label: "Authorize round", icon: "check", hint: "Approve exact timing and payout bounds for the next round." },
@@ -53,7 +53,7 @@ export default function ManagerPage() {
   return <AppShell source={aurora ? { label: "Aurora testnet", tone: "testnet", detail: "read-only" } : { label: "Local simulation", tone: "local", detail: state ? `block ${state.blockNumber}` : loading ? "connecting" : "offline", status: state ? "ok" : loading ? "pending" : "off" }}>
     <PageHeader title="Advanced · owner tools"
       breadcrumb={<Link className="breadcrumb" href="/portfolio?tab=permissions"><Icon name="chevron" />Portfolio</Link>}
-      description="For the Safe owner. Inspect the deployed Safe and module, then prepare one owner action as an unsigned Safe transaction to review and sign in your own Safe. Nothing is signed or sent here."
+      description="For the demo Safe's owner. Inspect the Safe and module, then prepare one owner action as an unsigned Safe transaction to review and sign in the Safe itself. Nothing is signed or sent here."
       meta={<><Badge tone="warning">Unsigned only</Badge><span>Not part of the everyday flow · no automatic signatures or transfers</span></>}
       actions={<><Button icon="wallet" disabled={!state} onClick={() => void connect()}>Check wallet owner</Button><Button variant="primary" icon="shield" loading={loading} onClick={() => void refresh()}>Refresh checks</Button></>} />
 
