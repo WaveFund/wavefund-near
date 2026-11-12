@@ -169,4 +169,13 @@ Verified on 2026-11-12, driven through the real dashboard in Playwright:
 - `/manager` loaded the live module and oracle state.
 - `/fund` showed a real provider-signed, signature-verified 1Click dry quote to the trusted mainnet funding Safe (25 USDC → 24.9952, signed minimum 24.745248).
 
-A container launcher (Dockerfile, plus `up.sh`/`down.sh` that sync the working tree, install with scripts disabled, fetch pinned sources, compile and start) was used locally from the git-ignored `.run/e2e/`. Adding it to the repository is a proposal for whoever owns `docs/LOCAL-DEMO.md` and shared tooling.
+### One command
+
+[`scripts/docker-demo/`](../scripts/docker-demo/README.md) wraps the steps above. It needs only a running Docker and `bash`, `git`, `rsync` and `curl`:
+
+```sh
+bash scripts/docker-demo/up.sh          # --fresh for a new chain, --no-funding-preview for no provider requests
+bash scripts/docker-demo/down.sh
+```
+
+It syncs tracked and new non-ignored files into the git-ignored `.run/docker-demo/workspace`, then installs with lifecycle scripts disabled, fetches checksum-pinned sources and compiles, all in digest-pinned containers. It starts the demo with `WAVEFUND_CONTAINER=1 WAVEFUND_FUNDING=live-preview` and publishes only `127.0.0.1:3000/3001`. No credentials or env files are mounted. The owner of `docs/LOCAL-DEMO.md` may want to link it from there.
