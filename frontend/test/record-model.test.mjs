@@ -60,6 +60,11 @@ test('numbers, missing fields, wrong networks and odd codes never become zero', 
   const numeric = validateReputationBoard(await board({ conservative: () => ({ ...reading('0', '0', '0', '0', '0'), samples: 0, score: 0 }) }));
   const conservative = numeric.board.agents.find((agent) => agent.name === 'Conservative');
   assert.deepEqual([conservative.status, conservative.code, conservative.reputation], ['unavailable', 'REPUTATION_INVALID_RESPONSE', null]);
+  // Counts alone as JSON numbers (score still a string) must also be rejected, not rendered as 0/1.
+  for (const key of ['samples', 'negative', 'blockNumber']) {
+    const only = validateReputationBoard(await board({ momentum: () => ({ ...reading('-1', '1', '0', '1', '0'), [key]: key === 'blockNumber' ? 277300000 : Number(reading('-1', '1', '0', '1', '0')[key]) }) }));
+    assert.equal(only.board.agents.find((agent) => agent.name === 'Momentum').code, 'REPUTATION_INVALID_RESPONSE', key);
+  }
   const missing = validateReputationBoard(await board({ momentum: () => { const value = reading('-1', '1', '0', '1', '0'); delete value.negative; return value; } }));
   assert.equal(missing.board.agents.find((agent) => agent.name === 'Momentum').reputation, null);
   const foreign = validateReputationBoard(await board({ momentum: () => ({ ...reading('-1', '1', '0', '1', '0'), chainId: 1313161554 }) }));
