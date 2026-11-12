@@ -1,0 +1,11 @@
+{
+  "runtimeTestsPassed": 184,
+  "runtimeTestsFailed": 0,
+  "tidepoolBridgeTestsPassed": 3,
+  "tidepoolMutationsCaught": 7,
+  "restoredMutationBaselinePassed": true,
+  "solidity": "Existing 451-pass baseline; no Solidity source changed or full suite repeated for this integration.",
+  "judgeReadOnlyChecksBeforeStrategyCompletion": 6,
+  "judgeRequiredChecksPassed": 7,
+  "optionalMainnetPreview": "Timed out in one combined run; separate opt-in check, historical result preserved."
+}

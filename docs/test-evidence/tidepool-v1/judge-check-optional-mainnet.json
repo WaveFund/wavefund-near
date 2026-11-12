@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "mode": "public-read-only",
+  "paidInference": false,
+  "fundsMoved": false,
+  "checks": [
+    {
+      "name": "live-aurora-outcome-reputation",
+      "status": "passed",
+      "observation": {
+        "schemaVersion": 1,
+        "chainId": 1313161555,
+        "contract": "0xac9c56f1c032f74a9e84703602894315df2d9488",
+        "agent": "0x8b6af0b1738b941c0c7dd4deec6fabee3447888f",
+        "blockNumber": "277274504",
+        "blockTimestamp": "1794434857",
+        "samples": "1",
+        "positive": "0",
+        "negative": "1",
+        "flat": "0",
+        "score": "-1",
+        "hasEvaluatedStrategies": true,
+        "metric": "absolute-marked-return-points-v1",
+        "evidence": "trusted-rpc-pinned-contract-reads",
+        "scope": "Selected, executed and settled strategies only; not lending creditworthiness."
+      }
+    },
+    {
+      "name": "live-tidepool-outcome-reputation",
+      "status": "passed",
+      "observation": {
+        "schemaVersion": 1,
+        "chainId": 1313161555,
+        "contract": "0xfa71a652547284d1034ae6813ed4a882cb354e92",
+        "agent": "0x8b6af0b1738b941c0c7dd4deec6fabee3447888f",
+        "blockNumber": "277274506",
+        "blockTimestamp": "1794434858",
+        "samples": "1",
+        "positive": "0",
+        "negative": "1",
+        "flat": "0",
+        "score": "-1",
+        "hasEvaluatedStrategies": true,
+        "metric": "absolute-marked-return-points-v1",
+        "evidence": "trusted-rpc-pinned-contract-reads",
+        "scope": "Selected, executed and settled strategies only; not lending creditworthiness."
+      }
+    },
+    {
+      "name": "tidepool-signed-dry-quote",
+      "status": "passed",
+      "provider": "Tidepool community testnet, not official production 1Click",
+      "signatureVerified": true,
+      "safe": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11",
+      "amountIn": "200000000",
+      "minAmountOut": "197485200",
+      "expiresAt": 1794435462,
+      "deliveryProven": false,
+      "note": "A dry quote proves quoting, not funding or strategy execution."
+    },
+    {
+      "name": "official-1click-signed-dry-quote",
+      "status": "unavailable",
+      "code": "TIMEOUT"
+    },
+    {
+      "name": "live-tidepool-delivery-receipts",
+      "status": "passed",
+      "provider": "Tidepool community testnet",
+      "deliveryProven": true,
+      "source": {
+        "chainId": 421614,
+        "transactionHash": "0xb56675db59f1eda47a2b0998cb4ca28689a83a1e66f2723215aba29a31fd5a69",
+        "blockNumber": "328309683",
+        "amount": "200000000"
+      },
+      "destination": {
+        "chainId": 1313161555,
+        "transactionHash": "0x28999ced84c15e9a7bc53bfe0ea8d368d6a332455cfde3bd8e741d01ce51c45b",
+        "blockNumber": "277272331",
+        "safe": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11",
+        "amount": "199480000"
+      }
+    },
+    {
+      "name": "live-near-testnet-execute-intents",
+      "status": "passed",
+      "network": "NEAR testnet",
+      "provider": "Tidepool community verifier",
+      "transactionHash": "93tnePQQPVsRDV4xFiQ4eeEYFUZWbQEr1YQXANatCVYC",
+      "receiver": "verifier.tidepool-sandbox.testnet",
+      "method": "execute_intents",
+      "final": true
+    },
+    {
+      "name": "live-tidepool-strategy-and-redemptions",
+      "status": "passed",
+      "network": "Aurora testnet",
+      "engine": "0xba96a117f4de33c38df72002651f11024ed14a14",
+      "roundId": "1",
+      "winner": "3",
+      "allocationBps": 7500,
+      "investmentSwapTransaction": "0x4dc76edba6d01cb0eacb6bcd8538ce9d5071b4e24d2872a8c4ed13da61a2de40",
+      "pair": "0x218F2849E4401c194bf9068edf41Fd3a8F643a1b",
+      "redeemedForecasters": 4,
+      "proposers": "four genuine NEAR AI calls",
+      "forecasters": "four scripted test actors",
+      "scope": "Test assets, not predictive alpha"
+    },
+    {
+      "name": "saved-round-evidence",
+      "status": "passed",
+      "source": "saved independent public-chain evidence; not a fresh execution",
+      "realAgents": {
+        "round": "8",
+        "forecasters": "genuine, all abstained",
+        "winner": "Hold",
+        "fundingPayouts": 4
+      },
+      "hybrid": {
+        "round": "7",
+        "proposers": "genuine",
+        "forecasters": "scripted",
+        "fills": 4
+      }
+    }
+  ]
+}

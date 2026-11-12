@@ -2,3 +2,4 @@ export { FundingError, FUNDING_STATES, fundingHash, configuration } from './sche
 export { createFundingStore } from './store.mjs';
 export { createFundingService } from './service.mjs';
 export { createAuroraFundingSnapshotReader } from './aurora-snapshot.mjs';
+export { createFundingDemoOperator } from './demo-operator.mjs';

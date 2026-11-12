@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "chainId": 1313161555,
+  "contracts": {
+    "poolManager": "0xfaf156a5a6c36b1b280f64d420869b06e4c98f80",
+    "router": "0x26ec2aFBDFdFB972F106100A3deaE5887353d9B9",
+    "verifier": "0x6Cd59830AAD978446e6cc7f6cc173aF7656Fb917",
+    "hookDeployer": "0xcdfe26b5b6d41ff513385aea7217380401240154",
+    "oracle": "0x4c92a21c56b5fcb453ec7c5ffd0117768dca5e46",
+    "stable": "0x38d81431b9f76d9699af7517040d5221d9dea252",
+    "asset": "0x8d52924ccf3648f575e92ac5b1be72f2a1a1dc5a",
+    "safe": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11",
+    "tokens": "0x8f32992dfdc09de738972ce2d4dc5e37eec897f0",
+    "registry": "0x6d0edb3c3ded534d8d08cc6a6523cee6fce67d40",
+    "market": "0x34d5c5f628e854f54c8b1ff93f9802b871a11834",
+    "engine": "0xba96a117f4de33c38df72002651f11024ed14a14",
+    "hook": "0xe4e94633950a15DfAb70f9D75D4546025f9e0ac0",
+    "tracker": "0xc2c389f3abd8c55d78a2400a6918b2ed02bf937d",
+    "module": "0xb32cba22032f69f172c7a8e363d4975023543fcf",
+    "reputation": "0xfa71a652547284d1034ae6813ed4a882cb354e92"
+  },
+  "integrations": {
+    "fundingProvider": "tidepool-community-testnet",
+    "verifier": "0x6Cd59830AAD978446e6cc7f6cc173aF7656Fb917",
+    "investmentPair": "0x218F2849E4401c194bf9068edf41Fd3a8F643a1b"
+  },
+  "scope": "Separate Tidepool community testnet integration. Worthless test assets; original deployment preserved.",
+  "funding": {
+    "deliveryProven": true,
+    "sourceChainId": 421614,
+    "destinationChainId": 1313161555,
+    "sourceTransactionHash": "0xb56675db59f1eda47a2b0998cb4ca28689a83a1e66f2723215aba29a31fd5a69",
+    "destinationTransactionHash": "0x28999ced84c15e9a7bc53bfe0ea8d368d6a332455cfde3bd8e741d01ce51c45b",
+    "deliveredAmount": "199480000",
+    "method": "provider-linked canonical receipts from trusted RPCs; not a trustless bridge proof"
+  },
+  "demonstration": {
+    "roundId": "1",
+    "selectedProposalId": "3",
+    "targetAssetBps": 7500,
+    "genuineModelCalls": 4,
+    "scriptedForecasters": 4,
+    "investmentSwapTransactionHash": "0x4dc76edba6d01cb0eacb6bcd8538ce9d5071b4e24d2872a8c4ed13da61a2de40",
+    "settled": true,
+    "redemptionsComplete": true,
+    "returnFactorX18": "993541889635073190",
+    "reputationScore": "-1"
+  }
+}

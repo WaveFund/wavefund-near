@@ -23,6 +23,7 @@ p.add_argument('--env', type=Path, default=Path('.env.agents'))
 p.add_argument('--artifacts', type=Path, default=Path('out'))
 p.add_argument('--extra-artifacts', type=Path)
 p.add_argument('--run-inference', action='store_true')
+p.add_argument('--profile', choices=['classic', 'hybrid', 'swarm'], default='classic')
 p.add_argument('--context', default='colima-wavefund')
 p.add_argument('--container', default='wavefund-build-check')
 a = p.parse_args()
@@ -38,14 +39,20 @@ confirmed = {e['hash'] for e in events if e.get('stage') == 'confirmed'}
 pending = [e['hash'] for e in events if e.get('stage') == 'prepared' and e['hash'] not in confirmed]
 if pending:
     sys.exit('Unresolved transaction: inspect receipts before continuing: ' + ', '.join(pending))
-config = dict(phase=a.phase, events=events)
+hybrid = a.profile == 'hybrid'
+swarm = a.profile == 'swarm'
+expanded = hybrid or swarm
+actor_names = ['Conservative', 'Balanced', 'Momentum', 'HighBeta', 'Quant', 'Guardian', 'FeeAnalyst', 'StressAnalyst'] if expanded else ['Momentum', 'Conservative', 'Quant', 'Guardian']
+config = dict(phase=a.phase, events=events, hybrid=hybrid, swarm=swarm, actorNames=actor_names)
 if a.phase == 'plan':
     if not a.run_inference:
-        sys.exit('Use --run-inference to explicitly spend credits on at most four model calls.')
+        sys.exit('Use --run-inference to explicitly spend credits on at most eight model calls for swarm, four otherwise.')
     if any(e.get('stage') == 'inference-request' for e in events):
         sys.exit('Inference already attempted in this session. No automatic paid retry.')
     snapshot = json.loads((a.directory / 'snapshot.json').read_text())
     config.update(snapshot=snapshot['snapshot'], market=snapshot['market'])
+    if expanded or snapshot.get('researchContext'):
+        config['researchContext'] = snapshot['researchContext']
     environment = {}
     for line in a.env.read_text().splitlines():
         key, sep, value = line.partition('=')
@@ -72,16 +79,22 @@ else:
         wallet = wallet[0]
     config['privateKey'] = wallet['private_key']
     del wallet
-    if not a.actors.exists():
+    keys = json.loads(a.actors.read_text()) if a.actors.exists() else {}
+    missing = [name for name in actor_names if name not in keys]
+    if missing:
         if a.phase != 'prepare':
             sys.exit('Prepare the dedicated test-agent wallets first.')
         a.actors.parent.mkdir(parents=True, exist_ok=True)
         order = 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141
-        keys = {name: '0x' + (secrets.randbelow(order - 1) + 1).to_bytes(32, 'big').hex()
-                for name in ['Momentum', 'Conservative', 'Quant', 'Guardian']}
-        fd = os.open(a.actors, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        for name in missing:
+            keys[name] = '0x' + (secrets.randbelow(order - 1) + 1).to_bytes(32, 'big').hex()
+        temporary = a.actors.with_suffix('.tmp')
+        fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         with os.fdopen(fd, 'w') as file:
             json.dump(keys, file)
+            file.flush()
+            os.fsync(file.fileno())
+        temporary.replace(a.actors)
     if a.actors.stat().st_mode & 0o077:
         sys.exit('Test-agent key file must be owner-only (chmod 600).')
     config['actorKeys'] = json.loads(a.actors.read_text())

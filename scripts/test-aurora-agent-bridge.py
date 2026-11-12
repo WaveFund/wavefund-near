@@ -1,6 +1,7 @@
 """Offline tests: no real wallet, model request or Docker daemon."""
 import fcntl
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -62,6 +63,22 @@ class AgentBridgeSafety(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn('Unresolved transaction', result.stderr)
         self.assertNotIn('invalid choice', result.stderr)
+
+    def test_swarm_selects_eight_actors_without_scripted_forecasters(self):
+        (self.root / 'snapshot.json').write_text(json.dumps({'snapshot': {}, 'market': {}, 'researchContext': {'evidenceId': 'fixture'}}))
+        environment_file = self.root / 'fake.env'
+        environment_file.write_text('NEARAI_API_KEY=unit-test-placeholder\nWAVEFUND_AGENT_MODEL=unit-test-model\n')
+        executable = self.root / 'docker'
+        executable.write_text('#!/usr/bin/env python3\nimport sys,json\nc=json.loads(sys.stdin.readline())\nprint(json.dumps({"stage":"plan","plan":{"swarm":c["swarm"],"hybrid":c["hybrid"],"actors":c["actorNames"],"research":c["researchContext"]}}))\n')
+        executable.chmod(0o700)
+        environment = {**os.environ, 'PATH': str(self.root) + os.pathsep + os.environ['PATH']}
+        result = subprocess.run(self.command + ['--profile', 'swarm', '--run-inference', '--env', str(environment_file)], capture_output=True, text=True, timeout=10, env=environment)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        plan = json.loads((self.root / 'plan.json').read_text())
+        self.assertTrue(plan['swarm'])
+        self.assertFalse(plan['hybrid'])
+        self.assertEqual(len(plan['actors']), 8)
+        self.assertEqual(plan['research']['evidenceId'], 'fixture')
 
 
 if __name__ == '__main__':

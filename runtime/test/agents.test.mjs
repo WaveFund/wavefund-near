@@ -92,8 +92,22 @@ test('truncated answers, tool calls, markdown and oversize responses fail closed
   }
 });
 test('inference timeout is bounded and does not retry', async () => {
-  const mock = await mockProvider(async (req, res) => { await new Promise((resolve) => setTimeout(resolve, 80)); answer(res, {}); }, { timeoutMs: 20 });
-  try { await assert.rejects(mock.provider.complete({ system: 'test', context: {} }), /timed-out/); assert.equal(mock.requests.length, 1); } finally { await mock.close(); }
+  // Count transport invocations directly: on a loaded runner a 20ms HTTP deadline
+  // can expire before the loopback server sees the request, legitimately yielding
+  // zero received requests. That is not an agent retry or provider failure.
+  let requests = 0; let aborted = false;
+  const provider = createProvider({ mode: 'local', model: 'timeout-test', endpoint: 'http://127.0.0.1:11434/v1/chat/completions' }, {
+    timeoutMs: 20,
+    fetchImpl: async (_url, { signal }) => {
+      requests++;
+      return new Promise((_resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('Timeout was not enforced')), 1000);
+        signal.addEventListener('abort', () => { aborted = true; clearTimeout(timer); reject(signal.reason); }, { once: true });
+      });
+    },
+  });
+  await assert.rejects(provider.complete({ system: 'test', context: {} }), /timed-out/);
+  assert.equal(requests, 1); assert.equal(aborted, true);
 });
 
 test('four independent HTTP decisions are validated, hashed and reflect changed inputs', async () => {

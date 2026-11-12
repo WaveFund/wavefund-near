@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "chainId": 1313161555,
+  "scope": "Tidepool-funded demo; absolute marked-return points",
+  "contracts": {
+    "reputation": "0xfa71a652547284d1034ae6813ed4a882cb354e92",
+    "engine": "0xba96a117f4de33c38df72002651f11024ed14a14",
+    "tracker": "0xc2c389f3abd8c55d78a2400a6918b2ed02bf937d"
+  },
+  "runtimeHash": "0x1a80c5a1051b93d4e96d21de0315ab9a885f2969afb39625b7ec44c5f19c08d9",
+  "immutableMaskedRuntimeMatches": true
+}

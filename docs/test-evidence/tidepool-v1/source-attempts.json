@@ -1,0 +1,46 @@
+{
+  "scope": "All attempts used nonce zero, same deposit and exact amount. Only the final candidate mined; no duplicate principal transfer. Signed bytes are deliberately excluded.",
+  "attempts": [
+    {
+      "journal": "fund.jsonl",
+      "hash": "0x55b570e316781629842072c204069360bffcb8f76ceb9256e63df7cf0a8a2db1",
+      "nonce": 0,
+      "depositAddress": "0x0e54Cf33cEBBB71c4531C762f14E27bC29753428",
+      "amount": "200000000",
+      "gasPrice": null,
+      "sourceConfirmed": false,
+      "failure": {
+        "stage": "failed",
+        "reason": "Missing or invalid parameters.\nDouble check you have provided the correct parameters."
+      }
+    },
+    {
+      "journal": "fund-recovery.jsonl",
+      "hash": "0xa8b0e0e26fc0ef5f016dbcb355a2465c90c2bc71fa41a685f7a51b1b965654c4",
+      "nonce": 0,
+      "depositAddress": "0x0e54Cf33cEBBB71c4531C762f14E27bC29753428",
+      "amount": "200000000",
+      "gasPrice": "20052000",
+      "sourceConfirmed": false,
+      "failure": {
+        "stage": "failed",
+        "reason": "Missing or invalid parameters.\nDouble check you have provided the correct parameters.",
+        "details": "max fee per gas less than block base fee: maxFeePerGas: 20052000 baseFee: 20058000"
+      }
+    },
+    {
+      "journal": "fund-recovery2.jsonl",
+      "hash": "0xb56675db59f1eda47a2b0998cb4ca28689a83a1e66f2723215aba29a31fd5a69",
+      "nonce": 0,
+      "depositAddress": "0x0e54Cf33cEBBB71c4531C762f14E27bC29753428",
+      "amount": "200000000",
+      "gasPrice": "40000000",
+      "sourceConfirmed": true,
+      "failure": {
+        "stage": "failed",
+        "reason": "missing delivery hash",
+        "details": null
+      }
+    }
+  ]
+}

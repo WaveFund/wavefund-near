@@ -1,6 +1,37 @@
 # Deliberate product testing — 10 November 2026
 
-## Published source boundary — 11 November
+## Latest result — round 7, 11 November
+
+The current runner supports `--profile hybrid`: four genuine NEAR AI proposer
+calls with explicit exposure mandates, enriched Coinbase/Kraken research inputs,
+and four **scripted** forecasters. This selectively implemented mode is separate
+from the old parked eight-real-agent experiment; that branch was not merged wholesale.
+
+Round 7 completed on Aurora testnet. Real AI proposals were 5%, 45%, 75% and 95%
+investment-asset exposure. Scripted LONG/SHORT activity selected proposal 3 (75%).
+The Safe swapped **597.239894 test USDC for 0.284494073683454619 test ETH** through
+Trisolaris with its **unchanged 100 bps slippage policy**. Supra settlement and all
+four redemptions completed; seed was released and outstanding deposits are zero.
+
+Independent historical receipt/balance checks verified the swap, all four fills,
+each payout, measured return and collateral conservation. This proves execution of
+a real AI-generated target under controlled market selection. It does **not** prove
+profitable AI forecasting: all four forecasters in this round were fixtures.
+
+Evidence: [public plan and literal inputs](test-evidence/round7-hybrid/plan.json),
+[round report](test-evidence/round7-hybrid/report.json),
+[independent payout verification](test-evidence/round7-hybrid/independent.json),
+[independent swap verification](test-evidence/round7-hybrid/swap-independent.json).
+Research claims and limits: [data/thesis guide](AGENT-DATA-AND-THESIS.md).
+
+Separately, [round 6](test-evidence/genuine-agent-round6.json) completed with genuine
+AI forecasters choosing to abstain, followed by Hold execution and full redemption.
+There is still no demonstrated genuine-model-directed LONG/SHORT fill.
+
+## Historical published-source boundary before round 7
+
+The following paragraph records the older experiment's boundary, not the current
+hybrid runner or its test counts.
 
 The contract scenarios, planner modules and independent read-only verifier are included in this branch. The expanded `scripts/aurora-agent-round.mjs`, `scripts/run-aurora-agents.py` and related bridge-test edits remain **local and unpublished** pending a completed live-agent lifecycle. Commands below describe that local experiment; the published runner still has its preceding interface. The 8-Python-test result describes the local tested workspace, including two unpublished safety additions. These reports preserve both successful fixture execution and the failed model experiment; they do not claim the full runner is ready to adopt.
 
@@ -91,3 +122,63 @@ The following describes the historical local experiment, not an executable workf
 For an interrupted **unexecuted** journaled round, `--phase recover-cancel` waits for trading end, collapses, waits past the committed execution deadline, then invokes abortExpired and redeems recorded deposits. It refuses unresolved broadcasts and executed rounds. It verifies unchanged Safe quantities and cleared liabilities. It does not retry inference or make a missed strategy execute late.
 
 Still needed before claiming final-product readiness: robust resumable operator state machine, production liquidity/slippage evaluation, calibrated numerical forecasts, independent human testing, frontend integration by its owning developer, oracle availability monitoring and independent security review. No model attestation, native NEAR Intents, OutLayer, persistent oracle updater or multi-model independence was added.
+
+## Integration checkpoint — 12 November 2026
+
+Local branch `feat/funding-proof-integration` combines the published round-seven agent work with Dev B's funding-proof commits `078f022` and `9c01a10`. The combined runtime suite passed **166/166**, with zero skips, in the existing network-disabled Node container. This is an integration run of existing tests; no new mutation results or live delivery are claimed. Dev C's dashboard remains on its own branch pending his review release. Main is unchanged.
+
+### Round-seven outcome and scoring boundary
+
+The selected proposal targeted 75% ETH. The Safe executed the swap and the tracker measured a return factor of `0.997835674193170672` (approximately **−0.2164%**). Four forecasters redeemed: Quant `9.968019`, Guardian `10.011521`, FeeAnalyst `10.000000`, StressAnalyst `9.989732` test USDC, each against a `10.000000` deposit. These were scripted forecasters; the four strategy proposals came from real model calls. Existing report and independent receipt evidence remain the source of these figures.
+
+The registry's `roundsWon` counter is incremented by `QuantumRound.collapse`, before execution and performance measurement. It records selection, **not profitable performance or creditworthiness**. The current settlement path records realised return and pays forecasters; it does not implement positive/negative agent performance reputation. No credit score should be displayed as implemented. A later outcome-based reputation integration must use settled performance and an explicitly agreed benchmark.
+
+Next unfinished work: integrate funding-service projections with C's read-only interface when his branch is ready; complete the separately bounded funding operator before any authorized real transfer; test genuine forecasters with the richer research inputs under a fresh inference budget. Tidepool and token migration remain deferred.
+
+## Completed genuine swarm and reputation — 12 November 2026
+
+Round eight used eight genuine model calls (four proposer, four forecaster),
+20,339 input tokens and 3,069 output tokens, under the approved $0.10 cap with
+no inference retries. All forecasters abstained under unchanged confidence and
+entry-cost gates. Hold won, executed without a swap and settled at return factor
+`0.999584491909995608` (approximately -0.04155%). Every forecaster redeemed its
+full 10 test USDC. Independent receipt/payout/return/conservation verification
+passed. There are 36 confirmed testnet transactions including actor preparation.
+This proves real-agent abstention and safe Hold behavior, not genuine forecast
+trading or predictive alpha. Literal inputs and outputs remain in
+[test evidence](test-evidence/round8-swarm/).
+
+Additive reputation is deployed at `0xac9c56f1c032f74a9e84703602894315df2d9488`.
+Runtime code and immutable bindings were checked against a clean final artifact.
+Historical round seven is recorded: Momentum has one evaluated loss, score -1;
+no unselected proposer gets a point. Round eight's Hold winner earns no agent
+score. See [deployment evidence](../deployments/aurora-testnet-reputation.json).
+This supersedes the earlier checkpoint's missing outcome-scoring implementation.
+
+Current offline results: 171 runtime tests; 6 Python bridge tests; 191 runtime
+tests with C's branch overlaid in a disposable copy (C remains unmerged).
+New operator/agent mutations: 5/5 caught. Reputation mutations: 4/4 caught after
+adding a zero-observation-hash regression for the initially surviving mutation.
+No mainnet funding transfer, executable quote request, token migration or UI
+merge was performed. The bounded local funding operator is callable and tested
+with injected capabilities; a reviewed live signing configuration and actual
+funding delivery remain separate gates.
+
+Final full isolated Solidity regression: **451 passed, zero failed/skipped, across 29 suites**. The new reputation contract also passed a separate clean final-artifact unit run before testnet deployment. No mutation artifacts were deployed.
+
+## Tidepool-funded connected path — 12 November 2026
+
+[Complete flow](TIDEPOOL-DEMO.md), [manifest](../deployments/aurora-testnet-tidepool.json)
+and [public evidence](test-evidence/tidepool-v1/). Arbitrum Sepolia source funding
+200 -> Aurora Safe 199.48 test USDC was linked to final native NEAR testnet
+execute_intents. Four genuine AI proposals plus four scripted forecasters chose
+75% ETH; actual Trisolaris swap, Supra measurement, four redemptions and -1 outcome
+reputation completed. Return factor0.993541889635073190 is a post-funding strategy
+return, not a guarantee of investment alpha. All accounting independently passed.
+
+184 runtime tests, 3 new bridge tests and 7 targeted mutation checks passed.
+Existing Solidity implementations were reused; the earlier451-pass baseline was
+not redundantly rerun. Rejected below-base-fee submissions were reconciled with a
+same-nonce, same-deposit recovery, not a second principal send. Mixed NEAR/EVM
+hash selection now has its observed-shape regression. Original production1Click
+execution remains disabled; no mainnet transfer or UI merge occurred.
