@@ -42,7 +42,9 @@ export function validateTidepoolDemo(input) {
     nearSettlement: { hash: n.hash, receiver: n.receiver, url: nearTestnetTxUrl(n.hash) },
     quote: { signatureVerified: true, signer: q.signer, recipient: lower(q.recipient), virtualChainRecipient: null },
     strategy: { roundId: safeText(st.roundId, 8), roundSlug: st.roundSlug },
-    swap: { hash: lower(w.hash), blockNumber: isIntegerString(w.blockNumber) ? w.blockNumber : null, stableIn: w.stableIn, assetOut: w.assetOut },
+    swap: { hash: lower(w.hash), blockNumber: isIntegerString(w.blockNumber) ? w.blockNumber : null, stableIn: w.stableIn, assetOut: w.assetOut,
+      // What the Safe held after the swap; shown only when it reconciles exactly with the delivered capital.
+      stableAfter: isIntegerString(w.stableAfter) && BigInt(w.stableAfter) + BigInt(w.stableIn) === BigInt(f.deliveredAmount) ? w.stableAfter : null },
   } };
 }
 
