@@ -8,7 +8,7 @@ import { request as httpRequest } from 'node:http';
 import { keccak256 } from 'viem';
 import { startServer } from '../server.mjs';
 import { createReputationReader } from '../agents/reputation-readonly.mjs';
-import { TRUSTED_PROPOSERS, createReputationBoard, reputationBoardFromEnvironment } from '../operator/reputation-api.mjs';
+import { REPUTATION_STACKS, TRUSTED_PROPOSERS, createReputationBoard, reputationBoardFromEnvironment, reputationBoardsFromEnvironment } from '../operator/reputation-api.mjs';
 
 const DEPLOYED = JSON.parse(readFileSync(new URL('../../deployments/aurora-testnet-reputation.json', import.meta.url), 'utf8'));
 const MANIFEST = { ...DEPLOYED, runtimeHash: keccak256('0x6000') };
@@ -134,4 +134,34 @@ test('the environment factory builds the shared reader offline and can be disabl
   assert.equal(typeof (await reputationBoardFromEnvironment({ WAVEFUND_REPUTATION: 'live' })).read, 'function');
   assert.equal(await reputationBoardFromEnvironment({ WAVEFUND_REPUTATION: 'disabled' }), null);
   await assert.rejects(reputationBoardFromEnvironment({ WAVEFUND_REPUTATION: 'https://evil.example' }), /WAVEFUND_REPUTATION/);
+});
+
+test('the original and Tidepool stacks are separate contract histories and are never summed', async () => {
+  const TIDEPOOL = { ...JSON.parse(readFileSync(new URL('../../deployments/aurora-testnet-tidepool-reputation.json', import.meta.url), 'utf8')), runtimeHash: keccak256('0x6000') };
+  const tidepoolChain = chain({ readContract: async ({ functionName, args }) => {
+    if (functionName === 'engine') return TIDEPOOL.contracts.engine; if (functionName === 'tracker') return TIDEPOOL.contracts.tracker;
+    const agent = lower(args[0]); if (agent === MOMENTUM) return functionName === 'statistics' ? [1n, 0n, 1n, 0n] : -1n;
+    return functionName === 'statistics' ? [0n, 0n, 0n, 0n] : 0n;
+  } });
+  const boards = {
+    original: boardFor(chain().client),
+    tidepool: createReputationBoard({ reader: createReputationReader({ client: tidepoolChain.client, manifest: TIDEPOOL, clock: () => 1000 }), manifest: TIDEPOOL, stack: REPUTATION_STACKS.tidepool }),
+  };
+  await withServer(19268, { reputation: boards }, async (call) => {
+    const original = await (await call('/api/agents/reputation')).json();
+    const alias = await (await call('/api/agents/reputation/original')).json();
+    const tidepool = await (await call('/api/agents/reputation/tidepool')).json();
+    assert.deepEqual([original.stack.id, alias.stack.id, tidepool.stack.id], ['original', 'original', 'tidepool']);
+    assert.equal(original.contract, lower(DEPLOYED.contracts.reputation)); assert.equal(tidepool.contract, '0xfa71a652547284d1034ae6813ed4a882cb354e92');
+    assert.equal(tidepool.stack.engine, '0xba96a117f4de33c38df72002651f11024ed14a14');
+    const momentum = (board) => board.agents.find((agent) => agent.name === 'Momentum').reputation.score;
+    assert.deepEqual([momentum(original), momentum(tidepool)], ['-1', '-1'], 'each stack reports its own -1');
+    for (const board of [original, tidepool]) for (const key of ['total', 'combined', 'globalScore', 'sum']) assert.equal(key in board, false, key);
+    assert.equal((await call('/api/agents/reputation/all')).status, 404, 'no combined endpoint');
+  });
+  const env = await reputationBoardsFromEnvironment({});
+  assert.equal(typeof env.original.read, 'function'); assert.equal(typeof env.tidepool.read, 'function');
+  assert.equal(await reputationBoardsFromEnvironment({ WAVEFUND_REPUTATION: 'disabled' }), null);
+  assert.equal(typeof (await reputationBoardFromEnvironment({}, 'tidepool')).read, 'function');
+  await assert.rejects(reputationBoardFromEnvironment({}, 'combined'), /Unknown reputation stack/);
 });
