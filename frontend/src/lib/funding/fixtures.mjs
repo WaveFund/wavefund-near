@@ -1,6 +1,6 @@
 // FIXTURE DATA ONLY. Synthetic configuration, quotes and FundingRecordV1-shaped records for the dashboard's
 // explicit fixture explorer. Safe, wallet, deposit and transaction values are fake and recognisable (0x5afe…,
-// 0xfeed…, 0xf1f1…). Token identities match the public Arbitrum/Aurora USDC contracts so the route reads
+// 0xfeed…, 0xf1f1…; testnet strategy Safe 0x7e57…, strategy token 0x57ab…, foreign token 0x0dd0…). Token identities match the public Arbitrum/Aurora USDC contracts so the route reads
 // realistically. Nothing here was returned by NEAR Intents or a chain, and nothing claims live evidence.
 import { AURORA_MAINNET, AURORA_TESTNET } from './model.mjs';
 
@@ -16,6 +16,9 @@ const fake = (pair) => `0x${pair.repeat(32)}`;
 const CONFIG_HASH = fake('cc'); const REQUEST_HASH = fake('aa'); const QUOTE_HASH = fake('bb');
 const TX_SOURCE = fake('f1'); const TX_DELIVERY = fake('f2'); const TX_REFUND = fake('f3');
 const ROUTE_ID = 'arb-usdc-to-aurora-usdc';
+const STRATEGY_SAFE = `0x${'7e57'.repeat(10)}`;
+const STRATEGY_TOKEN = `0x${'57ab'.repeat(10)}`;
+const FOREIGN_TOKEN = `0x${'0dd0'.repeat(10)}`;
 
 export function fixtureConfig(now) {
   return {
@@ -34,6 +37,7 @@ export function fixtureConfig(now) {
       { id: 'base-usdc-to-aurora-usdc', label: 'Base · USDC', reason: 'Not verified. EVM-origin quoting was intermittently unavailable and no route evidence exists.' },
       { id: 'near-account-to-aurora', label: 'NEAR account · any asset', reason: 'Unsupported in funding schema v1, which accepts only an EVM-chain ERC-20 source.' },
     ],
+    strategy: { chainId: AURORA_TESTNET, safe: STRATEGY_SAFE, token: STRATEGY_TOKEN, decimals: 6, symbol: 'USDC', source: 'fixture' },
     eligibility: {
       eligible: false, roundChainId: AURORA_TESTNET,
       checks: [
@@ -96,7 +100,11 @@ export function fixtureScenarios(now) {
     { id: 'fx-dispatching', group: 'Progress', label: 'Send reserved', description: 'A wallet send was reserved before broadcast; no hash recorded yet.', record: record(now, 'fx-dispatching', 'dispatching', { submission: { reserved: true, txHash: null, reservedAt: now - 15 }, updatedAt: now - 15 }) },
     { id: 'fx-pending', group: 'Progress', label: 'Submitted · processing', description: 'Source transaction recorded; the provider is processing.', record: record(now, 'fx-pending', 'pending', { submission: submitted(now), observation: observed(now, 'PROCESSING'), updatedAt: now - 8 }) },
     { id: 'fx-provider-success', group: 'Progress', label: 'Provider SUCCESS', description: 'Provider reports SUCCESS, which is not yet verified delivery.', record: record(now, 'fx-provider-success', 'pending', { submission: submitted(now), observation: observed(now, 'SUCCESS'), updatedAt: now - 8 }) },
-    { id: 'fx-delivered', group: 'Outcomes', label: 'Delivered', description: 'Complete delivery evidence for the configured Safe (fixture quality).', record: record(now, 'fx-delivered', 'delivered', { submission: submitted(now), observation: observed(now, 'SUCCESS', 30), delivery: evidence('delivery', now, '24994950'), updatedAt: now - 20 }) },
+    { id: 'fx-delivered', group: 'Outcomes', label: 'Delivered', description: 'Complete delivery evidence for the configured Safe (fixture quality). Delivered is not strategy-ready: readiness comes only from the funding service.', record: record(now, 'fx-delivered', 'delivered', { submission: submitted(now), observation: observed(now, 'SUCCESS', 30), delivery: evidence('delivery', now, '24994950'), updatedAt: now - 20 }) },
+    { id: 'fx-ready-wrong-network', group: 'Outcomes', label: 'Readiness · wrong network', description: 'The service reports readiness for the mainnet funding Safe, but the strategy runs on Aurora testnet with another Safe and token. Rejected, never shown as ready.', record: record(now, 'fx-ready-wrong-network', 'delivered', {
+      submission: submitted(now), observation: observed(now, 'SUCCESS', 30), delivery: evidence('delivery', now, '24994950'), updatedAt: now - 10,
+      readiness: { chainId: AURORA_MAINNET, safe: SAFE, consumedAt: now - 10, snapshot: { chainId: AURORA_MAINNET, safe: SAFE, stableToken: AURORA_USDC, assetToken: `0x${'a55e'.repeat(10)}`, stableBalance: '24994950', assetBalance: '0', compatible: true, activeRound: false, pendingAuthorization: false, observedAt: now - 12, blockNumber: '1000' } },
+    }) },
     { id: 'fx-refunded', group: 'Outcomes', label: 'Full refund', description: 'The full input returned to the manager wallet.', record: record(now, 'fx-refunded', 'refunded', { submission: submitted(now), observation: observed(now, 'REFUNDED', 40), refund: evidence('refund', now, '25000000'), updatedAt: now - 20 }) },
     { id: 'fx-partial-refund', group: 'Outcomes', label: 'Partial refund', description: 'A fee-net refund: the actual verified amount is shown, with the shortfall.', record: record(now, 'fx-partial-refund', 'needs_review', { reviewReason: 'PARTIAL_REFUND', submission: submitted(now), observation: observed(now, 'REFUNDED', 40), refund: evidence('refund', now, '24994700'), updatedAt: now - 20 }) },
     { id: 'fx-refund-pending', group: 'Problems', label: 'Refund pending', description: 'Provider says REFUNDED, but no refund receipt has been verified.', record: record(now, 'fx-refund-pending', 'needs_review', { reviewReason: 'RECEIPT_VERIFICATION_REQUIRED', submission: submitted(now), observation: observed(now, 'REFUNDED'), updatedAt: now - 8 }) },
@@ -105,6 +113,7 @@ export function fixtureScenarios(now) {
     { id: 'fx-expired', group: 'Problems', label: 'Quote expired', description: 'The quote expired unsent; the deposit address must not be reused.', record: record(now, 'fx-expired', 'quoted', { quote: { reference: 'fixture-quote-0002', depositAddress: DEPOSIT, amountIn: '25000000', minAmountOut: '24750000', expiresAt: now - 30, evidenceQuality: 'fixture' }, updatedAt: now - 400 }) },
     { id: 'fx-stale', group: 'Problems', label: 'Stale status', description: 'The last provider observation is an hour old.', record: record(now, 'fx-stale', 'pending', { submission: submitted(now), observation: observed(now, 'PROCESSING', 3600), updatedAt: now - 3600 }) },
     { id: 'fx-inconsistent', group: 'Problems', label: 'Bad delivery evidence', description: 'State says delivered, but the receipt recipient is not the Safe.', record: record(now, 'fx-inconsistent', 'delivered', { submission: submitted(now), delivery: { ...evidence('delivery', now, '24994950'), recipient: MANAGER }, updatedAt: now - 20 }) },
+    { id: 'fx-foreign-token', group: 'Problems', label: 'Other token delivered', description: 'A different token reached the Safe. It counts neither as delivery of the quoted asset nor as strategy readiness.', record: record(now, 'fx-foreign-token', 'delivered', { submission: submitted(now), delivery: { ...evidence('delivery', now, '24994950'), token: FOREIGN_TOKEN }, updatedAt: now - 20 }) },
     { id: 'fx-hostile', group: 'Problems', label: 'Hostile response', description: 'Malicious strings and a foreign Safe are rendered inert and rejected.', record: record(now, '<img src=x onerror=alert(1)>', 'delivered', {
       reviewReason: '\u202eWEIVER_DEEN', request: { ...record(now, 'x', 'delivered').request, safe: 'javascript:alert(1)' }, submission: submitted(now), delivery: evidence('delivery', now, '24994950'),
       integrity: 'invalid', integrityIssues: ['request.safe', 'fundingId'],

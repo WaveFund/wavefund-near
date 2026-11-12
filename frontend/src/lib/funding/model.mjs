@@ -3,10 +3,13 @@
 
 export const AURORA_MAINNET = 1313161554;
 export const AURORA_TESTNET = 1313161555;
+export const ARBITRUM_SEPOLIA = 421614;
 
-// Allowlisted, network-specific explorers. Unknown networks never get a link.
+// Allowlisted, network-specific explorers. Unknown networks never get a link. A null explorer names the
+// network without linking anywhere until its explorer is confirmed (Arbitrum Sepolia: pending B).
 export const NETWORKS = Object.freeze({
   42161: Object.freeze({ chainId: 42161, name: 'Arbitrum One', short: 'Arbitrum', explorer: 'https://arbiscan.io', testnet: false }),
+  [ARBITRUM_SEPOLIA]: Object.freeze({ chainId: ARBITRUM_SEPOLIA, name: 'Arbitrum Sepolia', short: 'Arb Sepolia', explorer: null, testnet: true }),
   [AURORA_MAINNET]: Object.freeze({ chainId: AURORA_MAINNET, name: 'Aurora mainnet', short: 'Aurora', explorer: 'https://explorer.aurora.dev', testnet: false }),
   [AURORA_TESTNET]: Object.freeze({ chainId: AURORA_TESTNET, name: 'Aurora testnet', short: 'Aurora testnet', explorer: 'https://explorer.testnet.aurora.dev', testnet: true }),
 });
@@ -86,7 +89,7 @@ export function shortHex(value, head = 6, tail = 4) {
 
 export function explorerUrl(chainId, kind, value) {
   const item = network(chainId);
-  if (!item) return null;
+  if (!item || typeof item.explorer !== 'string') return null;
   if (kind === 'tx' && isTxHash(value)) return `${item.explorer}/tx/${value.toLowerCase()}`;
   if (kind === 'address' && isAddress(value)) return `${item.explorer}/address/${value.toLowerCase()}`;
   return null;
@@ -148,6 +151,15 @@ export function validateFundingConfig(input) {
     id: safeText(check.id, 40) ?? 'check', ok: check.ok === true, label: safeText(check.label, 120) ?? 'Unnamed check', detail: safeText(check.detail, 240) ?? '',
   })) : [];
   const capabilities = isObject(input.capabilities) ? input.capabilities : {};
+  // Strategy stack identity (the Safe and stable token a round uses). Absent → readiness can never be shown.
+  let strategy = null;
+  if (input.strategy !== undefined && input.strategy !== null) {
+    const s = input.strategy;
+    if (!isObject(s) || ![AURORA_MAINNET, AURORA_TESTNET].includes(s.chainId) || !isAddress(s.safe) || !isAddress(s.token) || lower(s.safe) === lower(s.token)
+      || !Number.isInteger(s.decimals) || s.decimals < 0 || s.decimals > 36) return reject('The strategy deployment identity is malformed.');
+    if (s.chainId !== roundChainId) return reject('The strategy deployment and the round network disagree.');
+    strategy = { chainId: s.chainId, safe: s.safe.toLowerCase(), token: s.token.toLowerCase(), decimals: s.decimals, symbol: safeText(s.symbol, 12), source: safeText(s.source, 120) };
+  }
   return {
     ok: true,
     config: {
@@ -160,6 +172,7 @@ export function validateFundingConfig(input) {
       },
       manager: input.manager.toLowerCase(), refundRecipient: input.refundRecipient.toLowerCase(), routes,
       unsupported: Array.isArray(input.unsupported) ? input.unsupported.filter(isObject).map((route) => ({ id: safeText(route.id, 64) ?? 'route', label: safeText(route.label, 60) ?? 'Route', reason: safeText(route.reason, 240) ?? 'Unavailable.' })) : [],
+      strategy,
       eligibility: { eligible: input.eligibility.eligible === true, roundChainId, checks },
       // Signing and broadcasting stay off in this phase even if a server claims otherwise.
       capabilities: { preview: capabilities.preview === true, executableQuote: false, submitted: capabilities.submitted === true, records: capabilities.records === true, signing: false, broadcast: false },
@@ -380,3 +393,111 @@ export const BUCKET_LABELS = Object.freeze({
   delivered: 'Delivered', 'refund-pending': 'Refund pending', refunded: 'Refunded', 'refund-partial': 'Partial refund',
   failed: 'Failed', 'needs-review': 'Needs review', unavailable: 'Unavailable',
 });
+
+// ---------------------------------------------------------------- funding lanes
+
+// Three separate funding lanes. Networks, tokens and evidence from one lane are never shown in another.
+export const LANE_ORDER = Object.freeze(['official', 'tidepool', 'fixtures']);
+export const FUNDING_LANES = Object.freeze({
+  official: Object.freeze({ id: 'official', kind: 'official', title: 'Official 1Click', provider: 'NEAR Intents 1Click', chainId: AURORA_MAINNET, network: 'Aurora mainnet', assets: 'Real assets · dry quotes only' }),
+  tidepool: Object.freeze({ id: 'tidepool', kind: 'community', title: 'Tidepool community', provider: 'Community testnet relayer', chainId: AURORA_TESTNET, network: 'Aurora testnet', assets: 'Worthless test assets' }),
+  fixtures: Object.freeze({ id: 'fixtures', kind: 'fixture', title: 'Labelled fixtures', provider: 'Synthetic, in-browser', chainId: null, network: 'No network', assets: 'Fake values' }),
+});
+
+export function laneFromSearch(search) {
+  const params = new URLSearchParams(typeof search === 'string' ? search : '');
+  if (params.get('fixtures') === '1' || params.get('lane') === 'fixtures') return 'fixtures';
+  if (params.get('lane') === 'tidepool') return 'tidepool';
+  return 'official';
+}
+
+// Tidepool is pending in this build whatever any server reports: B has not provided its interface and A has
+// no verified testnet configuration, so no route, quote or live status may be shown for it.
+export function laneStatus(id, { source = null, phase = null, config = null } = {}) {
+  if (id === 'tidepool') return { tone: 'warning', label: 'Pending integration', detail: 'No route, quote or status until B provides its interface and A a verified configuration.' };
+  if (id === 'fixtures') return { tone: 'fixture', label: 'Synthetic', detail: 'Every funding state with fake values. Never live evidence.' };
+  if (id !== 'official') return { tone: 'muted', label: 'Unknown', detail: 'Unknown funding lane.' };
+  if (source !== 'api') return { tone: 'muted', label: 'Not connected', detail: 'Select to connect to the local funding API.' };
+  if (phase === 'connecting') return { tone: 'neutral', label: 'Checking', detail: 'Checking the local funding API.' };
+  if (phase === 'unavailable') return { tone: 'muted', label: 'API offline', detail: 'The local funding API is not available.' };
+  if (phase !== 'ready' || !config) return { tone: 'danger', label: 'Rejected', detail: 'The funding configuration was rejected.' };
+  if (config.evidence !== 'live') return { tone: 'fixture', label: 'Fixture config', detail: 'The API reports fixture-quality configuration.' };
+  if (config.capabilities.preview) return { tone: 'live', label: 'Live dry quotes', detail: 'Signed 1Click dry quotes for the trusted Safe. Sending is disabled.' };
+  if (config.capabilities.records) return { tone: 'live', label: 'Service records', detail: 'Funding service records. Sending is disabled.' };
+  return { tone: 'neutral', label: 'Read-only', detail: 'Configuration only.' };
+}
+
+// ---------------------------------------------------------------- delivered ≠ strategy ready
+
+// What the receipts say about the funds, independent of whether a strategy may use them.
+export function deliverySummary(display) {
+  if (!display) return { state: 'none', tone: 'muted', label: 'No funding record', detail: 'Nothing has been sent from this dashboard.' };
+  switch (display.bucket) {
+    case 'delivered': return display.verified
+      ? { state: 'verified', tone: 'success', label: 'Delivered · verified', detail: 'A bound, final receipt shows the funds in the Safe.' }
+      : { state: 'fixture', tone: 'fixture', label: 'Delivered · fixture', detail: 'Complete receipt evidence, but fixture data, not live.' };
+    case 'submitted':
+    case 'provider-success': return { state: 'in-transit', tone: 'progress', label: 'In transit', detail: 'No verified receipt yet. Provider status alone is not delivery.' };
+    case 'awaiting-manager': return { state: 'not-sent', tone: 'neutral', label: 'Not sent', detail: 'The manager has not sent funds.' };
+    case 'refunded':
+    case 'refund-partial':
+    case 'refund-pending': return { state: 'refund', tone: 'warning', label: 'Not delivered · refund path', detail: 'Funds are on the refund path, not in the Safe.' };
+    default: return { state: 'unconfirmed', tone: 'danger', label: 'Not confirmed', detail: 'Delivery cannot be confirmed from this record.' };
+  }
+}
+
+export const READINESS_FAILURES = Object.freeze({
+  STRATEGY_UNKNOWN: 'No strategy deployment identity is configured.',
+  DELIVERY_NETWORK_NOT_STRATEGY_NETWORK: 'Funds were delivered on a different network from the strategy deployment.',
+  DELIVERY_SAFE_NOT_STRATEGY_SAFE: 'Funds reached a different Safe from the strategy Safe.',
+  DELIVERED_TOKEN_NOT_STRATEGY_TOKEN: 'The delivered token is not the strategy’s stable token.',
+  READINESS_NETWORK_MISMATCH: 'The service readiness names a different network.',
+  READINESS_SAFE_MISMATCH: 'The service readiness names a different Safe.',
+  READINESS_TIME_MISSING: 'The service readiness has no consumption time.',
+  READINESS_SNAPSHOT_MISSING: 'The service readiness has no deployment snapshot.',
+  SNAPSHOT_TOKEN_NOT_STRATEGY_TOKEN: 'The readiness snapshot checked a different stable token.',
+  DEPLOYMENT_NOT_COMPATIBLE: 'The readiness snapshot does not report a compatible deployment.',
+  ROUND_BUSY: 'A round is active or an authorization is pending.',
+  PREREQUISITES_INCOMPLETE: 'Round prerequisites in the trusted configuration are not all met.',
+});
+
+// "Ready to run strategy" is never derived from delivery. It needs Developer A's FundingRecordV1.readiness
+// (written once by prepareRound) bound to the configured strategy network, Safe and stable token, plus a
+// verified live delivery of that same token to that same Safe. Another token reaching the Safe is never enough.
+export function strategyReadiness(record, display, config) {
+  const result = (state, tone, label, detail, failures = []) => ({ state, tone, label, detail, failures, ready: state === 'ready' });
+  const strategy = config?.strategy ?? null;
+  if (!strategy) return result('unknown', 'muted', 'Strategy not configured', 'No strategy deployment identity is configured, so readiness is never shown.', ['STRATEGY_UNKNOWN']);
+  const view = isObject(record) ? record : null;
+  if (!view || !display || display.bucket !== 'delivered') {
+    return result('not-delivered', 'muted', 'Not ready', 'Funds must first be delivered, then confirmed ready by the funding service.');
+  }
+  const failures = [];
+  const delivery = isObject(view.delivery) ? view.delivery : {};
+  if (delivery.chainId !== strategy.chainId) failures.push('DELIVERY_NETWORK_NOT_STRATEGY_NETWORK');
+  if (lower(delivery.recipient) !== strategy.safe) failures.push('DELIVERY_SAFE_NOT_STRATEGY_SAFE');
+  if (lower(delivery.token) !== strategy.token) failures.push('DELIVERED_TOKEN_NOT_STRATEGY_TOKEN');
+  const readiness = isObject(view.readiness) ? view.readiness : null;
+  if (!readiness) {
+    if (failures.length) return result('blocked', 'danger', 'Not usable by the strategy', `${READINESS_FAILURES[failures[0]]} Delivery alone never makes a Safe ready.`, failures);
+    return result('awaiting-service', 'warning', 'Awaiting funding service', 'Funds arrived. Only the funding service can confirm readiness, after re-checking the Safe, token and balances.');
+  }
+  if (readiness.chainId !== strategy.chainId) failures.push('READINESS_NETWORK_MISMATCH');
+  if (lower(readiness.safe) !== strategy.safe) failures.push('READINESS_SAFE_MISMATCH');
+  if (!isTime(readiness.consumedAt)) failures.push('READINESS_TIME_MISSING');
+  const snapshot = isObject(readiness.snapshot) ? readiness.snapshot : null;
+  if (!snapshot) failures.push('READINESS_SNAPSHOT_MISSING');
+  else {
+    if (snapshot.chainId !== strategy.chainId) failures.push('READINESS_NETWORK_MISMATCH');
+    if (lower(snapshot.safe) !== strategy.safe) failures.push('READINESS_SAFE_MISMATCH');
+    if (lower(snapshot.stableToken) !== strategy.token) failures.push('SNAPSHOT_TOKEN_NOT_STRATEGY_TOKEN');
+    if (snapshot.compatible !== true) failures.push('DEPLOYMENT_NOT_COMPATIBLE');
+    if (snapshot.activeRound !== false || snapshot.pendingAuthorization !== false) failures.push('ROUND_BUSY');
+  }
+  if (!roundEligibility(config).eligible) failures.push('PREREQUISITES_INCOMPLETE');
+  if (failures.length) {
+    return result('rejected', 'danger', 'Readiness rejected', 'The funding service reported readiness, but it does not match the strategy deployment, so it is not shown as ready.', [...new Set(failures)]);
+  }
+  if (!display.verified) return result('fixture', 'fixture', 'Readiness evidence · fixture', 'Readiness evidence is complete, but it is fixture data. A fixture is never ready to run a strategy.');
+  return result('ready', 'success', 'Ready to run strategy', 'Verified delivery of the strategy token to the strategy Safe, and the funding service confirmed readiness for this Safe.');
+}

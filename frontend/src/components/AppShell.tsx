@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { Icon, type IconName } from "@/components/funding/primitives";
 
-export type ShellNetwork = { label: string; chainId: number; tone: "mainnet" | "testnet" | "local" };
+export type ShellNetwork = { label: string; chainId: number | null; tone: "mainnet" | "testnet" | "local" };
 export type ShellStatus = { label: string; tone: "ok" | "warn" | "off" | "pending" };
 
 const NAV: Array<{ href: string; label: string; step: string; icon: IconName; hint: string }> = [
@@ -35,7 +35,7 @@ export function AppShell({ network, status, children }: { network: ShellNetwork;
         <Link className="brand" href="/" aria-label="Wavefund home"><span className="brand-mark"><WaveMark /></span><span className="brand-name">wavefund</span><small>on Aurora</small></Link>
         <nav className="tabs" aria-label="Wavefund journey">{links("tab")}</nav>
         <div className="topbar-right">
-          <span className="chip-network" title={`Chain ID ${network.chainId}`}><i className={`chain-dot ${network.tone}`} />{network.label}<code>{network.chainId}</code></span>
+          <span className="chip-network" title={network.chainId === null ? "No network" : `Chain ID ${network.chainId}`}><i className={`chain-dot ${network.tone}`} />{network.label}{network.chainId === null ? null : <code>{network.chainId}</code>}</span>
           {status && <span className={`chip-status tone-${status.tone}`} role="status"><i />{status.label}</span>}
         </div>
       </div>

@@ -113,6 +113,21 @@ export function validateFundingSafe(input) {
   });
 }
 
+// deployments/aurora-testnet.json, re-validated: the strategy stack whose Safe and stable token a round uses.
+// Readiness can only ever be shown for this Safe and token. The manifest is not independently verified.
+export const STRATEGY_TOKEN_DECIMALS = 6; // ProposerRegistry's constructor rejects any strategy stable that does not use 6 decimals.
+export function validateStrategyDeployment(input, source = 'deployments/aurora-testnet.json') {
+  requireConfig(input?.schemaVersion === 1, 'unsupported strategy manifest schema');
+  requireConfig(input.chainId === AURORA_TESTNET_CHAIN_ID, 'the strategy deployment in this build must be Aurora testnet 1313161555');
+  const contracts = input.contracts ?? {};
+  for (const key of ['safe', 'stable', 'module']) requireConfig(isAddress(contracts[key]), `invalid strategy ${key}`);
+  requireConfig(lower(contracts.safe) !== lower(contracts.stable), 'strategy Safe and stable token must differ');
+  return Object.freeze({
+    chainId: AURORA_TESTNET_CHAIN_ID, safe: lower(contracts.safe), token: lower(contracts.stable), module: lower(contracts.module),
+    decimals: STRATEGY_TOKEN_DECIMALS, symbol: 'USDC', source: typeof source === 'string' && /^[\w./-]{1,120}$/.test(source) ? source : null,
+  });
+}
+
 function validateVerifiedRoute(route) {
   requireConfig(typeof route?.id === 'string' && IDENTIFIER.test(route.id), 'invalid verified route id');
   const { source, destination } = route;
@@ -133,7 +148,7 @@ const assetView = (asset) => ({
 });
 
 export function createFundingReadModel({
-  mode, approved, verifiedRoutes, fundingSafe, previewOrder = null, service = null, allowSubmitted = false,
+  mode, approved, verifiedRoutes, fundingSafe, strategyDeployment = null, previewOrder = null, service = null, allowSubmitted = false,
   clock = () => Math.floor(Date.now() / 1000), nowMs = () => Date.now(),
 }) {
   requireConfig(['live-preview', 'injected'].includes(mode), 'unknown funding mode');
@@ -144,6 +159,7 @@ export function createFundingReadModel({
   requireConfig(!allowSubmitted || typeof service?.recordSubmitted === 'function', 'submission recording requires the funding service');
   requireConfig(service === null || service.getConfiguration().configurationHash === approved.configurationHash, 'funding service uses a different configuration');
   const safe = validateFundingSafe(fundingSafe);
+  const strategy = strategyDeployment === null ? null : validateStrategyDeployment(strategyDeployment);
   const routes = verifiedRoutes.map(validateVerifiedRoute);
   for (const route of approved.routes) {
     requireConfig(route.destination.chainId === AURORA_MAINNET_CHAIN_ID, 'approved route destination must be Aurora mainnet');
@@ -197,6 +213,8 @@ export function createFundingReadModel({
       destination: { chainId: safe.chainId, network: 'aurora-mainnet', safe: safe.safe, safeVersion: safe.safeVersion, purpose: safe.purpose, wavefundModuleEnabled: safe.wavefundModuleEnabled, ...pickDestinationAsset() },
       manager: safe.manager, refundRecipient: safe.refundRecipient,
       routes: routes.map(routeView), unsupported: UNSUPPORTED_ROUTES.map((route) => ({ ...route })),
+      // Identity of the strategy stack a round runs on. Display/binding only: it is never a funding destination.
+      strategy: strategy ? { chainId: strategy.chainId, safe: strategy.safe, token: strategy.token, decimals: strategy.decimals, symbol: strategy.symbol, source: strategy.source } : null,
       eligibility: eligibility(), capabilities: { ...capabilities }, observedAt: clock(),
     };
   }
@@ -393,10 +411,28 @@ export function projectFundingRecord(record, { origin, route = {}, observedAt })
     status: take(record.observation.status, (v) => OBSERVATIONS.has(v), 'observation.status'),
     observedAt: take(record.observation.observedAt, isTimestamp, 'observation.observedAt'),
   } : (issues.push('observation'), null);
+  // A's prepareRound readiness, including the snapshot it was checked against, so the UI can bind readiness
+  // to the strategy network, Safe and stable token instead of inferring it from delivery.
+  const readinessSnapshot = (value) => {
+    if (!isObject(value)) { issues.push('readiness.snapshot'); return null; }
+    const flag = (key) => take(value[key], (v) => typeof v === 'boolean', `readiness.snapshot.${key}`);
+    return {
+      chainId: take(value.chainId, (v) => Number.isSafeInteger(v) && v > 0, 'readiness.snapshot.chainId'),
+      safe: take(value.safe, isAddress, 'readiness.snapshot.safe'),
+      stableToken: take(value.stableToken, isAddress, 'readiness.snapshot.stableToken'),
+      assetToken: take(value.assetToken, isAddress, 'readiness.snapshot.assetToken'),
+      stableBalance: take(value.stableBalance, isInteger, 'readiness.snapshot.stableBalance'),
+      assetBalance: take(value.assetBalance, isInteger, 'readiness.snapshot.assetBalance'),
+      compatible: flag('compatible'), activeRound: flag('activeRound'), pendingAuthorization: flag('pendingAuthorization'),
+      observedAt: take(value.observedAt, isTimestamp, 'readiness.snapshot.observedAt'),
+      blockNumber: take(value.blockNumber, isInteger, 'readiness.snapshot.blockNumber'),
+    };
+  };
   const readiness = record.readiness == null ? null : isObject(record.readiness) ? {
     chainId: take(record.readiness.chainId, (v) => Number.isSafeInteger(v) && v > 0, 'readiness.chainId'),
     safe: take(record.readiness.safe, isAddress, 'readiness.safe'),
     consumedAt: take(record.readiness.consumedAt, isTimestamp, 'readiness.consumedAt'),
+    snapshot: readinessSnapshot(record.readiness.snapshot),
   } : (issues.push('readiness'), null);
   return {
     origin, schemaVersion: take(record.schemaVersion, (v) => v === 1, 'schemaVersion'),
@@ -426,9 +462,10 @@ export async function fundingReadModelFromEnvironment(env = process.env) {
   const [{ configuration }, intents] = await Promise.all([import('../funding/index.mjs'), import('../intents/index.mjs')]);
   const approved = configuration(JSON.parse(await readFile('runtime/funding/approved-routes.json', 'utf8')));
   const fundingSafe = JSON.parse(await readFile('deployments/aurora-mainnet-funding-safe.json', 'utf8'));
+  const strategyDeployment = JSON.parse(await readFile('deployments/aurora-testnet.json', 'utf8'));
   const client = intents.createIntentsClient({ allowExecutionQuotes: false });
   return createFundingReadModel({
-    mode: 'live-preview', approved, verifiedRoutes: intents.VERIFIED_FUNDING_ROUTES, fundingSafe,
+    mode: 'live-preview', approved, verifiedRoutes: intents.VERIFIED_FUNDING_ROUTES, fundingSafe, strategyDeployment,
     previewOrder: (request) => client.previewOrder(intents.toProviderFundingRequest(request, { slippageBps: 100 })),
   });
 }

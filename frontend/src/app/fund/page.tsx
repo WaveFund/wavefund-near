@@ -4,11 +4,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { RouteFlow, type FlowState } from "@/components/funding/RouteFlow";
 import { StatusTracker } from "@/components/funding/StatusTracker";
-import { BridgeCard, EligibilityCard, JourneyStrip, NetworkTruth, ScenarioExplorer, amountValidation } from "@/components/funding/FundingPanels";
+import { BridgeCard, JourneyStrip, LaneSelector, NetworkTruth, ReadinessCard, ScenarioExplorer, TidepoolLaneCard, amountValidation } from "@/components/funding/FundingPanels";
 import { Icon, useNow } from "@/components/funding/primitives";
-import { AURORA_MAINNET, AURORA_TESTNET, classifyFunding, networkName, shortHex, type FundingConfig, type FundingPreview } from "@/lib/funding/model.mjs";
+import {
+  AURORA_MAINNET, AURORA_TESTNET, LANE_ORDER, classifyFunding, deliverySummary, laneFromSearch, laneStatus, networkName, shortHex, strategyReadiness,
+  type FundingConfig, type FundingPreview, type LaneId, type LaneStatus,
+} from "@/lib/funding/model.mjs";
 import { FIXTURE_LABEL } from "@/lib/funding/fixtures.mjs";
-import { FundingApiUnavailable, createApiFundingLoader, createFixtureFundingLoader, type FundingLoader, type LoadedRecord } from "@/lib/funding/loader";
+import { FundingApiUnavailable, createApiFundingLoader, createFixtureFundingLoader, type FundingLoader, type FundingSource, type LoadedRecord } from "@/lib/funding/loader";
 
 type Phase = "connecting" | "ready" | "unavailable" | "rejected";
 const TERMINAL = new Set(["delivered", "refunded"]);
@@ -36,6 +39,9 @@ export default function FundPage() {
   const [trackError, setTrackError] = useState<string | null>(null);
   const [tracking, setTracking] = useState(false);
   const [pollTick, setPollTick] = useState(0);
+  const [lane, setLane] = useState<LaneId>("official");
+  // The data source most recently requested; the loader state lags behind it while a connection is in flight.
+  const wanted = useRef<FundingSource | null>(null);
   // Request counters: a response is applied only if no newer connect/preview/record request has started since.
   const serial = useRef(0);
   const previewSerial = useRef(0);
@@ -43,6 +49,7 @@ export default function FundPage() {
 
   const connect = useCallback(async (next: FundingLoader) => {
     const id = ++serial.current;
+    wanted.current = next.source;
     previewSerial.current++; recordSerial.current++;
     setPhase("connecting"); setNotice(null); setPreview(null); setPreviewError(null); setPreviewing(false); setTracked(null); setScenarioId(null); setTrackError(null); setTracking(false);
     try {
@@ -60,9 +67,22 @@ export default function FundPage() {
   }, []);
 
   useEffect(() => {
-    const fixtures = new URLSearchParams(window.location.search).get("fixtures") === "1";
-    void connect(fixtures ? createFixtureFundingLoader() : createApiFundingLoader());
+    const initial = laneFromSearch(window.location.search);
+    setLane(initial);
+    void connect(initial === "fixtures" ? createFixtureFundingLoader() : createApiFundingLoader());
   }, [connect]);
+
+  // Fixtures use the in-browser loader; the official and Tidepool lanes read the local API (Tidepool: identities only).
+  function selectLane(next: LaneId) {
+    setLane(next);
+    const source: FundingSource = next === "fixtures" ? "fixture" : "api";
+    if (wanted.current !== source) void connect(source === "fixture" ? createFixtureFundingLoader() : createApiFundingLoader());
+    const url = new URL(window.location.href);
+    url.searchParams.delete("fixtures"); url.searchParams.delete("lane");
+    if (next === "fixtures") url.searchParams.set("fixtures", "1");
+    if (next === "tidepool") url.searchParams.set("lane", "tidepool");
+    window.history.replaceState(null, "", url);
+  }
 
   const route = config?.routes.find((item) => item.routeId === routeId) ?? null;
   const isFixture = loader?.source === "fixture";
@@ -73,6 +93,10 @@ export default function FundPage() {
   const display = useMemo(() => (tracked && config && now
     ? classifyFunding(tracked.record, { config, now, receivedAt: isFixture ? now : tracked.receivedAt }) : null), [tracked, config, now, isFixture]);
   const bucket = display?.bucket ?? null;
+  // Delivery comes from receipts; strategy readiness only from the funding service's readiness record.
+  const delivery = deliverySummary(display);
+  const readiness = strategyReadiness(tracked?.record ?? null, display, config);
+  const laneStatuses = Object.fromEntries(LANE_ORDER.map((id) => [id, laneStatus(id, { source: loader?.source ?? null, phase, config })])) as Record<LaneId, LaneStatus>;
   // A quote is shown only for the route and exact amount currently selected.
   const currentRaw = route ? amountValidation(route, amountText).raw : null;
   const shownPreview = preview && route && preview.routeId === route.routeId && preview.amounts.amountIn === currentRaw ? preview : null;
@@ -129,7 +153,8 @@ export default function FundPage() {
     ? { step: display.step, halted: display.halted, bucket: display.bucket, preview: false, verified: display.verified, evidence: display.evidence }
     : { step: 0, halted: false, bucket: null, preview: Boolean(shownPreview), verified: false, evidence: liveConfig ? "none" : "fixture" };
 
-  const banner = phase === "connecting" ? { tone: "neutral", label: "CONNECTING", text: "Checking the local funding API…" }
+  const banner = lane === "tidepool" ? { tone: "warning", label: "PENDING INTEGRATION", text: "Tidepool community testnet lane · identities only, no route, quote or live status" }
+    : phase === "connecting" ? { tone: "neutral", label: "CONNECTING", text: "Checking the local funding API…" }
     : isFixture ? { tone: "fixture", label: "FIXTURE MODE", text: `${FIXTURE_LABEL}. Safe, wallet and transaction values are fake.` }
     : phase === "ready" && !liveConfig ? { tone: "fixture", label: "API FIXTURE DATA", text: "The local API reports fixture-quality configuration. Nothing here is live evidence." }
     : phase === "ready" ? (config?.mode === "live-preview"
@@ -137,16 +162,18 @@ export default function FundPage() {
       : { tone: "live", label: "FUNDING SERVICE", text: "Shared funding service records · signing disabled" })
     : phase === "unavailable" ? { tone: "warning", label: "API NOT CONNECTED", text: notice ?? "The local funding API is not available." }
     : { tone: "danger", label: "CONFIGURATION REJECTED", text: notice ?? "The funding configuration was rejected." };
-  const status = phase === "ready" ? (liveConfig ? { label: "Live dry quotes", tone: "ok" as const } : { label: "Fixture mode", tone: "warn" as const })
+  const status = lane === "tidepool" ? { label: "Integration pending", tone: "warn" as const }
+    : phase === "ready" ? (liveConfig ? { label: "Live dry quotes", tone: "ok" as const } : { label: "Fixture mode", tone: "warn" as const })
     : phase === "connecting" ? { label: "Connecting", tone: "pending" as const } : { label: "API offline", tone: "off" as const };
 
-  return <AppShell network={{ label: "Aurora mainnet", chainId: AURORA_MAINNET, tone: "mainnet" }} status={status}>
+  const shellNetwork = lane === "tidepool" ? { label: "Aurora testnet", chainId: AURORA_TESTNET, tone: "testnet" as const }
+    : lane === "fixtures" ? { label: "Fixture data", chainId: null, tone: "local" as const }
+    : { label: "Aurora mainnet", chainId: AURORA_MAINNET, tone: "mainnet" as const };
+
+  return <AppShell network={shellNetwork} status={status}>
     <div className={`mode-strip tone-${banner.tone}`} role="status">
       <span className="mode-label">{banner.label}</span>
       <span className="mode-text">{banner.text}</span>
-      {phase !== "connecting" && (isFixture
-        ? <button type="button" className="btn btn-ghost small" onClick={() => void connect(createApiFundingLoader())}>Use local API</button>
-        : <button type="button" className="btn btn-ghost small" onClick={() => void connect(createFixtureFundingLoader())}><Icon name="layers" />Explore fixture states</button>)}
     </div>
 
     <section className="page-head">
@@ -158,22 +185,34 @@ export default function FundPage() {
       <NetworkTruth roundChainId={config?.eligibility.roundChainId ?? AURORA_TESTNET} />
     </section>
 
+    <LaneSelector lane={lane} statuses={laneStatuses} onSelect={selectLane} />
+
     {phase === "connecting" && <div className="card loading-card" aria-busy="true"><span className="spinner" />Loading funding configuration…</div>}
 
-    {(phase === "unavailable" || phase === "rejected") && <section className="card connect-card">
+    {lane !== "tidepool" && (phase === "unavailable" || phase === "rejected") && <section className="card connect-card">
       <span className="empty-ico">{phase === "rejected" ? <Icon name="alert" /> : <Icon name="route" />}</span>
       <div>
         <h3>{phase === "rejected" ? "The funding configuration was rejected" : "The funding API is not connected"}</h3>
         <p>{notice}</p>
-        {phase === "unavailable" && <p>Run the full local demo with live dry quotes: <code>WAVEFUND_FUNDING=live-preview npm run demo:local</code>. Previews ask NEAR Intents 1Click for a dry quote only. Nothing is signed, funded or sent.</p>}
+        {phase === "unavailable" && <p>Run the full local demo with live dry quotes: <code>bash scripts/docker-demo/up.sh</code> (Docker), or <code>WAVEFUND_FUNDING=live-preview npm run demo:local</code> in a prepared environment. Previews ask NEAR Intents 1Click for a dry quote only. Nothing is signed, funded or sent.</p>}
         <div className="connect-actions">
-          <button type="button" className="btn btn-primary" onClick={() => void connect(createFixtureFundingLoader())}><Icon name="layers" /><span>Explore labelled fixtures</span></button>
+          <button type="button" className="btn btn-primary" onClick={() => selectLane("fixtures")}><Icon name="layers" /><span>Explore labelled fixtures</span></button>
           <button type="button" className="btn btn-ghost" onClick={() => void connect(createApiFundingLoader())}><Icon name="refund" />Retry local API</button>
         </div>
       </div>
     </section>}
 
-    {phase === "ready" && config && <>
+    {lane === "tidepool" && phase !== "connecting" && <div className="fund-layout">
+      <div className="fund-main"><TidepoolLaneCard strategy={phase === "ready" ? config?.strategy ?? null : null} live={liveConfig} notice={phase === "ready" ? null : notice} /></div>
+      <div className="fund-side">
+        {phase === "ready" && config
+          // Lanes never share evidence: a record tracked on the official lane is not shown here.
+          ? <ReadinessCard config={config} delivery={deliverySummary(null)} readiness={strategyReadiness(null, null, config)} live={liveConfig} />
+          : <p className="side-note"><Icon name="eye" />Strategy identities load from the local funding API, which is not connected. Nothing on this lane is simulated.</p>}
+      </div>
+    </div>}
+
+    {lane !== "tidepool" && phase === "ready" && config && <>
       {isFixture && <ScenarioExplorer scenarios={scenarios} selected={scenarioId} onSelect={(id) => void loadRecord(id, true)} busy={tracking} />}
       <div className="fund-layout">
         <div className="fund-main">
@@ -195,7 +234,7 @@ export default function FundPage() {
               <button type="submit" className="btn btn-ghost" disabled={!trackInput.trim() || tracking}>Track</button></div>
           </form>}
           {!isFixture && !config.capabilities.records && <p className="side-note"><Icon name="eye" />Funding records are not connected to this API yet. Dry-quote previews never create a record.</p>}
-          <EligibilityCard config={config} />
+          <ReadinessCard config={config} delivery={delivery} readiness={readiness} live={liveConfig} />
         </div>
       </div>
     </>}

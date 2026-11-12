@@ -4,7 +4,7 @@ Next.js dashboard for the Wavefund journey. Pages:
 
 | Route | Purpose |
 |---|---|
-| `/fund` | **01 Fund your Trading Safe**: NEAR Intents dry-quote preview into the manager's Aurora **mainnet** Safe, delivery/refund evidence tracker and round readiness. Signing is disabled. |
+| `/fund` | **01 Fund your Trading Safe**: three separate funding lanes. **Official 1Click** gives NEAR Intents dry quotes into the manager's Aurora **mainnet** Safe. **Tidepool community** (`?lane=tidepool`) is an Aurora testnet lane, pending integration, that shows identities only. **Labelled fixtures** (`?fixtures=1`). Also a delivery/refund evidence tracker, and “Funding delivered” shown separately from “Strategy ready”, which only the funding service can grant. Signing is disabled. |
 | `/` | **02 Decide**: local rehearsal / Aurora testnet monitoring of proposals, forecasts, execution and settlement. |
 | `/manager` | **03 Manage**: owner-reviewed, unsigned Safe actions. |
 

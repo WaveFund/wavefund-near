@@ -2,8 +2,9 @@
 
 export declare const AURORA_MAINNET: 1313161554;
 export declare const AURORA_TESTNET: 1313161555;
+export declare const ARBITRUM_SEPOLIA: 421614;
 
-export type NetworkInfo = { chainId: number; name: string; short: string; explorer: string; testnet: boolean };
+export type NetworkInfo = { chainId: number; name: string; short: string; explorer: string | null; testnet: boolean };
 export declare const NETWORKS: Readonly<Record<number, NetworkInfo>>;
 
 export type FundingAsset = { chainId: number; assetId: string | null; token: string; decimals: number; symbol: string | null };
@@ -23,6 +24,9 @@ export type FundingRoute = {
 };
 
 export type EligibilityCheck = { id: string; ok: boolean; label: string; detail: string };
+
+/** The strategy stack a round runs on (its Safe and stable token). Display and readiness binding only. */
+export type FundingStrategy = { chainId: number; safe: string; token: string; decimals: number; symbol: string | null; source: string | null };
 
 export type FundingConfig = {
   schemaVersion: 1;
@@ -44,6 +48,7 @@ export type FundingConfig = {
   refundRecipient: string;
   routes: FundingRoute[];
   unsupported: Array<{ id: string; label: string; reason: string }>;
+  strategy: FundingStrategy | null;
   eligibility: { eligible: boolean; roundChainId: number; checks: EligibilityCheck[] };
   capabilities: { preview: boolean; executableQuote: false; submitted: boolean; records: boolean; signing: false; broadcast: false };
   observedAt: number | null;
@@ -110,7 +115,16 @@ export type FundingRecordView = {
   observation?: { source: string | null; status: string | null; observedAt: number | null } | null;
   delivery?: FundingEvidence | null;
   refund?: FundingEvidence | null;
-  readiness?: { chainId: number | null; safe: string | null; consumedAt: number | null } | null;
+  readiness?: {
+    chainId: number | null;
+    safe: string | null;
+    consumedAt: number | null;
+    snapshot?: {
+      chainId: number | null; safe: string | null; stableToken: string | null; assetToken: string | null;
+      stableBalance: string | null; assetBalance: string | null; compatible: boolean | null; activeRound: boolean | null;
+      pendingAuthorization: boolean | null; observedAt: number | null; blockNumber: string | null;
+    } | null;
+  } | null;
   route?: { minimumConfirmations: number | null; maxObservationAgeSeconds: number | null };
   observedAt: number | null;
   integrity: 'ok' | 'invalid';
@@ -159,3 +173,21 @@ export declare function requiredConfirmations(record: FundingRecordView, config:
 export declare function evidenceFailures(kind: 'delivery' | 'refund', record: FundingRecordView, config: FundingConfig): string[];
 export declare function classifyFunding(record: unknown, options: { config: FundingConfig; now: number; receivedAt?: number }): FundingDisplay;
 export declare const BUCKET_LABELS: Readonly<Record<FundingBucket, string>>;
+
+export type LaneId = 'official' | 'tidepool' | 'fixtures';
+export type LaneInfo = { id: LaneId; kind: 'official' | 'community' | 'fixture'; title: string; provider: string; chainId: number | null; network: string; assets: string };
+export type LaneStatus = { tone: 'live' | 'fixture' | 'warning' | 'danger' | 'muted' | 'neutral'; label: string; detail: string };
+export declare const LANE_ORDER: readonly LaneId[];
+export declare const FUNDING_LANES: Readonly<Record<LaneId, LaneInfo>>;
+export declare function laneFromSearch(search: string): LaneId;
+export declare function laneStatus(id: LaneId, context?: { source?: 'api' | 'fixture' | null; phase?: string | null; config?: FundingConfig | null }): LaneStatus;
+
+export type SummaryTone = 'success' | 'fixture' | 'progress' | 'neutral' | 'warning' | 'danger' | 'muted';
+export type DeliverySummary = { state: 'none' | 'verified' | 'fixture' | 'in-transit' | 'not-sent' | 'refund' | 'unconfirmed'; tone: SummaryTone; label: string; detail: string };
+export declare function deliverySummary(display: FundingDisplay | null): DeliverySummary;
+export type StrategyReadiness = {
+  state: 'unknown' | 'not-delivered' | 'blocked' | 'awaiting-service' | 'rejected' | 'fixture' | 'ready';
+  tone: SummaryTone; label: string; detail: string; failures: string[]; ready: boolean;
+};
+export declare const READINESS_FAILURES: Readonly<Record<string, string>>;
+export declare function strategyReadiness(record: unknown, display: FundingDisplay | null, config: FundingConfig | null): StrategyReadiness;

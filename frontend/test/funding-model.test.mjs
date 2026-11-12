@@ -2,8 +2,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  AURORA_MAINNET, AURORA_TESTNET, classifyFunding, explorerUrl, formatUnits, parseUnits, percentOf, roundEligibility,
-  safeText, validateFundingConfig, validatePreview,
+  ARBITRUM_SEPOLIA, AURORA_MAINNET, AURORA_TESTNET, FUNDING_LANES, LANE_ORDER, classifyFunding, deliverySummary, explorerUrl, formatUnits, laneFromSearch,
+  laneStatus, networkName, parseUnits, percentOf, roundEligibility, safeText, strategyReadiness, validateFundingConfig, validatePreview,
 } from '../src/lib/funding/model.mjs';
 import { fixtureConfig, fixturePreview, fixtureScenarios } from '../src/lib/funding/fixtures.mjs';
 
@@ -88,7 +88,7 @@ test('every fixture scenario maps to its display state and is never verified', (
     'fx-awaiting': 'awaiting-manager', 'fx-dispatching': 'submitted', 'fx-pending': 'submitted', 'fx-provider-success': 'provider-success',
     'fx-delivered': 'delivered', 'fx-refunded': 'refunded', 'fx-partial-refund': 'refund-partial', 'fx-refund-pending': 'refund-pending',
     'fx-failed': 'failed', 'fx-broadcast-unknown': 'needs-review', 'fx-expired': 'needs-review', 'fx-stale': 'submitted',
-    'fx-inconsistent': 'needs-review', 'fx-hostile': 'unavailable',
+    'fx-inconsistent': 'needs-review', 'fx-hostile': 'unavailable', 'fx-ready-wrong-network': 'delivered', 'fx-foreign-token': 'needs-review',
   };
   const scenarios = fixtureScenarios(NOW);
   assert.deepEqual(scenarios.map((item) => item.id).sort(), Object.keys(expected).sort());
@@ -233,4 +233,125 @@ test('fixture data is recognisably synthetic and never labelled live', () => {
     assert.equal(item.record.quote?.evidenceQuality ?? 'fixture', 'fixture');
   }
   assert.equal(c.destination.safe, `0x${'5afe'.repeat(10)}`);
+});
+
+// ---------------------------------------------------------------- funding lanes and strategy readiness
+
+test('funding lanes stay separate: Tidepool is pending whatever the API reports, fixtures are always synthetic', () => {
+  assert.deepEqual([...LANE_ORDER], ['official', 'tidepool', 'fixtures']);
+  assert.equal(FUNDING_LANES.official.chainId, AURORA_MAINNET);
+  assert.equal(FUNDING_LANES.tidepool.chainId, AURORA_TESTNET);
+  assert.equal(FUNDING_LANES.fixtures.chainId, null);
+  const liveConfig = { ...config(), evidence: 'live', capabilities: { ...config().capabilities, preview: true, records: true } };
+  for (const context of [{}, { source: 'api', phase: 'ready', config: liveConfig }, { source: 'fixture', phase: 'ready', config: config() }]) {
+    assert.equal(laneStatus('tidepool', context).label, 'Pending integration');
+    assert.equal(laneStatus('fixtures', context).tone, 'fixture');
+  }
+  assert.equal(laneStatus('official', { source: 'api', phase: 'ready', config: liveConfig }).label, 'Live dry quotes');
+  assert.equal(laneStatus('official', { source: 'api', phase: 'ready', config: config() }).label, 'Fixture config', 'fixture-quality API config is never live');
+  assert.equal(laneStatus('official', { source: 'fixture', phase: 'ready', config: config() }).label, 'Not connected');
+  assert.equal(laneStatus('official', { source: 'api', phase: 'unavailable', config: null }).label, 'API offline');
+  assert.equal(laneFromSearch('?fixtures=1'), 'fixtures');
+  assert.equal(laneFromSearch('?lane=tidepool'), 'tidepool');
+  assert.equal(laneFromSearch('?lane=<script>'), 'official');
+  // A server cannot smuggle a Tidepool route, testnet destination or lane status through the configuration.
+  const smuggled = validateFundingConfig({ ...fixtureConfig(NOW), lanes: [{ id: 'tidepool', status: 'live' }], tidepool: { status: 'delivered' } });
+  assert.equal(smuggled.ok, true);
+  assert.equal('lanes' in smuggled.config || 'tidepool' in smuggled.config, false);
+  const testnetRoute = fixtureConfig(NOW); testnetRoute.routes[0].destination.chainId = AURORA_TESTNET;
+  assert.equal(validateFundingConfig(testnetRoute).ok, false);
+  assert.equal(networkName(ARBITRUM_SEPOLIA), 'Arbitrum Sepolia');
+  assert.equal(explorerUrl(ARBITRUM_SEPOLIA, 'tx', `0x${'ab'.repeat(32)}`), null, 'no explorer link until B confirms one');
+});
+
+test('the strategy identity is validated and must match the round network', () => {
+  assert.deepEqual(config().strategy, { chainId: AURORA_TESTNET, safe: `0x${'7e57'.repeat(10)}`, token: `0x${'57ab'.repeat(10)}`, decimals: 6, symbol: 'USDC', source: 'fixture' });
+  const base = fixtureConfig(NOW);
+  assert.equal(validateFundingConfig({ ...base, strategy: undefined }).config.strategy, null);
+  for (const strategy of [{ ...base.strategy, chainId: AURORA_MAINNET }, { ...base.strategy, chainId: 42161 }, { ...base.strategy, token: 'javascript:alert(1)' },
+    { ...base.strategy, token: base.strategy.safe }, { ...base.strategy, decimals: 99 }, 'testnet']) {
+    assert.equal(validateFundingConfig({ ...base, strategy }).ok, false, JSON.stringify(strategy));
+  }
+});
+
+// A hypothetical same-network deployment, used only to exercise the positive readiness path.
+const STRATEGY_TOKEN_OTHER = `0x${'57ab'.repeat(10)}`;
+function sameNetworkConfig(strategyOverrides = {}, eligible = true) {
+  const base = fixtureConfig(NOW);
+  const checked = validateFundingConfig({ ...base,
+    strategy: { chainId: AURORA_MAINNET, safe: base.destination.safe, token: base.destination.token, decimals: 6, symbol: 'USDC', source: 'test', ...strategyOverrides },
+    eligibility: { eligible, roundChainId: AURORA_MAINNET, checks: [{ id: 'all', ok: eligible, label: 'Prerequisites', detail: '' }] } });
+  assert.equal(checked.ok, true, checked.error);
+  return checked.config;
+}
+const readinessFor = (cfg, overrides = {}, snapshot = {}) => ({ chainId: cfg.strategy.chainId, safe: cfg.strategy.safe, consumedAt: NOW - 5,
+  snapshot: { chainId: cfg.strategy.chainId, safe: cfg.strategy.safe, stableToken: cfg.strategy.token, assetToken: `0x${'a55e'.repeat(10)}`, stableBalance: '24994950', assetBalance: '0',
+    compatible: true, activeRound: false, pendingAuthorization: false, observedAt: NOW - 6, blockNumber: '5', ...snapshot }, ...overrides });
+const readinessOf = (record, cfg) => strategyReadiness(record, classifyFunding(record, { config: cfg, now: NOW }), cfg);
+
+test('delivered is never strategy-ready by itself; readiness comes only from the funding service', () => {
+  const cfg = sameNetworkConfig();
+  const delivered = live(scenario('fx-delivered'));
+  const display = classifyFunding(delivered, { config: cfg, now: NOW });
+  assert.equal(display.verified, true);
+  assert.equal(deliverySummary(display).state, 'verified');
+  const waiting = strategyReadiness(delivered, display, cfg);
+  assert.equal(waiting.state, 'awaiting-service'); assert.equal(waiting.ready, false);
+  const ready = readinessOf({ ...delivered, readiness: readinessFor(cfg) }, cfg);
+  assert.equal(ready.state, 'ready'); assert.equal(ready.ready, true); assert.equal(ready.label, 'Ready to run strategy');
+  assert.equal(readinessOf({ ...scenario('fx-delivered'), readiness: readinessFor(cfg) }, cfg).state, 'fixture', 'fixture readiness is never ready');
+  for (const id of ['fx-pending', 'fx-provider-success', 'fx-refunded', 'fx-inconsistent']) {
+    const result = readinessOf({ ...live(scenario(id)), readiness: readinessFor(cfg) }, cfg);
+    assert.equal(result.ready, false, id); assert.equal(result.state, 'not-delivered', id);
+  }
+  assert.equal(strategyReadiness(delivered, display, null).state, 'unknown');
+  assert.equal(strategyReadiness(delivered, display, { ...cfg, strategy: null }).ready, false);
+});
+
+test('another token in the Safe, or readiness for another Safe, network or deployment, is never ready', () => {
+  const cfg = sameNetworkConfig();
+  const delivered = live(scenario('fx-delivered'));
+  // The strategy uses a different stable token from the one delivered: delivery is real, readiness is impossible.
+  const otherToken = sameNetworkConfig({ token: STRATEGY_TOKEN_OTHER });
+  assert.equal(classifyFunding(delivered, { config: otherToken, now: NOW }).verified, true, 'the delivery itself is valid');
+  const blocked = readinessOf(delivered, otherToken);
+  assert.equal(blocked.state, 'blocked'); assert.deepEqual(blocked.failures, ['DELIVERED_TOKEN_NOT_STRATEGY_TOKEN']);
+  const claimed = readinessOf({ ...delivered, readiness: readinessFor(otherToken) }, otherToken);
+  assert.equal(claimed.ready, false); assert.ok(claimed.failures.includes('DELIVERED_TOKEN_NOT_STRATEGY_TOKEN'), 'even a service readiness for the strategy token cannot cover a different delivered token');
+  const cases = [
+    [{ snapshot: undefined }, {}, 'READINESS_SNAPSHOT_MISSING'],
+    [{}, { stableToken: STRATEGY_TOKEN_OTHER }, 'SNAPSHOT_TOKEN_NOT_STRATEGY_TOKEN'],
+    [{ safe: `0x${'7'.repeat(40)}` }, {}, 'READINESS_SAFE_MISMATCH'],
+    [{}, { safe: `0x${'7'.repeat(40)}` }, 'READINESS_SAFE_MISMATCH'],
+    [{ chainId: AURORA_TESTNET }, {}, 'READINESS_NETWORK_MISMATCH'],
+    [{}, { chainId: AURORA_TESTNET }, 'READINESS_NETWORK_MISMATCH'],
+    [{ consumedAt: null }, {}, 'READINESS_TIME_MISSING'],
+    [{}, { compatible: null }, 'DEPLOYMENT_NOT_COMPATIBLE'],
+    [{}, { activeRound: true }, 'ROUND_BUSY'],
+    [{}, { pendingAuthorization: null }, 'ROUND_BUSY'],
+  ];
+  for (const [overrides, snapshot, code] of cases) {
+    const readiness = readinessFor(cfg, overrides, snapshot);
+    if ('snapshot' in overrides && overrides.snapshot === undefined) delete readiness.snapshot;
+    const result = readinessOf({ ...delivered, readiness }, cfg);
+    assert.equal(result.ready, false, code); assert.equal(result.state, 'rejected', code); assert.ok(result.failures.includes(code), `${code} in ${result.failures}`);
+  }
+  const incomplete = sameNetworkConfig({}, false);
+  assert.deepEqual(readinessOf({ ...delivered, readiness: readinessFor(incomplete) }, incomplete).failures, ['PREREQUISITES_INCOMPLETE']);
+});
+
+test('today’s configuration: mainnet 1Click funding can never make the testnet strategy ready', () => {
+  const cfg = config();
+  const delivered = readinessOf(live(scenario('fx-delivered')), cfg);
+  assert.equal(delivered.state, 'blocked');
+  assert.deepEqual(delivered.failures, ['DELIVERY_NETWORK_NOT_STRATEGY_NETWORK', 'DELIVERY_SAFE_NOT_STRATEGY_SAFE', 'DELIVERED_TOKEN_NOT_STRATEGY_TOKEN']);
+  const wrong = readinessOf(live(scenario('fx-ready-wrong-network')), cfg);
+  assert.equal(wrong.state, 'rejected'); assert.equal(wrong.ready, false);
+  for (const code of ['READINESS_NETWORK_MISMATCH', 'READINESS_SAFE_MISMATCH', 'SNAPSHOT_TOKEN_NOT_STRATEGY_TOKEN', 'PREREQUISITES_INCOMPLETE']) assert.ok(wrong.failures.includes(code), code);
+  const foreign = scenario('fx-foreign-token');
+  const foreignDisplay = classify(foreign);
+  assert.ok(foreignDisplay.issues.includes('WRONG_TOKEN'));
+  assert.equal(deliverySummary(foreignDisplay).state, 'unconfirmed');
+  assert.equal(strategyReadiness(foreign, foreignDisplay, cfg).state, 'not-delivered');
+  assert.equal(deliverySummary(null).state, 'none');
 });

@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import {
-  AURORA_MAINNET, compareRaw, formatDuration, formatUnits, networkName, parseUnits, roundEligibility,
-  type FundingConfig, type FundingPreview, type FundingRoute,
+  AURORA_MAINNET, AURORA_TESTNET, FUNDING_LANES, LANE_ORDER, READINESS_FAILURES, compareRaw, formatDuration, formatUnits, networkName, parseUnits, roundEligibility,
+  type DeliverySummary, type FundingConfig, type FundingPreview, type FundingRoute, type FundingStrategy, type LaneId, type LaneStatus,
+  type StrategyReadiness, type SummaryTone,
 } from "@/lib/funding/model.mjs";
 import { FIXTURE_LABEL, type FixtureScenario } from "@/lib/funding/fixtures.mjs";
-import { Address, Amount, CountdownRing, Icon, Pill, identiconStyle } from "./primitives";
+import { Address, Amount, CountdownRing, Icon, Pill, identiconStyle, type IconName, type PillTone } from "./primitives";
 
 const MONOGRAMS: Record<number, string> = { 42161: "ARB", 1: "ETH" };
 const symbolOf = (route: FundingRoute) => route.source.symbol ?? "token";
@@ -29,8 +30,80 @@ export function NetworkTruth({ roundChainId }: { roundChainId: number }) {
     <div className="truth-net mainnet"><i className="chain-dot mainnet" /><div><b>Aurora mainnet</b><span>Funding destination · NEAR Intents</span></div><code>{AURORA_MAINNET}</code></div>
     <span className="truth-neq" aria-hidden="true">≠</span>
     <div className="truth-net testnet"><i className="chain-dot testnet" /><div><b>{networkName(roundChainId)}</b><span>Verified strategy rounds</span></div><code>{roundChainId}</code></div>
-    <p>NEAR Intents has no testnet. Mainnet funds never enter a testnet round.</p>
+    <p>NEAR Intents 1Click has no testnet. Mainnet funds never enter a testnet round; testnet funding is a separate community lane.</p>
   </div>;
+}
+
+const LANE_ICON: Record<LaneId, IconName> = { official: "intents", tidepool: "route", fixtures: "layers" };
+const LANE_DOT: Record<LaneId, string> = { official: "mainnet", tidepool: "testnet", fixtures: "local" };
+
+export function LaneSelector({ lane, statuses, onSelect }: { lane: LaneId; statuses: Record<LaneId, LaneStatus>; onSelect: (id: LaneId) => void }) {
+  return <section className="lanes" aria-labelledby="lanes-heading">
+    <div className="lanes-head"><span className="kicker" id="lanes-heading">Funding source</span><p>Three separate lanes. Networks, tokens and evidence never mix.</p></div>
+    <div className="lane-grid" role="radiogroup" aria-labelledby="lanes-heading">
+      {LANE_ORDER.map((id) => {
+        const info = FUNDING_LANES[id]; const status = statuses[id]; const active = lane === id;
+        return <button type="button" role="radio" aria-checked={active} key={id} data-lane={id} className={`lane lane-${info.kind} ${active ? "active" : ""}`} onClick={() => onSelect(id)} title={status.detail}>
+          <span className="lane-top"><span className="lane-ico"><Icon name={LANE_ICON[id]} /></span><Pill tone={status.tone}>{status.label}</Pill></span>
+          <b>{info.title}</b>
+          <small>{info.provider}</small>
+          <span className="lane-net"><i className={`chain-dot ${LANE_DOT[id]}`} />{info.network}{info.chainId ? <code>{info.chainId}</code> : null}</span>
+          <span className="lane-assets">{info.assets}</span>
+        </button>;
+      })}
+    </div>
+  </section>;
+}
+
+function strategySource(strategy: FundingStrategy, live: boolean) {
+  return live ? `${strategy.source ?? "trusted configuration"} · not independently verified` : "Fixture identity · fake addresses";
+}
+
+// Pending community lane: shows explicit identities only. No route, quote, deposit address or live status exists for it.
+export function TidepoolLaneCard({ strategy, live, notice }: { strategy: FundingStrategy | null; live: boolean; notice: string | null }) {
+  const missing = <span className="unavailable">Unavailable</span>;
+  const pending = <span className="unavailable">Not configured</span>;
+  return <section className="card bridge tidepool" aria-labelledby="tidepool-heading">
+    <div className="bridge-head">
+      <h2 id="tidepool-heading"><Icon name="route" />Tidepool testnet</h2>
+      <div className="bridge-tags"><Pill tone="violet">Community</Pill><Pill tone="warning">Pending integration</Pill></div>
+    </div>
+    <p className="lane-note">A community relayer from a testnet source chain into Aurora testnet, including Safe payouts. Worthless test assets. Not official NEAR Intents 1Click settlement.</p>
+    <div className="identity-pair">
+      <div className="identity-box">
+        <span className="identity-head"><i className="chain-dot testnet" />Strategy needs</span>
+        <dl>
+          <div><dt>Network</dt><dd>Aurora testnet <code>{AURORA_TESTNET}</code></dd></div>
+          <div><dt>Strategy Safe</dt><dd>{strategy ? <Address value={strategy.safe} chainId={strategy.chainId} label="strategy Safe" live={live} /> : missing}</dd></div>
+          <div><dt>Stable token</dt><dd>{strategy ? <><span>{strategy.symbol ?? "token"}</span><Address value={strategy.token} chainId={strategy.chainId} label="strategy token" live={live} /></> : missing}</dd></div>
+          <div><dt>Decimals</dt><dd>{strategy ? strategy.decimals : "—"}</dd></div>
+        </dl>
+        <small>{strategy ? strategySource(strategy, live) : notice ?? "Loads from the local funding API."}</small>
+      </div>
+      <div className="identity-box pending">
+        <span className="identity-head"><Icon name="clock" />Tidepool would deliver</span>
+        <dl>
+          <div><dt>Source network</dt><dd>{pending}<small>announced: Arbitrum Sepolia</small></dd></div>
+          <div><dt>Recipient Safe</dt><dd>{pending}</dd></div>
+          <div><dt>Delivered token</dt><dd>{pending}</dd></div>
+          <div><dt>Status feed</dt><dd><span className="unavailable">Not connected</span></dd></div>
+        </dl>
+        <small>Supplied by B’s interface and A’s verified configuration.</small>
+      </div>
+    </div>
+    <div className="compat-note" role="note"><Icon name="alert" /><div><b>Tidepool’s test token may differ from the strategy token.</b><p>A delivery of any other token never makes the strategy ready. Readiness comes only from the funding service, for this Safe and this token.</p></div></div>
+    <div className="bridge-actions"><button type="button" className="btn btn-locked btn-lg" disabled><Icon name="lock" /><span>No Tidepool quote · integration pending</span></button></div>
+    <details className="why-locked">
+      <summary><Icon name="lock" />What unlocks this lane?</summary>
+      <ol>
+        <li><Icon name="lock" />B: a read-only Tidepool quote, status and receipt interface for the local API</li>
+        <li><Icon name="lock" />A: a verified testnet route and funding-record support for Aurora testnet</li>
+        <li><Icon name="lock" />Team: confirm the recipient Safe and the token the strategy accepts</li>
+        <li><Icon name="lock" />Review: executable quotes, signing and sending stay disabled</li>
+      </ol>
+      <p>Until then this lane shows identities only. It invents no route, quote or live status.</p>
+    </details>
+  </section>;
 }
 
 const CHIPS: Array<{ label: string; value: string }> = [{ label: "1", value: "1" }, { label: "25", value: "25" }, { label: "100", value: "100" }, { label: "1K", value: "1000" }];
@@ -166,20 +239,44 @@ export function QuoteDetails({ preview, route, config, now }: { preview: Funding
   </details>;
 }
 
-export function EligibilityCard({ config }: { config: FundingConfig }) {
-  const result = roundEligibility(config);
-  return <section className={`card eligibility ${result.eligible ? "eligible" : ""}`} aria-labelledby="eligibility-heading">
-    <div className="card-head"><h2 id="eligibility-heading" className="card-title"><Icon name="shield" />Round readiness</h2><Pill tone={result.eligible ? "success" : "danger"}>{result.eligible ? "Eligible" : "Not eligible"}</Pill></div>
+const SUMMARY_PILL: Record<SummaryTone, PillTone> = { success: "success", fixture: "fixture", progress: "violet", neutral: "neutral", warning: "warning", danger: "danger", muted: "muted" };
+
+// Funding delivered and strategy ready are separate facts from separate sources, shown side by side.
+export function ReadinessCard({ config, delivery, readiness, live }: { config: FundingConfig; delivery: DeliverySummary; readiness: StrategyReadiness; live: boolean }) {
+  const prerequisites = roundEligibility(config);
+  const strategy = config.strategy;
+  return <section className={`card eligibility ${readiness.ready ? "eligible" : ""}`} aria-labelledby="readiness-heading">
+    <div className="card-head"><h2 id="readiness-heading" className="card-title"><Icon name="shield" />Delivered ≠ ready</h2><Pill tone={readiness.ready ? "success" : "danger"}>{readiness.ready ? "Ready to run strategy" : "Strategy not ready"}</Pill></div>
     <div className="card-pad">
-      <div className="network-compare">
-        <div className="net mainnet"><span>Funding lands on</span><b>Aurora mainnet</b><code>{AURORA_MAINNET}</code></div>
-        <div className="neq" aria-label={result.sameNetwork ? "same network" : "different networks"}>{result.sameNetwork ? "=" : "≠"}</div>
-        <div className="net testnet"><span>Rounds run on</span><b>{networkName(config.eligibility.roundChainId)}</b><code>{config.eligibility.roundChainId}</code></div>
+      <div className="ready-split" role="group" aria-label="Funding delivery and strategy readiness">
+        <div className={`ready-tile tone-${delivery.tone}`} data-delivery={delivery.state}>
+          <span className="ready-label"><Icon name="receipt" />Funding delivered</span>
+          <b>{delivery.label}</b><p>{delivery.detail}</p><small>From bound, final receipts</small>
+        </div>
+        <span className="ready-op" aria-hidden="true">≠</span>
+        <div className={`ready-tile tone-${readiness.tone}`} data-readiness={readiness.state}>
+          <span className="ready-label"><Icon name="play" />Strategy ready</span>
+          <b>{readiness.label}</b><p>{readiness.detail}</p><small>Only from the funding service</small>
+        </div>
       </div>
+      {readiness.failures.length > 0 && <ul className="readiness-failures" aria-label="Why the strategy is not ready">
+        {readiness.failures.map((code) => <li key={code}><Pill tone={SUMMARY_PILL[readiness.tone]}>{code}</Pill><span>{READINESS_FAILURES[code] ?? "Unknown reason."}</span></li>)}
+      </ul>}
+      <div className="network-compare">
+        <div className="net mainnet"><span>1Click funding lands on</span><b>Aurora mainnet</b><code>{AURORA_MAINNET}</code></div>
+        <div className="neq" aria-label={prerequisites.sameNetwork ? "same network" : "different networks"}>{prerequisites.sameNetwork ? "=" : "≠"}</div>
+        <div className="net testnet"><span>Strategy rounds run on</span><b>{networkName(config.eligibility.roundChainId)}</b><code>{config.eligibility.roundChainId}</code></div>
+      </div>
+      {strategy ? <dl className="identity-list">
+        <div><dt>Strategy Safe</dt><dd><Address value={strategy.safe} chainId={strategy.chainId} label="strategy Safe" live={live} /></dd></div>
+        <div><dt>Strategy token</dt><dd><span>{strategy.symbol ?? "token"} · {strategy.decimals} dp</span><Address value={strategy.token} chainId={strategy.chainId} label="strategy token" live={live} /></dd></div>
+        <div><dt>Identity source</dt><dd><small>{strategySource(strategy, live)}</small></dd></div>
+      </dl> : <p className="identity-missing"><Icon name="alert" />The strategy Safe and token are not configured, so readiness is never shown.</p>}
+      <h3 className="sub-head">Round prerequisites</h3>
       <ul className="checklist">
-        {result.checks.map((check) => <li key={check.id} className={check.ok ? "ok" : "no"}><Icon name={check.ok ? "check" : "cross"} /><div><b>{check.label}</b><p>{check.detail}</p></div></li>)}
+        {prerequisites.checks.map((check) => <li key={check.id} className={check.ok ? "ok" : "no"}><Icon name={check.ok ? "check" : "cross"} /><div><b>{check.label}</b><p>{check.detail}</p></div></li>)}
       </ul>
-      <p className="fine-print">The funding service consumes readiness once, after verified delivery, and only for a reviewed deployment on the same network.</p>
+      <p className="fine-print">The funding service consumes readiness once (prepareRound), after verified delivery, for the same network, Safe and stable token. This page never marks a Safe ready on its own.</p>
     </div>
   </section>;
 }

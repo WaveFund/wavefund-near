@@ -5,11 +5,12 @@ import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { startServer } from '../server.mjs';
-import { createFundingReadModel, fundingReadModelFromEnvironment, projectFundingRecord, validateFundingSafe } from '../operator/funding-readonly.mjs';
+import { createFundingReadModel, fundingReadModelFromEnvironment, projectFundingRecord, validateFundingSafe, validateStrategyDeployment } from '../operator/funding-readonly.mjs';
 import { configuration, createFundingService, createFundingStore, fundingHash } from '../funding/index.mjs';
 import { IntentsError, VERIFIED_FUNDING_ROUTES, toProviderFundingRequest, validateFundingRequest } from '../intents/index.mjs';
 
 const MANIFEST = JSON.parse(readFileSync(new URL('../../deployments/aurora-mainnet-funding-safe.json', import.meta.url), 'utf8'));
+const TESTNET = JSON.parse(readFileSync(new URL('../../deployments/aurora-testnet.json', import.meta.url), 'utf8'));
 const APPROVED = configuration(JSON.parse(readFileSync(new URL('../funding/approved-routes.json', import.meta.url), 'utf8')));
 const ROUTE = VERIFIED_FUNDING_ROUTES[0];
 const hash = (n) => `0x${String(n).padStart(64, '0')}`;
@@ -242,4 +243,38 @@ test('malformed or hostile record values are nulled and flagged instead of displ
   const text = JSON.stringify(projected);
   for (const leaked of ['<script>', '<img', 'javascript:']) assert.equal(text.includes(leaked), false);
   assert.equal(projectFundingRecord('nope', { origin: 'fixture', observedAt: 1 }).integrity, 'invalid');
+});
+
+test('strategy identity comes from the testnet manifest, is validated, and never replaces the funding destination', async () => {
+  const config = model({ strategyDeployment: TESTNET }).config();
+  assert.deepEqual(config.strategy, { chainId: 1313161555, safe: TESTNET.contracts.safe.toLowerCase(), token: TESTNET.contracts.stable.toLowerCase(), decimals: 6, symbol: 'USDC', source: 'deployments/aurora-testnet.json' });
+  assert.equal(config.destination.chainId, 1313161554);
+  assert.equal(config.destination.safe, MANIFEST.safe.toLowerCase());
+  assert.notEqual(config.destination.token, config.strategy.token, 'the mainnet accepted asset is not the testnet strategy token');
+  assert.equal(model().config().strategy, null, 'no manifest, no strategy identity');
+  assert.throws(() => validateStrategyDeployment({ ...TESTNET, chainId: 1313161554 }), /Aurora testnet/);
+  assert.throws(() => validateStrategyDeployment({ ...TESTNET, contracts: { ...TESTNET.contracts, stable: 'javascript:alert(1)' } }), /invalid strategy stable/);
+  assert.throws(() => validateStrategyDeployment({ ...TESTNET, contracts: { ...TESTNET.contracts, safe: undefined } }), /invalid strategy safe/);
+  assert.throws(() => validateStrategyDeployment({ ...TESTNET, contracts: { ...TESTNET.contracts, stable: TESTNET.contracts.safe } }), /must differ/);
+  assert.throws(() => model({ strategyDeployment: { ...TESTNET, schemaVersion: 2 } }), /strategy manifest/);
+  const live = await fundingReadModelFromEnvironment({ WAVEFUND_FUNDING: 'live-preview' });
+  assert.equal(live.config().strategy.safe, TESTNET.contracts.safe.toLowerCase());
+  assert.equal(live.config().strategy.token, TESTNET.contracts.stable.toLowerCase());
+});
+
+test('readiness keeps the funding service snapshot it was checked against; malformed snapshots are flagged', () => {
+  const snapshot = { chainId: 1313161555, safe: `0x${'7'.repeat(40)}`, stableToken: `0x${'8'.repeat(40)}`, assetToken: `0x${'9'.repeat(40)}`, stableBalance: '950', assetBalance: '0',
+    activeRound: false, pendingAuthorization: false, observedAt: 9, blockNumber: '12', blockHash: hash(1), compatible: true };
+  const readiness = { chainId: 1313161555, safe: snapshot.safe, snapshot, consumedAt: 10 };
+  const projected = projectFundingRecord({ schemaVersion: 1, fundingId: 'fund-r', state: 'delivered', readiness }, { origin: 'funding-service', observedAt: 11 });
+  assert.deepEqual(projected.readiness, { chainId: 1313161555, safe: snapshot.safe, consumedAt: 10,
+    snapshot: { chainId: 1313161555, safe: snapshot.safe, stableToken: snapshot.stableToken, assetToken: snapshot.assetToken, stableBalance: '950', assetBalance: '0', compatible: true, activeRound: false, pendingAuthorization: false, observedAt: 9, blockNumber: '12' } });
+  assert.equal(projected.integrityIssues.some((issue) => issue.startsWith('readiness')), false);
+  const bad = projectFundingRecord({ schemaVersion: 1, fundingId: 'fund-r', state: 'delivered', readiness: { ...readiness, snapshot: { ...snapshot, stableToken: '0xnope', compatible: 'yes' } } }, { origin: 'funding-service', observedAt: 11 });
+  assert.equal(bad.integrity, 'invalid');
+  assert.equal(bad.readiness.snapshot.stableToken, null);
+  assert.equal(bad.readiness.snapshot.compatible, null);
+  assert.ok(bad.integrityIssues.includes('readiness.snapshot.stableToken') && bad.integrityIssues.includes('readiness.snapshot.compatible'));
+  const missing = projectFundingRecord({ schemaVersion: 1, fundingId: 'fund-r', state: 'delivered', readiness: { chainId: 1313161555, safe: snapshot.safe, consumedAt: 10 } }, { origin: 'funding-service', observedAt: 11 });
+  assert.ok(missing.integrityIssues.includes('readiness.snapshot'));
 });
