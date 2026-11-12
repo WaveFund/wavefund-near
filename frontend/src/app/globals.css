@@ -350,6 +350,13 @@ details > summary::-webkit-details-marker { display: none; }
   .stat:nth-child(3) { border-left: 0; }
   .stat:nth-child(n+3) { border-top: 1px solid var(--border); }
 }
+/* Tablets and narrow laptop windows: the nav moves to its own row before the header controls run out of room. */
+@media (min-width: 761px) and (max-width: 1060px) {
+  .header-inner { height: auto; flex-wrap: wrap; gap: 0; }
+  .brand { height: 56px; }
+  .nav { order: 3; width: calc(100% + 48px); margin: 0 -24px; padding: 0 16px; height: 46px; overflow-x: auto; border-top: 1px solid var(--border); scrollbar-width: none; }
+  .nav::-webkit-scrollbar { display: none; }
+}
 @media (max-width: 760px) {
   .header-inner { height: auto; flex-wrap: wrap; gap: 0; padding: 0 16px; }
   .brand { height: 52px; }
@@ -367,6 +374,7 @@ details > summary::-webkit-details-marker { display: none; }
 }
 @media (max-width: 520px) {
   .dl > div { flex-wrap: wrap; row-gap: 4px; }
+  .dl dt { flex-shrink: 1; min-width: 0; max-width: 100%; }
   .dl dd { justify-content: flex-start; text-align: left; }
   .stats { grid-template-columns: minmax(0, 1fr); }
   .stat + .stat { border-left: 0; border-top: 1px solid var(--border); }

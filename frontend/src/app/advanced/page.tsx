@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { apiUrl, units } from "@/lib/state";
+import Link from "next/link";
 import { AppShell } from "@/components/AppShell";
 import { CopyText, Icon, type IconName } from "@/components/funding/primitives";
 import { Badge, Button, Card, CardHeader, DescriptionList, EmptyState, Notice, PageHeader, Skeleton, Stat } from "@/components/ui";
@@ -49,12 +50,11 @@ export default function ManagerPage() {
   const current = ACTIONS.find((item) => item.id === action) ?? ACTIONS[0];
   const aurora = state?.chainId === 1313161555;
 
-  return <AppShell
-    network={aurora ? { label: "Aurora testnet", chainId: 1313161555, tone: "testnet" } : { label: "Anvil local", chainId: state?.chainId ?? 31337, tone: "local" }}
-    status={{ label: state ? `Block ${state.blockNumber}` : loading ? "Connecting" : "API offline", tone: state ? "ok" : loading ? "pending" : "off" }}>
-    <PageHeader title="Admin"
-      description="Inspect the deployed Safe and module, then prepare one owner action as an unsigned Safe transaction. You review and sign it in your Safe; nothing is signed here."
-      meta={<><Badge tone="info">Owner review</Badge><span>Unsigned transactions only · no automatic signatures or transfers</span></>}
+  return <AppShell source={aurora ? { label: "Aurora testnet", tone: "testnet", detail: "read-only" } : { label: "Local simulation", tone: "local", detail: state ? `block ${state.blockNumber}` : loading ? "connecting" : "offline", status: state ? "ok" : loading ? "pending" : "off" }}>
+    <PageHeader title="Advanced · owner tools"
+      breadcrumb={<Link className="breadcrumb" href="/safe?safe=local"><Icon name="chevron" />My Safe</Link>}
+      description="For the Safe owner. Inspect the deployed Safe and module, then prepare one owner action as an unsigned Safe transaction to review and sign in your own Safe. Nothing is signed or sent here."
+      meta={<><Badge tone="warning">Unsigned only</Badge><span>Not part of the everyday flow · no automatic signatures or transfers</span></>}
       actions={<><Button icon="wallet" disabled={!state} onClick={() => void connect()}>Check wallet owner</Button><Button variant="primary" icon="shield" loading={loading} onClick={() => void refresh()}>Refresh checks</Button></>} />
 
     {error ? <div className="page-notice"><Notice tone="warning" title={state ? "Action failed" : "Local services are not ready"}><p>{error}</p></Notice></div> : null}

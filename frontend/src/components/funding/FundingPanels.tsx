@@ -2,13 +2,10 @@
 
 import type { ReactNode } from "react";
 import {
-  AURORA_MAINNET, READINESS_FAILURES, compareRaw, formatDuration, formatUnits, networkName, parseUnits, roundEligibility, tidepoolLadder,
+  AURORA_MAINNET, READINESS_FAILURES, compareRaw, formatDuration, formatUnits, networkName, parseUnits, roundEligibility,
   type DeliverySummary, type FundingConfig, type FundingPreview, type FundingRoute, type StrategyReadiness, type SummaryTone,
 } from "@/lib/funding/model.mjs";
-import Link from "next/link";
 import { FIXTURE_LABEL, type FixtureScenario } from "@/lib/funding/fixtures.mjs";
-import type { FreshCheck, TidepoolDemo } from "@/lib/tidepool/model.mjs";
-import { TidepoolFunding } from "@/components/tidepool/TidepoolParts";
 import { Address, Amount, CountdownRing, Icon, identiconStyle } from "./primitives";
 import { Badge, Button, DescriptionList, Notice, type Tone } from "@/components/ui";
 
@@ -134,28 +131,6 @@ export function QuoteSummary({ preview, route, config, now }: { preview: Funding
       { label: "Expires", value: expired ? <span className="neg">Expired · refresh the quote</span> : now ? `in ${formatDuration(preview.expiresAt - now)}` : "—" },
     ]} />
     <p className="quote-foot"><Icon name="lock" />Preview only: not funded, not executable, no deposit address exists.</p>
-  </div>;
-}
-
-// Completed community-testnet demonstration, shown as history from saved evidence. No live route, quote or send exists.
-export function TidepoolPanel({ demo, error, fresh, freshing, onFresh, now }: { demo: TidepoolDemo | null; error: string | null; fresh: FreshCheck | null; freshing: boolean; onFresh: () => void; now: number }) {
-  return <div className="tidepool">
-    <p className="muted">A completed Tidepool community-testnet transfer: Arbitrum Sepolia test USDC into an Aurora testnet Trading Safe, followed by a strategy round on that Safe. Tidepool is a community relayer, not an official NEAR Intents testnet, and the tokens have no value.</p>
-    <ol className="ladder" aria-label="Minted is not delivered, delivered is not strategy readiness">
-      {tidepoolLadder(demo).map((step, index) => <li key={step.id} className="ladder-step">
-        <span className="ladder-index">{index + 1}</span>
-        <div><b>{step.title}</b><p>{step.detail}</p><small>{step.owner}</small></div>
-        <Badge tone={step.state === "saved-verified" || step.state === "saved-settled" ? "success" : "neutral"}>{step.label}</Badge>
-      </li>)}
-    </ol>
-    {demo ? <TidepoolFunding demo={demo} fresh={fresh} freshing={freshing} onFresh={onFresh} now={now} />
-      : error ? <Notice tone="warning" title="Tidepool evidence unavailable"><p>{error}</p></Notice> : <p className="subtle">Loading the saved Tidepool evidence…</p>}
-    {demo ? <Link className="link" href={`/rounds/${demo.strategy.roundSlug}`}>Open the Tidepool strategy round<Icon name="arrow" /></Link> : null}
-    <Button variant="locked" size="lg" block icon="lock" disabled>No live Tidepool route · history only</Button>
-    <details className="disclosure flush">
-      <summary>Why is there no deposit button?</summary>
-      <div className="disclosure-body"><p>This source shows one completed testnet demonstration. It is kept separate from the production 1Click funding records and never feeds mainnet readiness. Sending, signing and executable quotes stay disabled until an integrated route is reviewed.</p></div>
-    </details>
   </div>;
 }
 

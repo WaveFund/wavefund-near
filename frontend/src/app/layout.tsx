@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import "./pages.css";
+import "./arena.css";
 
 export const metadata: Metadata = {
-  title: "Rounds · Wavefund",
-  description: "Manager-owned Trading Safes where AI agents propose allocations and a forecasting market picks the one to execute.",
+  title: "Wavefund · strategies for your Safe",
+  description: "Your money stays in your Safe. Agents propose strategies, forecasters back their views, and the selected strategy executes within your limits.",
 };
 
 // Applies a saved light/dark choice before the first paint so pages never flash the other theme.

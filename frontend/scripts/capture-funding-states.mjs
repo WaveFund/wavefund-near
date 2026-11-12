@@ -23,7 +23,7 @@ const browser = await chromium.launch();
 try {
   for (const [device, viewport] of VIEWPORTS) {
     const page = await browser.newPage({ viewport, reducedMotion: 'reduce' });
-    await page.goto(new URL('/fund?fixtures=1', base).toString(), { waitUntil: 'networkidle' });
+    await page.goto(new URL('/safe/fund?fixtures=1', base).toString(), { waitUntil: 'networkidle' });
     await page.getByRole('heading', { name: /Every funding state/ }).waitFor();
     for (const [name, action] of STATES) {
       if (action === 'preview') {
