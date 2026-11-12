@@ -26,8 +26,8 @@ bash scripts/docker-demo/up.sh
 
 The first run takes several minutes, because it installs dependencies and compiles the contracts. Later runs reuse the cache. When the launcher prints `✓ Ready`, open:
 
-- `http://127.0.0.1:3000`: **Home**. Select **Run local demo** to run a round on the local chain and follow it on `/demo`.
-- `http://127.0.0.1:3000/arena`: the **Forecast arena**, with the completed Aurora testnet rounds (including the Tidepool-funded round) as step-by-step journeys.
+- `http://127.0.0.1:3000/rounds/local`: press **Run local simulation** to run a round on the local chain and follow it stage by stage.
+- `http://127.0.0.1:3000/rounds`: the completed Aurora testnet rounds (including the Tidepool-funded round), each opening on its result recap with a stage-by-stage replay.
 - `http://127.0.0.1:3000/safe`: **My Safe**, and `/safe/fund` to **fund a Safe** with live NEAR Intents 1Click dry quotes. Sending and signing are disabled.
 - `http://127.0.0.1:3000/agents`: outcome reputation, read live and read-only from public Aurora testnet, per reputation contract.
 - `http://127.0.0.1:3000/advanced`: owner tools (unsigned transactions only).

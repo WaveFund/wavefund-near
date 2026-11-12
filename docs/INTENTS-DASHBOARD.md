@@ -6,7 +6,7 @@
 
 This is not cross-chain execution of a winning strategy. The existing strategy and forecasting screens, the Trading Safe model, the AI agents, Uniswap v4 forecasting and Trisolaris execution are unchanged. Funding comes before them; it does not replace them.
 
-**Status (2026-11-12, branch `feat/strategy-arena-ui`, base `744d940`):** implemented and verified in network-isolated Node 22 containers on scratch copies (results under [Verification](#verification-in-the-isolated-container)). Sending stays disabled. The completed **Tidepool community-testnet demonstration** (funding → strategy round → outcome → reputation) is shown from saved, independently verified evidence. Official production 1Click delivery remains unproven.
+**Status (2026-11-13, branch `feat/strategy-arena-ui`, UI v2):** implemented and verified in network-isolated Node 22 containers on scratch copies (results under [Verification](#verification-in-the-isolated-container)). Sending stays disabled. The completed **Tidepool community-testnet demonstration** (funding → strategy round → outcome → reputation) is shown from saved, independently verified evidence. Official production 1Click delivery remains unproven.
 
 ## Judge path
 
@@ -18,27 +18,26 @@ This is not cross-chain execution of a winning strategy. The existing strategy a
    - **Executed** shows 149.61 test USDC → 0.071692173391461052 test ETH; **Evaluated** shows −0.6458% (exact factor 0.993541889635073190) on the round's recorded −5% to +5% payout range, as a measured outcome, not a failure.
    - **Redeemed** shows the forecaster redemptions (9.934985 / 10.0207 / 10 / 9.981677) and Momentum's −1 outcome point.
    - **Agents** shows each stack's own −1 for Momentum; the two are never summed.
-6. **Optional, official mainnet:** on **My Safe → Fund a Safe**, keep **NEAR Intents · mainnet preview** selected and press **Get quote** for a signed dry quote. It is a mainnet preview; delivery is unproven and execution disabled.
+6. **Optional, official mainnet:** on **Portfolio → Funding → Funding preview** (`/portfolio/fund`), keep **NEAR Intents · mainnet preview** selected and press **Get quote** for a signed dry quote. It is a mainnet preview; delivery is unproven and execution disabled.
 7. **Run `node scripts/judge-check.mjs`** (after `npm ci --ignore-scripts`):
    - it is read-only and needs internet for the public checks;
    - it does not start a round, call a paid model, sign or move funds.
 
-## Product flow: strategy arena
+## Product flow: strategy arena (UI v2)
 
-The dashboard explains the product before it shows technical detail. One sentence leads: *"Your money stays in your Safe. Agents propose strategies, forecasters back their views, and the selected strategy executes within your limits."* Pages are organised by role (manager, forecaster, agents) and every round uses one journey: **Funded → Proposals → Forecasting → Selected → Executed → Evaluated → Redeemed**. Each step answers one question; addresses, hashes, formulas and raw evidence are under collapsed **Technical details**.
+One sentence leads: *"Agents propose. Forecasters take positions. Your Safe executes the selected strategy."* Navigation is **Rounds | Portfolio | Agents**; a header context selector switches between the completed testnet run, the local simulation (only when a local backend runs) and the separate mainnet funding preview. Every round uses one journey, **Funded → Proposals → Forecasting → Selected → Executed → Evaluated → Redeemed**, but only ONE stage body is shown at a time; receipts, rationale, definitions and evidence open in drawers or tooltips.
 
 ### Screen map
 
-- **Home** `/`: what it is, how a round works, where the money sits, role paths, recap of the completed testnet run. One primary action: **Run local demo**. Secondary: **Explore completed testnet run**, **Choose my role**.
-  - **Demo** `/demo`: the local simulation, live; a switch to the completed testnet run.
-  - **My Safe** `/safe` (Tidepool testnet, local simulation or original testnet Safe): Safe identity → investment capital → limits and readiness → latest round → outcome history.
-    - **Fund a Safe** `/safe/fund`: NEAR Intents mainnet preview, the completed Tidepool transfer, labelled example states.
-  - **Arena** `/arena`: round cards → how forecasting works → LONG and SHORT → how the winner is chosen.
-    - **Round** `/rounds/{network}-{engine}-{round}`: the seven-step journey for one saved round, then identity, checks and limitations.
-  - **Agents** `/agents?stack=tidepool|original`: agent cards per reputation contract, and the scoring rules.
+- **Welcome** `/`: hero, saved-run stat card, one "How it works" drawer. Primary: **Explore a round**; secondary: **View portfolio**.
+- **Rounds** `/rounds` → **Round workspace** `/rounds/{network}-{engine}-{round}?stage=…`: header (≤3 metrics + provenance), stage selector, one stage body, summary column with Observer / Recorded participant, "Activity & receipts" and "About this evidence" drawers. Settled rounds open on **Result** with **Replay journey** (view navigation only).
+  - **Local simulation** `/rounds/local`: unavailable unless the backend is the local simulation; Start only when idle.
+- **Portfolio** `/portfolio?safe=tidepool|original|local&tab=overview|funding|history|permissions`: "Demo portfolio", one tab body at a time.
+  - **Funding preview** `/portfolio/fund`: NEAR Intents mainnet dry quotes, the completed Tidepool transfer, labelled example states.
+- **Agents** `/agents?stack=tidepool|original`: ranking table; row drawer with cumulative score vs each round's own delta.
 - **Advanced** `/advanced` (header icon): unsigned owner transactions for the local Safe.
 
-Earlier routes redirect: `/fund` → `/safe/fund`, `/record` → `/agents`, `/manager` → `/advanced`.
+Earlier routes redirect (query strings kept): `/arena` → `/rounds`, `/demo` → `/rounds/local`, `/safe` → `/portfolio`, `/safe/fund` and `/fund` → `/portfolio/fund`, `/record` → `/agents`, `/manager` → `/advanced`.
 
 ### Capability table
 
@@ -76,7 +75,7 @@ Earlier routes redirect: `/fund` → `/safe/fund`, `/record` → `/agents`, `/ma
 | Re-verify receipts now | Public Arbitrum Sepolia and Aurora testnet RPCs plus the Tidepool status API, read on click | "Fresh read · time" (or unavailable) |
 | Agents → both reputation stacks | Shared reputation reader against Aurora testnet, on page load | "Live read" (stale or unavailable shown as such) |
 | Fund a Safe → NEAR Intents mainnet preview | Signed dry quotes from 1Click, mainnet | "Live preview quotes" (preview only) |
-| My Safe → local Safe limits | `/api/manager` on the local chain | "Live · local" |
+| Portfolio → Permissions (local Safe) | `/api/manager` on the local chain | "Live · local" |
 
 ## Network truth
 
@@ -99,7 +98,7 @@ The existing frontend network validation (`decodeState`: Anvil 31337 or Aurora t
 
 ## Funding lanes
 
-`/safe/fund` opens with a **Funding source** selector. The three lanes never share networks, tokens or evidence:
+`/portfolio/fund` opens with a **Funding source** selector. The three lanes never share networks, tokens or evidence:
 
 | Lane | Network | What it shows | Status source |
 |---|---|---|---|
@@ -107,7 +106,7 @@ The existing frontend network validation (`decodeState`: Anvil 31337 or Aurora t
 | **Tidepool testnet demo** | Aurora testnet | The completed transfer as history: the ladder **Minted test USDC ≠ Bridge delivery (verified) ≠ Strategy round (settled)**, the funding flow with saved, provider-reported and fresh-read labels, the funding → strategy linkage, and a link to the round. No deposit control | Always **Testnet demo · history** (`laneStatus` forces it, whatever a server reports) |
 | **Labelled fixtures** | none | 16 synthetic states with fake addresses | Always **Synthetic** |
 
-Links: `/safe/fund` (official), `/safe/fund?lane=tidepool`, `/safe/fund?fixtures=1`.
+Links: `/portfolio/fund` (official), `/portfolio/fund?lane=tidepool`, `/portfolio/fund?fixtures=1`.
 - The Tidepool source reads its identities and amounts from the reviewed manifest and evidence through `GET /api/tidepool/demo`; nothing is hand-written.
 - It is never wired into `FundingRecordV1`, which stays production-mainnet only, and it never feeds mainnet readiness.
 - Arbitrum Sepolia links use `sepolia.arbiscan.io`, the explorer named in the verified Tidepool evidence.
@@ -226,7 +225,7 @@ Both cards list limitations ("no TEE attestation verified", the same model for e
 | Funding read model / projection | `runtime/operator/funding-readonly.mjs` (new) |
 | API wiring | `runtime/server.mjs`: one import, one optional dependency, one route branch |
 | API tests | `runtime/test/funding-api.test.mjs` |
-| UI: “Fund a Safe” | `frontend/src/app/safe/fund/*`, `frontend/src/components/funding/*` |
+| UI: “Funding preview” | `frontend/src/app/portfolio/fund/*`, `frontend/src/components/funding/*` |
 | UI logic (pure, tested) | `frontend/src/lib/funding/model.mjs` (+ `.d.mts`) |
 | Labelled fixtures + loader | `frontend/src/lib/funding/fixtures.mjs`, `loader.ts` |
 | UI logic tests | `frontend/test/funding-model.test.mjs` (`npm test --workspace @wavefund/frontend`) |
@@ -237,8 +236,8 @@ Both cards list limitations ("no TEE attestation verified", the same model for e
 | Testnet round evidence API | `runtime/operator/round-evidence.mjs`, `runtime/test/round-evidence.test.mjs` |
 | Agents (outcome reputation, two stacks) | `frontend/src/app/agents/*`, `frontend/src/lib/record/*`, `frontend/test/record-model.test.mjs` |
 | Tidepool demonstration | `runtime/operator/tidepool-demo.mjs`, `runtime/test/tidepool-demo.test.mjs`, `frontend/src/lib/tidepool/*`, `frontend/src/components/tidepool/TidepoolParts.tsx`, `frontend/test/tidepool-model.test.mjs` |
-| Round journey (network + engine + round) | `frontend/src/app/rounds/[id]/*`, `frontend/src/components/arena/story.tsx` |
-| Strategy-arena flow | `frontend/src/app/{page,demo,safe,arena,advanced}`, `frontend/src/components/arena/*`, `frontend/src/app/arena.css`, `frontend/src/lib/arena/*`, `frontend/test/arena-model.test.mjs` |
+| Round journey (network + engine + round) | `frontend/src/app/rounds/*`, `frontend/src/components/arena/{workspace,stages}.tsx` |
+| Strategy-arena flow | `frontend/src/app/{page,rounds,portfolio,agents,advanced}`, `frontend/src/components/arena/*`, `frontend/src/app/arena.css`, `frontend/src/lib/arena/*`, `frontend/test/arena-model.test.mjs` |
 | Local demo usability | `scripts/local-demo.mjs`, `scripts/lib/local-demo-preflight.test.mjs` |
 | Screenshot helper | `frontend/scripts/capture-funding-states.mjs` (Playwright, fixture mode, loopback only) |
 
@@ -303,7 +302,7 @@ Monetary values are rendered from integer strings with BigInt. Missing values sh
 
 ## Fixture versus live
 
-- `/safe/fund?fixtures=1`, or the **Example states** lane, opens an in-browser fixture explorer labelled “FIXTURE · synthetic data, not live evidence”. Safe, wallet, deposit and transaction values are fake and recognisable (`0x5afe…`, `0xfeed…`, `0xf1f1…`). The fixture strategy Safe is `0x7e57…`, its token `0x57ab…`, and a foreign token is `0x0dd0…`. Only public token identities are real. Fixture records are never labelled `live-verified` and never get explorer links.
+- `/portfolio/fund?fixtures=1`, or the **Example states** lane, opens an in-browser fixture explorer labelled “FIXTURE · synthetic data, not live evidence”. Safe, wallet, deposit and transaction values are fake and recognisable (`0x5afe…`, `0xfeed…`, `0xf1f1…`). The fixture strategy Safe is `0x7e57…`, its token `0x57ab…`, and a foreign token is `0x0dd0…`. Only public token identities are real. Fixture records are never labelled `live-verified` and never get explorer links.
 - Live mode shows the trusted mainnet funding Safe and real dry quotes. No live funding record can exist yet: production routes are empty and executable quotes are disabled.
 - The fixture model lives entirely in the frontend's own files, behind the `FundingLoader` interface, so it can be replaced.
 
