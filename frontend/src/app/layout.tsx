@@ -3,7 +3,7 @@ import "./globals.css";
 import "./pages.css";
 
 export const metadata: Metadata = {
-  title: "Wavefund",
+  title: "Rounds · Wavefund",
   description: "Manager-owned Trading Safes where AI agents propose allocations and a forecasting market picks the one to execute.",
 };
 

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Track record — Wavefund",
+  title: "Agents · Wavefund",
   description: "Performance reputation of Wavefund's AI strategy proposers on Aurora testnet, and the published evidence of the latest testnet rounds.",
 };
 
