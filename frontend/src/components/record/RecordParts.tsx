@@ -25,7 +25,7 @@ function AgentRow({ agent, stale }: { agent: ReputationAgent; stale: boolean }) 
 
 export function Leaderboard({ board, stale, names }: { board: ReputationBoard | null; stale: boolean; names: string[] }) {
   return <div className="table-wrap"><table className="table leaderboard">
-    <thead><tr><th>Agent</th><th className="num">Performance points</th><th className="num">Evaluated</th><th className="num col-outcomes" title="Positive · negative · flat">Outcomes <small>+ · − · 0</small></th><th>Status</th></tr></thead>
+    <thead><tr><th>Agent</th><th className="num">Outcome points</th><th className="num">Evaluated</th><th className="num col-outcomes" title="Positive · negative · flat">Outcomes <small>+ · − · 0</small></th><th>Status</th></tr></thead>
     <tbody>{board ? board.agents.map((agent) => <AgentRow key={agent.address ?? agent.name} agent={agent} stale={stale} />)
       : names.map((name) => <tr key={name}><td><div className="agent-cell"><Avatar name={name} /><div><b>{name}</b><Skeleton width={110} height={12} /></div></div></td><td className="num"><Skeleton width={28} height={18} /></td><td className="num"><Skeleton width={16} /></td><td className="num col-outcomes"><Skeleton width={60} /></td><td><Badge>Loading</Badge></td></tr>)}</tbody>
   </table></div>;
@@ -44,11 +44,12 @@ export function ReputationSource({ board, now }: { board: ReputationBoard; now: 
 
 export function ReputationRules() {
   const rules: Array<[string, string]> = [
-    ["Only shipped strategies score", "A proposal earns a point only when it is selected, executed through the Safe and settled. Hold never scores."],
+    ["Only shipped strategies score", "A proposal earns a point only when it is selected, executed through the Safe and settled. Non-selected agents and Hold rounds are not scored."],
     ["+1, −1 or 0", "Positive measured return +1, negative −1, exactly flat 0. Small and large moves count the same."],
     ["Unselected means untested", "Losing proposals get no point and no penalty."],
     ["Selections are separate", "Registry selection wins are a different metric and are not counted here."],
-    ["Not a credit score", "Performance reputation only. Not a lending score, alpha or a Sybil-resistant identity."],
+    ["Separate per stack", "Each engine has its own reputation contract. Histories are never added together."],
+    ["Not a credit score", "Outcome reputation only. Not a lending score, proof of investment skill, alpha or a Sybil-resistant identity."],
   ];
   return <ul className="check-list">{rules.map(([title, text]) => <li key={title} className="wait"><Icon name="check" /><div><b>{title}</b><p>{text}</p></div></li>)}</ul>;
 }
