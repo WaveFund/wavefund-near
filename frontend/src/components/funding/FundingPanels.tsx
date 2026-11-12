@@ -1,17 +1,16 @@
 "use client";
 
-import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import {
-  AURORA_MAINNET, AURORA_TESTNET, FUNDING_LANES, LANE_ORDER, READINESS_FAILURES, compareRaw, tidepoolLadder, formatDuration, formatUnits, networkName, parseUnits, roundEligibility,
-  type DeliverySummary, type FundingConfig, type FundingPreview, type FundingRoute, type FundingStrategy, type LaneId, type LaneStatus,
-  type StrategyReadiness, type SummaryTone,
+  AURORA_MAINNET, AURORA_TESTNET, READINESS_FAILURES, compareRaw, formatDuration, formatUnits, networkName, parseUnits, roundEligibility, tidepoolLadder,
+  type DeliverySummary, type FundingConfig, type FundingPreview, type FundingRoute, type FundingStrategy, type StrategyReadiness, type SummaryTone,
 } from "@/lib/funding/model.mjs";
 import { FIXTURE_LABEL, type FixtureScenario } from "@/lib/funding/fixtures.mjs";
-import { Address, Amount, CountdownRing, Icon, Pill, identiconStyle, type IconName, type PillTone } from "./primitives";
+import { Address, Amount, CountdownRing, Icon, identiconStyle } from "./primitives";
+import { Badge, Button, DescriptionList, Notice, type Tone } from "@/components/ui";
 
-const MONOGRAMS: Record<number, string> = { 42161: "ARB", 1: "ETH" };
 const symbolOf = (route: FundingRoute) => route.source.symbol ?? "token";
+const SUMMARY_TONE: Record<SummaryTone, Tone> = { success: "success", fixture: "warning", progress: "info", neutral: "neutral", warning: "warning", danger: "danger", muted: "neutral" };
 
 export function amountValidation(route: FundingRoute, text: string): { raw: string | null; error: string | null } {
   const parsed = parseUnits(text, route.source.decimals);
@@ -25,295 +24,203 @@ export function amountValidation(route: FundingRoute, text: string): { raw: stri
   return { raw: parsed.raw, error: null };
 }
 
-export function NetworkTruth({ roundChainId }: { roundChainId: number }) {
-  return <div className="card truth" role="note" aria-label="Network separation">
-    <div className="truth-net mainnet"><i className="chain-dot mainnet" /><div><b>Aurora mainnet</b><span>Funding destination · NEAR Intents</span></div><code>{AURORA_MAINNET}</code></div>
-    <span className="truth-neq" aria-hidden="true">≠</span>
-    <div className="truth-net testnet"><i className="chain-dot testnet" /><div><b>{networkName(roundChainId)}</b><span>Verified strategy rounds</span></div><code>{roundChainId}</code></div>
-    <p>NEAR Intents 1Click has no testnet. Mainnet funds never enter a testnet round; testnet funding is a separate community lane.</p>
+export function TreasurySummary({ config, live }: { config: FundingConfig; live: boolean }) {
+  return <div className="summary-grid">
+    <div><span>Trading Safe</span><b className="summary-safe"><span className="safe-avatar" style={identiconStyle(config.destination.safe)} aria-hidden="true" /><Address value={config.destination.safe} chainId={AURORA_MAINNET} label="Safe address" live={live} /></b></div>
+    <div><span>Network</span><b><i className="dot mainnet" />Aurora mainnet <code>{AURORA_MAINNET}</code></b></div>
+    <div><span>Accepted asset</span><b>{config.destination.symbol} <Address value={config.destination.token} chainId={AURORA_MAINNET} label="accepted token" live={live} /></b></div>
+    <div><span>Refunds go to</span><b>Manager <Address value={config.refundRecipient} label="refund wallet" live={false} /></b></div>
+    <div><span>Wavefund module</span><b>{config.destination.wavefundModuleEnabled ? <Badge tone="success">Enabled</Badge> : <Badge>Not enabled · funding-proof Safe</Badge>}</b></div>
   </div>;
 }
 
-const LANE_ICON: Record<LaneId, IconName> = { official: "intents", tidepool: "route", fixtures: "layers" };
-const LANE_DOT: Record<LaneId, string> = { official: "mainnet", tidepool: "testnet", fixtures: "local" };
-
-export function LaneSelector({ lane, statuses, onSelect }: { lane: LaneId; statuses: Record<LaneId, LaneStatus>; onSelect: (id: LaneId) => void }) {
-  return <section className="lanes" aria-labelledby="lanes-heading">
-    <div className="lanes-head"><span className="kicker" id="lanes-heading">Funding source</span><p>Three separate lanes. Networks, tokens and evidence never mix.</p></div>
-    <div className="lane-grid" role="radiogroup" aria-labelledby="lanes-heading">
-      {LANE_ORDER.map((id) => {
-        const info = FUNDING_LANES[id]; const status = statuses[id]; const active = lane === id;
-        return <button type="button" role="radio" aria-checked={active} key={id} data-lane={id} className={`lane lane-${info.kind} ${active ? "active" : ""}`} onClick={() => onSelect(id)} title={status.detail}>
-          <span className="lane-top"><span className="lane-ico"><Icon name={LANE_ICON[id]} /></span><Pill tone={status.tone}>{status.label}</Pill></span>
-          <b>{info.title}</b>
-          <small>{info.provider}</small>
-          <span className="lane-net"><i className={`chain-dot ${LANE_DOT[id]}`} />{info.network}{info.chainId ? <code>{info.chainId}</code> : null}</span>
-          <span className="lane-assets">{info.assets}</span>
-        </button>;
-      })}
-    </div>
-  </section>;
+export type FlowStep = { title: string; sub: string; state: "idle" | "active" | "done" | "halted" | "preview" };
+export function RouteSteps({ steps }: { steps: FlowStep[] }) {
+  return <ol className="route-steps" aria-label="Deposit route">
+    {steps.map((step, index) => <li key={step.title} className={`route-step ${step.state}`}>
+      <span className="route-step-index" aria-hidden="true">{step.state === "done" ? <Icon name="check" /> : step.state === "halted" ? <Icon name="alert" /> : index + 1}</span>
+      <span className="route-step-text"><b>{step.title}</b><small>{step.sub}</small></span>
+    </li>)}
+  </ol>;
 }
 
-function strategySource(strategy: FundingStrategy, live: boolean) {
-  return live ? `${strategy.source ?? "trusted configuration"} · not independently verified` : "Fixture identity · fake addresses";
-}
+const CHIPS = ["10", "25", "100", "1000"];
 
-// Pending community lane: shows explicit identities only. No route, quote, deposit address or live status exists for it.
-export function TidepoolLaneCard({ strategy, live, notice }: { strategy: FundingStrategy | null; live: boolean; notice: string | null }) {
-  const missing = <span className="unavailable">Unavailable</span>;
-  const pending = <span className="unavailable">Not configured</span>;
-  return <section className="card bridge tidepool" aria-labelledby="tidepool-heading">
-    <div className="bridge-head">
-      <h2 id="tidepool-heading"><Icon name="route" />Tidepool testnet</h2>
-      <div className="bridge-tags"><Pill tone="violet">Community</Pill><Pill tone="warning">Pending integration</Pill></div>
-    </div>
-    <p className="lane-note">A community relayer from a testnet source chain into Aurora testnet, including Safe payouts. Worthless test assets. Not official NEAR Intents 1Click settlement.</p>
-    <ol className="tide-ladder" aria-label="Minted is not delivered, delivered is not ready">
-      {tidepoolLadder().map((step, index) => <li key={step.id} className={`tide-step ${step.state}`}>
-        {index > 0 ? <span className="tide-neq" aria-hidden="true">≠</span> : null}
-        <div><b>{step.title}</b><p>{step.detail}</p><span className="tide-step-foot"><small>{step.owner}</small><Pill tone="muted">{step.label}</Pill></span></div>
-      </li>)}
-    </ol>
-    <div className="identity-pair">
-      <div className="identity-box">
-        <span className="identity-head"><i className="chain-dot testnet" />Current strategy stack</span>
-        <dl>
-          <div><dt>Network</dt><dd>Aurora testnet <code>{AURORA_TESTNET}</code></dd></div>
-          <div><dt>Strategy Safe</dt><dd>{strategy ? <Address value={strategy.safe} chainId={strategy.chainId} label="strategy Safe" live={live} /> : missing}</dd></div>
-          <div><dt>Stable token</dt><dd>{strategy ? <><span>{strategy.symbol ?? "token"}</span><Address value={strategy.token} chainId={strategy.chainId} label="strategy token" live={live} /></> : missing}</dd></div>
-          <div><dt>Decimals</dt><dd>{strategy ? strategy.decimals : "—"}</dd></div>
-        </dl>
-        <small>{strategy ? `${strategySource(strategy, live)} · original testnet deployment, not the Tidepool destination` : notice ?? "Loads from the local funding API."}</small>
-      </div>
-      <div className="identity-box pending">
-        <span className="identity-head"><Icon name="clock" />Tidepool would deliver</span>
-        <dl>
-          <div><dt>Source network</dt><dd>{pending}<small>announced: Arbitrum Sepolia</small></dd></div>
-          <div><dt>Recipient Safe</dt><dd>{pending}<small>Tidepool strategy stack chosen by A/B</small></dd></div>
-          <div><dt>Delivered token</dt><dd>{pending}<small>Tidepool test USDC · differs from the current strategy token</small></dd></div>
-          <div><dt>Status feed</dt><dd><span className="unavailable">Not connected</span></dd></div>
-        </dl>
-        <small>Supplied by B’s interface and A’s verified configuration.</small>
-      </div>
-    </div>
-    <div className="compat-note" role="note"><Icon name="alert" /><div><b>Tidepool’s test USDC is not the current strategy token.</b><p>Test-only pool usage is permitted for A/B’s compatible stack, which is theirs to deliver and is not implemented here. A delivery of any other token never makes a strategy ready.</p></div></div>
-    <div className="bridge-actions"><button type="button" className="btn btn-locked btn-lg" disabled><Icon name="lock" /><span>No Tidepool quote · integration pending</span></button></div>
-    <details className="why-locked">
-      <summary><Icon name="lock" />What unlocks this lane?</summary>
-      <ol>
-        <li><Icon name="lock" />A/B: the Tidepool adapter, signature verification, compatible contracts and pool, and bridge execution</li>
-        <li><Icon name="lock" />A/B: a read-only route, status and receipt interface for the local API</li>
-        <li><Icon name="lock" />A: a verified testnet route and funding-record support for Aurora testnet</li>
-        <li><Icon name="lock" />Team: confirm the destination Safe and the token that strategy accepts</li>
-        <li><Icon name="lock" />Review: executable quotes, signing and sending stay disabled</li>
-      </ol>
-      <p>Until then this lane shows identities only. It invents no route, quote or live status.</p>
-    </details>
-  </section>;
-}
-
-const CHIPS: Array<{ label: string; value: string }> = [{ label: "1", value: "1" }, { label: "25", value: "25" }, { label: "100", value: "100" }, { label: "1K", value: "1000" }];
-
-export function BridgeCard({ config, live, route, onRoute, amountText, onAmountChange, onPreview, previewing, previewError, preview, now, canPreview }: {
+export function DepositForm({ config, live, route, onRoute, amountText, onAmountChange, onPreview, previewing, previewError, preview, now, canPreview, steps }: {
   config: FundingConfig; live: boolean; route: FundingRoute; onRoute: (routeId: string) => void; amountText: string; onAmountChange: (value: string) => void;
-  onPreview: (raw: string) => void; previewing: boolean; previewError: string | null; preview: FundingPreview | null; now: number; canPreview: boolean;
+  onPreview: (raw: string) => void; previewing: boolean; previewError: string | null; preview: FundingPreview | null; now: number; canPreview: boolean; steps: FlowStep[];
 }) {
-  const [routesOpen, setRoutesOpen] = useState(false);
-  const unit = symbolOf(route); const target = route.destination.symbol ?? "token";
+  const unit = symbolOf(route);
   const { raw, error } = amountValidation(route, amountText);
   const ready = raw !== null && canPreview && !previewing;
   const sending = preview ? formatUnits(preview.amounts.amountIn, route.source.decimals) : null;
-  return <section className="card bridge" aria-labelledby="bridge-heading">
-    <div className="bridge-head">
-      <h2 id="bridge-heading"><Icon name="fund" />Fund Safe</h2>
-      <div className="bridge-tags"><Pill tone="violet">Dry quote</Pill><Pill tone={live ? "live" : "fixture"}>{live ? "Live" : "Fixture"}</Pill></div>
-    </div>
-
-    <div className={`token-box ${error ? "invalid" : ""}`}>
-      <div className="token-box-top">
-        <span>You send</span>
-        <button type="button" className="chain-select" onClick={() => setRoutesOpen((open) => !open)} aria-expanded={routesOpen} aria-controls="route-menu">
-          <span className="chain-badge arb">{MONOGRAMS[route.source.chainId] ?? "EVM"}</span>{networkName(route.source.chainId)}<Icon name="chevron" />
-        </button>
+  return <div className="deposit">
+    <label className="field" htmlFor="deposit-route">From
+      <select id="deposit-route" className="input" value={route.routeId ?? ""} onChange={(event) => onRoute(event.target.value)}>
+        {config.routes.map((item) => <option key={item.routeId ?? item.label} value={item.routeId ?? ""} disabled={!item.routeId || !item.previewAvailable}>{networkName(item.source.chainId)} · {item.source.symbol ?? "token"}</option>)}
+      </select>
+    </label>
+    <div className={`amount-box ${error ? "invalid" : ""}`}>
+      <label htmlFor="deposit-amount">Amount</label>
+      <div className="amount-input">
+        <input id="deposit-amount" value={amountText} onChange={(event) => onAmountChange(event.target.value)} inputMode="decimal" autoComplete="off" spellCheck={false} aria-invalid={Boolean(error)} aria-describedby="deposit-help" placeholder="0.00" />
+        <span className="token-tag">{unit}</span>
       </div>
-      <div className="token-box-main">
-        <input value={amountText} onChange={(event) => onAmountChange(event.target.value)} inputMode="decimal" autoComplete="off" spellCheck={false} aria-label={`Amount of ${unit} to send`} aria-invalid={Boolean(error)} aria-describedby="amount-help" placeholder="0.00" />
-        <span className="token-chip"><i className="token-dot" />{unit}</span>
-      </div>
-      <div className="token-box-foot">
-        <span id="amount-help" className={error ? "error" : undefined}>{error ?? `min ${formatUnits(route.minimumAmountIn, route.source.decimals)} · max ${formatUnits(route.maximumAmountIn, route.source.decimals)} · ${raw ?? "—"} base units`}</span>
-        <span className="quick" role="group" aria-label="Quick amounts">{CHIPS.map((chip) => <button type="button" key={chip.value} className={amountText === chip.value ? "active" : undefined} onClick={() => onAmountChange(chip.value)}>{chip.label}</button>)}</span>
+      <div className="amount-foot">
+        <span id="deposit-help" className={error ? "field-error" : undefined}>{error ?? `Min ${formatUnits(route.minimumAmountIn, route.source.decimals)} · max ${formatUnits(route.maximumAmountIn, route.source.decimals)} ${unit}`}</span>
+        <span className="chips" role="group" aria-label="Quick amounts">{CHIPS.map((chip) => <button type="button" key={chip} className={amountText === chip ? "active" : undefined} onClick={() => onAmountChange(chip)}>{Number(chip).toLocaleString("en-US")}</button>)}</span>
       </div>
     </div>
-
-    {routesOpen && <div className="route-menu" id="route-menu" role="radiogroup" aria-label="Source route">
-      {config.routes.map((item) => {
-        const id = item.routeId; const active = id !== null && id === route.routeId;
-        return <button type="button" role="radio" aria-checked={active} key={id ?? item.label} disabled={!id || !item.previewAvailable} className={`route-option ${active ? "active" : ""}`} onClick={() => { if (id) { onRoute(id); setRoutesOpen(false); } }}>
-          <span className="chain-badge arb">{MONOGRAMS[item.source.chainId] ?? "EVM"}</span>
-          <span className="route-option-main"><b>{item.label}</b><small>{item.deliveryProven ? "Delivery observed" : "Delivery not yet observed"} · {item.approvedForFunding ? "approved for sending" : "not approved for sending"}</small></span>
-          {active ? <Icon name="check" /> : null}
-        </button>;
-      })}
-      {config.unsupported.map((item) => <div className="route-option unsupported" key={item.id} role="radio" aria-checked={false} aria-disabled="true">
-        <span className="chain-badge muted">{item.label.slice(0, 3).toUpperCase()}</span>
-        <span className="route-option-main"><b>{item.label}</b><small>{item.reason}</small></span>
-        <Pill tone="muted">Unavailable</Pill>
-      </div>)}
-    </div>}
-
-    <div className="bridge-arrow" aria-hidden="true"><Icon name="down" /></div>
-
-    <div className="token-box to">
-      <div className="token-box-top"><span>Your Trading Safe receives</span><span className="chain-select static"><span className="chain-badge aurora">AUR</span>Aurora mainnet</span></div>
-      <div className="token-box-main">
-        <span className={`token-out ${preview ? "" : "placeholder"}`}>{preview ? <Amount raw={preview.amounts.amountOut} decimals={route.destination.decimals} /> : "0.00"}</span>
-        <span className="token-chip"><i className="token-dot" />{target}</span>
-      </div>
-      <div className="token-box-foot">
-        <span className="recipient"><span className="safe-avatar" style={identiconStyle(config.destination.safe)} aria-hidden="true" /><Address value={config.destination.safe} chainId={AURORA_MAINNET} label="Safe address" live={live} /></span>
-        <Pill tone={live ? "live" : "fixture"}>{live ? "Trusted config" : "Example Safe"}</Pill>
-      </div>
+    <div className="receive-box">
+      <div><span>Your Trading Safe receives</span><b className="tnum">{preview ? <Amount raw={preview.amounts.amountOut} decimals={route.destination.decimals} symbol={route.destination.symbol ?? "token"} /> : <span className="subtle">Get a quote to see the amount</span>}</b></div>
+      <span className="receive-meta"><i className="dot mainnet" />Aurora mainnet · via NEAR Intents 1Click</span>
     </div>
 
-    <div className="route-line">
-      <span className="via"><Icon name="intents" /></span>
-      <span className="route-line-main"><b>NEAR Intents · 1Click</b><small>{route.deliveryProven ? "Delivery observed" : "Delivery not yet observed"} · {route.approvedForFunding ? "approved" : "not approved for sending"}</small></span>
-      <span className="route-line-meta">{preview?.timeEstimateSeconds != null ? <><Icon name="clock" />~{preview.timeEstimateSeconds}s</> : <>{route.minimumConfirmations ? `${route.minimumConfirmations} conf.` : "dry quotes"}</>}</span>
-    </div>
+    {preview ? <QuoteSummary preview={preview} route={route} config={config} now={now} /> : null}
+    {previewError ? <p className="field-error" role="alert">{previewError}</p> : null}
+    {!canPreview ? <Notice tone="warning"><p>Quotes are not connected for this source.</p></Notice> : null}
 
-    {preview && <QuoteDetails preview={preview} route={route} config={config} now={now} />}
-    {previewError && <p className="inline-error" role="alert"><Icon name="alert" />{previewError}</p>}
-    {!canPreview && <p className="inline-error"><Icon name="alert" />Dry-quote preview is not connected for this source.</p>}
-
-    <div className="bridge-actions">
+    <div className="deposit-actions">
       {!preview
-        ? <button type="button" className="btn btn-primary btn-lg" disabled={!ready} onClick={() => { if (raw) onPreview(raw); }}>{previewing ? <span className="spinner dark" /> : <Icon name="bolt" />}<span>{previewing ? "Requesting dry quote…" : "Preview dry quote"}</span></button>
+        ? <Button variant="primary" size="lg" block icon="bolt" loading={previewing} disabled={!ready} onClick={() => { if (raw) onPreview(raw); }}>{previewing ? "Getting quote…" : "Get quote"}</Button>
         : <>
-          <button type="button" className="btn btn-locked btn-lg" disabled><Icon name="lock" /><span>Send {sending} {unit} · disabled for review</span></button>
-          <button type="button" className="btn btn-ghost full" disabled={!ready} onClick={() => { if (raw) onPreview(raw); }}>{previewing ? <span className="spinner" /> : <Icon name="refund" />}<span>Refresh dry quote</span></button>
+          <Button variant="locked" size="lg" block icon="lock" disabled>Deposit {sending} {unit} · disabled during review</Button>
+          <Button block icon="refund" loading={previewing} disabled={!ready} onClick={() => { if (raw) onPreview(raw); }}>Refresh quote</Button>
         </>}
     </div>
-    <details className="why-locked">
-      <summary><Icon name="lock" />Why is sending locked?</summary>
-      <ol>
-        <li className={preview ? "ok" : undefined}><Icon name={preview ? "check" : "lock"} />Dry-quote preview for the trusted Safe</li>
-        <li><Icon name="lock" />Executable quote approved by the funding service</li>
-        <li><Icon name="lock" />Submission reserved durably before any wallet prompt</li>
-        <li><Icon name="lock" />Manager wallet sends exactly the quoted amount on {networkName(route.source.chainId)}</li>
-      </ol>
-      <p>This dashboard never holds keys and has no send, retry or cancel action.</p>
+    <RouteSteps steps={steps} />
+    <details className="disclosure flush">
+      <summary>Why are deposits disabled?</summary>
+      <div className="disclosure-body">
+        <ul className="check-list">
+          <li className={preview ? "ok" : "wait"}><Icon name="check" /><div><b>Preview quote for the trusted Safe</b></div></li>
+          <li className="wait"><Icon name="lock" /><div><b>Executable quote approved by the funding service</b></div></li>
+          <li className="wait"><Icon name="lock" /><div><b>Deposit reserved before any wallet prompt</b></div></li>
+          <li className="wait"><Icon name="lock" /><div><b>Manager wallet sends exactly the quoted amount</b></div></li>
+        </ul>
+        <p>This dashboard holds no keys and has no send, retry or cancel action.</p>
+      </div>
     </details>
-    <dl className="bridge-facts">
-      <div><dt>Accepted asset</dt><dd>{config.destination.symbol} · <Address value={config.destination.token} chainId={AURORA_MAINNET} label="accepted token" live={live} /></dd></div>
-      <div><dt>Refunds return to</dt><dd>Manager · <Address value={config.refundRecipient} label="refund wallet" live={false} /></dd></div>
-      <div><dt>Wavefund module</dt><dd>{config.destination.wavefundModuleEnabled ? "Enabled" : "Not enabled · funding-proof Safe"}</dd></div>
-    </dl>
-  </section>;
+    {config.unsupported.length ? <details className="disclosure flush">
+      <summary>Other sources ({config.unsupported.length} unavailable)</summary>
+      <div className="disclosure-body"><DescriptionList items={config.unsupported.map((item) => ({ key: item.id, label: item.label, value: <span className="muted wrap">{item.reason}</span> }))} /></div>
+    </details> : null}
+    {!live ? <p className="panel-foot">{FIXTURE_LABEL}. The Safe shown is an example.</p> : null}
+  </div>;
 }
 
-function Row({ label, hint, children }: { label: string; hint?: string; children: ReactNode }) {
-  return <div><dt>{label}{hint ? <small>{hint}</small> : null}</dt><dd>{children}</dd></div>;
-}
-const bpsText = (bps: number) => `${Math.floor(bps / 100)}.${String(bps % 100).padStart(2, "0")}% · ${bps} bp`;
-
-export function QuoteDetails({ preview, route, config, now }: { preview: FundingPreview; route: FundingRoute; config: FundingConfig; now: number }) {
+const bpsText = (bps: number) => `${Math.floor(bps / 100)}.${String(bps % 100).padStart(2, "0")}%`;
+export function QuoteSummary({ preview, route, config, now }: { preview: FundingPreview; route: FundingRoute; config: FundingConfig; now: number }) {
   const unit = symbolOf(route); const target = route.destination.symbol ?? "token";
   const expired = now > 0 && now >= preview.expiresAt;
   const total = preview.quotedAt ? Math.max(1, preview.expiresAt - preview.quotedAt) : 300;
-  // Integer rate: destination base units received per whole source unit. Never divides by zero.
+  // Integer rate: destination base units per whole source unit. Never divides by zero.
   const rate = preview.amounts.amountIn === "0" ? null : (BigInt(preview.amounts.amountOut) * 10n ** BigInt(route.source.decimals) / BigInt(preview.amounts.amountIn)).toString();
-  const evidence = preview.evidence === "live-provider-signed" && preview.signatureVerified
-    ? <Pill tone="live"><Icon name="check" />Provider-signed · verified</Pill>
-    : preview.evidence === "live-provider-signed" ? <Pill tone="warning">Provider quote · signature unverified</Pill>
-    : preview.evidence === "mocked" ? <Pill tone="warning">Mocked provider</Pill> : <Pill tone="fixture">Fixture quote</Pill>;
-  return <details className={`quote-card ${expired ? "expired" : ""}`} open aria-live="polite">
-    <summary>
-      <span className="quote-summary-main"><b>1 {unit} ≈ <Amount raw={rate} decimals={route.destination.decimals} maxFraction={6} /> {target}</b>{evidence}</span>
-      <CountdownRing expiresAt={preview.expiresAt} total={total} now={now} />
-    </summary>
-    <dl className="quote-rows">
-      <Row label="Minimum received" hint={preview.signatureVerified ? "signed by 1Click" : "not signature-verified"}><Amount raw={preview.amounts.minAmountOut} decimals={route.destination.decimals} symbol={target} /></Row>
-      <Row label="Requested floor" hint="server-set · 98% of input"><Amount raw={preview.requestMinAmountOut} decimals={route.destination.decimals} symbol={target} /></Row>
-      <Row label="Refund fee" hint={preview.fees.feesSigned ? "signed · deducted if refunded" : "unsigned in dry quotes · deducted if refunded"}><Amount raw={preview.fees.refundFee} decimals={route.source.decimals} symbol={unit} /></Row>
-      <Row label="Withdraw fee" hint={preview.fees.feesSigned ? "signed" : "unsigned in dry quotes"}><Amount raw={preview.fees.withdrawFee} decimals={route.destination.decimals} symbol={target} /></Row>
-      <Row label="App fee" hint={preview.fees.appFeesSigned ? "signed" : "never signed by the provider"}>{preview.fees.appFeeBps === null ? <span className="unavailable">Unavailable</span> : bpsText(preview.fees.appFeeBps)}</Row>
-      <Row label="Refund destination">Manager · <Address value={config.refundRecipient} label="refund wallet" live={false} /></Row>
-      <Row label="Quote expiry">{expired ? "Expired · refresh the quote" : now ? `in ${formatDuration(preview.expiresAt - now)}` : "—"}</Row>
-    </dl>
-    <p className="quote-foot"><Icon name="lock" /><span>Preview only. Not funded, not executable, no deposit address exists.</span>{preview.correlationId ? <code title="Provider correlation id">{preview.correlationId.slice(0, 13)}…</code> : null}</p>
-  </details>;
+  const evidence = preview.evidence === "live-provider-signed" && preview.signatureVerified ? <Badge tone="success"><Icon name="check" />Signed by 1Click</Badge>
+    : preview.evidence === "live-provider-signed" ? <Badge tone="warning">Signature unverified</Badge>
+    : preview.evidence === "mocked" ? <Badge tone="warning">Mocked provider</Badge> : <Badge tone="warning">Fixture quote</Badge>;
+  return <div className={`quote ${expired ? "expired" : ""}`} aria-live="polite">
+    <div className="quote-head"><span>1 {unit} ≈ <Amount raw={rate} decimals={route.destination.decimals} maxFraction={6} /> {target}</span><span className="quote-badges">{evidence}<CountdownRing expiresAt={preview.expiresAt} total={total} now={now} /></span></div>
+    <DescriptionList items={[
+      { label: "Minimum received", value: <Amount raw={preview.amounts.minAmountOut} decimals={route.destination.decimals} symbol={target} /> },
+      { label: "Requested floor", hint: "98% of input", value: <Amount raw={preview.requestMinAmountOut} decimals={route.destination.decimals} symbol={target} /> },
+      { label: "Refund fee", hint: preview.fees.feesSigned ? "signed" : "not signed in previews", value: <Amount raw={preview.fees.refundFee} decimals={route.source.decimals} symbol={unit} /> },
+      { label: "Withdraw fee", value: <Amount raw={preview.fees.withdrawFee} decimals={route.destination.decimals} symbol={target} /> },
+      { label: "App fee", value: preview.fees.appFeeBps === null ? <span className="unavailable">Unavailable</span> : bpsText(preview.fees.appFeeBps) },
+      { label: "Refunds to", value: <Address value={config.refundRecipient} label="refund wallet" live={false} /> },
+      { label: "Expires", value: expired ? <span className="neg">Expired · refresh the quote</span> : now ? `in ${formatDuration(preview.expiresAt - now)}` : "—" },
+    ]} />
+    <p className="quote-foot"><Icon name="lock" />Preview only: not funded, not executable, no deposit address exists.</p>
+  </div>;
 }
 
-const SUMMARY_PILL: Record<SummaryTone, PillTone> = { success: "success", fixture: "fixture", progress: "violet", neutral: "neutral", warning: "warning", danger: "danger", muted: "muted" };
+export function TidepoolPanel({ strategy, live, notice }: { strategy: FundingStrategy | null; live: boolean; notice: string | null }) {
+  const pending = <span className="unavailable">Not configured</span>;
+  return <div className="tidepool">
+    <p className="muted">A community relayer from a testnet source chain into Aurora testnet, including Safe payouts. Test assets only; this is not official NEAR Intents settlement.</p>
+    <ol className="ladder" aria-label="Minted is not delivered, delivered is not ready">
+      {tidepoolLadder().map((step, index) => <li key={step.id} className="ladder-step">
+        <span className="ladder-index">{index + 1}</span>
+        <div><b>{step.title}</b><p>{step.detail}</p><small>{step.owner}</small></div>
+        <Badge>{step.label}</Badge>
+      </li>)}
+    </ol>
+    <div className="identity-cols">
+      <div>
+        <h4 className="mini-title">Current strategy stack</h4>
+        <DescriptionList items={[
+          { label: "Network", value: <>Aurora testnet <code>{AURORA_TESTNET}</code></> },
+          { label: "Strategy Safe", value: strategy ? <Address value={strategy.safe} chainId={strategy.chainId} label="strategy Safe" live={live} /> : <span className="unavailable">Unavailable</span> },
+          { label: "Stable token", value: strategy ? <>{strategy.symbol ?? "token"} <Address value={strategy.token} chainId={strategy.chainId} label="strategy token" live={live} /></> : <span className="unavailable">Unavailable</span> },
+        ]} />
+        <p className="panel-foot">{strategy ? `${live ? `${strategy.source ?? "Trusted configuration"} · not independently verified` : "Fixture identity"}. Original testnet deployment, not the Tidepool destination.` : notice ?? "Loads from the local funding API."}</p>
+      </div>
+      <div>
+        <h4 className="mini-title">Tidepool would deliver</h4>
+        <DescriptionList items={[
+          { label: "Source network", hint: "announced: Arbitrum Sepolia", value: pending },
+          { label: "Recipient Safe", hint: "chosen by A/B", value: pending },
+          { label: "Delivered token", hint: "differs from the strategy token", value: pending },
+          { label: "Status feed", value: <span className="unavailable">Not connected</span> },
+        ]} />
+      </div>
+    </div>
+    <Notice tone="warning" title="Tidepool's test USDC is not the current strategy token"><p>Test-only pool usage is permitted for A/B's compatible stack, which is theirs to deliver. A delivery of another token never makes a strategy ready.</p></Notice>
+    <Button variant="locked" size="lg" block icon="lock" disabled>No Tidepool quote · integration pending</Button>
+    <details className="disclosure flush">
+      <summary>What unlocks this source?</summary>
+      <div className="disclosure-body"><ul className="check-list">
+        <li className="wait"><Icon name="lock" /><div><b>A/B: Tidepool adapter, signature verification, compatible contracts and pool, bridge execution</b></div></li>
+        <li className="wait"><Icon name="lock" /><div><b>A/B: a read-only route, status and receipt interface for the local API</b></div></li>
+        <li className="wait"><Icon name="lock" /><div><b>A: a verified testnet route and funding-record support for Aurora testnet</b></div></li>
+        <li className="wait"><Icon name="lock" /><div><b>Team: the destination Safe and the token that strategy accepts</b></div></li>
+      </ul><p>Until then this source shows identities only. It invents no route, quote or live status.</p></div>
+    </details>
+  </div>;
+}
+
+export function ScenarioPicker({ scenarios, selected, onSelect, busy }: { scenarios: FixtureScenario[]; selected: string | null; onSelect: (id: string) => void; busy: boolean }) {
+  const current = scenarios.find((scenario) => scenario.id === selected);
+  return <div className="scenarios" aria-labelledby="scenario-heading">
+    <div className="scenarios-head"><h4 id="scenario-heading" className="mini-title">Every funding state, before real money moves</h4><Badge tone="warning">Fixture data</Badge></div>
+    {(["Progress", "Outcomes", "Problems"] as const).map((group) => <div className="scenario-group" key={group}>
+      <span className="scenario-group-label">{group}</span>
+      <div className="scenario-buttons">{scenarios.filter((scenario) => scenario.group === group).map((scenario) =>
+        <button type="button" key={scenario.id} data-scenario={scenario.id} className={selected === scenario.id ? "active" : undefined} aria-pressed={selected === scenario.id} disabled={busy} onClick={() => onSelect(scenario.id)}>{scenario.label}</button>)}
+      </div>
+    </div>)}
+    <p className="panel-foot">{current ? current.description : "Pick a state to see how the transfer status and readiness respond. Fixture records are never shown as verified."}</p>
+  </div>;
+}
 
 // Funding delivered and strategy ready are separate facts from separate sources, shown side by side.
 export function ReadinessCard({ config, delivery, readiness, live }: { config: FundingConfig; delivery: DeliverySummary; readiness: StrategyReadiness; live: boolean }) {
   const prerequisites = roundEligibility(config);
   const strategy = config.strategy;
-  return <section className={`card eligibility ${readiness.ready ? "eligible" : ""}`} aria-labelledby="readiness-heading">
-    <div className="card-head"><h2 id="readiness-heading" className="card-title"><Icon name="shield" />Delivered ≠ ready</h2><Pill tone={readiness.ready ? "success" : "danger"}>{readiness.ready ? "Ready to run strategy" : "Strategy not ready"}</Pill></div>
-    <div className="card-pad">
-      <div className="ready-split" role="group" aria-label="Funding delivery and strategy readiness">
-        <div className={`ready-tile tone-${delivery.tone}`} data-delivery={delivery.state}>
-          <span className="ready-label"><Icon name="receipt" />Funding delivered</span>
-          <b>{delivery.label}</b><p>{delivery.detail}</p><small>From bound, final receipts</small>
-        </div>
-        <span className="ready-op" aria-hidden="true">≠</span>
-        <div className={`ready-tile tone-${readiness.tone}`} data-readiness={readiness.state}>
-          <span className="ready-label"><Icon name="play" />Strategy ready</span>
-          <b>{readiness.label}</b><p>{readiness.detail}</p><small>Only from the funding service</small>
-        </div>
+  const box = (label: string, value: ReactNode, detail: string, source: string, tone: Tone, attr: Record<string, string>) =>
+    <div className={`fact-box tone-${tone}`} {...attr}><span>{label}</span><b>{value}</b><p>{detail}</p><small>{source}</small></div>;
+  return <section className="card" aria-labelledby="readiness-heading">
+    <header className="card-header"><div><h2 id="readiness-heading"><Icon name="shield" />Readiness</h2><p>Delivered funds are not automatically ready to trade.</p></div>
+      <Badge tone={readiness.ready ? "success" : "neutral"} dot>{readiness.ready ? "Ready to run strategy" : "Strategy not ready"}</Badge></header>
+    <div className="card-body stack">
+      <div className="fact-pair">
+        {box("Funding delivered", delivery.label, delivery.detail, "From verified receipts", SUMMARY_TONE[delivery.tone], { "data-delivery": delivery.state })}
+        {box("Strategy ready", readiness.label, readiness.detail, "Only from the funding service", SUMMARY_TONE[readiness.tone], { "data-readiness": readiness.state })}
       </div>
-      {readiness.failures.length > 0 && <ul className="readiness-failures" aria-label="Why the strategy is not ready">
-        {readiness.failures.map((code) => <li key={code}><Pill tone={SUMMARY_PILL[readiness.tone]}>{code}</Pill><span>{READINESS_FAILURES[code] ?? "Unknown reason."}</span></li>)}
-      </ul>}
-      <div className="network-compare">
-        <div className="net mainnet"><span>1Click funding lands on</span><b>Aurora mainnet</b><code>{AURORA_MAINNET}</code></div>
-        <div className="neq" aria-label={prerequisites.sameNetwork ? "same network" : "different networks"}>{prerequisites.sameNetwork ? "=" : "≠"}</div>
-        <div className="net testnet"><span>Strategy rounds run on</span><b>{networkName(config.eligibility.roundChainId)}</b><code>{config.eligibility.roundChainId}</code></div>
+      {readiness.failures.length ? <ul className="reasons" aria-label="Why the strategy is not ready">{readiness.failures.map((code) => <li key={code}><code>{code}</code><span>{READINESS_FAILURES[code] ?? "Unknown reason."}</span></li>)}</ul> : null}
+      <DescriptionList items={[
+        { label: "1Click deposits land on", value: <><i className="dot mainnet" />Aurora mainnet</> },
+        { label: "Strategy rounds run on", value: <><i className="dot testnet" />{networkName(config.eligibility.roundChainId)}</> },
+        ...(strategy ? [
+          { label: "Strategy Safe", value: <Address value={strategy.safe} chainId={strategy.chainId} label="strategy Safe" live={live} /> },
+          { label: "Strategy token", value: <>{strategy.symbol ?? "token"} · {strategy.decimals} dp <Address value={strategy.token} chainId={strategy.chainId} label="strategy token" live={live} /></> },
+        ] : [{ label: "Strategy identity", value: <span className="unavailable">Not configured</span> }]),
+      ]} />
+      <div>
+        <h4 className="mini-title">Round prerequisites</h4>
+        <ul className="check-list">{prerequisites.checks.map((check) => <li key={check.id} className={check.ok ? "ok" : "no"}><Icon name={check.ok ? "check" : "cross"} /><div><b>{check.label}</b><p>{check.detail}</p></div></li>)}</ul>
       </div>
-      {strategy ? <dl className="identity-list">
-        <div><dt>Strategy Safe</dt><dd><Address value={strategy.safe} chainId={strategy.chainId} label="strategy Safe" live={live} /></dd></div>
-        <div><dt>Strategy token</dt><dd><span>{strategy.symbol ?? "token"} · {strategy.decimals} dp</span><Address value={strategy.token} chainId={strategy.chainId} label="strategy token" live={live} /></dd></div>
-        <div><dt>Identity source</dt><dd><small>{strategySource(strategy, live)}</small></dd></div>
-      </dl> : <p className="identity-missing"><Icon name="alert" />The strategy Safe and token are not configured, so readiness is never shown.</p>}
-      <h3 className="sub-head">Round prerequisites</h3>
-      <ul className="checklist">
-        {prerequisites.checks.map((check) => <li key={check.id} className={check.ok ? "ok" : "no"}><Icon name={check.ok ? "check" : "cross"} /><div><b>{check.label}</b><p>{check.detail}</p></div></li>)}
-      </ul>
-      <p className="fine-print">The funding service consumes readiness once (prepareRound), after verified delivery, for the same network, Safe and stable token. This page never marks a Safe ready on its own.</p>
+      <p className="panel-foot">The funding service grants readiness once (prepareRound), after verified delivery, for the same network, Safe and stable token. This page never marks a Safe ready on its own.</p>
     </div>
-  </section>;
-}
-
-export function ScenarioExplorer({ scenarios, selected, onSelect, busy }: { scenarios: FixtureScenario[]; selected: string | null; onSelect: (id: string) => void; busy: boolean }) {
-  const current = scenarios.find((scenario) => scenario.id === selected);
-  return <section className="card simulator" aria-labelledby="scenario-heading">
-    <div className="simulator-head">
-      <div><span className="kicker amber">State simulator</span><h2 id="scenario-heading">Every funding state, before real money moves.</h2></div>
-      <Pill tone="fixture">{FIXTURE_LABEL}</Pill>
-    </div>
-    <div className="simulator-groups">
-      {(["Progress", "Outcomes", "Problems"] as const).map((group) => <div className="simulator-group" key={group}>
-        <span className="kpi-label">{group}</span>
-        <div className="seg">{scenarios.filter((scenario) => scenario.group === group).map((scenario) =>
-          <button type="button" key={scenario.id} data-scenario={scenario.id} className={`seg-btn group-${group.toLowerCase()} ${selected === scenario.id ? "active" : ""}`} aria-pressed={selected === scenario.id} disabled={busy} onClick={() => onSelect(scenario.id)}>{scenario.label}</button>)}
-        </div>
-      </div>)}
-    </div>
-    <p className="simulator-desc">{current ? current.description : "Pick a state to see how the route, transfer status and readiness respond. Fixture records are never shown as verified."}</p>
-  </section>;
-}
-
-export function JourneyStrip() {
-  return <section className="section journey" aria-labelledby="journey-heading">
-    <div className="section-head"><div><span className="kicker">How it fits</span><h2 id="journey-heading">Funding comes first. Decisions stay accountable.</h2></div><p>Funding and today’s verified strategy rounds run on different Aurora networks.</p></div>
-    <ol className="journey-steps">
-      <li className="card current"><span className="journey-index">01</span><span className="journey-ico"><Icon name="fund" /></span><h3>Fund your Safe</h3><p>Stablecoins travel from your wallet through NEAR Intents into the Safe you control on Aurora mainnet.</p><span className="journey-net"><i className="chain-dot mainnet" />Aurora mainnet · NEAR Intents</span><span className="journey-here">You are here</span></li>
-      <li className="card"><span className="journey-index">02</span><span className="journey-ico"><Icon name="chart" /></span><h3>Decide in a market</h3><p>AI proposers submit allocations. Forecasters back their views with separate collateral in Uniswap v4 markets.</p><span className="journey-net"><i className="chain-dot testnet" />Aurora testnet · verified rounds</span><Link href="/">Open the decision dashboard <Icon name="arrow" /></Link></li>
-      <li className="card"><span className="journey-index">03</span><span className="journey-ico"><Icon name="sliders" /></span><h3>Execute &amp; measure</h3><p>The winning allocation executes through the Safe module on Trisolaris. Supra prices settle the measured return.</p><span className="journey-net"><i className="chain-dot testnet" />Aurora testnet · Trisolaris · Supra</span><Link href="/manager">Owner controls <Icon name="arrow" /></Link></li>
-    </ol>
   </section>;
 }

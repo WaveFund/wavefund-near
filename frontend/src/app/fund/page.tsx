@@ -2,10 +2,11 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { RouteFlow, type FlowState } from "@/components/funding/RouteFlow";
+import { flowSteps, type FlowState } from "@/components/funding/RouteFlow";
 import { StatusTracker } from "@/components/funding/StatusTracker";
-import { BridgeCard, JourneyStrip, LaneSelector, NetworkTruth, ReadinessCard, ScenarioExplorer, TidepoolLaneCard, amountValidation } from "@/components/funding/FundingPanels";
-import { Icon, useNow } from "@/components/funding/primitives";
+import { DepositForm, ReadinessCard, ScenarioPicker, TidepoolPanel, TreasurySummary, amountValidation } from "@/components/funding/FundingPanels";
+import { useNow } from "@/components/funding/primitives";
+import { Badge, Button, Card, CardHeader, EmptyState, Notice, PageHeader, SegmentedControl, Skeleton } from "@/components/ui";
 import {
   AURORA_MAINNET, AURORA_TESTNET, LANE_ORDER, classifyFunding, deliverySummary, laneFromSearch, laneStatus, networkName, shortHex, strategyReadiness,
   type FundingConfig, type FundingPreview, type LaneId, type LaneStatus,
@@ -152,93 +153,77 @@ export default function FundPage() {
   const flow: FlowState = display
     ? { step: display.step, halted: display.halted, bucket: display.bucket, preview: false, verified: display.verified, evidence: display.evidence }
     : { step: 0, halted: false, bucket: null, preview: Boolean(shownPreview), verified: false, evidence: liveConfig ? "none" : "fixture" };
+  const steps = flowSteps(flow, route ? `${networkName(route.source.chainId)} · ${route.source.symbol ?? "token"}` : "Supported source chain", config ? `Aurora · ${shortHex(config.destination.safe)}` : "Aurora");
 
-  const banner = lane === "tidepool" ? { tone: "warning", label: "PENDING INTEGRATION", text: "Tidepool community testnet lane · identities only, no route, quote or live status" }
-    : phase === "connecting" ? { tone: "neutral", label: "CONNECTING", text: "Checking the local funding API…" }
-    : isFixture ? { tone: "fixture", label: "FIXTURE MODE", text: `${FIXTURE_LABEL}. Safe, wallet and transaction values are fake.` }
-    : phase === "ready" && !liveConfig ? { tone: "fixture", label: "API FIXTURE DATA", text: "The local API reports fixture-quality configuration. Nothing here is live evidence." }
+  const mode = lane === "tidepool" ? { tone: "warning" as const, label: "Pending integration", text: "Tidepool community testnet source: identities only, no route, quote or live status." }
+    : phase === "connecting" ? { tone: "neutral" as const, label: "Connecting", text: "Checking the local funding API…" }
+    : isFixture ? { tone: "warning" as const, label: "Fixture data", text: `${FIXTURE_LABEL}. Safe, wallet and transaction values are fake.` }
+    : phase === "ready" && !liveConfig ? { tone: "warning" as const, label: "API fixture data", text: "The local API reports fixture-quality configuration. Nothing here is live evidence." }
     : phase === "ready" ? (config?.mode === "live-preview"
-      ? { tone: "live", label: "LIVE DRY QUOTES", text: "NEAR Intents 1Click dry quotes for the trusted Safe · signing disabled" }
-      : { tone: "live", label: "FUNDING SERVICE", text: "Shared funding service records · signing disabled" })
-    : phase === "unavailable" ? { tone: "warning", label: "API NOT CONNECTED", text: notice ?? "The local funding API is not available." }
-    : { tone: "danger", label: "CONFIGURATION REJECTED", text: notice ?? "The funding configuration was rejected." };
+      ? { tone: "success" as const, label: "Live quotes", text: "Signed NEAR Intents 1Click preview quotes for the trusted Safe. Deposits are disabled during review." }
+      : { tone: "success" as const, label: "Funding service", text: "Shared funding service records. Deposits are disabled during review." })
+    : phase === "unavailable" ? { tone: "warning" as const, label: "API not connected", text: notice ?? "The local funding API is not available." }
+    : { tone: "danger" as const, label: "Configuration rejected", text: notice ?? "The funding configuration was rejected." };
   const status = lane === "tidepool" ? { label: "Integration pending", tone: "warn" as const }
-    : phase === "ready" ? (liveConfig ? { label: "Live dry quotes", tone: "ok" as const } : { label: "Fixture mode", tone: "warn" as const })
+    : phase === "ready" ? (liveConfig ? { label: "Live quotes", tone: "ok" as const } : { label: "Fixture data", tone: "warn" as const })
     : phase === "connecting" ? { label: "Connecting", tone: "pending" as const } : { label: "API offline", tone: "off" as const };
-
   const shellNetwork = lane === "tidepool" ? { label: "Aurora testnet", chainId: AURORA_TESTNET, tone: "testnet" as const }
     : lane === "fixtures" ? { label: "Fixture data", chainId: null, tone: "local" as const }
     : { label: "Aurora mainnet", chainId: AURORA_MAINNET, tone: "mainnet" as const };
+  const laneOptions = LANE_ORDER.map((id) => ({ id, label: id === "official" ? "NEAR Intents 1Click" : id === "tidepool" ? "Tidepool · testnet" : "Fixtures",
+    badge: id === "tidepool" ? <Badge tone="warning">Pending</Badge> : undefined }));
+  const laneLine = lane === "official" ? "Official cross-chain deposits into the Safe on Aurora mainnet. Real assets, preview quotes only."
+    : lane === "tidepool" ? "Community relayer into Aurora testnet. Worthless test assets."
+    : "Synthetic states with fake values, to see every outcome without moving money.";
+
+  const depositBody = lane === "tidepool"
+    ? <TidepoolPanel strategy={phase === "ready" ? config?.strategy ?? null : null} live={liveConfig} notice={phase === "ready" ? null : notice} />
+    : phase === "connecting" ? <div className="stack">{[0, 1, 2].map((i) => <Skeleton key={i} height={44} />)}</div>
+    : phase !== "ready" || !config ? <EmptyState icon={phase === "rejected" ? "alert" : "route"} title={phase === "rejected" ? "The funding configuration was rejected" : "The funding API is not connected"}
+        action={<div className="page-actions"><Button variant="primary" icon="layers" onClick={() => selectLane("fixtures")}>Explore labelled fixtures</Button><Button icon="refund" onClick={() => void connect(createApiFundingLoader())}>Retry local API</Button></div>}>
+        {notice} Run <code>bash scripts/docker-demo/up.sh</code> for live preview quotes. Nothing is signed, funded or sent.
+      </EmptyState>
+    : <div className="stack-lg">
+      {isFixture ? <ScenarioPicker scenarios={scenarios} selected={scenarioId} onSelect={(id) => void loadRecord(id, true)} busy={tracking} /> : null}
+      {route ? <DepositForm config={config} live={liveConfig} route={route} onRoute={changeRoute} amountText={amountText} onAmountChange={changeAmount}
+        onPreview={(raw) => void requestPreview(raw)} previewing={previewing} previewError={previewError} preview={shownPreview} now={now}
+        canPreview={config.capabilities.preview && route.previewAvailable} steps={steps} />
+        : <EmptyState icon="route" title="No supported source">The configuration lists no source that can be previewed.</EmptyState>}
+    </div>;
+
+  const trackForm = !isFixture && config?.capabilities.records && lane !== "tidepool"
+    ? <form className="track-form" onSubmit={(event) => { event.preventDefault(); void loadRecord(trackInput.trim(), false); }}>
+      <label htmlFor="track-id" className="sr-only">Funding record id</label>
+      <input id="track-id" className="input" value={trackInput} onChange={(event) => setTrackInput(event.target.value)} placeholder="Track a funding record by id" maxLength={128} autoComplete="off" spellCheck={false} />
+      <Button type="submit" disabled={!trackInput.trim() || tracking}>Track</Button>
+    </form> : null;
 
   return <AppShell network={shellNetwork} status={status}>
-    <div className={`mode-strip tone-${banner.tone}`} role="status">
-      <span className="mode-label">{banner.label}</span>
-      <span className="mode-text">{banner.text}</span>
+    <PageHeader title="Treasury"
+      description="Fund the manager's Trading Safe before a round. Deposits travel through NEAR Intents into the Safe on Aurora, and every step is proven by receipts."
+      meta={<><Badge tone={mode.tone}>{mode.label}</Badge><span>{mode.text}</span></>} />
+
+    {config && phase === "ready" && lane !== "tidepool" ? <Card className="summary-card"><TreasurySummary config={config} live={liveConfig} />
+      <div className="card-footer"><i className="dot mainnet" />NEAR Intents 1Click has no testnet, so mainnet deposits never enter testnet rounds. Testnet funding is a separate community source.</div></Card> : null}
+
+    <div className="treasury-layout">
+      <Card>
+        <CardHeader title="Deposit" icon="fund" sub={laneLine} />
+        <div className="card-body lane-switch"><SegmentedControl label="Funding source" options={laneOptions} value={lane} onChange={selectLane} /></div>
+        <div className="card-body">{depositBody}</div>
+      </Card>
+      <div className="detail-side">
+        {lane !== "tidepool" && config && phase === "ready" ? <StatusTracker record={tracked?.record ?? null} display={display} config={config} now={now} loading={tracking}
+          scenarioLabel={isFixture ? scenarios.find((scenario) => scenario.id === scenarioId)?.label ?? null : null}>
+          {trackError ? <div className="card-body"><p className="field-error" role="alert">{trackError}</p></div> : null}
+          {trackForm ? <div className="card-footer">{trackForm}</div> : !isFixture ? <div className="card-footer">Funding records are not connected to this API yet. Preview quotes never create a record.</div> : null}
+        </StatusTracker> : null}
+        {config && phase === "ready"
+          ? <ReadinessCard config={config} live={liveConfig}
+            delivery={lane === "tidepool" ? deliverySummary(null) : delivery}
+            readiness={lane === "tidepool" ? strategyReadiness(null, null, config) : readiness} />
+          : lane === "tidepool" ? <Notice tone="neutral"><p>Strategy identities load from the local funding API, which is not connected. Nothing on this source is simulated.</p></Notice> : null}
+      </div>
     </div>
-
-    <section className="page-head">
-      <div>
-        <span className="kicker">Step 01 · Funding before a round</span>
-        <h1>Fund your <span className="grad-text">Trading Safe</span></h1>
-        <p className="lede">Bridge stablecoins from your wallet through NEAR Intents into the Safe you control on Aurora, before any round begins. Progress is proven by receipts, never by a status message alone.</p>
-      </div>
-      <NetworkTruth roundChainId={config?.eligibility.roundChainId ?? AURORA_TESTNET} />
-    </section>
-
-    <LaneSelector lane={lane} statuses={laneStatuses} onSelect={selectLane} />
-
-    {phase === "connecting" && <div className="card loading-card" aria-busy="true"><span className="spinner" />Loading funding configuration…</div>}
-
-    {lane !== "tidepool" && (phase === "unavailable" || phase === "rejected") && <section className="card connect-card">
-      <span className="empty-ico">{phase === "rejected" ? <Icon name="alert" /> : <Icon name="route" />}</span>
-      <div>
-        <h3>{phase === "rejected" ? "The funding configuration was rejected" : "The funding API is not connected"}</h3>
-        <p>{notice}</p>
-        {phase === "unavailable" && <p>Run the full local demo with live dry quotes: <code>bash scripts/docker-demo/up.sh</code> (Docker), or <code>WAVEFUND_FUNDING=live-preview npm run demo:local</code> in a prepared environment. Previews ask NEAR Intents 1Click for a dry quote only. Nothing is signed, funded or sent.</p>}
-        <div className="connect-actions">
-          <button type="button" className="btn btn-primary" onClick={() => selectLane("fixtures")}><Icon name="layers" /><span>Explore labelled fixtures</span></button>
-          <button type="button" className="btn btn-ghost" onClick={() => void connect(createApiFundingLoader())}><Icon name="refund" />Retry local API</button>
-        </div>
-      </div>
-    </section>}
-
-    {lane === "tidepool" && phase !== "connecting" && <div className="fund-layout">
-      <div className="fund-main"><TidepoolLaneCard strategy={phase === "ready" ? config?.strategy ?? null : null} live={liveConfig} notice={phase === "ready" ? null : notice} /></div>
-      <div className="fund-side">
-        {phase === "ready" && config
-          // Lanes never share evidence: a record tracked on the official lane is not shown here.
-          ? <ReadinessCard config={config} delivery={deliverySummary(null)} readiness={strategyReadiness(null, null, config)} live={liveConfig} />
-          : <p className="side-note"><Icon name="eye" />Strategy identities load from the local funding API, which is not connected. Nothing on this lane is simulated.</p>}
-      </div>
-    </div>}
-
-    {lane !== "tidepool" && phase === "ready" && config && <>
-      {isFixture && <ScenarioExplorer scenarios={scenarios} selected={scenarioId} onSelect={(id) => void loadRecord(id, true)} busy={tracking} />}
-      <div className="fund-layout">
-        <div className="fund-main">
-          {route ? <BridgeCard config={config} live={liveConfig} route={route} onRoute={changeRoute} amountText={amountText} onAmountChange={changeAmount}
-            onPreview={(raw) => void requestPreview(raw)} previewing={previewing} previewError={previewError} preview={shownPreview} now={now}
-            canPreview={config.capabilities.preview && route.previewAvailable} />
-            : <div className="card empty"><span className="empty-ico"><Icon name="route" /></span><div><h3>No supported route</h3><p>The configuration lists no route that can be previewed.</p></div></div>}
-        </div>
-        <div className="fund-side">
-          <RouteFlow state={flow}
-            sourceLabel={route ? `${networkName(route.source.chainId)} · ${route.source.symbol ?? "token"}` : "Supported source chain"}
-            safeLabel={`Aurora · ${shortHex(config.destination.safe)}`} />
-          <StatusTracker record={tracked?.record ?? null} display={display} config={config} now={now} loading={tracking}
-            scenarioLabel={isFixture ? scenarios.find((scenario) => scenario.id === scenarioId)?.label ?? null : null} />
-          {trackError && <p className="inline-error" role="alert"><Icon name="alert" />{trackError}</p>}
-          {!isFixture && config.capabilities.records && <form className="card track-form" onSubmit={(event) => { event.preventDefault(); void loadRecord(trackInput.trim(), false); }}>
-            <label htmlFor="track-id">Track a funding record</label>
-            <div><input id="track-id" value={trackInput} onChange={(event) => setTrackInput(event.target.value)} placeholder="fundingId" maxLength={128} autoComplete="off" spellCheck={false} />
-              <button type="submit" className="btn btn-ghost" disabled={!trackInput.trim() || tracking}>Track</button></div>
-          </form>}
-          {!isFixture && !config.capabilities.records && <p className="side-note"><Icon name="eye" />Funding records are not connected to this API yet. Dry-quote previews never create a record.</p>}
-          <ReadinessCard config={config} delivery={delivery} readiness={readiness} live={liveConfig} />
-        </div>
-      </div>
-    </>}
-
-    <JourneyStrip />
   </AppShell>;
 }

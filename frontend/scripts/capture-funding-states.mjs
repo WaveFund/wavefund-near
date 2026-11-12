@@ -27,13 +27,13 @@ try {
     await page.getByRole('heading', { name: /Every funding state/ }).waitFor();
     for (const [name, action] of STATES) {
       if (action === 'preview') {
-        await page.getByRole('button', { name: /Preview dry quote|Refresh dry quote/ }).click();
-        await page.locator('.quote-card').waitFor();
+        await page.getByRole('button', { name: /Get quote|Refresh quote/ }).click();
+        await page.locator('.quote').waitFor();
       } else if (action) {
         await page.locator(`[data-scenario="${action}"]`).click();
         // The chip turns pressed only once its record has loaded; then the tracker must be idle.
         await page.locator(`[data-scenario="${action}"][aria-pressed="true"]`).waitFor();
-        await page.locator('.tracker[aria-busy="false"] .status-hero').waitFor();
+        await page.locator('.tracker[aria-busy="false"] .status-block').waitFor();
       }
       await page.screenshot({ path: `${out}/${device}-${name}.png`, fullPage: true });
       // A viewport-sized shot of the tracker is easier to review than a very tall full page on phones.
