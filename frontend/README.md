@@ -7,6 +7,7 @@ Next.js dashboard for the Wavefund journey. Pages:
 | `/fund` | **01 Fund your Trading Safe**: three separate funding lanes. **Official 1Click** gives NEAR Intents dry quotes into the manager's Aurora **mainnet** Safe. **Tidepool community** (`?lane=tidepool`) is an Aurora testnet lane, pending integration, that shows identities only. **Labelled fixtures** (`?fixtures=1`). Also a delivery/refund evidence tracker, and “Funding delivered” shown separately from “Strategy ready”, which only the funding service can grant. Signing is disabled. |
 | `/` | **02 Decide**: local rehearsal / Aurora testnet monitoring of proposals, forecasts, execution and settlement. |
 | `/manager` | **03 Manage**: owner-reviewed, unsigned Safe actions. |
+| `/record` | **04 Track record**: on-chain **performance reputation** of the four proposers (Aurora testnet, through the shared reader: signed points, evaluated count, outcomes, and distinct scored / no-history / unavailable / stale states). Also the published round 7 and round 8 evidence as it happened, with validated explorer links. |
 
 The dashboard reads actual contract snapshots and funding projections from the local backend; it does not generate balances, receipts or market signals. It has no browser keys, remote fonts, analytics or hosted publishing. The manager page's optional wallet check only reads the connected account.
 

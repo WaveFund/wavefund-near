@@ -29,6 +29,7 @@ The first run takes several minutes, because it installs dependencies and compil
 - `http://127.0.0.1:3000`: **Decide**. Select **Run local round**.
 - `http://127.0.0.1:3000/fund`: **Fund your Trading Safe**, with live NEAR Intents 1Click dry quotes. Signing is disabled.
 - `http://127.0.0.1:3000/manager`: the owner console.
+- `http://127.0.0.1:3000/record`: the track record. It reads live performance reputation from public Aurora testnet, read-only, and shows the published round 7 and 8 evidence.
 
 Stop the demo with:
 

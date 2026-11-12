@@ -34,7 +34,7 @@ The existing frontend network validation (`decodeState`: Anvil 31337 or Aurora t
 | Lane | Network | What it shows | Status source |
 |---|---|---|---|
 | **Official 1Click** | Aurora mainnet | Live, signed 1Click dry quotes for the trusted mainnet funding Safe; tracker for funding-service records | The local API's configuration and capabilities |
-| **Tidepool community** | Aurora testnet | The strategy Safe, stable token and decimals the strategy needs, beside “Tidepool would deliver: not configured” for source network, recipient, delivered token and status feed | Always **Pending integration** (`laneStatus` forces it, whatever a server reports) |
+| **Tidepool community** | Aurora testnet | A ladder: **Minted test USDC ≠ Bridge delivery ≠ Strategy ready**, every step “not connected” in this build. The **current strategy stack** (original testnet deployment, explicitly *not* the Tidepool destination), beside “Tidepool would deliver: not configured” for source network, recipient (chosen by A/B), delivered token (Tidepool test USDC, which differs from the strategy token) and status feed. | Always **Pending integration** (`laneStatus` forces it, whatever a server reports) |
 | **Labelled fixtures** | none | 16 synthetic states with fake addresses | Always **Synthetic** |
 
 Links: `/fund` (official), `/fund?lane=tidepool`, `/fund?fixtures=1`. The Tidepool lane hard-codes no route, asset id, provider URL or token, and shows no quote or deposit address. It warns that Tidepool's test token may differ from the strategy token. Its readiness card never shows a record tracked on another lane. Arbitrum Sepolia is named in the network allowlist but gets **no explorer link** until B confirms one.
@@ -59,6 +59,62 @@ The strategy identity comes from `deployments/aurora-testnet.json`, read by `fun
 
 It is exposed as `config.strategy`. Decimals are 6, because `ProposerRegistry` rejects any other stable. The API projection now also keeps A's `readiness.snapshot` (balances, tokens, compatibility and round flags), with each field validated.
 
+## Performance reputation (`GET /api/agents/reputation`)
+
+`runtime/operator/reputation-api.mjs` serves the on-chain `AgentReputation` history of the four trusted proposers (Conservative `0x5613…0345`, Balanced `0xcBF9…0Cb8`, Momentum `0x8B6a…888F`, HighBeta `0x1Ba3…EA0a`).
+
+How it reads:
+- It uses the shared `createReputationReader` from `runtime/agents/reputation-readonly.mjs` with `deployments/aurora-testnet-reputation.json`, over a fixed read-only client (`https://testnet.aurora.dev`, no retries, 15 s timeout).
+- The reader keeps every check: network, pinned runtime code, engine/tracker bindings, 120 s block freshness, counts and score arithmetic. None of them is duplicated.
+- Nothing comes from the request: no RPC URL, contract or agent. Only GET exists under `/api/agents`; there is no signing, execution or retry route.
+- Results are cached for 15 s with one shared in-flight read. `WAVEFUND_REPUTATION=disabled` removes the endpoint.
+
+What it returns:
+- Every agent has `status: ok` with the reader's integer-string `score`, `samples`, `positive`, `negative`, `flat`, `blockNumber` and `blockTimestamp`.
+- A failed read has `status: unavailable`, `reputation: null` and the reader's code. It is never a zero score.
+
+`/record` (journey tab **Record 04**) shows signed **performance points**, the evaluated strategy count and positive/negative/flat outcomes, with five distinct states:
+- **Scored**;
+- **No evaluated strategies**: 0 points, "no point and no penalty";
+- **Unavailable**: no number, "no data · not zero", plus the code;
+- **Stale**: the reader's stale block, or a last good snapshot after failed 30 s refreshes;
+- **Loading**.
+
+The source footer names Aurora testnet 1313161555, the reputation contract with an explorer link, and the observation block.
+
+The rules panel states:
+- only selected, executed and settled non-Hold strategies score: +1 positive, −1 negative, 0 flat;
+- unselected proposals get nothing;
+- registry selection wins (`ProposerRegistry.roundsWon`) are a separate metric and are not counted;
+- this is "Performance reputation", not a lending credit score.
+
+Live read on 2026-11-12, block 277326134: Momentum −1 (1 evaluated, 1 negative). Conservative, Balanced and HighBeta have no evaluated history.
+
+## Published testnet rounds (`GET /api/evidence/testnet-rounds`)
+
+`runtime/operator/round-evidence.mjs` validates and projects `docs/test-evidence/round7-hybrid/` and `round8-swarm/` once at startup.
+
+Validation rules:
+- every file must be chain 1313161555, and round ids and winners must agree;
+- hashes must be 32-byte hex, amounts integer strings, and payout arithmetic must hold;
+- text is bounded and control characters are stripped.
+
+Tampered evidence is rejected. Report/independent disagreements are surfaced in `checks`, not hidden. Invalid evidence answers 503 without stopping the server; `WAVEFUND_EVIDENCE=disabled` removes the endpoint.
+
+The `/record` cards present the rounds as they happened:
+- **Round 7, hybrid test:**
+  - four genuine NEAR AI proposals (5/45/75/95% ETH, operator-assigned mandates);
+  - four forecasters flagged **scripted** that targeted proposal 3;
+  - Momentum's 75% ETH selected, with the actual Trisolaris swap (independent balance check passed);
+  - measured return **−0.2164%**, forecaster profit/loss (−0.031981, +0.011521, 0, −0.010268 test USDC), and Momentum's recorded **−1** point.
+- **Round 8, genuine eight-agent run:**
+  - eight genuine AI calls; all four forecasters **abstained** ("No forecast clears confidence and actual entry-cost edge checks");
+  - **Hold** won with **no swap**, and every forecaster redeemed the full 10 test USDC;
+  - no point was earned; the Hold drift (−0.0416%) is labelled "not scored".
+  - It is not described as AI betting.
+
+Both cards list limitations ("no TEE attestation verified", the same model for every call, test assets), scope, the round 8 scope correction, the independent checks, and every transaction with a validated `explorer.testnet.aurora.dev` link.
+
 ## What was built
 
 | Area | Files |
@@ -73,6 +129,9 @@ It is exposed as `config.strategy`. Decimals are 6, because `ProposerRegistry` r
 | App frame and journey tabs | `frontend/src/components/AppShell.tsx` (replaced the earlier `JourneyNav.tsx`) |
 | Funding lanes, delivered ≠ ready | `FundingPanels.tsx` (`LaneSelector`, `TidepoolLaneCard`, `ReadinessCard`), `model.mjs` (`laneStatus`, `deliverySummary`, `strategyReadiness`) |
 | One-command Docker demo | `scripts/docker-demo/` (Dockerfile, `up.sh`, `down.sh`, README) |
+| Performance reputation API | `runtime/operator/reputation-api.mjs`, `runtime/test/reputation-api.test.mjs` |
+| Testnet round evidence API | `runtime/operator/round-evidence.mjs`, `runtime/test/round-evidence.test.mjs` |
+| Track record page | `frontend/src/app/record/*`, `frontend/src/components/record/RecordParts.tsx`, `frontend/src/lib/record/*`, `frontend/src/app/record.css`, `frontend/test/record-model.test.mjs` |
 | Local demo usability | `scripts/local-demo.mjs`, `scripts/lib/local-demo-preflight.test.mjs` |
 | Screenshot helper | `frontend/scripts/capture-funding-states.mjs` (Playwright, fixture mode, loopback only) |
 
@@ -147,11 +206,11 @@ Dependencies were installed with `npm ci --ignore-scripts` in `node:22-bookworm-
 
 | Check | Result |
 |---|---|
-| `npm run test:runtime` (all existing tests plus 14 funding-API and 7 preflight tests) | **165 / 165 passed** |
-| `npm test --workspace @wavefund/frontend` | **23 / 23 passed** |
+| `npm run test:runtime` (after merging `main` `89d8408`; includes 5 reputation-API and 4 round-evidence tests) | **215 / 215 passed** |
+| `npm test --workspace @wavefund/frontend` | **29 / 29 passed** |
 | `npm run frontend:typecheck` | passed |
 | `npm run frontend:build` | passed; `/fund` 24.1 kB (129 kB first load); `/` and `/manager` unchanged in function |
-| Mutation checks (tables below) | **13 / 13** (first round) and **17 / 17** (lanes and readiness) killed; suites green after restore |
+| Mutation checks (tables below) | **13 / 13** (first round), **17 / 17** (lanes and readiness) and **19 / 19** (reputation, evidence, Tidepool ladder) killed; suites green after restore |
 | Screenshots (`frontend/scripts/capture-funding-states.mjs`, Playwright 1.65.0 image, fixture mode) | 12 states × desktop/mobile captured to `.run/screenshots` |
 
 Screenshot review caught a real UI bug: the scenario label switched before its record loaded, briefly pairing the new label with the old record. It is fixed; the label now changes together with the record.
@@ -202,6 +261,26 @@ Lanes and readiness (2026-11-12). Each mutant was applied to a scratch copy, and
 | Stop enforcing the strategy manifest network | runtime “strategy identity comes from the testnet manifest …” |
 | Stop exposing the strategy identity | runtime “strategy identity …” |
 
+Reputation, evidence and Tidepool ladder (2026-11-12). There were 19 mutants in total. The first run found one survivor: “numeric JSON numbers accepted” was covered only together with the score check. A discriminating test was added, and the rerun killed all 19.
+
+| Mutation | Killed by |
+|---|---|
+| Report a failed read as a zero score | runtime reputation endpoint and frontend board tests |
+| Reflect raw error codes | runtime “wrong network, stale blocks and a failing RPC …” |
+| Expose POST under `/api/agents` | runtime “only GET exists under /api/agents …” |
+| Stop sharing the in-flight read | runtime “the board caches briefly …” |
+| Accept an untrusted proposer list | runtime “the board caches briefly …” |
+| Remove the evidence hash check / network check / payout arithmetic | runtime “tampered or malformed evidence is rejected …” |
+| Stop flagging scripted forecasters | runtime round 7 test and frontend evidence test |
+| Treat round 8 as swapped | runtime round evidence tests |
+| Drop the minus sign from points | frontend “points, signed amounts and returns …” |
+| Accept JSON numbers for counts | frontend “numbers, missing fields … never become zero” |
+| Ignore the reader's stale code or a stale snapshot | frontend board and snapshot tests |
+| Drop the half in return rounding (−0.0415% instead of −0.0416%) | frontend “points, signed amounts and returns …” |
+| Not recognise the Hold winner | frontend evidence test |
+| Give invalid hashes explorer links | frontend evidence test |
+| Let Tidepool follow the API status / claim delivery connected | frontend Tidepool ladder and lane tests |
+
 ## Local demo
 
 `npm run demo:local` now checks `forge`, `anvil` and the Next.js binary before starting anything, and reports every missing prerequisite with guidance. It never installs tools. A missing command exits with 127; other child failures keep the child's exit code. Spawn errors become handled rejections. Shutdown stops only processes the launcher started (SIGTERM, then SIGKILL after a grace period). The funding page is available at `/fund`, and the fixture explorer at `/fund?fixtures=1`.
@@ -235,6 +314,9 @@ No field of `FundingRecordV1` was changed. The dashboard only reads the existing
   - provide a verified testnet route configuration;
   - wire the store so `GET /api/funding/:id` and the optional `submitted` endpoint expose real records;
   - provide a snapshot adapter for the strategy stack.
+- **A/B (Tidepool):** the adapter, signature verification, compatible contracts and pool, and bridge execution are theirs. Tidepool has minted test USDC and permitted test-only pool usage; the dashboard shows that only as "minted ≠ delivered ≠ ready", with nothing connected.
+- **Optional:** a read-only `ProposerRegistry.roundsWon` reader if the team wants on-chain selection wins. Until then, selections appear only per round from the evidence, separate from points.
+- **Runtime availability:** live reputation depends on public `testnet.aurora.dev`. When it is down, the board shows "unavailable" or "stale", never zeros.
 - **Team decision:** which Safe the Tidepool lane funds.
   - `main` already has a separate token-compatible Tidepool stack (`deployments/aurora-testnet-tidepool.json`: Safe `0x3794…0f11`, stable = Tidepool test USDC `0x38d8…a252`).
   - The original strategy Safe `0x7814…0ad1` uses stable `0x8be4…915c`. A Tidepool delivery into that Safe can never make it ready, by design.
