@@ -1,14 +1,34 @@
 {
   "schemaVersion": 1,
   "trustBasis": "observed-at-2026-11-13-not-independently-reproduced",
-  "model": "Qwen/Qwen3.6-35B-A3B-FP8",
-  "observedAt": "2026-11-13T15:08:48Z",
-  "note": "Measurements pinned from NEAR AI's live attestation on 2026-11-13; not independently reproduced. Each entry is mrTd:mrConfigId. The mrTd half was recomputed from public dstack v0.5.12 firmware; the mrConfigId half (NEAR AI's app-compose hash) has no published reference and is pinned as observed. nrasKeys must be refreshed from NVIDIA's JWKS before a live round (NVIDIA rotates keys frequently).",
+  "models": {
+    "Qwen/Qwen3.6-35B-A3B-FP8": [
+      "df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:01e8416a02d6f7ce47baaa52e3925b934fd30834b04fc9086b363db9b1d12c729d000000000000000000000000000000"
+    ],
+    "Qwen/Qwen3.8-27B": [
+      "df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:01e8416a02d6f7ce47baaa52e3925b934fd30834b04fc9086b363db9b1d12c729d000000000000000000000000000000"
+    ],
+    "Qwen/Qwen3-VL-30B-A3B-Instruct": [
+      "df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:01e8416a02d6f7ce47baaa52e3925b934fd30834b04fc9086b363db9b1d12c729d000000000000000000000000000000"
+    ],
+    "z-ai/glm-5.3-flash": [
+      "df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:01c900dc7304663b73b623cd5d941fbdab6f02858017b371ae28de445a16d2e2d0000000000000000000000000000000"
+    ],
+    "deepseek-ai/DeepSeek-V4.1-Flash-1017": [
+      "df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:01448683dd83e50727b9c5f6cdc84bd9d93fcf2c888001a85b1ba32f76b3612e3e000000000000000000000000000000",
+      "df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:01c53e254e8b70aa14b45ba3043730a0736ca2afb1df7fa3db9c61578845e470fe000000000000000000000000000000"
+    ]
+  },
+  "observedAt": "2026-11-13T15:34:30Z",
+  "note": "Measurements pinned from NEAR AI's live attestation on 2026-11-13; not independently reproduced. Covers the five swarm2 proposer models (see models; modelMeasurements is their union and the report's model_name is checked separately). All share one mrTd; the Qwen models share one mrConfigId, GLM and DeepSeek each have their own, and DeepSeek was observed on two compose hashes (19 of 20 samples 01448683..., 1 of 20 01c53e25...), both pinned. Each entry is mrTd:mrConfigId. The mrTd half was recomputed from public dstack v0.5.12 firmware; the mrConfigId half (NEAR AI's app-compose hash) has no published reference and is pinned as observed. nrasKeys must be refreshed from NVIDIA's JWKS before a live round (NVIDIA rotates keys frequently).",
   "gatewayMeasurements": [
     "7fe60787222bd394cb516abca2435f22f035ab2cc9c0a4b4b3b148e46297f3d931a237b72f359052c6e657d8c1409173:01b73eed6abc60fbe5eb0ce2bbaacf3bd9b83c9c84f3e6a5b1a091cb679bdbe66f000000000000000000000000000000"
   ],
   "modelMeasurements": [
-    "df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:01e8416a02d6f7ce47baaa52e3925b934fd30834b04fc9086b363db9b1d12c729d000000000000000000000000000000"
+    "df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:01e8416a02d6f7ce47baaa52e3925b934fd30834b04fc9086b363db9b1d12c729d000000000000000000000000000000",
+    "df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:01c900dc7304663b73b623cd5d941fbdab6f02858017b371ae28de445a16d2e2d0000000000000000000000000000000",
+    "df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:01448683dd83e50727b9c5f6cdc84bd9d93fcf2c888001a85b1ba32f76b3612e3e000000000000000000000000000000",
+    "df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:01c53e254e8b70aa14b45ba3043730a0736ca2afb1df7fa3db9c61578845e470fe000000000000000000000000000000"
   ],
   "sources": [
     {
@@ -34,6 +54,14 @@
     {
       "url": "https://nras.attestation.nvidia.com/.well-known/jwks.json",
       "matched": "All P-384 public keys (x5c dropped) fetched at 2026-11-13T15:08:48Z, including the candidate kid nv-eat-kid-prod-20261113124709002-cfd263d1."
+    },
+    {
+      "url": "https://cloud-api.near.ai/v1/attestation/report",
+      "matched": "scripts/tee-preflight.mjs, unauthenticated, 2026-11-13T15:16-15:34Z, no model call: every swarm2 proposer (Qwen3.6-35B-A3B-FP8, Qwen3.8-27B, glm-5.3-flash, DeepSeek-V4.1-Flash-1017, Qwen3-VL-30B-A3B-Instruct) returned gateway + model reports with DCAP UpToDate, nonce, compose/mrConfigId, RTMR3 replay and NRAS GPU token all passing; gateway 7fe60787...9173 and model mrTd df4d77c8...891b for all five (the dstack v0.5.12 values reproduced above), os-image-hash 91fd5d69...9829. Repeated sampling: GLM 7/7 and Qwen 18/18 stable; DeepSeek 19/20 one compose hash, 1/20 another."
+    },
+    {
+      "url": "https://nras.attestation.nvidia.com/.well-known/jwks.json",
+      "matched": "Re-fetched at 2026-11-13T15:34:30Z by scripts/tee-preflight.mjs: the same 212 P-384 public keys as above, none added or removed."
     }
   ],
   "nrasKeys": [

@@ -132,7 +132,9 @@ test('committed policy validates with an observed-pinned trust basis; any change
   validateTeePolicy(committed);
   assert.equal(committed.trustBasis, 'observed-at-2026-11-13-not-independently-reproduced');
   assert.deepEqual(committed.gatewayMeasurements, ['7fe60787222bd394cb516abca2435f22f035ab2cc9c0a4b4b3b148e46297f3d931a237b72f359052c6e657d8c1409173:01b73eed6abc60fbe5eb0ce2bbaacf3bd9b83c9c84f3e6a5b1a091cb679bdbe66f000000000000000000000000000000']);
-  assert.deepEqual(committed.modelMeasurements, ['df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:01e8416a02d6f7ce47baaa52e3925b934fd30834b04fc9086b363db9b1d12c729d000000000000000000000000000000']);
+  // Qwen (shared), GLM, DeepSeek (two observed compose hashes): one mrTd, four observed mrConfigIds.
+  assert.deepEqual(committed.modelMeasurements, ['01e8416a02d6f7ce47baaa52e3925b934fd30834b04fc9086b363db9b1d12c729d', '01c900dc7304663b73b623cd5d941fbdab6f02858017b371ae28de445a16d2e2d0', '01448683dd83e50727b9c5f6cdc84bd9d93fcf2c888001a85b1ba32f76b3612e3e', '01c53e254e8b70aa14b45ba3043730a0736ca2afb1df7fa3db9c61578845e470fe']
+    .map(config => `df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:${config}000000000000000000000000000000`));
   assert.ok(committed.sources.length > 0 && committed.sources.every(s => s.url.startsWith('https://') && s.matched));
   for (const trustBasis of [undefined, 'independently-verified', 'observed-at-2026-11-13', 'published-reference']) assert.throws(() => validateTeePolicy({ ...committed, trustBasis }), /TEE_POLICY_NOT_CONFIGURED/, String(trustBasis));
   const f = await syntheticTee(); const opts = { quoteVerifier: f.quoteVerifier };
