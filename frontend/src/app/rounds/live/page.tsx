@@ -86,7 +86,7 @@ function Executed({ view, state }: { view: LiveRound; state: DemoState }) {
     {view.isHold ? <div className="rw-hold"><AgentAvatar name="Hold" kind="hold" size="lg" /><div><b>Hold selected</b><div className="muted">The Safe keeps its current token quantities; no swap is needed.</div></div></div>
       : <SwapVisual spent={{ label: "Target set by the winner", amount: winner ? percentFromBps(winner.allocationBps) ?? "unavailable" : "unavailable", symbol: "test ETH weight" }}
           received={{ label: "The Safe holds now", amount: `${eth(state.safe.assetBalance)} ETH`, symbol: `and ${usdc(state.safe.stableBalance)} test USDC` }} />}
-    <p className="muted">Balances are read live from the Safe. The read-only API does not report whether the swap has executed yet, so compare them with the Funded stage.</p>
+    <p className="muted">The round reports execution status. These are the Safe’s current balances, not a historical swap receipt.</p>
   </div>;
 }
 
@@ -139,6 +139,7 @@ export default function LiveRoundPage() {
         {local.error && !state ? `${local.error} ` : null}
         {state && !aurora ? "The connected backend is not the read-only Aurora testnet monitor." : state ? "The testnet has no round yet. This page updates itself when one opens." : "Start the read-only monitor and reload."}
       </EmptyState>
+      <WalletForecast view={null} />
     </AppShell>;
   }
 

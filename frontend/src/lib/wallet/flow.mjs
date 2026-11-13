@@ -127,3 +127,10 @@ export function explainError(failure) {
   if (name === 'Reverted') return 'The transaction was mined but reverted. Nothing changed.';
   return 'The transaction did not go through. Your position was re-read from the chain.';
 }
+
+/** A wallet remains usable without the monitoring API; trades still require fresh on-chain round reads. */
+export function walletAvailability(round) {
+  return round && typeof round === 'object' && typeof round.roundId === 'string'
+    ? { visible: true, context: 'round' }
+    : { visible: true, context: 'between-rounds' };
+}

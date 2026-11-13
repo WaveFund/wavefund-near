@@ -19,3 +19,5 @@ export declare function nextTradeStep(input: { reads: TradeReads | null; deposit
 export declare function stepStates(next: NextStep | null, reads: TradeReads | null): Array<{ id: TradeStepId; state: 'done' | 'current' | 'upcoming' | 'blocked' }>;
 export declare function redeemState(input: { windowKind: WindowKind; deposit: bigint | null; redeemed: boolean | null; winnerHoldings: bigint | null; preview: bigint | null }): { canRedeem: boolean; message: string | null };
 export declare function explainError(failure: { name?: string | null; code?: number | null; message?: string | null } | null | undefined): string;
+
+export declare function walletAvailability(round: unknown): { visible: true; context: 'round' | 'between-rounds' };

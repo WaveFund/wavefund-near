@@ -63,7 +63,8 @@ test('round ids from different engines stay distinct; history is labelled saved;
   assert.equal(exactFactorX18(tidepool.realisedReturnX18), '0.993541889635073190', 'precise values come straight from the evidence');
   assert.equal(tidepool.collateral.seed, '100000000');
   assert.equal(findRound(checked.rounds, tidepool.slug).round, tidepool);
-  assert.equal(findRound(checked.rounds, '7').round?.roundId, '7', 'a unique bare round number still resolves');
+  assert.equal(findRound(checked.rounds.filter(r => r.stack.id === 'original'), '7').round?.roundId, '7', 'a unique bare round number still resolves');
+  assert.deepEqual(findRound(checked.rounds, '7'), { round: null, ambiguous: true }, 'published original and Tidepool round 7 must remain distinct');
   // Two engines with the same round number: slugs differ, a bare number is ambiguous.
   const original = checked.rounds.find((round) => round.roundId === '7');
   const twin = { ...original, roundId: '1', slug: `1313161555-${original.stack.engine}-1` };

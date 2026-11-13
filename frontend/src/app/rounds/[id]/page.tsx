@@ -26,7 +26,7 @@ export default function RoundPage() {
 
   return <AppShell source={{ label: "Aurora testnet", tone: "testnet", detail: "saved evidence" }}>
     <Link className="breadcrumb" href="/rounds"><Icon name="chevron" />Rounds</Link>
-    {!rounds ? (error ? <EmptyState icon="alert" title="Saved rounds are unavailable">{error} Start the demo with <code>bash scripts/docker-demo/up.sh</code>.</EmptyState>
+    {!rounds ? (error ? <EmptyState icon="alert" title="Saved rounds are unavailable">Saved rounds are unavailable because the Wavefund API is not responding. <Tip label="For developers">{error} Start the API or run bash scripts/docker-demo/up.sh.</Tip></EmptyState>
       : <div className="stack">{[0, 1, 2].map((i) => <Skeleton key={i} height={64} />)}</div>)
     : !round || !journey || !summary ? <EmptyState icon="alert" title={ambiguous ? "Several rounds share that number" : "Round not found"}>
         {ambiguous ? "Round numbers repeat across engines. Pick the round by network, engine and round id:" : "No saved round matches this address."}

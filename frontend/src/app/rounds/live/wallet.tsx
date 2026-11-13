@@ -2,7 +2,7 @@
 
 // "Forecast from your wallet": the visitor's own injected wallet signs every step. Nothing here holds a key,
 // and every number shown is read from Aurora testnet for the connected address.
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Address, EIP1193Provider, Hash } from "viem";
 import { CopyText, Icon } from "@/components/funding/primitives";
 import { Button, Notice, SegmentedControl } from "@/components/ui";
@@ -10,7 +10,7 @@ import { Cap, Tip } from "@/components/v2";
 import { explorerUrl, formatUnits, parseUnits } from "@/lib/funding/model.mjs";
 import type { LiveRound } from "@/lib/arena/live.mjs";
 import { accounts, chainIdOf, confirm, failureOf, injected, OUTCOME_DECIMALS, quote as readQuote, readPosition, send, STABLE_DECIMALS, switchToAurora, type Position, type TxRequest } from "@/lib/wallet/client";
-import { AURORA_TESTNET_ID, DEFAULT_SLIPPAGE_BPS, explainError, isAuroraTestnet, minimumOut, nextTradeStep, redeemState, stepStates, windowFor, type NextStep } from "@/lib/wallet/flow.mjs";
+import { AURORA_TESTNET_ID, DEFAULT_SLIPPAGE_BPS, explainError, isAuroraTestnet, minimumOut, nextTradeStep, redeemState, stepStates, windowFor, walletAvailability, type NextStep } from "@/lib/wallet/flow.mjs";
 import "./wallet.css";
 
 const usdc = (v: bigint | null | undefined) => (typeof v === "bigint" ? formatUnits(v.toString(), STABLE_DECIMALS) ?? "unavailable" : "unavailable");
@@ -42,7 +42,7 @@ function Stepper({ next, reads }: { next: NextStep; reads: Parameters<typeof ste
   </ol>;
 }
 
-export function WalletForecast({ view }: { view: LiveRound }) {
+export function WalletForecast({ view }: { view: LiveRound | null }) {
   const [provider, setProvider] = useState<EIP1193Provider | null | undefined>(undefined);
   const [account, setAccount] = useState<Address | null>(null);
   const [chain, setChain] = useState<string | null>(null);
@@ -55,6 +55,8 @@ export function WalletForecast({ view }: { view: LiveRound }) {
   const [side, setSide] = useState<Side>("long");
   const [quoted, setQuoted] = useState<{ key: string; value: bigint | null; error?: string } | null>(null);
 
+  const readSerial = useRef(0);
+  const availability = walletAvailability(view);
   const onAurora = isAuroraTestnet(chain);
   const busy = tx?.phase === "signing" || tx?.phase === "pending";
 
@@ -63,21 +65,23 @@ export function WalletForecast({ view }: { view: LiveRound }) {
     if (!p) return;
     void accounts(p, false).then((list) => setAccount(list[0] ?? null)).catch(() => setAccount(null));
     void chainIdOf(p).then(setChain).catch(() => setChain(null));
-    const onAccounts = (list: unknown) => { setAccount(Array.isArray(list) && typeof list[0] === "string" ? (list[0] as Address) : null); setPos(null); };
-    const onChain = (id: unknown) => setChain(typeof id === "string" ? id : null);
+    const onAccounts = (list: unknown) => { readSerial.current++; setAccount(Array.isArray(list) && typeof list[0] === "string" ? (list[0] as Address) : null); setPos(null); };
+    const onChain = (id: unknown) => { readSerial.current++; setPos(null); setChain(typeof id === "string" ? id : null); };
     p.on?.("accountsChanged", onAccounts); p.on?.("chainChanged", onChain);
     return () => { p.removeListener?.("accountsChanged", onAccounts); p.removeListener?.("chainChanged", onChain); };
   }, []);
 
   const refresh = useCallback(async () => {
     if (!account) return;
-    try { setPos(await readPosition(account)); setReadError(null); } catch { setReadError("Could not read your position from Aurora testnet. Retrying."); }
+    const serial = ++readSerial.current;
+    try { const next = await readPosition(account); if (serial === readSerial.current) { setPos(next); setReadError(null); } }
+    catch { if (serial === readSerial.current) { setPos(null); setReadError("Could not read your position from Aurora testnet. Retrying."); } }
   }, [account]);
-  useEffect(() => { if (!account) return; void refresh(); const t = setInterval(() => void refresh(), 10_000); return () => clearInterval(t); }, [account, refresh]);
+  useEffect(() => { if (!account) return; void refresh(); const t = setInterval(() => void refresh(), 10_000); return () => { readSerial.current++; clearInterval(t); }; }, [account, refresh]);
 
   const round = pos?.round ?? null;
   const win = round ? windowFor({ status: round.status, tradingEnd: round.tradingEnd, nowSec: round.nowSec }) : { kind: "none" as const, reason: "No round is open on the testnet." };
-  const proposals = round ? Array.from({ length: round.proposalCount }, (_, id) => ({ id, name: id === 0 ? "Hold" : view.proposals.find((p) => p.id === String(id))?.name ?? `Strategy ${id}` })) : [];
+  const proposals = round ? Array.from({ length: round.proposalCount }, (_, id) => ({ id, name: id === 0 ? "Hold" : view?.proposals.find((p) => p.id === String(id))?.name ?? `Strategy ${id}` })) : [];
   const chosen = pos?.proposals.find((p) => p.id === proposalId) ?? null;
   const depositAmount = (() => { const r = parseUnits(depositText, STABLE_DECIMALS); return r.ok ? BigInt(r.raw) : null; })();
   const creditAmount = (() => { const r = parseUnits(creditText, STABLE_DECIMALS); return r.ok ? BigInt(r.raw) : null; })();
@@ -100,7 +104,7 @@ export function WalletForecast({ view }: { view: LiveRound }) {
   const minOut = minimumOut(q?.value ?? null, DEFAULT_SLIPPAGE_BPS);
 
   async function run(label: string, req: TxRequest) {
-    if (!provider || !account) return;
+    if (!provider || !account || !onAurora || !pos || readError || busy) return;
     setTx({ label, phase: "signing" });
     try {
       const hash = await send(provider, account, req);
@@ -113,7 +117,7 @@ export function WalletForecast({ view }: { view: LiveRound }) {
   }
 
   async function act() {
-    if (!round || next.step === "blocked") return;
+    if (!round || next.step === "blocked" || win.kind !== "open" || readError || busy || !onAurora) return;
     if (next.step === "approve") return run(`Approve ${usdc(next.amount)} test USDC`, { kind: "approve", amount: next.amount });
     if (next.step === "deposit") return run(`Deposit ${usdc(next.amount)} test USDC`, { kind: "deposit", roundId: round.id, amount: next.amount });
     if (next.step === "claim") return run(`Claim ${creditsText(next.amount)}`, { kind: "claim", roundId: round.id, proposalId, amount: next.amount });
@@ -153,13 +157,13 @@ export function WalletForecast({ view }: { view: LiveRound }) {
   let body;
   if (provider === undefined) body = <p className="muted">Looking for a browser wallet…</p>;
   else if (provider === null) body = <Notice tone="neutral" icon="wallet" title="No browser wallet found"><p>To forecast with your own test USDC, install a wallet such as <a className="wf-link" href={METAMASK} target="_blank" rel="noreferrer">MetaMask<Icon name="external" /></a>, then reload this page.</p></Notice>;
-  else if (!account) body = <div className="wf-stack"><p className="muted">Connect a wallet to take a forecasting position in this round with your own test USDC.</p>
+  else if (!account) body = <div className="wf-stack"><p className="muted">Connect your wallet to see test balances and forecast when a round opens.</p>
     <div><Button variant="primary" icon="wallet" onClick={() => void connect()}>Connect wallet</Button></div></div>;
   else if (!onAurora) body = <div className="wf-stack"><Notice tone="warning" title="Wrong network"><p>Your wallet is on another network. Forecasting runs on Aurora testnet.</p></Notice>
     <div><Button variant="primary" icon="aurora" onClick={() => void switchNetwork()}>Switch to Aurora testnet</Button></div></div>;
   else if (!pos) body = <p className="muted">{readError ?? "Reading your position from Aurora testnet…"}</p>;
   else {
-    const roundNote = round && String(round.id) !== view.roundId ? <p className="muted wf-small">The chain reports round {String(round.id)}; this page shows round {view.roundId}. Your position uses the chain&apos;s current round.</p> : null;
+    const roundNote = round && view && String(round.id) !== view.roundId ? <p className="muted wf-small">The chain reports round {String(round.id)}; this page shows round {view.roundId}. Your position uses the chain&apos;s current round.</p> : null;
     const needsUsdc = win.kind === "open" && pos.deposit === 0n && pos.balance === 0n;
     body = <div className="wf-stack">
       <div className="rw-facts wf-facts">
@@ -169,7 +173,7 @@ export function WalletForecast({ view }: { view: LiveRound }) {
       </div>
       {roundNote}
       {readError ? <p className="muted wf-small">{readError}</p> : null}
-      {win.kind !== "open" && win.kind !== "redeem" ? <div className="rw-row start"><Cap tone="warn" icon="clock">{win.kind === "none" ? "No open round" : win.kind === "closing" ? "Closing" : "Trading closed"}</Cap><span className="muted">{win.reason}</span></div> : null}
+      {win.kind !== "open" && win.kind !== "redeem" ? <div className="rw-row start"><Cap tone="warn" icon="clock">{win.kind === "none" ? "No open round" : win.kind === "closing" ? "Closing" : "Trading closed"}</Cap><span className="muted">{win.reason}{win.kind === "none" ? " Forecasting opens when the operator starts the next round; this panel refreshes automatically." : ""}</span></div> : null}
 
       {needsUsdc ? <Notice tone="neutral" icon="fund" title="Ask the operator for test USDC"><p>This wallet holds no test USDC. Send the operator your address:</p><p className="wf-copy"><CopyText value={account} label="your address" /></p></Notice> : null}
 
@@ -213,6 +217,7 @@ export function WalletForecast({ view }: { view: LiveRound }) {
   }
   return <section id="wallet" className="card rw-panel wf-card" aria-labelledby="wf-title" style={{ scrollMarginTop: 80 }}>
     {head}
+    {availability.context === "between-rounds" ? <p className="muted" style={{ padding: "12px 24px 0" }}>Connect and check balances while waiting for a round. Trading availability is read directly from Aurora.</p> : null}
     <div className="rw-body">{body}{tx && (!account || !onAurora) ? <TxLine tx={tx} /> : null}{foot}</div>
   </section>;
 }

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { flowSteps, type FlowState } from "@/components/funding/RouteFlow";
 import { StatusTracker } from "@/components/funding/StatusTracker";
+import { Tip } from "@/components/v2";
 import Link from "next/link";
 import { DepositForm, ReadinessCard, ScenarioPicker, TreasurySummary, amountValidation } from "@/components/funding/FundingPanels";
 import { FreshCheckRow, TidepoolEvidence, TidepoolFundingSteps } from "@/components/tidepool/TidepoolParts";
@@ -185,7 +186,7 @@ export default function FundPage() {
   const depositBody = phase === "connecting" ? <div className="stack">{[0, 1, 2].map((i) => <Skeleton key={i} height={44} />)}</div>
     : phase !== "ready" || !config ? <EmptyState icon={phase === "rejected" ? "alert" : "route"} title={phase === "rejected" ? "The funding configuration was rejected" : "The funding API is not connected"}
         action={<div className="page-actions"><Button variant="primary" icon="layers" onClick={() => selectLane("fixtures")}>Explore example states</Button><Button icon="refund" onClick={() => void connect(createApiFundingLoader())}>Retry local API</Button></div>}>
-        {notice} Run <code>bash scripts/docker-demo/up.sh</code> for live preview quotes. Nothing is signed, funded or sent.
+        {notice} Funding previews need the Wavefund API. <Tip label="For developers">Run bash scripts/docker-demo/up.sh for dry quotes.</Tip> Nothing is signed, funded or sent.
       </EmptyState>
     : <div className="stack-lg">
       {isFixture ? <ScenarioPicker scenarios={scenarios} selected={scenarioId} onSelect={(id) => void loadRecord(id, true)} busy={tracking} /> : null}

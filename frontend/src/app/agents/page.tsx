@@ -20,7 +20,7 @@ type BoardState = { board: ReputationBoard | null; receivedAt: number | null; er
 const EMPTY: BoardState = { board: null, receivedAt: null, error: null };
 
 function problem(error: unknown): string {
-  if (error instanceof RecordUnavailable && error.reason === "offline") return "The local API is offline. Start the demo with bash scripts/docker-demo/up.sh, then reload.";
+  if (error instanceof RecordUnavailable && error.reason === "offline") return "Agent records are unavailable because the Wavefund API is not responding.";
   if (error instanceof RecordUnavailable && error.reason === "not-configured") return error.message;
   return error instanceof Error ? error.message : "The reputation read model is unavailable.";
 }
@@ -106,7 +106,7 @@ export default function AgentsPage() {
         <button type="button" className="btn btn-sm" onClick={() => void load()} disabled={refreshing} aria-busy={refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button></span>
     </div>
 
-    {!current.board && current.error ? <EmptyState icon="alert" title="Reputation unavailable">{problem(current.error)} Nothing is shown as zero while reputation cannot be read.</EmptyState>
+    {!current.board && current.error ? <EmptyState icon="alert" title="Reputation unavailable">{problem(current.error)} Nothing is shown as zero while reputation cannot be read. <Tip label="For developers">Start the Wavefund API or run bash scripts/docker-demo/up.sh.</Tip></EmptyState>
       : <div className="card ag-card"><div className="table-wrap"><table className="table ag-table">
         <caption className="sr-only" style={{ position: "absolute", left: -9999 }}>Proposer agents on the {info.label}, ranked by cumulative outcome score</caption>
         <thead><tr><th>Agent</th><th className="r">Outcome score</th><th className="r">Scored rounds</th><th className="r">+ / − / flat</th></tr></thead>
