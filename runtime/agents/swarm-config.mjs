@@ -29,9 +29,9 @@ export const SWARM2_MODELS = Object.freeze(Object.fromEntries([
   ['anthropic/claude-haiku-5-5', { family: 'Anthropic', hosting: 'proxied', priceIn: 100, priceOut: 500, responseFormat: 'json_schema', temperature: false, maxTokens: 4000, thinkingOff: null }],
   ['google/gemini-2.5-flash', { family: 'Google', hosting: 'proxied', priceIn: 300, priceOut: 2500, responseFormat: 'json_object', temperature: true, maxTokens: 4000, thinkingOff: null }],
   ['x-ai/grok-4.6', { family: 'xAI', hosting: 'proxied', priceIn: 2000, priceOut: 6000, responseFormat: 'json_object', temperature: true, maxTokens: 4000, thinkingOff: null }],
-  ['moonshotai/kimi-k2.6', { family: 'Moonshot', hosting: 'proxied', priceIn: 810, priceOut: 3850, responseFormat: 'json_schema', temperature: true, maxTokens: 4000, thinkingOff: null }],
+  ['anthropic/claude-sonnet-5', { family: 'Anthropic', hosting: 'proxied', priceIn: 2000, priceOut: 10000, responseFormat: 'json_object', temperature: true, maxTokens: 1800, thinkingOff: null }],
   ['deepseek/deepseek-v3.2', { family: 'DeepSeek', hosting: 'proxied', priceIn: 1100, priceOut: 1100, responseFormat: 'json_object', temperature: true, maxTokens: 1800, thinkingOff: null }],
-  ['qwen/qwen3.7-max', { family: 'Qwen', hosting: 'proxied', priceIn: 2800, priceOut: 7500, responseFormat: 'json_object', temperature: true, maxTokens: 1800, thinkingOff: null }],
+  ['google/gemini-3.1-flash-lite', { family: 'Google', hosting: 'proxied', priceIn: 250, priceOut: 1500, responseFormat: 'json_object', temperature: true, maxTokens: 1800, thinkingOff: null }],
   ['z-ai/glm-5.3', { family: 'GLM', hosting: 'proxied', priceIn: 1800, priceOut: 5750, responseFormat: 'none', temperature: true, maxTokens: 4000, thinkingOff: null }],
 ].map(([id, spec]) => [id, Object.freeze(spec)])));
 
@@ -50,9 +50,9 @@ export const SWARM2_FORECASTERS = Object.freeze([
   { name: 'Guardian', model: 'anthropic/claude-haiku-5-5', mandate: 'Independently examine downside and stablecoin depeg uncertainty.' },
   { name: 'FeeAnalyst', model: 'google/gemini-2.5-flash', mandate: 'Examine turnover and fees: a challenger pays a rebalance fee that Hold does not.' },
   { name: 'StressAnalyst', model: 'x-ai/grok-4.6', mandate: 'Challenge extrapolation of recent prices and stress-test each allocation.' },
-  { name: 'BaseRate', model: 'moonshotai/kimi-k2.6', mandate: 'Anchor on the base rate that short-horizon returns are close to zero, then adjust only for supplied evidence.' },
+  { name: 'BaseRate', model: 'anthropic/claude-sonnet-5', mandate: 'Anchor on the base rate that short-horizon returns are close to zero, then adjust only for supplied evidence.' },
   { name: 'VolAnalyst', model: 'deepseek/deepseek-v3.2', mandate: 'Relate each allocation to realised volatility: more asset exposure means a wider spread of outcomes, not a higher expected return.' },
-  { name: 'Regime', model: 'qwen/qwen3.7-max', mandate: 'Judge whether the supplied history looks trending or mean-reverting and what that implies for each allocation\'s return.' },
+  { name: 'Regime', model: 'google/gemini-3.1-flash-lite', mandate: 'Judge whether the supplied history looks trending or mean-reverting and what that implies for each allocation\'s return.' },
   { name: 'Skeptic', model: 'z-ai/glm-5.3', mandate: 'Argue against the most popular view; stay near zero expected return unless the evidence clearly supports a move.' },
 ].map(Object.freeze));
 
