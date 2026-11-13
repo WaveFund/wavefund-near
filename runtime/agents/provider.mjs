@@ -53,6 +53,16 @@ export function createProvider(config, { fetchImpl = fetch, timeoutMs = 20000, m
   };
 }
 
+// Paid model calls per round, by operator profile. No retries: a failed call ends the plan phase.
+export const PROFILE_CALLS = Object.freeze({ classic: 4, hybrid: 4, swarm: 8, swarm2: 14 });
+/** One shared counter for every provider in a round; take() throws on the call after the profile cap. */
+export function roundCallCap(profile) {
+  const cap = PROFILE_CALLS[profile];
+  if (!Number.isSafeInteger(cap)) throw new Error('Unknown agent profile');
+  let used = 0;
+  return Object.freeze({ cap, get used() { return used; }, take() { if (used >= cap) throw new Error('Round model-call cap exhausted'); return ++used; } });
+}
+
 export function subprocessEnvironment(source, inferenceAccess = false) {
   const environment = { ...source };
   if (!inferenceAccess) delete environment.NEARAI_API_KEY;
