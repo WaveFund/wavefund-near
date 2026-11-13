@@ -73,3 +73,9 @@ Momentum its second sample. Final order: **5 HighBeta (re-run) · 6 Hold · 7 ge
   forecasting window, from a 1 test USDC deposit, and is settled with `redeemFor` if it has not redeemed itself.
 - Evaluation window 1800 s. Pool aligned to the oracle before opening. 13 paid model calls.
 - Whatever wins, loses or abstains is published as measured. A failure is recorded, not silently re-run.
+
+**Round 9 change (before anything went on-chain):** the first plan attempt stopped at its 3rd paid call
+(`TEE_COMPLETION_INVALID`): `z-ai/glm-5.3-flash` always returns hidden reasoning, which TEE verification rejects.
+3 paid calls were spent; no round was opened. Under the no-retry rule that plan session is closed. The proposer set
+becomes 4 TEE-verified models (Conservative Qwen3.6, Balanced Qwen3.8, Momentum DeepSeek-V4.1-Flash, HighBeta
+Qwen3-VL), 12 paid calls, everything else as pre-registered above. Proposal 1 (outside-wallet LONG) is still Conservative.
