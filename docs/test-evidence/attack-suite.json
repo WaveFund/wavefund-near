@@ -1,0 +1,197 @@
+{
+  "schemaVersion": 1,
+  "kind": "live-attack-suite",
+  "chainId": 1313161555,
+  "rpc": "https://testnet.aurora.dev",
+  "blockNumber": "277526129",
+  "method": "eth_call at one pinned block; no keys, no transactions",
+  "total": 12,
+  "passed": 12,
+  "results": [
+    {
+      "name": "Non-owner authorizes a round on the Safe module",
+      "contract": "TradingSafeModule",
+      "address": "0xb32cba22032f69f172c7a8e363d4975023543fcf",
+      "function": "authorizeRound",
+      "from": "0x00000000000000000000000000000000000dead1",
+      "args": [
+        "9",
+        "2000000000",
+        "2000003600",
+        "2000001800",
+        "990000000000000000",
+        "1010000000000000000",
+        "60"
+      ],
+      "expectedError": "OnlySafe",
+      "observedError": "OnlySafe",
+      "pass": true,
+      "blockNumber": "277526129"
+    },
+    {
+      "name": "Re-execute an already-executed settled round (8)",
+      "contract": "TradingSafeModule",
+      "address": "0xb32cba22032f69f172c7a8e363d4975023543fcf",
+      "function": "execute",
+      "from": "0x00000000000000000000000000000000000dead1",
+      "args": [
+        "8",
+        "0",
+        "2000000000"
+      ],
+      "expectedError": "NotExecutable",
+      "observedError": "NotExecutable",
+      "pass": true,
+      "blockNumber": "277526129"
+    },
+    {
+      "name": "Execute a cancelled round (4)",
+      "contract": "TradingSafeModule",
+      "address": "0xb32cba22032f69f172c7a8e363d4975023543fcf",
+      "function": "execute",
+      "from": "0x00000000000000000000000000000000000dead1",
+      "args": [
+        "4",
+        "0",
+        "2000000000"
+      ],
+      "expectedError": "NotExecutable",
+      "observedError": "NotExecutable",
+      "pass": true,
+      "blockNumber": "277526129"
+    },
+    {
+      "name": "Non-keeper opens a round",
+      "contract": "QuantumRound",
+      "address": "0xba96a117f4de33c38df72002651f11024ed14a14",
+      "function": "openRound",
+      "from": "0x00000000000000000000000000000000000dead1",
+      "args": [
+        "2000000000",
+        "3600",
+        "990000000000000000",
+        "1010000000000000000",
+        "60"
+      ],
+      "expectedError": "AccessControlUnauthorizedAccount",
+      "observedError": "AccessControlUnauthorizedAccount",
+      "pass": true,
+      "blockNumber": "277526129"
+    },
+    {
+      "name": "Settle the performance observation of round 8 again",
+      "contract": "PerformanceTracker",
+      "address": "0xc2c389f3abd8c55d78a2400a6918b2ed02bf937d",
+      "function": "settle",
+      "from": "0x00000000000000000000000000000000000dead1",
+      "args": [
+        "8"
+      ],
+      "expectedError": "AlreadyObserved",
+      "observedError": "AlreadyObserved",
+      "pass": true,
+      "blockNumber": "277526129"
+    },
+    {
+      "name": "Collapse an already-settled round (8)",
+      "contract": "QuantumRound",
+      "address": "0xba96a117f4de33c38df72002651f11024ed14a14",
+      "function": "collapse",
+      "from": "0x00000000000000000000000000000000000dead1",
+      "args": [
+        "8"
+      ],
+      "expectedError": "AlreadyCollapsed",
+      "observedError": "AlreadyCollapsed",
+      "pass": true,
+      "blockNumber": "277526129"
+    },
+    {
+      "name": "Redeem round 8 twice (already-paid forecaster)",
+      "contract": "QuantumRound",
+      "address": "0xba96a117f4de33c38df72002651f11024ed14a14",
+      "function": "redeem",
+      "from": "0x954362D2D831fC9430122d95F79c2eE3841E975D",
+      "args": [
+        "8"
+      ],
+      "expectedError": "NothingToRedeem",
+      "observedError": "NothingToRedeem",
+      "pass": true,
+      "blockNumber": "277526129"
+    },
+    {
+      "name": "Record reputation for a Hold round (6)",
+      "contract": "AgentReputation",
+      "address": "0xfa71a652547284d1034ae6813ed4a882cb354e92",
+      "function": "record",
+      "from": "0x00000000000000000000000000000000000dead1",
+      "args": [
+        "6"
+      ],
+      "expectedError": "NoAgentWinner",
+      "observedError": "NoAgentWinner",
+      "pass": true,
+      "blockNumber": "277526129"
+    },
+    {
+      "name": "Record reputation for a Hold round (7)",
+      "contract": "AgentReputation",
+      "address": "0xfa71a652547284d1034ae6813ed4a882cb354e92",
+      "function": "record",
+      "from": "0x00000000000000000000000000000000000dead1",
+      "args": [
+        "7"
+      ],
+      "expectedError": "NoAgentWinner",
+      "observedError": "NoAgentWinner",
+      "pass": true,
+      "blockNumber": "277526129"
+    },
+    {
+      "name": "Record reputation for round 8 a second time",
+      "contract": "AgentReputation",
+      "address": "0xfa71a652547284d1034ae6813ed4a882cb354e92",
+      "function": "record",
+      "from": "0x00000000000000000000000000000000000dead1",
+      "args": [
+        "8"
+      ],
+      "expectedError": "AlreadyRecorded",
+      "observedError": "AlreadyRecorded",
+      "pass": true,
+      "blockNumber": "277526129"
+    },
+    {
+      "name": "Stranger mints test tokens",
+      "contract": "AuroraTestToken",
+      "address": "0x8d52924ccf3648f575e92ac5b1be72f2a1a1dc5a",
+      "function": "mint",
+      "from": "0x00000000000000000000000000000000000dead1",
+      "args": [
+        "0x00000000000000000000000000000000000dead1",
+        "1000000000000000000"
+      ],
+      "expectedError": "OnlyOperator",
+      "observedError": "OnlyOperator",
+      "pass": true,
+      "blockNumber": "277526129"
+    },
+    {
+      "name": "Submit a proposal to a settled (non-trading) round",
+      "contract": "QuantumRound",
+      "address": "0xba96a117f4de33c38df72002651f11024ed14a14",
+      "function": "propose",
+      "from": "0x00000000000000000000000000000000000dead1",
+      "args": [
+        "8",
+        "{\"tEthBps\":5000}",
+        "attack"
+      ],
+      "expectedError": "TradingNotOpen",
+      "observedError": "TradingNotOpen",
+      "pass": true,
+      "blockNumber": "277526129"
+    }
+  ]
+}
