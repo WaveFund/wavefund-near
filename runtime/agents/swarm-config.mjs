@@ -30,6 +30,9 @@ export const SWARM2_MODELS = Object.freeze(Object.fromEntries([
   ['google/gemini-2.5-flash', { family: 'Google', hosting: 'proxied', priceIn: 300, priceOut: 2500, responseFormat: 'json_object', temperature: true, maxTokens: 4000, thinkingOff: null }],
   ['x-ai/grok-4.6', { family: 'xAI', hosting: 'proxied', priceIn: 2000, priceOut: 6000, responseFormat: 'json_object', temperature: true, maxTokens: 4000, thinkingOff: null }],
   ['anthropic/claude-sonnet-5', { family: 'Anthropic', hosting: 'proxied', priceIn: 2000, priceOut: 10000, responseFormat: 'json_object', temperature: true, maxTokens: 1800, thinkingOff: null }],
+  ['openai/gpt-4.1', { family: 'OpenAI', hosting: 'proxied', priceIn: 2000, priceOut: 8000, responseFormat: 'json_object', temperature: true, maxTokens: 1800, thinkingOff: null }],
+  ['x-ai/grok-4.7', { family: 'xAI', hosting: 'proxied', priceIn: 2000, priceOut: 6000, responseFormat: 'json_object', temperature: true, maxTokens: 4000, thinkingOff: null }],
+  ['moonshotai/kimi-k3', { family: 'Moonshot', hosting: 'proxied', priceIn: 3300, priceOut: 16500, responseFormat: 'json_object', temperature: true, maxTokens: 4000, thinkingOff: null }],
   ['deepseek/deepseek-v3.2', { family: 'DeepSeek', hosting: 'proxied', priceIn: 1100, priceOut: 1100, responseFormat: 'json_object', temperature: true, maxTokens: 1800, thinkingOff: null }],
   ['google/gemini-3.1-flash-lite', { family: 'Google', hosting: 'proxied', priceIn: 250, priceOut: 1500, responseFormat: 'json_object', temperature: true, maxTokens: 1800, thinkingOff: null }],
   ['z-ai/glm-5.3', { family: 'GLM', hosting: 'proxied', priceIn: 1800, priceOut: 5750, responseFormat: 'none', temperature: true, maxTokens: 4000, thinkingOff: null }],
@@ -47,12 +50,12 @@ export const SWARM2_PROPOSERS = Object.freeze([
 export const SWARM2_FORECASTERS = Object.freeze([
   { name: 'Quant', model: 'openai/gpt-4.1-mini', mandate: 'Estimate each expected return from the actual allocations and trend/volatility evidence.' },
   { name: 'Guardian', model: 'anthropic/claude-haiku-5-5', mandate: 'Independently examine downside and stablecoin depeg uncertainty.' },
-  { name: 'FeeAnalyst', model: 'google/gemini-2.5-flash', mandate: 'Examine turnover and fees: a challenger pays a rebalance fee that Hold does not.' },
-  { name: 'StressAnalyst', model: 'x-ai/grok-4.6', mandate: 'Challenge extrapolation of recent prices and stress-test each allocation.' },
+  { name: 'FeeAnalyst', model: 'openai/gpt-4.1', mandate: 'Examine turnover and fees: a challenger pays a rebalance fee that Hold does not.' },
+  { name: 'StressAnalyst', model: 'x-ai/grok-4.7', mandate: 'Challenge extrapolation of recent prices and stress-test each allocation.' },
   { name: 'BaseRate', model: 'anthropic/claude-sonnet-5', mandate: 'Anchor on the base rate that short-horizon returns are close to zero, then adjust only for supplied evidence.' },
   { name: 'VolAnalyst', model: 'deepseek/deepseek-v3.2', mandate: 'Relate each allocation to realised volatility: more asset exposure means a wider spread of outcomes, not a higher expected return.' },
   { name: 'Regime', model: 'google/gemini-3.1-flash-lite', mandate: 'Judge whether the supplied history looks trending or mean-reverting and what that implies for each allocation\'s return.' },
-  { name: 'Skeptic', model: 'z-ai/glm-5.3', mandate: 'Argue against the most popular view; stay near zero expected return unless the evidence clearly supports a move.' },
+  { name: 'Skeptic', model: 'moonshotai/kimi-k3', mandate: 'Argue against the most popular view; stay near zero expected return unless the evidence clearly supports a move.' },
 ].map(Object.freeze));
 
 export const SWARM2_CALLS = SWARM2_PROPOSERS.length + SWARM2_FORECASTERS.length; // 12 paid calls (4 + 8), no retries. z-ai/glm-5.3-flash was dropped as a proposer on 2026-11-13: it always returns a hidden reasoning field, which TEE verification rejects by design.
@@ -64,7 +67,7 @@ export const SWARM2_MIN_EDGE_BPS = 300;
 export const SWARM2_TRADE_RULE = 'expected-payout-value-v1';
 export const SWARM2_ACTORS = Object.freeze([...SWARM2_PROPOSERS, ...SWARM2_FORECASTERS].map(a => a.name));
 export const SWARM2_INPUT_BYTES = 20480; // forecaster context grows with six anonymous strategies
-export const SWARM2_TIMEOUT_MS = 60000;
+export const SWARM2_TIMEOUT_MS = 90000; // live 2026-11-13: kimi-k3 46 s, grok-4.7 33 s on a full-size forecaster prompt
 
 // Client-side reservation per call: every input byte counted as a token (an upper bound) plus the full output allowance.
 export function callAllowanceNanoUsd(model, inputBytes) {

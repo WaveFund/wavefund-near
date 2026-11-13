@@ -29,7 +29,7 @@ export function createProvider(config, { fetchImpl = fetch, timeoutMs = 20000, m
   if (!config || !['local', 'near-ai'].includes(config.mode)) throw new Error('Explicit inference configuration required');
   // Revalidate even when a caller constructs configuration directly.
   const checked = providerConfig({ WAVEFUND_AGENT_MODE: config.mode, WAVEFUND_AGENT_MODEL: config.model, WAVEFUND_LOCAL_MODEL_URL: config.endpoint, WAVEFUND_ALLOW_REMOTE_INFERENCE: config.mode === 'near-ai' ? '1' : undefined, NEARAI_API_KEY: config.apiKey });
-  if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 60000 || !Number.isInteger(maxCalls) || maxCalls < 1 || maxCalls > 8) throw new Error('Invalid inference limits');
+  if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 120000 || !Number.isInteger(maxCalls) || maxCalls < 1 || maxCalls > 8) throw new Error('Invalid inference limits');
   let calls = 0;
   return {
     info: Object.freeze({ mode: checked.mode, model: checked.model, attestationVerified: false }),
