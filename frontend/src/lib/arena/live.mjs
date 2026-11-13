@@ -33,8 +33,10 @@ export function formatCountdown(total) {
 }
 
 /** The step the round is in right now. Boundaries match the contract: trading ends at tradingEnd, settling opens at evaluationEnd. */
-export function liveStageFor({ status, tradingEnd, evaluationEnd, nowSec, challengers = 0 }) {
+export function liveStageFor({ status, tradingEnd, evaluationEnd, nowSec, challengers = 0, executed }) {
   if (status === ROUND_STATUS.trading) return challengers < 1 ? 'proposals' : 'forecasting';
+  // Selected but the Safe has not executed yet (backend reports engine.roundExecuted).
+  if (status === ROUND_STATUS.collapsed && executed === false) return 'selected';
   if (status === ROUND_STATUS.collapsed) return Number.isFinite(evaluationEnd) && Number.isFinite(nowSec) && nowSec >= evaluationEnd ? 'evaluated' : 'executed';
   if (status === ROUND_STATUS.settled) return 'redeemed';
   if (status === ROUND_STATUS.cancelled) return 'executed';
@@ -52,7 +54,7 @@ function roundIdOf(state) { const id = state?.roundId; return typeof id === 'str
 /** Strategy rows: live price always, final-window average only once the round has collapsed. */
 function liveProposals(state, collapsed) {
   return (Array.isArray(state?.proposals) ? state.proposals : []).map((item) => ({
-    id: String(item.id), name: String(item.id) === '0' ? 'Hold' : (typeof item.label === 'string' && item.label ? item.label : `Strategy ${item.id}`), allocationBps: Number.isSafeInteger(item.allocationBps) ? item.allocationBps : 0,
+    id: String(item.id), name: String(item.id) === '0' ? 'Hold' : typeof item.name === 'string' && /^[A-Za-z][A-Za-z0-9]{0,31}$/.test(item.name) ? item.name : (typeof item.label === 'string' && item.label ? item.label : `Strategy ${item.id}`), allocationBps: Number.isSafeInteger(item.allocationBps) ? item.allocationBps : 0,
     rationale: typeof item.rationale === 'string' ? item.rationale : '', proposer: typeof item.proposer === 'string' ? item.proposer : null,
     priceX18: probability(item.probabilityX18), twapX18: collapsed ? probability(item.twapX18) : null,
   }));
@@ -68,7 +70,7 @@ export function liveRound(state, nowMs) {
   const proposals = liveProposals(state, afterCollapse);
   const challengers = proposals.filter((item) => item.id !== '0').length;
   const nowSec = Number.isFinite(nowMs) ? nowMs / 1000 : NaN;
-  const current = liveStageFor({ status, tradingEnd, evaluationEnd, nowSec, challengers });
+  const current = liveStageFor({ status, tradingEnd, evaluationEnd, nowSec, challengers, executed: typeof round.executed === 'boolean' ? round.executed : undefined });
   const at = INDEX[current];
   const stages = LIVE_STAGES.map((stage, index) => ({ ...stage, status: index < at ? 'done' : index === at ? (cancelled ? 'halted' : 'current') : 'upcoming' }));
   if (settled) for (const stage of stages) if (stage.id !== 'redeemed') stage.status = 'done';
@@ -79,7 +81,7 @@ export function liveRound(state, nowMs) {
   const winnerKnown = afterCollapse && Number.isInteger(round.winnerId) && proposals.some((item) => item.id === String(round.winnerId));
   const phase = cancelled ? 'Cancelled' : settled ? 'Settled' : status === ROUND_STATUS.trading
     ? (challengers < 1 ? 'Waiting for proposals' : tradingOpen ? 'Forecasting open' : 'Trading closed · awaiting selection')
-    : (current === 'evaluated' ? 'Evaluation ended · awaiting settlement' : 'Selected · evaluating');
+    : (current === 'evaluated' ? 'Evaluation ended · awaiting settlement' : current === 'selected' ? 'Selected · awaiting execution' : 'Executed · measuring');
   return {
     roundId: id, status, phase, settled, cancelled, live: !settled && !cancelled, current, stages, countdown, tradingOpen, tradingEnd, evaluationEnd,
     proposals, challengers, winnerId: winnerKnown ? String(round.winnerId) : null, isHold: winnerKnown && String(round.winnerId) === '0',

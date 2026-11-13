@@ -122,3 +122,17 @@ test('strategy names come from the backend label, Hold is always Hold', () => {
   const view = liveRound(state(1, {}, [{ ...P(0, 0, E(50), '0'), label: 'Hold current assets' }, { ...P(1, 7500, E(54), '0'), label: '75% approved asset' }]), at(TE - 5));
   assert.deepEqual(view.proposals.map((item) => item.name), ['Hold', '75% approved asset']);
 });
+
+test('collapsed but not executed is Selected; executed then measuring; names come from the registry when valid', async () => {
+  const { liveStageFor, liveRound } = await import('../src/lib/arena/live.mjs');
+  const base = { status: 2, tradingEnd: 100, evaluationEnd: 200, nowSec: 150, challengers: 4 };
+  assert.equal(liveStageFor({ ...base, executed: false }), 'selected');
+  assert.equal(liveStageFor({ ...base, executed: true }), 'executed');
+  assert.equal(liveStageFor({ ...base }), 'executed', 'unknown executed keeps the old behaviour');
+  const state = { mode: 'aurora-testnet-readonly', chainId: 1313161555, roundId: '2', round: { status: 2, tradingEnd: '100', evaluationEnd: '200', winnerId: 1, executed: false },
+    proposals: [{ id: '0', allocationBps: 7343 }, { id: '1', name: 'Conservative', label: '5% approved asset', allocationBps: 500 }, { id: '2', name: 'bad name!', label: '42% approved asset', allocationBps: 4200 }] };
+  const view = liveRound(state, 150_000);
+  assert.equal(view.current, 'selected');
+  assert.equal(view.phase, 'Selected · awaiting execution');
+  assert.deepEqual(view.proposals.map((p) => p.name), ['Hold', 'Conservative', '42% approved asset']);
+});
