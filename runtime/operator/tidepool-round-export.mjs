@@ -59,7 +59,7 @@ export function buildRoundEvidence({ roundId, plan, complete, journal, reputatio
     'Investment and forecast tokens/liquidity are worthless test assets.',
     ...(plan.profile === 'swarm2-v1'
       ? ['Six real proposals and eight forecasts each come from a different NEAR AI model; mandates and allocation bounds are operator-defined. Forecasters are proxied third-party models with no hardware attestation.',
-        'Forecasters trade a probability of beating Hold against the LONG/SHORT entry price; a LONG token actually settles at the scaled return, not a beats-Hold outcome.']
+        `Forecasters state each proposal's expected return over the evaluation horizon; the ${plan.tradeRule} rule values one LONG at clamp((1 + R - rMin) / (rMax - rMin), 0, 1) of that point forecast and one SHORT at 1 minus it, which is how the selected proposal's tokens actually settle, and trades only when that value beats the actual on-chain entry price by at least ${plan.minEdgeBps} bps. A point forecast is not an expectation over a return distribution.`]
       : ['Four real proposals use the same model and operator-defined risk mandates.']),
     ...(hybrid ? [`All forecast bets are explicitly SCRIPTED fixtures aimed at the pre-registered target (proposal ${target}, ${NAMES[target]}); the winner reflects that script, not forecasting skill.`] : []),
     `Return is a ${evaluationSeconds}-second marked test portfolio observation at the oracle price, not real investment profit.`,
@@ -68,7 +68,7 @@ export function buildRoundEvidence({ roundId, plan, complete, journal, reputatio
   files.report = { schemaVersion: 1, date: new Date(Number(complete.round.evaluationEnd) * 1000).toISOString().slice(0, 10),
     kind: hybrid ? 'tidepool-funded-real-ai-proposals-scripted-forecasters' : 'tidepool-funded-real-ai-agents',
     genuineModelCalls: genuine.length, scriptedForecasters: scripted.length, modelUsage: sumUsage(genuine),
-    maximumAuthorizedCostUsd: hybrid ? '0.05' : '0.10', preRegistration: { scriptedTarget: target, evaluationSeconds },
+    maximumAuthorizedCostUsd: hybrid ? '0.05' : '0.10', preRegistration: { scriptedTarget: target, evaluationSeconds, ...(plan.profile === 'swarm2-v1' ? { tradeRule: plan.tradeRule, minEdgeBps: plan.minEdgeBps } : {}) },
     completion: complete, confirmedTransactions, limitations };
   files.plan = plan;
   files.independent = independent;

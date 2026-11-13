@@ -77,48 +77,58 @@ export function chooseTrade({ forecasts, quotes, creditAmount = 2000000n, maxSpe
   return best; // No edge means abstain, never force a trade to make the demo look active.
 }
 
-// swarm2 calibrated forecasts: per challenger, the probability (bps) that its measured return over the round horizon
-// beats Hold's. Hold itself (the benchmark) is never forecast.
-export function validateProbabilityForecast(item, { evidenceIds, proposalIds }) {
+// swarm2 forecasts: per proposal (Hold included), the expected measured portfolio return over the round's stated
+// evaluation horizon, in signed bps. No self-reported confidence is asked for: the trade rule below would ignore it.
+export function validateReturnForecast(item, { evidenceIds, proposalIds }) {
   exactKeys(item, ['forecasts'], 'forecast response');
-  if (!Array.isArray(item.forecasts) || item.forecasts.length !== proposalIds.length) throw new Error('Forecast coverage must match all challengers');
+  if (!Array.isArray(item.forecasts) || item.forecasts.length !== proposalIds.length) throw new Error('Forecast coverage must match all proposals');
   const seen = new Set();
   const forecasts = item.forecasts.map((entry) => {
-    exactKeys(entry, ['proposalId', 'probabilityBeatsHoldBps', 'rationale', 'risks', 'evidenceIds'], 'probability forecast');
+    const keys = ['proposalId', 'expectedReturnBps', 'rationale', 'risks', 'evidenceIds'];
+    exactKeys(entry, entry && typeof entry === 'object' && Object.hasOwn(entry, 'uncertainty') ? [...keys, 'uncertainty'] : keys, 'return forecast');
     const proposalId = integer(entry.proposalId, 0, 255, 'proposal identifier');
     if (!proposalIds.includes(proposalId) || seen.has(proposalId)) throw new Error('Unknown or duplicate proposal identifier');
     seen.add(proposalId);
-    return { proposalId, probabilityBeatsHoldBps: integer(entry.probabilityBeatsHoldBps, 0, 10000, 'probability'), ...explanation(entry, evidenceIds) };
+    return { proposalId, expectedReturnBps: integer(entry.expectedReturnBps, -10000, 10000, 'expected return'), ...explanation(entry, evidenceIds),
+      ...(Object.hasOwn(entry, 'uncertainty') ? { uncertainty: text(entry.uncertainty, 240, 'uncertainty') } : {}) };
   });
   return { forecasts };
 }
 
-// Trade a probability against the actual entry price of each side for this credit amount (the on-chain quote, so the
-// AMM's spread and size impact are included). Entry price per outcome, in bps of the 1e18 payout:
-//   priceBps = creditAmount * CREDIT_SCALE * 10000 / quotedOutcomes.
-// LONG when p - longPriceBps >= minEdgeBps; SHORT when (10000 - p) - shortPriceBps >= minEdgeBps (with a cost-free
-// market, shortPrice = 10000 - longPrice, so this is longPrice - p >= minEdge). Otherwise abstain.
-// Compared exactly by cross-multiplication: (pSide - minEdge) * outcomes >= creditAmount * CREDIT_SCALE * 10000.
-// Caveat: a LONG token settles at the clamped scaled return pi, not 1 if the proposal beats Hold; p is used as the
-// forecaster's estimate of that payout, an approximation the evidence must disclose.
-export function chooseProbabilityTrade({ forecasts, quotes, creditAmount = 100000n, maxSpend = 5000000n, minEdgeBps = 500 }) {
+export const VALUE_TRADE_RULE = 'expected-payout-value-v1';
+// What the tokens actually pay (QuantumRound.settle/_redeem): only the selected proposal's tokens settle; one LONG pays
+// pi = clamp((1 + R - rMin) / (rMax - rMin), 0, 1) and one SHORT pays 1 - pi, where R is that proposal's measured return.
+// Claimed credits on a proposal that is not selected are refunded. So the forecaster's value of one LONG is
+//   v = expectedLongPayout(expectedReturnBps, rMin, rMax)   (the round's actual on-chain bounds)
+// and the entry price of one outcome is the real quote: price = creditAmount * CREDIT_SCALE / quotedOutcomes.
+// LONG when v - longPrice >= minEdge; SHORT when (1 - v) - shortPrice >= minEdge; otherwise abstain.
+// Compared exactly by cross-multiplication: payout * outcomes - creditAmount * CREDIT_SCALE * ONE >= minEdge * outcomes.
+// One trade per forecaster: the largest edge, then the lower proposal id, then LONG before SHORT.
+// v is a point-forecast payout, not an expectation over a return distribution (clamping makes them differ).
+export function chooseValueTrade({ forecasts, quotes, rMin, rMax, minEdgeBps, creditAmount = 100000n, maxSpend = 5000000n }) {
   if (typeof creditAmount !== 'bigint' || typeof maxSpend !== 'bigint' || creditAmount <= 0n || creditAmount > maxSpend || maxSpend > 10000000n) throw new Error('Trade exceeds local agent budget');
   integer(minEdgeBps, 1, 10000, 'minimum edge');
+  if (typeof rMin !== 'bigint' || typeof rMax !== 'bigint') throw new Error('Round return bounds are required');
   if (!Array.isArray(forecasts) || !Array.isArray(quotes)) throw new Error('Forecasts and quotes are required');
-  const cost = creditAmount * CREDIT_SCALE * 10000n;
+  const cost = creditAmount * CREDIT_SCALE * ONE;
+  const minEdge = BigInt(minEdgeBps) * ONE / 10000n;
   let best = null;
   for (const forecast of forecasts) {
-    const p = integer(forecast?.probabilityBeatsHoldBps, 0, 10000, 'probability');
+    const v = expectedLongPayout(forecast?.expectedReturnBps, rMin, rMax);
     for (const side of ['long', 'short']) {
       const quote = quotes.find((q) => q.proposalId === forecast.proposalId && q.side === side);
       if (!quote || typeof quote.outcomeAmount !== 'bigint' || quote.outcomeAmount <= 0n) continue;
-      const sideProbability = BigInt(side === 'long' ? p : 10000 - p);
-      if ((sideProbability - BigInt(minEdgeBps)) * quote.outcomeAmount < cost) continue;
-      // Edge in 1e-6 bps for ranking and evidence; the threshold above is exact.
-      const edgeMicroBps = (sideProbability * quote.outcomeAmount - cost) * 1000000n / quote.outcomeAmount;
-      if (!best || edgeMicroBps > best.edgeMicroBps) best = { proposalId: forecast.proposalId, side, creditAmount, quotedOutcomes: quote.outcomeAmount,
-        minimumOutcomes: quote.outcomeAmount * 995n / 1000n, probabilityBps: Number(sideProbability), entryPriceMicroBps: cost * 1000000n / quote.outcomeAmount, edgeMicroBps, minEdgeBps, forecast };
+      const out = quote.outcomeAmount;
+      const payout = side === 'long' ? v : ONE - v;
+      const surplus = payout * out - cost; // edge * outcomes, in 1e18 payout units
+      if (surplus < minEdge * out) continue;
+      const better = !best || surplus * best.quotedOutcomes > best.surplus * out
+        || (surplus * best.quotedOutcomes === best.surplus * out && forecast.proposalId < best.proposalId);
+      if (better) best = { rule: VALUE_TRADE_RULE, proposalId: forecast.proposalId, side, creditAmount, quotedOutcomes: out, minimumOutcomes: out * 995n / 1000n,
+        expectedPayoutX18: payout, entryPriceX18: cost / out, edgeMicroBps: surplus * 10000000000n / (out * ONE), minEdgeBps, rMin, rMax, forecast, surplus };
     }
   }
-  return best; // No edge means abstain, never force a trade.
+  if (!best) return null; // No edge means abstain, never force a trade.
+  const { surplus, ...trade } = best;
+  return trade;
 }

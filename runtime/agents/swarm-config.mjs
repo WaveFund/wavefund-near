@@ -45,19 +45,23 @@ export const SWARM2_PROPOSERS = Object.freeze([
 ].map(Object.freeze));
 
 export const SWARM2_FORECASTERS = Object.freeze([
-  { name: 'Quant', model: 'openai/gpt-4.1-mini', mandate: 'Estimate each probability from the actual allocations and trend/volatility evidence.' },
+  { name: 'Quant', model: 'openai/gpt-4.1-mini', mandate: 'Estimate each expected return from the actual allocations and trend/volatility evidence.' },
   { name: 'Guardian', model: 'anthropic/claude-haiku-5-5', mandate: 'Independently examine downside and stablecoin depeg uncertainty.' },
   { name: 'FeeAnalyst', model: 'google/gemini-2.5-flash', mandate: 'Examine turnover and fees: a challenger pays a rebalance fee that Hold does not.' },
   { name: 'StressAnalyst', model: 'x-ai/grok-4.6', mandate: 'Challenge extrapolation of recent prices and stress-test each allocation.' },
-  { name: 'BaseRate', model: 'moonshotai/kimi-k2.6', mandate: 'Anchor on the base rate that a different static allocation beats Hold over a short horizon, then adjust only for supplied evidence.' },
-  { name: 'VolAnalyst', model: 'deepseek/deepseek-v3.2', mandate: 'Relate each allocation to realised volatility: more asset exposure means a wider spread of outcomes, not a higher win probability.' },
-  { name: 'Regime', model: 'qwen/qwen3.7-max', mandate: 'Judge whether the supplied history looks trending or mean-reverting and what that implies for each allocation versus Hold.' },
-  { name: 'Skeptic', model: 'z-ai/glm-5.3', mandate: 'Argue against the most popular view; stay near 5000 unless the evidence clearly separates a proposal from Hold.' },
+  { name: 'BaseRate', model: 'moonshotai/kimi-k2.6', mandate: 'Anchor on the base rate that short-horizon returns are close to zero, then adjust only for supplied evidence.' },
+  { name: 'VolAnalyst', model: 'deepseek/deepseek-v3.2', mandate: 'Relate each allocation to realised volatility: more asset exposure means a wider spread of outcomes, not a higher expected return.' },
+  { name: 'Regime', model: 'qwen/qwen3.7-max', mandate: 'Judge whether the supplied history looks trending or mean-reverting and what that implies for each allocation\'s return.' },
+  { name: 'Skeptic', model: 'z-ai/glm-5.3', mandate: 'Argue against the most popular view; stay near zero expected return unless the evidence clearly supports a move.' },
 ].map(Object.freeze));
 
 export const SWARM2_CALLS = SWARM2_PROPOSERS.length + SWARM2_FORECASTERS.length; // 14 paid calls, no retries
 export const SWARM2_PROPOSAL_IDS = Object.freeze([0, ...SWARM2_PROPOSERS.map((_, i) => i + 1)]);
-export const SWARM2_FORECAST_IDS = Object.freeze(SWARM2_PROPOSAL_IDS.slice(1)); // Hold is the benchmark, never forecast
+export const SWARM2_FORECAST_IDS = SWARM2_PROPOSAL_IDS; // every proposal, Hold included: each has its own LONG/SHORT market
+// Trade rule (runtime/agents/policy.mjs chooseValueTrade): trade only when the forecast payout beats the actual entry
+// price by at least 3 points (300 bps of the 1-unit payout). Recorded in every swarm2 plan and export.
+export const SWARM2_MIN_EDGE_BPS = 300;
+export const SWARM2_TRADE_RULE = 'expected-payout-value-v1';
 export const SWARM2_ACTORS = Object.freeze([...SWARM2_PROPOSERS, ...SWARM2_FORECASTERS].map(a => a.name));
 export const SWARM2_INPUT_BYTES = 20480; // forecaster context grows with seven anonymous strategies
 export const SWARM2_TIMEOUT_MS = 60000;
@@ -98,13 +102,14 @@ export function modelOf(name) {
 }
 
 // JSON schemas for models that support structured outputs but not json_mode. They mirror validateProposal and
-// validateProbabilityForecast; the local validators remain the authority.
+// validateReturnForecast; the local validators remain the authority. The optional free-text `uncertainty` field is left
+// out of the strict schema, so structured-output models simply never send it.
 const explanation = { rationale: { type: 'string' }, risks: { type: 'array', items: { type: 'string' } }, evidenceIds: { type: 'array', items: { type: 'string' } } };
 export const PROPOSAL_SCHEMA = Object.freeze({ name: 'proposal', strict: true, schema: { type: 'object', additionalProperties: false, required: ['allocationBps', 'confidenceBps', 'rationale', 'risks', 'evidenceIds'],
   properties: { allocationBps: { type: 'integer' }, confidenceBps: { type: 'integer' }, ...explanation } } });
 export const FORECAST_SCHEMA = Object.freeze({ name: 'forecasts', strict: true, schema: { type: 'object', additionalProperties: false, required: ['forecasts'],
-  properties: { forecasts: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['proposalId', 'probabilityBeatsHoldBps', 'rationale', 'risks', 'evidenceIds'],
-    properties: { proposalId: { type: 'integer' }, probabilityBeatsHoldBps: { type: 'integer' }, ...explanation } } } } } });
+  properties: { forecasts: { type: 'array', items: { type: 'object', additionalProperties: false, required: ['proposalId', 'expectedReturnBps', 'rationale', 'risks', 'evidenceIds'],
+    properties: { proposalId: { type: 'integer' }, expectedReturnBps: { type: 'integer' }, ...explanation } } } } } });
 
 /** Rewrites a chat-completions body for one allowlisted model and role. Pure. */
 export function requestBodyFor(model, role, body) {

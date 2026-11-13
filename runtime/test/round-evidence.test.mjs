@@ -284,7 +284,7 @@ const R8 = 'docs/test-evidence/tidepool-rounds/round8/';
 const MODELS = ['Qwen/Qwen3.6-35B-A3B-FP8', 'Qwen/Qwen3.8-27B', 'z-ai/glm-5.3-flash', 'deepseek-ai/DeepSeek-V4.1-Flash-1017', 'openai/gpt-4.1-mini', 'anthropic/claude-haiku-5-5', 'google/gemini-2.5-flash', 'x-ai/grok-4.6'];
 const multiModel = (mutateReport = () => {}, mutatePlan = () => {}) => async (path) => {
   const value = await read(path);
-  if (path === `${R8}plan.json`) { value.profile = 'swarm2-v1'; value.records.forEach((r, i) => { r.model = MODELS[i]; }); mutatePlan(value); }
+  if (path === `${R8}plan.json`) { value.profile = 'swarm2-v1'; value.tradeRule = 'expected-payout-value-v1'; value.minEdgeBps = 300; value.records.forEach((r, i) => { r.model = MODELS[i]; }); mutatePlan(value); }
   if (path === `${R8}report.json`) { const plan = await read(`${R8}plan.json`); value.completion.decisions.forEach((d) => { d.model = MODELS[plan.records.findIndex((r) => r.name === d.name && r.role === 'forecaster')]; }); mutateReport(value); }
   return value;
 };
@@ -296,6 +296,16 @@ test('multi-model rounds carry each agent model; single-model rounds stay unchan
   assert.equal(r8.models, 8);
   assert.deepEqual(r8.proposals.map((p) => p.model ?? null), [null, ...MODELS.slice(0, 4)]);
   assert.deepEqual(r8.forecasters.map((f) => f.model), MODELS.slice(4));
+});
+
+test('swarm2 rounds project their pre-registered trade rule and minimum edge, and need both', async () => {
+  const find = (rounds) => rounds.find((round) => round.roundId === '8' && round.source?.includes('tidepool'));
+  const r8 = find((await loadRoundEvidence({ read: multiModel() })).rounds);
+  assert.equal(r8.preRegistration.tradeRule, 'expected-payout-value-v1'); assert.equal(r8.preRegistration.minEdgeBps, 300);
+  const old = find((await loadRoundEvidence()).rounds);
+  assert.equal('tradeRule' in old.preRegistration, false);
+  await assert.rejects(loadRoundEvidence({ read: multiModel(() => {}, (plan) => { delete plan.tradeRule; }) }), /must record its trade rule and minimum edge/);
+  await assert.rejects(loadRoundEvidence({ read: multiModel(() => {}, (plan) => { plan.tradeRule = 'probability-beats-hold'; }) }), /must record its trade rule and minimum edge/);
 });
 
 test('multi-model rounds reject a decision model that differs from its record, or a reused model', async () => {

@@ -130,7 +130,11 @@ function preRegistrationFor(source, plan, completion, round, winnerId) {
   check(BigInt(uint(round.evaluationEnd, 'evaluation end')) - BigInt(uint(round.tradingEnd, 'trading end')) === BigInt(completion.evaluationSeconds), 'the recorded window is not evaluationEnd - tradingEnd');
   if (target !== null) check(winnerId === String(target), 'the winner is not the pre-registered scripted target');
   if (source.discovered && target !== null) check(/pre-registered proposal[0-4]\b/.test(String(completion.scope)) && /SCRIPTED/.test(String(completion.scope)), 'the scope must state SCRIPTED forecasters and the pre-registered target');
-  return { scriptedTarget: target === null ? null : String(target), evaluationSeconds: completion.evaluationSeconds };
+  const terms = { scriptedTarget: target === null ? null : String(target), evaluationSeconds: completion.evaluationSeconds };
+  if (plan.profile !== 'swarm2-v1') return terms;
+  // swarm2 pre-registers its deterministic trade rule and minimum edge in the plan.
+  check(plan.tradeRule === 'expected-payout-value-v1' && Number.isSafeInteger(plan.minEdgeBps) && plan.minEdgeBps >= 1 && plan.minEdgeBps <= 10000, 'a swarm2 plan must record its trade rule and minimum edge');
+  return { ...terms, tradeRule: plan.tradeRule, minEdgeBps: plan.minEdgeBps };
 }
 
 const reservesShape = ['blockNumber', 'reserveStable', 'reserveAsset', 'poolAssetPriceX18'];
