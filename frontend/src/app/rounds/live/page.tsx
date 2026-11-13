@@ -14,6 +14,7 @@ import { formatUnits } from "@/lib/funding/model.mjs";
 import type { DemoState } from "@/lib/state";
 import "../round.css";
 import "./live.css";
+import { WalletForecast } from "./wallet";
 
 const usdc = (raw: string | null | undefined) => formatUnits(raw, 6) ?? "unavailable";
 const eth = (raw: string | null | undefined) => formatUnits(raw, 18, { maxFraction: 6 }) ?? "unavailable";
@@ -165,6 +166,7 @@ export default function LiveRoundPage() {
         {info.status === "done" ? <Cap tone="ok" icon="check">Recorded</Cap> : info.status === "current" ? <Cap tone="warn" icon="clock">In progress</Cap> : info.status === "halted" ? <Cap tone="bad" icon="alert">Halted</Cap> : <Cap>Not reached</Cap>}</header>
       <div className="rw-body"><Body key={selected} stage={selected} view={view} state={state} /></div>
     </section>
+    <WalletForecast view={view} />
     <p className="lv-meta"><span>updated {checked}</span><span>polling every 5 s</span><span>chain times vs this device clock: approximate</span></p>
   </AppShell>;
 }

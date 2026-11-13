@@ -77,7 +77,7 @@ export function AppShell({ source, children, home = false }: { source?: ShellSou
     <main className="main">{children}</main>
     <footer className="footer">
       <div className="footer-inner">
-        <span className="footer-meta"><span>Test assets only</span><span>Sending and signing disabled</span></span>
+        <span className="footer-meta"><span>Test assets only</span><span>The app holds no keys · your wallet signs</span></span>
         <span className="footer-meta"><ThemeToggle /><span><i className="dot testnet" /> Aurora testnet · 1313161555</span></span>
       </div>
     </footer>

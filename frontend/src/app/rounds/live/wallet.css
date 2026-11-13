@@ -1,0 +1,53 @@
+/* Forecast from your wallet. Classes are prefixed wf-. Mint = money/success, amber = in progress, rose = failure. */
+.wf-card { margin-top: 16px; }
+.wf-head h2 { display: inline-flex; align-items: center; gap: 8px; }
+.wf-head h2 svg { width: 18px; height: 18px; color: var(--accent); }
+.wf-acct { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--sunken); }
+.wf-net { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.wf-net.ok { background: var(--accent); } .wf-net.bad { background: var(--bad); }
+.wf-stack { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.wf-small { font-size: 13px; margin: 0; }
+.wf-copy { margin-top: 6px; }
+.wf-link { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.wf-link svg { width: 13px; height: 13px; }
+
+.wf-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; counter-reset: none; }
+.wf-step { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--muted); padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.wf-num { width: 20px; height: 20px; border-radius: 50%; display: inline-grid; place-items: center; font-size: 11.5px; font-family: var(--mono); border: 1.5px solid var(--border-strong); flex-shrink: 0; }
+.wf-num svg { width: 11px; height: 11px; stroke-width: 3; }
+.wf-step.done { color: var(--ink); } .wf-step.done .wf-num { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.wf-step.current { color: var(--ink); border-color: color-mix(in srgb, var(--warn) 55%, var(--line)); background: var(--warn-soft); }
+.wf-step.current .wf-num { border-color: var(--warn); }
+.wf-step.blocked { color: var(--ink); border-style: dashed; }
+
+.wf-field { max-width: 260px; }
+.wf-grid { display: grid; grid-template-columns: minmax(0, 1.3fr) auto minmax(0, 1fr) minmax(0, 1.3fr); gap: 12px; align-items: end; }
+.wf-grid .rw-select { height: 40px; width: 100%; }
+.wf-quote { display: flex; flex-direction: column; gap: 2px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--sunken); min-width: 0; }
+.wf-quote > span { font-size: 12.5px; display: inline-flex; align-items: center; gap: 6px; }
+.wf-quote b { font-size: 18px; font-weight: 500; overflow-wrap: anywhere; }
+.wf-quote small { font-size: 12px; min-height: 1em; }
+
+.wf-tx { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 10px 12px; border-radius: 10px; font-size: 13.5px; border: 1px solid var(--line); }
+.wf-tx > svg { width: 16px; height: 16px; flex-shrink: 0; }
+.wf-tx > span { flex: 1 1 200px; min-width: 0; }
+.wf-tx.ok { background: var(--accent-soft); } .wf-tx.ok > svg { color: var(--accent); }
+.wf-tx.warn { background: var(--warn-soft); }
+.wf-tx.bad { background: var(--bad-soft); } .wf-tx.bad > svg { color: var(--bad); }
+
+.wf-table th, .wf-table td { padding: 10px 14px; }
+.wf-table th:not(:first-child), .wf-table td:not(:first-child) { text-align: right; }
+.wf-foot { margin: 0; font-size: 12px; color: var(--muted); font-family: var(--mono); }
+
+@media (max-width: 920px) {
+  .wf-grid { grid-template-columns: minmax(0, 1fr) auto; }
+  .wf-grid .wf-quote { grid-column: 1 / -1; }
+}
+@media (max-width: 640px) {
+  .wf-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .wf-grid { grid-template-columns: minmax(0, 1fr); }
+  .wf-field { max-width: none; }
+  .rw-facts.wf-facts { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+  .wf-facts .rw-fact { padding: 10px; } .wf-facts .rw-fact b { font-size: 15px; }
+  .wf-table th, .wf-table td { padding: 8px 8px; }
+}
