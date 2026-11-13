@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Icon } from "@/components/funding/primitives";
 import { SegmentedControl } from "@/components/ui";
@@ -111,8 +112,8 @@ export function RoundWorkspace({ ctx, eyebrow, title, caps, metrics, summaryRows
         <section className="card rw-card"><div className="rw-row"><h2>View</h2>
           <SegmentedControl label="View" value={view} onChange={setView} options={[{ id: "observer", label: "Observer" }, { id: "participant", label: "Recorded participant" }]} /></div>
           {view === "participant" ? <ParticipantCard people={participants} /> : null}
-          <div className="rw-row rw-locked"><Button variant="locked" icon="lock" disabled>Trading unavailable in this build</Button>
-            <Tip label="Why trading is unavailable">This build is read-only: no wallet connection, signing or trading. Positions shown are recorded history.</Tip></div>
+          <div className="rw-row rw-locked"><Link className="btn btn-primary" href="/rounds/live#wallet">Trade on the live round →</Link>
+            <Tip label="When you can trade">Forecasting from your wallet works while a round’s forecasting window is open. These positions are recorded history.</Tip></div>
         </section>
       </aside>
     </div>

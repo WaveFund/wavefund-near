@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
+import { roleGuides, ROUND_STEPS } from "@/lib/guides.mjs";
 import { Drawer } from "@/components/v2";
 import { Skeleton } from "@/components/ui";
 import { useSavedRounds, useTidepoolDemo } from "@/lib/arena/hooks";
@@ -75,6 +76,15 @@ export default function HomePage() {
       </aside>
     </section>
 
+    <section aria-labelledby="roles-title" style={{ marginTop: 32 }}>
+      <h2 id="roles-title">I am a…</h2>
+      <div className="ledger-grid onboarding-roles" style={{ marginTop: 12 }}>{roleGuides().map((role) => <Link className="card" key={role.id} href={`/start/${role.id}`} style={{ padding: 20 }}>
+        <h3>{role.title} →</h3><p>{role.line}</p>
+      </Link>)}</div>
+    </section>
+    <section aria-labelledby="moves-title" style={{ marginTop: 24 }}><h2 id="moves-title">How a round moves</h2>
+      <ol className="ledger-grid onboarding-moves" style={{ listStyle: "none", padding: 0, marginTop: 12 }}>{ROUND_STEPS.map((step) => <li className="card" key={step} style={{ padding: 12, color: step === "Proposals" ? "var(--ai)" : undefined }}>{step}</li>)}</ol>
+    </section>
     <Drawer open={help} onClose={() => setHelp(false)} title="How it works"><Education /></Drawer>
   </AppShell>;
 }

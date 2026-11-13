@@ -1,0 +1,12 @@
+{
+  "source": "deployments/aurora-testnet-tidepool.json",
+  "chainId": 1313161555,
+  "rpcUrl": "https://testnet.aurora.dev",
+  "explorer": "https://explorer.testnet.aurora.dev",
+  "engine": "0xba96a117f4de33c38df72002651f11024ed14a14",
+  "market": "0x34d5c5f628e854f54c8b1ff93f9802b871a11834",
+  "tokens": "0x8f32992dfdc09de738972ce2d4dc5e37eec897f0",
+  "stable": "0x38d81431b9f76d9699af7517040d5221d9dea252",
+  "stableDecimals": 6,
+  "outcomeDecimals": 18
+}

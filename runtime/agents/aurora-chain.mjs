@@ -12,6 +12,12 @@ const OPERATOR = '0x1903bDDF6F73eE4aA8F66D170E7590D28CD3f8B9';
 const VERIFIER = '0x6Cd59830AAD978446e6cc7f6cc173aF7656Fb917';
 const artifactNames = { safe: 'Safe', stable: 'AuroraTestToken', asset: 'AuroraTestToken', oracle: 'SupraPortfolioOracle',
   engine: 'QuantumRound', module: 'TradingSafeModule', tracker: 'PerformanceTracker', market: 'WaveV4ProposalMarket', registry: 'ProposerRegistry', tokens: 'ProposalTokens' };
+// Minimal public ABIs for the investment AMM (Uniswap-V2 style router/pair). Used only by the operator probe.
+export const EXTRA_ABIS = Object.freeze({
+  router: parseAbi(['function swapExactTokensForTokens(uint256 amountIn,uint256 amountOutMin,address[] path,address to,uint256 deadline) returns(uint256[] amounts)', 'function factory() view returns(address)']),
+  pair: parseAbi(['function getReserves() view returns(uint112 reserve0,uint112 reserve1,uint32 blockTimestampLast)', 'function token0() view returns(address)', 'function token1() view returns(address)',
+    'event Swap(address indexed sender,uint256 amount0In,uint256 amount1In,uint256 amount0Out,uint256 amount1Out,address indexed to)']),
+});
 export const sameAddress = (a, b) => typeof a === 'string' && typeof b === 'string' && a.toLowerCase() === b.toLowerCase();
 export const requireLive = (condition, message) => { if (!condition) throw new Error(message); };
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
@@ -21,13 +27,14 @@ export function createAuroraChain({ manifest, artifacts, privateKey, actorKeys, 
   requireLive(manifest?.chainId === 1313161555 && manifest.schemaVersion === 1, 'Aurora testnet manifest required');
   const contracts = manifest.contracts;
   const accounts = { owner: privateKeyToAccount(privateKey) };
-  requireLive(Array.isArray(actorNames) && actorNames.length >= 4 && actorNames.length <= 8 && new Set(actorNames).size === actorNames.length && actorNames.every(n => /^[A-Za-z]{1,24}$/.test(n) && n !== 'owner'), 'Invalid actor roster');
+  requireLive(Array.isArray(actorNames) && actorNames.length >= 4 && actorNames.length <= 14 && new Set(actorNames).size === actorNames.length && actorNames.every(n => /^[A-Za-z]{1,24}$/.test(n) && n !== 'owner'), 'Invalid actor roster');
   for (const name of actorNames) accounts[name] = privateKeyToAccount(actorKeys[name]);
   requireLive(sameAddress(accounts.owner.address, OPERATOR), 'Wrong dedicated testnet operator');
   requireLive(new Set(Object.values(accounts).map(x => x.address.toLowerCase())).size === actorNames.length + 1, 'Agent wallets must be distinct');
-  const client = createPublicClient({ chain: auroraTestnet, transport: http(RPC, { retryCount: 1, timeout: 20000 }) });
+  // Reads are idempotent, so they retry; broadcasting (below) never retries automatically.
+  const client = createPublicClient({ chain: auroraTestnet, transport: http(RPC, { retryCount: 4, retryDelay: 1500, timeout: 20000 }) });
   const broadcast = createPublicClient({ chain: auroraTestnet, transport: http(RPC, { retryCount: 0, timeout: 20000 }) });
-  const abi = (name) => artifacts[artifactNames[name]].abi;
+  const abi = (name) => EXTRA_ABIS[name] ?? artifacts[artifactNames[name]].abi;
   const read = (name, functionName, args = [], blockNumber) => client.readContract({ address: contracts[name], abi: abi(name), functionName, args, blockNumber });
   const receipts = new Map(events.filter(e => e.stage === 'confirmed').map(e => [e.label, e.hash]));
   let gasCost = 0n;
@@ -72,10 +79,16 @@ export function createAuroraChain({ manifest, artifacts, privateKey, actorKeys, 
     requireLive(result.moduleEnabled && result.owners.length === 1 && sameAddress(result.owners[0], OPERATOR) && result.threshold === 1, 'Unexpected Safe ownership or module state');
     return result;
   }
+  // A transient RPC failure while waiting must not abandon a live round: keep polling until the wait budget runs out.
+  async function chainTime() {
+    for (let attempt = 0; ; attempt++) {
+      try { return (await client.getBlock()).timestamp; } catch (error) { if (attempt >= 14) throw error; await sleep(4000); }
+    }
+  }
   async function waitUntil(timestamp) {
-    const start = Date.now(); const current = (await client.getBlock()).timestamp;
+    const start = Date.now(); const current = await chainTime();
     const maxWait = Number(timestamp > current ? timestamp - current : 0n) * 1000 + 120000;
-    while ((await client.getBlock()).timestamp < timestamp) {
+    while ((await chainTime()) < timestamp) {
       requireLive(Date.now() - start < maxWait, 'Chain-time wait expired'); await sleep(4000);
     }
   }

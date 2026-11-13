@@ -1,3 +1,4 @@
+import { createTeeProvider } from './tee-client.mjs';
 import { createAgentTeam } from './team.mjs';
 import { createProvider, providerConfig } from './provider.mjs';
 import { AGENT_SPECS, digest, exactKeys, validateProposal, validateForecast } from './policy.mjs';
@@ -9,10 +10,10 @@ export const LIVE_LIMITS = Object.freeze({ calls: 4, outputTokens: 1800, inputBy
 const check = (condition, message) => { if (!condition) throw new Error(message); };
 const same = (a, b) => typeof a === 'string' && typeof b === 'string' && a.toLowerCase() === b.toLowerCase();
 
-export function boundedLiveProvider(config, { fetchImpl, onRequest, maxCalls = 4, budgetNanoUsd = 50000000 } = {}) {
+export function boundedLiveProvider(config, { fetchImpl, onRequest, maxCalls = 4, budgetNanoUsd = 50000000, teePolicy } = {}) {
   check(config?.mode === 'near-ai' && config.model === LIVE_MODEL, 'Use the explicitly priced live model');
   check(Number.isInteger(maxCalls) && maxCalls >= 1 && maxCalls <= 8 && Number.isSafeInteger(budgetNanoUsd) && budgetNanoUsd > 0 && budgetNanoUsd <= 100000000, 'Invalid explicit live budget');
-  const provider = createProvider(config, { fetchImpl: (url, options) => {
+  const provider = teePolicy ? createTeeProvider(config, { policy: teePolicy, fetchImpl, maxCalls }) : createProvider(config, { fetchImpl: (url, options) => {
     const body = JSON.parse(options.body);
     // Documented Qwen3.6 controls: keep the bounded response for the requested JSON.
     body.chat_template_kwargs = { enable_thinking: false };

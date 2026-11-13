@@ -1,0 +1,12 @@
+.lv-live { display: inline-flex; align-items: center; gap: 6px; margin-left: 10px; font-size: 13px; font-weight: 600; letter-spacing: .08em; color: var(--accent); vertical-align: middle; }
+.lv-live i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block; }
+.lv-live.is-over { color: var(--muted); } .lv-live.is-over i { background: var(--muted); }
+.lv-meta { margin: 16px 0 0; font-family: var(--font-mono, ui-monospace, monospace); font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 16px; }
+.lv-count { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.lv-count b { font-size: 22px; font-weight: 500; letter-spacing: -0.02em; }
+.lv-count span { color: var(--muted); font-size: 13px; }
+.lv-basis { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; }
+.lv-basis h3 { font-size: 14px; margin: 0; }
+.lv-note { margin: 0 0 16px; }
+.lv-table-wrap { margin-top: 14px; }
+.lv-addr { overflow-wrap: anywhere; }

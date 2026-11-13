@@ -18,6 +18,9 @@ This is not cross-chain execution of a winning strategy. The existing strategy a
    - **Executed** shows 149.61 test USDC → 0.071692173391461052 test ETH; **Evaluated** shows −0.6458% (exact factor 0.993541889635073190) on the round's recorded −5% to +5% payout range, as a measured outcome, not a failure.
    - **Redeemed** shows the forecaster redemptions (9.934985 / 10.0207 / 10 / 9.981677) and Momentum's −1 outcome point.
    - **Agents** shows each stack's own −1 for Momentum; the two are never summed.
+   - **Rounds 2-9 (Testnet Safe v2):** **Rounds** lists them; round 9's **Proposals** stage shows **TEE verified** and **Proof ›**, which opens the proof viewer. The API must run with `WAVEFUND_TEE_POLICY=docs/tee-policy.json` (the Docker launcher sets it) or it answers 503 `EVIDENCE_INVALID`. Offline recheck: `node scripts/verify-tee.mjs 9 --policy docs/tee-policy.json`. The results table is in the root README.
+   - **Live round and wallet:** header **Connect wallet** opens `/rounds/live#wallet`; it works only while a live round is in its forecasting window and uses test assets.
+   - Stack names: Testnet Safe v1 is the original stack, Testnet Safe v2 the Tidepool-funded one. The "no TEE attestation" and "same model for every call" notes below describe rounds 1-8; round 9 has TEE-verified proposers on four models and forecasters on eight others.
 6. **Optional, official mainnet:** on **Portfolio → Funding → Funding preview** (`/portfolio/fund`), keep **NEAR Intents · mainnet preview** selected and press **Get quote** for a signed dry quote. It is a mainnet preview; delivery is unproven and execution disabled.
 7. **Run `node scripts/judge-check.mjs`** (after `npm ci --ignore-scripts`):
    - it is read-only and needs internet for the public checks;

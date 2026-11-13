@@ -7,6 +7,7 @@ import { EmptyState, Skeleton } from "@/components/ui";
 import { Cap, PageHead } from "@/components/v2";
 import { backendKind } from "@/lib/arena/capabilities.mjs";
 import { useLocalState, useSavedRounds } from "@/lib/arena/hooks";
+import { isLiveNow, liveRound } from "@/lib/arena/live.mjs";
 import { localJourney, roundSummary, shortReturnX18 } from "@/lib/arena/model.mjs";
 import "./round.css";
 
@@ -16,8 +17,15 @@ export default function RoundsPage() {
   const journey = localJourney(local.data);
   const showLocal = backendKind(local.data, { loading: local.loading, error: local.error }) === "local";
 
+  const live = isLiveNow(local.data) ? liveRound(local.data, Date.now()) : null;
+
   return <AppShell source={{ label: "Aurora testnet", tone: "testnet", detail: "saved history" }}>
-    <PageHead eyebrow="Rounds · saved testnet history" title="Rounds" line="Open a round to see its strategies, forecasts, execution and result." />
+    <PageHead eyebrow="Rounds · saved testnet history" title="Rounds" line="Open a round to see its strategies, forecasts, execution and result."
+      actions={live ? undefined : <Link className="link" href="/rounds/live">Live view<Icon name="arrow" /></Link>} />
+    {live ? <Link className="rw-item" href="/rounds/live" style={{ marginBottom: 16 }}>
+      <span className="rw-item-main"><b>Live now · Round {live.roundId} · Testnet Safe v2</b><span className="muted">{live.phase}</span></span>
+      <span className="rw-item-cap"><Cap tone="warn">Live</Cap></span><span className="rw-item-open">Watch<Icon name="arrow" /></span>
+    </Link> : null}
     {!rounds && !error ? <div className="stack">{[0, 1, 2].map((i) => <Skeleton key={i} height={72} />)}</div> : (
       <ul className="rw-list" aria-label="Rounds">
         {showLocal ? <li><Link className="rw-item" href="/rounds/local">

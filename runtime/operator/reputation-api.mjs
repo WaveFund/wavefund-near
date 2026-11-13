@@ -12,8 +12,8 @@ export const REPUTATION_PATH = '/api/agents/reputation';
 const AURORA_TESTNET_RPC = 'https://testnet.aurora.dev';
 // Separate contract histories: each stack has its own reputation contract and engine. Scores are never summed across them.
 export const REPUTATION_STACKS = Object.freeze({
-  original: Object.freeze({ id: 'original', label: 'Original testnet stack', manifest: 'deployments/aurora-testnet-reputation.json' }),
-  tidepool: Object.freeze({ id: 'tidepool', label: 'Tidepool testnet stack', manifest: 'deployments/aurora-testnet-tidepool-reputation.json' }),
+  original: Object.freeze({ id: 'original', label: 'Testnet Safe v1', manifest: 'deployments/aurora-testnet-reputation.json' }),
+  tidepool: Object.freeze({ id: 'tidepool', label: 'Testnet Safe v2', manifest: 'deployments/aurora-testnet-tidepool-reputation.json' }),
 });
 
 // Trusted proposer identities (the four strategy proposers' wallets on Aurora testnet).

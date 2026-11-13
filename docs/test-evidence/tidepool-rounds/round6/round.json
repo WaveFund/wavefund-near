@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "stack": "tidepool",
+  "roundId": "6",
+  "title": "Pre-registered round 6: scripted target Hold",
+  "files": {
+    "report": "report",
+    "plan": "plan",
+    "independent": "independent"
+  }
+}

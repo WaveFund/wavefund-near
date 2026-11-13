@@ -1,0 +1,695 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-11-13",
+  "kind": "tidepool-funded-real-ai-proposals-scripted-forecasters",
+  "genuineModelCalls": 4,
+  "scriptedForecasters": 4,
+  "modelUsage": {
+    "inputTokens": 6751,
+    "outputTokens": 859
+  },
+  "maximumAuthorizedCostUsd": "0.05",
+  "preRegistration": {
+    "scriptedTarget": 3,
+    "evaluationSeconds": 1800
+  },
+  "completion": {
+    "stage": "complete",
+    "chainId": 1313161555,
+    "roundId": "8",
+    "winner": "3",
+    "allocation": 7500,
+    "round": {
+      "tradingStart": "1794572406",
+      "tradingEnd": "1794572814",
+      "evaluationEnd": "1794574614",
+      "twapWindow": "90",
+      "rMin": "950000000000000000",
+      "rMax": "1050000000000000000",
+      "status": 3,
+      "proposalCount": 5,
+      "winnerId": 3,
+      "seedReleased": true,
+      "realisedReturn": "1000105151073958674",
+      "pi": "501051510739586740",
+      "totalDeposits": "40000000",
+      "depositsOutstanding": "0",
+      "escrow": "45000000",
+      "totalPaid": "39986137"
+    },
+    "portfolio": {
+      "startingValueX18": "200030146210094564558",
+      "stableQty6": "49949259",
+      "assetQty18": "76623853832694518",
+      "executedAt": "1794572847",
+      "observedAt": "1794574637",
+      "oraclePublishedAt": "1794574620",
+      "realisedReturn": "1000105151073958674",
+      "observationHash": "0x0f221e4b0e41863599c3efa0ff942a2731bf0785cba10bbf7b712023d9ae6092"
+    },
+    "payouts": [
+      {
+        "name": "Quant",
+        "address": "0x954362D2D831fC9430122d95F79c2eE3841E975D",
+        "deposit": "10000000",
+        "payout": "9985479",
+        "profitLoss": "-14521"
+      },
+      {
+        "name": "Guardian",
+        "address": "0xc410cE4092eB91E89792F5AB731D64d544932B47",
+        "deposit": "10000000",
+        "payout": "10006669",
+        "profitLoss": "6669"
+      },
+      {
+        "name": "FeeAnalyst",
+        "address": "0x50ef16734f1443c97c37e29F31F8AA0aa045bf51",
+        "deposit": "10000000",
+        "payout": "10000000",
+        "profitLoss": "0"
+      },
+      {
+        "name": "StressAnalyst",
+        "address": "0x949A277347a18c984c13D5228e0acE60cD2D99E6",
+        "deposit": "10000000",
+        "payout": "9993989",
+        "profitLoss": "-6011"
+      }
+    ],
+    "externalPayouts": [],
+    "decisions": [
+      {
+        "name": "Quant",
+        "action": "buy",
+        "proposalId": 3,
+        "side": "long",
+        "creditAmount": "400000",
+        "quotedOutcomes": "769341335111506260",
+        "minimumOutcomes": "765494628435948728",
+        "expectedValue": "769341",
+        "expectedProfit": "369341",
+        "forecast": {
+          "proposalId": 3,
+          "expectedReturnBps": 500,
+          "confidenceBps": 9500,
+          "rationale": "Deliberate functional scenario fixture, not an AI prediction.",
+          "risks": [
+            "Preset views only exercise code branches."
+          ],
+          "evidenceIds": [
+            "market-cebaa84e015dd510"
+          ]
+        }
+      },
+      {
+        "name": "Guardian",
+        "action": "buy",
+        "proposalId": 3,
+        "side": "short",
+        "creditAmount": "100000",
+        "quotedOutcomes": "213788487962928732",
+        "minimumOutcomes": "212719545523114088",
+        "expectedValue": "213788",
+        "expectedProfit": "113788",
+        "forecast": {
+          "proposalId": 3,
+          "expectedReturnBps": -500,
+          "confidenceBps": 9500,
+          "rationale": "Deliberate functional scenario fixture, not an AI prediction.",
+          "risks": [
+            "Preset views only exercise code branches."
+          ],
+          "evidenceIds": [
+            "market-cebaa84e015dd510"
+          ]
+        }
+      },
+      {
+        "name": "FeeAnalyst",
+        "action": "buy",
+        "proposalId": 1,
+        "side": "short",
+        "creditAmount": "100000",
+        "quotedOutcomes": "197750848089103280",
+        "minimumOutcomes": "196762093848657763",
+        "expectedValue": "197750",
+        "expectedProfit": "97750",
+        "forecast": {
+          "proposalId": 1,
+          "expectedReturnBps": -500,
+          "confidenceBps": 9500,
+          "rationale": "Deliberate functional scenario fixture, not an AI prediction.",
+          "risks": [
+            "Preset views only exercise code branches."
+          ],
+          "evidenceIds": [
+            "market-cebaa84e015dd510"
+          ]
+        }
+      },
+      {
+        "name": "StressAnalyst",
+        "action": "buy",
+        "proposalId": 3,
+        "side": "long",
+        "creditAmount": "100000",
+        "quotedOutcomes": "187584405930591284",
+        "minimumOutcomes": "186646483900938327",
+        "expectedValue": "187584",
+        "expectedProfit": "87584",
+        "forecast": {
+          "proposalId": 3,
+          "expectedReturnBps": 500,
+          "confidenceBps": 9500,
+          "rationale": "Deliberate functional scenario fixture, not an AI prediction.",
+          "risks": [
+            "Preset views only exercise code branches."
+          ],
+          "evidenceIds": [
+            "market-cebaa84e015dd510"
+          ]
+        }
+      }
+    ],
+    "reserve": "99717460",
+    "provider": {
+      "mode": "near-ai",
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "attestationVerified": false
+    },
+    "recordHashes": [
+      {
+        "name": "Conservative",
+        "inputHash": "f677dc350d781652c08cad6be95b737ae1211c24c626fc1bf48d06ed2b9e7250",
+        "outputHash": "31e251cc2ab4f174680592ff7ad5befcded1ca6c7ffeb31e4401448b1550e4f1"
+      },
+      {
+        "name": "Balanced",
+        "inputHash": "dfd6f9c02b8b700aed3e6fc655312635dc7e0d083aab1a84660419e333c2ede2",
+        "outputHash": "3ce4cbeadcca43735b0dbcde735e3edae435075bb91fe9438885a3c3a6739303"
+      },
+      {
+        "name": "Momentum",
+        "inputHash": "c78831aa3d76ada5add3eb5cdf02fc8e38e19838161dface6238e26857102ec2",
+        "outputHash": "22b667c10c091d2b2d383c022d46b670d7bc2185597931c5a3602cdc1e5a5b3b"
+      },
+      {
+        "name": "HighBeta",
+        "inputHash": "8c19fc2ce6229b2b13c6fd8ad9343356b67e37348fdcb71e6d81e59b52aaec45",
+        "outputHash": "753a5935de6e8f1a42f8bffba9ec7a3ccf7f40567da885a0ed53910ecdfb762b"
+      },
+      {
+        "name": "Quant",
+        "inputHash": "5270e571922ab65fe0e392edd580b307354e890989e69d4b808e56ba0848397f",
+        "outputHash": "801ad4736f08ac53e49bef37126935f6916f0ab6294c1abe8f5e2d391e927f6f"
+      },
+      {
+        "name": "Guardian",
+        "inputHash": "f6e45920869954b9f869a81a2279c02f54a23501c0c8ffb21011f58dbf8e8a38",
+        "outputHash": "0ba243a875458fe106a07f08b9577b535729d6544af39cbb25f1b136e0c0b49a"
+      },
+      {
+        "name": "FeeAnalyst",
+        "inputHash": "388703e81598a307109501b8dc7bc21d2f5b2e54363e2cd2173dda30d01ad6c0",
+        "outputHash": "77f885ebe5f0a999c6628a9a9f8e19a195dc50507425babdfafeeff2e42d065e"
+      },
+      {
+        "name": "StressAnalyst",
+        "inputHash": "fe5814bb14d20f91e2859ca6acfae41fc221a0644fc0f6ba3569522d78dbfb16",
+        "outputHash": "801ad4736f08ac53e49bef37126935f6916f0ab6294c1abe8f5e2d391e927f6f"
+      }
+    ],
+    "evaluationSeconds": 1800,
+    "scriptedTarget": 3,
+    "scope": "HYBRID TEST: four genuine NEAR AI proposer calls with assigned exposure mandates; four SCRIPTED forecasters deliberately target pre-registered proposal3. Evaluation window 1800s after trading end. Actual testnet swaps/payouts are not evidence of AI forecasting alpha. Operator manipulation probe swapped 2000000000 raw test USDC through the investment pool after execution; return is still oracle-marked."
+  },
+  "confirmedTransactions": [
+    {
+      "stage": "confirmed",
+      "label": "round8:gas:Conservative",
+      "actor": "owner",
+      "hash": "0x9859b054675e61bf165f9da4ba2d1b4dd3933a64cdd7f681066d37e2ac6c80f3",
+      "blockNumber": "277508717",
+      "gasUsed": "21000",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:transfer:Conservative",
+      "actor": "owner",
+      "hash": "0x002a306206cdacab279f6919a71307beae04a7dbf4fc003966a5b6bb4207327c",
+      "blockNumber": "277508729",
+      "gasUsed": "34510",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:bondApproval:Conservative",
+      "actor": "Conservative",
+      "hash": "0xb862f76861e3ff17abd17db0d548b1bcf4fe03410cd947647c90d71d2ee9b860",
+      "blockNumber": "277508742",
+      "gasUsed": "46161",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:transfer:Balanced",
+      "actor": "owner",
+      "hash": "0xc76aee0990a8fdbbd28e22e00991badcd9b41053f982b6fadd1647d72d119cb2",
+      "blockNumber": "277508753",
+      "gasUsed": "34510",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:bondApproval:Balanced",
+      "actor": "Balanced",
+      "hash": "0x4d84db8372ed9823451c709813d146aa5b661b5b40b6a2df7a022ad4afbd7c51",
+      "blockNumber": "277508764",
+      "gasUsed": "46161",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:gas:Momentum",
+      "actor": "owner",
+      "hash": "0x064fb80e27a659c7ef146d43f61e5f6e20b3d36b5f8420495ba901c9d52cd7f0",
+      "blockNumber": "277508775",
+      "gasUsed": "21000",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:transfer:Momentum",
+      "actor": "owner",
+      "hash": "0x9917b4c6260d97398c59477db1fa8c008f98d667d11f756dcda8546e9c8fe42a",
+      "blockNumber": "277508788",
+      "gasUsed": "34510",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:bondApproval:Momentum",
+      "actor": "Momentum",
+      "hash": "0xac3e2e1e0a6e98c98c57c577583140d1e55eeb31cb29559a6df26d8a4c4d6eaf",
+      "blockNumber": "277508799",
+      "gasUsed": "46161",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:gas:HighBeta",
+      "actor": "owner",
+      "hash": "0x079d8705bc2c2c7972a971ec63406158d51639f17637aa316e03def9faa046a8",
+      "blockNumber": "277508812",
+      "gasUsed": "21000",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:transfer:HighBeta",
+      "actor": "owner",
+      "hash": "0xf81ccdd83e4c7e767e568f0febd286597dd8be38695fdfa21f6a9c9da8ada35a",
+      "blockNumber": "277508825",
+      "gasUsed": "34510",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:bondApproval:HighBeta",
+      "actor": "HighBeta",
+      "hash": "0x0420eb41815ac5fadbb745c448bc81f10a9ea355c287a2fc58d611eb99d5179b",
+      "blockNumber": "277508839",
+      "gasUsed": "46161",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:transfer:Quant",
+      "actor": "owner",
+      "hash": "0x3d931b6581398fa5c8dc714aec0947caed173b7962bc0f4fb4a93c2ebafd9724",
+      "blockNumber": "277508850",
+      "gasUsed": "34510",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:depositApproval:Quant",
+      "actor": "Quant",
+      "hash": "0x406272f7c9b79b81c0448e4358f2eca62bc5a598c7bfa2b4d0f4255aae012cb0",
+      "blockNumber": "277508862",
+      "gasUsed": "46161",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:transfer:Guardian",
+      "actor": "owner",
+      "hash": "0x7870ce76253ebd2a3e51e59d8d20695a14d060c90fd0f87aa56fdb395d6f16fa",
+      "blockNumber": "277508873",
+      "gasUsed": "34510",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:depositApproval:Guardian",
+      "actor": "Guardian",
+      "hash": "0xd0295019da45d38b81cc00d4cc50200b2b97d2afc74a35fdf13b3e7aa919e272",
+      "blockNumber": "277508886",
+      "gasUsed": "46161",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:transfer:FeeAnalyst",
+      "actor": "owner",
+      "hash": "0x9635022e011f43b60a9492e8395619bda9df5d193bbe1bb8dbc8bd8ea040afd3",
+      "blockNumber": "277508897",
+      "gasUsed": "34510",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:depositApproval:FeeAnalyst",
+      "actor": "FeeAnalyst",
+      "hash": "0x91df3da64997fdf2c0000981a5fb632a8ec263301f78632f09a8a274cf3fcda3",
+      "blockNumber": "277508910",
+      "gasUsed": "46161",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:transfer:StressAnalyst",
+      "actor": "owner",
+      "hash": "0x1a700aa51ec1e89b020e3c0497c9d1f642c382e253837d08a938954c2469f5e1",
+      "blockNumber": "277508924",
+      "gasUsed": "34510",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:depositApproval:StressAnalyst",
+      "actor": "StressAnalyst",
+      "hash": "0xb78624ff8fd1150ca5c7e4f98df0a3f1462ec919a486e4a259b719147864cd6a",
+      "blockNumber": "277508934",
+      "gasUsed": "46161",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:oracle:open",
+      "actor": "owner",
+      "hash": "0xf8af836ade2f572ad485b4035f53b5917a3bda3f56536fcab3071a66e241009b",
+      "blockNumber": "277509058",
+      "gasUsed": "411450",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:authorize",
+      "actor": "owner",
+      "hash": "0x0a9bf98acbc15f881d95d0ca667f5b794cda4e8b3a1f199afe5cdf773e6505a9",
+      "blockNumber": "277509071",
+      "gasUsed": "221993",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:open",
+      "actor": "owner",
+      "hash": "0x5a253b4b5b17e33fadeceeeab567d47a2280effbf2ea4470e910e7902c4e0aab",
+      "blockNumber": "277509081",
+      "gasUsed": "1773778",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:propose:Conservative",
+      "actor": "Conservative",
+      "hash": "0xae9df1b39dfc716b361e7df520700070ec00af8565ddfec90a7af3a7bb7c8c26",
+      "blockNumber": "277509092",
+      "gasUsed": "1787662",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:propose:Balanced",
+      "actor": "Balanced",
+      "hash": "0x1442281bdb2aa5e0a267f82a2e4b4090ac788f7c5d7c342e2bfb32bbec5b9982",
+      "blockNumber": "277509106",
+      "gasUsed": "1816406",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:propose:Momentum",
+      "actor": "Momentum",
+      "hash": "0x30ba18ba77d37abe487e03dbd8d46c4261ef6b6f9d957a08bab2318d7487212d",
+      "blockNumber": "277509117",
+      "gasUsed": "1770691",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:propose:HighBeta",
+      "actor": "HighBeta",
+      "hash": "0x34682e5ce499112bfb3db614859da80475c5adaabf9801209944a652db2335ff",
+      "blockNumber": "277509128",
+      "gasUsed": "1908257",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:deposit:Quant",
+      "actor": "Quant",
+      "hash": "0x8409a86ebc18ca8d96efb15974b87a6eaec31e91dfd619b410dec4f94cd4fca2",
+      "blockNumber": "277509147",
+      "gasUsed": "114607",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:claim:Quant",
+      "actor": "Quant",
+      "hash": "0xd7711bcc5c1530588c8f446a79eacfe094aa504c533f22780630a83c93c78a55",
+      "blockNumber": "277509159",
+      "gasUsed": "120024",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:trade:Quant",
+      "actor": "Quant",
+      "hash": "0x0d089bdf33201c465901614bf3120e8251fbdd562c5ce1c89704eb9a73338bca",
+      "blockNumber": "277509170",
+      "gasUsed": "300639",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:deposit:Guardian",
+      "actor": "Guardian",
+      "hash": "0x52bafc5be959ece819335ded9bf54110a7254f32d0924ad26950de96e86985ba",
+      "blockNumber": "277509189",
+      "gasUsed": "80407",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:claim:Guardian",
+      "actor": "Guardian",
+      "hash": "0xb30f179b2da32349b1d5f9199a4920c3c79c1480691e238828db346b94b58ce2",
+      "blockNumber": "277509202",
+      "gasUsed": "102924",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:trade:Guardian",
+      "actor": "Guardian",
+      "hash": "0xdbb6a79216102384ad28aaf004592c2c9089170f47327103aed93dd334fb27a9",
+      "blockNumber": "277509214",
+      "gasUsed": "292177",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:deposit:FeeAnalyst",
+      "actor": "FeeAnalyst",
+      "hash": "0x3cd02bfa47c9a8c69c973fdf95445913cbb9aae862abb4d5c853407d629b4d8d",
+      "blockNumber": "277509229",
+      "gasUsed": "80407",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:claim:FeeAnalyst",
+      "actor": "FeeAnalyst",
+      "hash": "0xcee5d2016eeb067b36bd25893d3fb923ac3c3b18f9b2a8c50446b5419daaee65",
+      "blockNumber": "277509246",
+      "gasUsed": "120024",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:trade:FeeAnalyst",
+      "actor": "FeeAnalyst",
+      "hash": "0x5a78d793c362c00ebe6c499da8054a7b7b129bf328bd8a5befda6b79fb4ae176",
+      "blockNumber": "277509259",
+      "gasUsed": "302018",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:deposit:StressAnalyst",
+      "actor": "StressAnalyst",
+      "hash": "0x8ecb89bd1af2fe51f3b6a2347e7311af8c76dfc0bb83727db32513d132cca921",
+      "blockNumber": "277509278",
+      "gasUsed": "80407",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:claim:StressAnalyst",
+      "actor": "StressAnalyst",
+      "hash": "0x373f07c05837344680f43ba752d9c1a16806fe50ddd15dd4c4f46786f095d6c0",
+      "blockNumber": "277509290",
+      "gasUsed": "102924",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:trade:StressAnalyst",
+      "actor": "StressAnalyst",
+      "hash": "0x5e2755db9eec05cd0eb4e1e1f565b6e37554b5cc9cce25733943ee9e9e9f5c24",
+      "blockNumber": "277509303",
+      "gasUsed": "276025",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:collapse",
+      "actor": "owner",
+      "hash": "0xfffe275306b68848d45b1b56df893f10e71dae8ca19b73569774ed3c0c37a6b6",
+      "blockNumber": "277509780",
+      "gasUsed": "1535036",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:oracle:execute",
+      "actor": "owner",
+      "hash": "0xdd54dd0829001249dce9f0ae4405ab31107b494ce7ca0ec9bac5683e7d82b05b",
+      "blockNumber": "277509805",
+      "gasUsed": "420113",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:execute",
+      "actor": "owner",
+      "hash": "0x6e694fa35eb0cc794ef475bd71568bcbcccf0ca370c0296953c081b7c3ee1c84",
+      "blockNumber": "277509818",
+      "gasUsed": "352559",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:probe:approve",
+      "actor": "owner",
+      "hash": "0xf6b26ae361c830f7c9d82e6ceb2df4fe43a939e678e909929626baa56a05f990",
+      "blockNumber": "277509833",
+      "gasUsed": "46161",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:probe:swap",
+      "actor": "owner",
+      "hash": "0x585b88b80ef1decbd7ffb2b6f579585e149fdefc743268372c1358305f0a35f2",
+      "blockNumber": "277509846",
+      "gasUsed": "97477",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:oracle:settle",
+      "actor": "owner",
+      "hash": "0x23ec2aee8a9ec4a4f19b83c47dc429b834659f957a7d296faff322c168b13157",
+      "blockNumber": "277512871",
+      "gasUsed": "431529",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:settle",
+      "actor": "owner",
+      "hash": "0x51391a9dd0850005633f2b647a8fe97ca43847150ae79135329b1d62f5ae5f27",
+      "blockNumber": "277512882",
+      "gasUsed": "207628",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:probe:approveRestore",
+      "actor": "owner",
+      "hash": "0x43a12f79cace920b143bec071a675f8d2ab857698eb1c6517fc327fabdeccffb",
+      "blockNumber": "277512895",
+      "gasUsed": "45981",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:probe:restore",
+      "actor": "owner",
+      "hash": "0xf06a30f51a54d5c42d6c1d0fc53e10e08b9ac723936aa94daeef58d0c425258d",
+      "blockNumber": "277512907",
+      "gasUsed": "97354",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:redeem:Quant",
+      "actor": "Quant",
+      "hash": "0xe7f01831dcfc5846fc8bb839896eb529e8fb25ad0381e94a570e9b71b11070d7",
+      "blockNumber": "277512921",
+      "gasUsed": "157861",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:redeem:Guardian",
+      "actor": "Guardian",
+      "hash": "0xa98cf0ad1995b6af7612d995914f4d7a3d9b426cf35f2abb83b75642e9b606a0",
+      "blockNumber": "277512935",
+      "gasUsed": "140761",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:redeem:FeeAnalyst",
+      "actor": "FeeAnalyst",
+      "hash": "0xe90564349e5fb24af13d9ce043c455e20dd5eca1eb9b58a23d05a2e34051736a",
+      "blockNumber": "277512946",
+      "gasUsed": "119729",
+      "gasPrice": "70000000"
+    },
+    {
+      "stage": "confirmed",
+      "label": "round8:redeem:StressAnalyst",
+      "actor": "StressAnalyst",
+      "hash": "0x9d5f566f685763e5642ad9b0a0c51238caa9396ac70f2fec9166d1172df9be01",
+      "blockNumber": "277512963",
+      "gasUsed": "158999",
+      "gasPrice": "70000000"
+    }
+  ],
+  "limitations": [
+    "Tidepool community testnet, not official mainnet 1Click execution.",
+    "Investment and forecast tokens/liquidity are worthless test assets.",
+    "Four real proposals use the same model and operator-defined risk mandates.",
+    "All forecast bets are explicitly SCRIPTED fixtures aimed at the pre-registered target (proposal 3, Momentum); the winner reflects that script, not forecasting skill.",
+    "Return is a 1800-second marked test portfolio observation at the oracle price, not real investment profit."
+  ]
+}

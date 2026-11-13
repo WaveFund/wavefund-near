@@ -31,3 +31,12 @@
 
 @media (min-width: 900px) { .wl-hero h1 { font-size: 3.75rem; } }
 @media (max-width: 899px) { .wl-hero { grid-template-columns: minmax(0, 1fr); gap: 32px; min-height: 0; padding-top: 8px; } }
+
+/* Role entry points are tasks, not another explanatory dashboard. */
+.onboarding-roles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.onboarding-roles > a { display: block; padding: 20px; min-width: 0; }
+.onboarding-roles p { margin: 8px 0 0; color: var(--muted); }
+.onboarding-moves { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; list-style: none; padding: 0; }
+.onboarding-moves > li { padding: 12px 8px; min-width: 0; overflow-wrap: anywhere; font-size: 13px; }
+@media (max-width: 900px) { .onboarding-moves { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .onboarding-roles { grid-template-columns: 1fr; } .onboarding-moves { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

@@ -1,0 +1,121 @@
+{
+  "chainId": 1313161555,
+  "roundId": "8",
+  "pair": "0x218F2849E4401c194bf9068edf41Fd3a8F643a1b",
+  "router": "0x26ec2aFBDFdFB972F106100A3deaE5887353d9B9",
+  "stableAmount": "2000000000",
+  "transactions": [
+    {
+      "label": "round8:probe:approve",
+      "hash": "0xf6b26ae361c830f7c9d82e6ceb2df4fe43a939e678e909929626baa56a05f990",
+      "blockNumber": "277509833"
+    },
+    {
+      "label": "round8:probe:swap",
+      "hash": "0x585b88b80ef1decbd7ffb2b6f579585e149fdefc743268372c1358305f0a35f2",
+      "blockNumber": "277509846"
+    },
+    {
+      "label": "round8:probe:approveRestore",
+      "hash": "0x43a12f79cace920b143bec071a675f8d2ab857698eb1c6517fc327fabdeccffb",
+      "blockNumber": "277512895"
+    },
+    {
+      "label": "round8:probe:restore",
+      "hash": "0xf06a30f51a54d5c42d6c1d0fc53e10e08b9ac723936aa94daeef58d0c425258d",
+      "blockNumber": "277512907"
+    }
+  ],
+  "status": "complete",
+  "token0": "0x38d81431B9f76d9699AF7517040D5221D9dEA252",
+  "before": {
+    "blockNumber": "277509818",
+    "reserveStable": "77722878583",
+    "reserveAsset": "39658285541235932459",
+    "poolAssetPriceX18": "1959814387391639164263"
+  },
+  "oracleAtManipulation": {
+    "stablePrice": "999760000000000000",
+    "assetPrice": "1957910000000000000000",
+    "publishedAt": "1794572829"
+  },
+  "assetBought": "991993449503783480",
+  "stableAllowanceAfter": "0",
+  "manipulated": {
+    "blockNumber": "277509846",
+    "reserveStable": "79722878583",
+    "reserveAsset": "38666292091732148979",
+    "poolAssetPriceX18": "2061818557462529712421"
+  },
+  "poolDeviationBeforeBps": "7",
+  "poolDeviationManipulatedBps": "528",
+  "moduleCheck": {
+    "computedNotExecuted": true,
+    "referenceIsExecutedSwap": true,
+    "before": {
+      "maxSlippageBps": "100",
+      "buyAsset": {
+        "amountIn": "40044902",
+        "oracleExpectedOut": "20447973207920690",
+        "minimumOut": "20243493475841483",
+        "poolOut": "20361249251527443",
+        "wouldReject": false
+      },
+      "sellAsset": {
+        "amountIn": "20447973331707607",
+        "oracleExpectedOut": "40044902",
+        "minimumOut": "39644452",
+        "poolOut": "39933481",
+        "wouldReject": false
+      }
+    },
+    "manipulated": {
+      "maxSlippageBps": "100",
+      "buyAsset": {
+        "amountIn": "40044902",
+        "oracleExpectedOut": "20447973207920690",
+        "minimumOut": "20243493475841483",
+        "poolOut": "19354168221803709",
+        "wouldReject": true
+      },
+      "sellAsset": {
+        "amountIn": "20447973331707607",
+        "oracleExpectedOut": "40044902",
+        "minimumOut": "39644452",
+        "poolOut": "42011380",
+        "wouldReject": false
+      }
+    }
+  },
+  "atSettlement": {
+    "blockNumber": "277512882",
+    "reserveStable": "79722878583",
+    "reserveAsset": "38666292091732148979",
+    "poolAssetPriceX18": "2061818557462529712421"
+  },
+  "settlement": {
+    "settleHash": "0x51391a9dd0850005633f2b647a8fe97ca43847150ae79135329b1d62f5ae5f27",
+    "oracle": {
+      "stablePrice": "999770000000000000",
+      "assetPrice": "1959095000000000000000",
+      "publishedAt": "1794574620"
+    },
+    "stableQty6": "49949259",
+    "assetQty18": "76623853832694518",
+    "startingValueX18": "200030146210094564558",
+    "measuredReturnX18": "1000105151073958674",
+    "oracleEndingValueX18": "200051179594792666741",
+    "oracleRecomputedReturnX18": "1000105151073958674",
+    "observationHash": "0x0f221e4b0e41863599c3efa0ff942a2731bf0785cba10bbf7b712023d9ae6092",
+    "usedOracle": true,
+    "poolMarkedReturnX18": "1039272939376656448"
+  },
+  "stableRecovered": "1988316835",
+  "assetAllowanceAfter": "0",
+  "restored": {
+    "blockNumber": "277512907",
+    "reserveStable": "77734561748",
+    "reserveAsset": "39658285541235932459",
+    "poolAssetPriceX18": "1960108983207886744275"
+  }
+}

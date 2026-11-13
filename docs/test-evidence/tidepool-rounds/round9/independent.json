@@ -1,0 +1,162 @@
+{
+  "chainId": 1313161555,
+  "roundId": "9",
+  "pinnedPreRedemptionBlock": "277535543",
+  "winner": "3",
+  "fills": [
+    {
+      "name": "Quant",
+      "hash": "0xd3a95ae10a091519cf8dce8dcdc6c3c23da954497531f55bdb99f6434e9c5731",
+      "roundId": "9",
+      "proposalId": "3",
+      "user": "0x954362D2D831fC9430122d95F79c2eE3841E975D",
+      "isLong": true,
+      "credits": "100000",
+      "tokensOut": "197750848089103280"
+    },
+    {
+      "name": "VolAnalyst",
+      "hash": "0x878588ed2eb56fae23a02ab6006e3fade1a89c56ba3500e9aee0903ea67137f1",
+      "roundId": "9",
+      "proposalId": "1",
+      "user": "0x33b87104F786410cc911aCE36C8C6039D8ad1663",
+      "isLong": false,
+      "credits": "100000",
+      "tokensOut": "197750848089103280"
+    },
+    {
+      "name": "Regime",
+      "hash": "0x5d46d00590bed873f7d99d2253d7e9391bb554382fc372e458b3eed0c62939c3",
+      "roundId": "9",
+      "proposalId": "1",
+      "user": "0xeEFa13C8cfFFd0d3409536b8BDD6311F6b4f8F83",
+      "isLong": false,
+      "credits": "100000",
+      "tokensOut": "194002046475654191"
+    }
+  ],
+  "payouts": [
+    {
+      "name": "Quant",
+      "address": "0x954362D2D831fC9430122d95F79c2eE3841E975D",
+      "external": false,
+      "deposit": "10000000",
+      "claimedWinningCredits": "10000000",
+      "unclaimedPrincipal": "0",
+      "credit": "9900000",
+      "long": "197750848089103280",
+      "short": "0",
+      "derivedPayout": "9998771",
+      "actualPayout": "9998771"
+    },
+    {
+      "name": "Guardian",
+      "address": "0xc410cE4092eB91E89792F5AB731D64d544932B47",
+      "external": false,
+      "deposit": "10000000",
+      "claimedWinningCredits": "0",
+      "unclaimedPrincipal": "10000000",
+      "credit": "0",
+      "long": "0",
+      "short": "0",
+      "derivedPayout": "10000000",
+      "actualPayout": "10000000"
+    },
+    {
+      "name": "FeeAnalyst",
+      "address": "0x50ef16734f1443c97c37e29F31F8AA0aa045bf51",
+      "external": false,
+      "deposit": "10000000",
+      "claimedWinningCredits": "0",
+      "unclaimedPrincipal": "10000000",
+      "credit": "0",
+      "long": "0",
+      "short": "0",
+      "derivedPayout": "10000000",
+      "actualPayout": "10000000"
+    },
+    {
+      "name": "StressAnalyst",
+      "address": "0x949A277347a18c984c13D5228e0acE60cD2D99E6",
+      "external": false,
+      "deposit": "10000000",
+      "claimedWinningCredits": "0",
+      "unclaimedPrincipal": "10000000",
+      "credit": "0",
+      "long": "0",
+      "short": "0",
+      "derivedPayout": "10000000",
+      "actualPayout": "10000000"
+    },
+    {
+      "name": "BaseRate",
+      "address": "0x4f7F57A4190FcadBc9305aAd1F23f6cFa74cf3A0",
+      "external": false,
+      "deposit": "10000000",
+      "claimedWinningCredits": "0",
+      "unclaimedPrincipal": "10000000",
+      "credit": "0",
+      "long": "0",
+      "short": "0",
+      "derivedPayout": "10000000",
+      "actualPayout": "10000000"
+    },
+    {
+      "name": "VolAnalyst",
+      "address": "0x33b87104F786410cc911aCE36C8C6039D8ad1663",
+      "external": false,
+      "deposit": "10000000",
+      "claimedWinningCredits": "0",
+      "unclaimedPrincipal": "10000000",
+      "credit": "0",
+      "long": "0",
+      "short": "0",
+      "derivedPayout": "10000000",
+      "actualPayout": "10000000"
+    },
+    {
+      "name": "Regime",
+      "address": "0xeEFa13C8cfFFd0d3409536b8BDD6311F6b4f8F83",
+      "external": false,
+      "deposit": "10000000",
+      "claimedWinningCredits": "0",
+      "unclaimedPrincipal": "10000000",
+      "credit": "0",
+      "long": "0",
+      "short": "0",
+      "derivedPayout": "10000000",
+      "actualPayout": "10000000"
+    },
+    {
+      "name": "Skeptic",
+      "address": "0x41DFCE9EeFafC9d78b275C99dfE09Be26a434F00",
+      "external": false,
+      "deposit": "10000000",
+      "claimedWinningCredits": "0",
+      "unclaimedPrincipal": "10000000",
+      "credit": "0",
+      "long": "0",
+      "short": "0",
+      "derivedPayout": "10000000",
+      "actualPayout": "10000000"
+    },
+    {
+      "name": "wallet1",
+      "address": "0xbdd8f98a5778cf401daaf8f355382ed2c1ae77b3",
+      "external": true,
+      "deposit": "1000000",
+      "claimedWinningCredits": "0",
+      "unclaimedPrincipal": "1000000",
+      "credit": "0",
+      "long": "0",
+      "short": "0",
+      "derivedPayout": "1000000",
+      "actualPayout": "1000000"
+    }
+  ],
+  "collateralAtCollapse": "180717460",
+  "endingCollateral": "99718689",
+  "reserve": "99718689",
+  "recomputedReturn": "999947615340078101",
+  "passed": true
+}

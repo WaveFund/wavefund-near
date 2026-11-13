@@ -24,23 +24,30 @@ export async function createAuroraRuntime({ manifestPath = 'deployments/aurora-t
   const abis = suppliedAbis ?? await artifactAbis(artifactsDir); const publicClient = suppliedClient ?? readonlyClient(readonlyRPC());
   const manager = createManagerService({ publicClient, contracts: manifest.contracts, abis, chainId: 1313161555 });
   await manager.inspect(); // Reject wrong networks, code and bindings before exposing a monitoring dashboard.
-  let cached; let cachedAt = 0;
+  let cached; let cachedAt = 0; const names = new Map();
   const read = (name, functionName, args, blockNumber) => publicClient.readContract({ address: manifest.contracts[name], abi: abis[name], functionName, args, blockNumber });
   return {
     metadata: { mode: 'aurora-testnet-readonly', chainId: 1313161555 }, manager,
     async state() {
+      async function proposerName(address, blockNumber) {
+        const key = String(address).toLowerCase(); if (names.has(key)) return names.get(key);
+        let value = null;
+        try { const agent = await read('registry', 'agents', [address], blockNumber); value = typeof agent?.[0] === 'string' && /^[A-Za-z][A-Za-z0-9]{0,31}$/.test(agent[0]) ? agent[0] : null; } catch {}
+        names.set(key, value); return value;
+      }
       if (cached && Date.now() - cachedAt < 5000) return cached;
       const inspected = await manager.inspect(); const pinned = BigInt(inspected.blockNumber); const id = BigInt(inspected.currentRoundId); const proposals = []; let round = null; let value = null;
       if (id > 0n) {
         const data = namedOutputs(abis.engine, 'rounds', await read('engine', 'rounds', [id], pinned));
-        round = { status: Number(data.status), tradingEnd: data.tradingEnd.toString(), evaluationEnd: data.evaluationEnd.toString(), realisedReturnX18: data.realisedReturn.toString(), piX18: data.pi.toString(), winnerId: Number(data.winnerId) };
-        for (let i = 0; i < Number(data.proposalCount); i++) { const proposal = namedOutputs(abis.engine, 'proposals', await read('engine', 'proposals', [id, BigInt(i)], pinned)); const [probability] = await read('market', 'probabilities', [id, BigInt(i)], pinned); proposals.push({ id: String(i), label: i === 0 ? 'Hold current assets' : `${Number(proposal.tEthBps) / 100}% approved asset`, allocationBps: Number(proposal.tEthBps), probabilityX18: probability.toString(), twapX18: proposal.probabilityTwap.toString(), rationale: proposal.rationale, proposer: proposal.proposer }); }
+        round = { status: Number(data.status), tradingEnd: data.tradingEnd.toString(), evaluationEnd: data.evaluationEnd.toString(), realisedReturnX18: data.realisedReturn.toString(), piX18: data.pi.toString(), winnerId: Number(data.winnerId), tradingStart: data.tradingStart.toString(), twapWindowSeconds: data.twapWindow.toString(), returnBounds: { minX18: data.rMin.toString(), maxX18: data.rMax.toString() }, executed: Boolean(await read('engine', 'roundExecuted', [id], pinned)) };
+        for (let i = 0; i < Number(data.proposalCount); i++) { const proposal = namedOutputs(abis.engine, 'proposals', await read('engine', 'proposals', [id, BigInt(i)], pinned)); const [probability] = await read('market', 'probabilities', [id, BigInt(i)], pinned); proposals.push({ id: String(i), label: i === 0 ? 'Hold current assets' : `${Number(proposal.tEthBps) / 100}% approved asset`, allocationBps: Number(proposal.tEthBps), probabilityX18: probability.toString(), twapX18: proposal.probabilityTwap.toString(), rationale: proposal.rationale, proposer: proposal.proposer, name: i === 0 ? 'Hold' : await proposerName(proposal.proposer, pinned) }); }
       }
+      const chainNow = (await publicClient.getBlock({ blockNumber: pinned })).timestamp.toString();
       const token = parseAbi(['function balanceOf(address) view returns(uint256)']);
       const engineBalance = await publicClient.readContract({ address: manifest.contracts.stable, abi: token, functionName: 'balanceOf', args: [manifest.contracts.engine], blockNumber: pinned });
       try { const prices = await read('oracle', 'read', [], pinned); value = (BigInt(inspected.stableBalance) * prices[0] / 1000000n + BigInt(inspected.assetBalance) * prices[1] / 10n ** 18n).toString(); } catch {}
       if (engineBalance < BigInt(inspected.sponsorReserve)) throw new Error('Onchain sponsor reserve exceeds actual forecasting collateral');
-      cached = { mode: 'aurora-testnet-readonly', chainId: 1313161555, running: false, stage: 'monitoring', roundId: id ? id.toString() : null, safe: { address: manifest.contracts.safe, stableBalance: inspected.stableBalance, assetBalance: inspected.assetBalance, valueUsdX18: value }, sponsor: { reserve: inspected.sponsorReserve }, forecast: { escrow: (engineBalance - BigInt(inspected.sponsorReserve)).toString(), deposits: id ? namedOutputs(abis.engine, 'rounds', await read('engine', 'rounds', [id], pinned)).totalDeposits.toString() : '0', participants: [] }, round, proposals, agents: [], agentRecords: [], receipts: [], inference: { mode: 'not-connected', model: null, status: 'read-only', attestationVerified: false }, error: inspected.oracle.usable ? null : 'Oracle unavailable or stale. Monitoring never supplies a fallback price.' };
+      cached = { mode: 'aurora-testnet-readonly', chainId: 1313161555, running: false, stage: 'monitoring', roundId: id ? id.toString() : null, chainNow, blockNumber: pinned.toString(), safe: { address: manifest.contracts.safe, stableBalance: inspected.stableBalance, assetBalance: inspected.assetBalance, valueUsdX18: value }, sponsor: { reserve: inspected.sponsorReserve }, forecast: { escrow: (engineBalance - BigInt(inspected.sponsorReserve)).toString(), deposits: id ? namedOutputs(abis.engine, 'rounds', await read('engine', 'rounds', [id], pinned)).totalDeposits.toString() : '0', participants: [] }, round, proposals, agents: [], agentRecords: [], receipts: [], inference: { mode: 'not-connected', model: null, status: 'read-only', attestationVerified: false }, error: inspected.oracle.usable ? null : 'Oracle unavailable or stale. Monitoring never supplies a fallback price.' };
       cachedAt = Date.now(); return cached;
     },
     start() { throw new Error('Aurora monitoring is read-only. Owners must review and execute Safe actions separately.'); },

@@ -1,3 +1,4 @@
+import { swapText } from '../arena/model.mjs';
 // Pure derivations for the Portfolio workspace. No React, no fetching: every rule here is unit-tested.
 // A permission list is individual checks only; nothing in this module ever produces an overall "ready" flag.
 import { formatUnits } from '../funding/model.mjs';
@@ -22,7 +23,7 @@ export function parseTabParam(value) {
 
 /** The Safes the selector offers. Local simulation appears only for a local backend. */
 export function safeOptions({ localAllowed = false } = {}) {
-  const options = [{ id: 'tidepool', label: 'Tidepool testnet Safe' }, { id: 'original', label: 'Original testnet Safe' }];
+  const options = [{ id: 'tidepool', label: 'Testnet Safe v2' }, { id: 'original', label: 'Testnet Safe v1' }];
   if (localAllowed === true) options.push({ id: 'local', label: 'Local simulation Safe' });
   return options;
 }
@@ -97,10 +98,9 @@ export function permissionChecks({ safe, inspection = null, latestSaved = null, 
 /** Compact history rows for one stack. The swap cell never invents a trade for a Hold round. */
 export function historyRows(rounds) {
   return (rounds ?? []).map((round) => {
-    const spent = round.swap?.stableDelta?.startsWith('-') ? round.swap.stableDelta.slice(1) : null;
     let swap = 'Executed';
     if (round.winner.isHold) swap = 'No swap';
-    else if (spent && round.swap?.assetDelta) swap = `${formatUnits(spent, 6, { maxFraction: 2 })} USDC → ${eth(round.swap.assetDelta, 6)} ETH`;
+    else swap = swapText(round.swap) ?? 'Executed';
     return {
       slug: round.slug,
       round: `Round ${round.roundId}`,

@@ -115,7 +115,9 @@ export async function main({ spawnImpl = spawn } = {}) {
     manifest.deployedAtBlock = Math.min(...broadcast.receipts.map((r) => Number(BigInt(r.blockNumber))));
     await writeFile('deployments/local.json', JSON.stringify(manifest, null, 2) + '\n');
     const host = listenHost();
-    const api = child('api', process.execPath, ['runtime/server.mjs'], host === '0.0.0.0' ? { HOST: host } : {}, true);
+    // The read-only evidence API needs the reviewed public TEE policy to load round 9 (runtime/operator/round-evidence.mjs).
+    const teePolicy = process.env.WAVEFUND_TEE_POLICY || (await access('docs/tee-policy.json').then(() => 'docs/tee-policy.json', () => undefined));
+    const api = child('api', process.execPath, ['runtime/server.mjs'], { ...(host === '0.0.0.0' ? { HOST: host } : {}), ...(teePolicy ? { WAVEFUND_TEE_POLICY: teePolicy } : {}) }, true);
     const ui = child('frontend', process.execPath, [NEXT_BIN, 'dev', 'frontend', '--hostname', host, '--port', '3000']);
     console.log('Open http://127.0.0.1:3000 — disposable simulation only. Funding preview: http://127.0.0.1:3000/fund?fixtures=1 (labelled fixtures). Ctrl+C stops owned processes.');
     await Promise.race([anvil, api, ui].map((entry) => entry.done.then(() => { throw new DemoError(`${entry.name} exited unexpectedly`); })));

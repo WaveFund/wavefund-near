@@ -1,0 +1,11 @@
+{
+  "chainId": 1313161555,
+  "safe": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11",
+  "engine": "0xba96a117f4de33c38df72002651f11024ed14a14",
+  "roundId": "3",
+  "fundedAmount": "199480000",
+  "preparedStableAmount": "188477014",
+  "preparedAssetAmount": "4881432557813197",
+  "sameSafeAndCapital": true,
+  "executionHash": "0xb4d31930ba7055802b9f8e9bd839a534cc59d40268c9d381603a08a15c51389e"
+}

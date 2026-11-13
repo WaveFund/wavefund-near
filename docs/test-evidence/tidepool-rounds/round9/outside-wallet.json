@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "chainId": 1313161555,
+  "roundId": "9",
+  "kind": "outside-browser-wallet-forecast",
+  "wallet": "0xbdd8f98a5778cf401daaf8f355382ed2c1ae77b3",
+  "signedBy": "the wallet itself through the Wavefund web UI (injected EIP-1193 provider; the app holds no keys)",
+  "note": "Throwaway test wallet funded with 2 test USDC + 0.0008 test ETH by the operator before the round; settled after the round by redeemFor (see report.json completion.externalPayouts).",
+  "steps": [
+    {
+      "step": "Approve",
+      "function": "approve",
+      "args": [
+        "0xba96A117f4dE33C38df72002651F11024ED14a14",
+        "1000000"
+      ],
+      "contract": "0x38d81431b9f76d9699af7517040d5221d9dea252",
+      "transactionHash": "0x3b8f9f0b1283c2dbd6d5ff0824908a8ef5043f67586eac4bdb3548d93827c2d9",
+      "blockNumber": "277534816",
+      "status": "success"
+    },
+    {
+      "step": "Deposit",
+      "function": "deposit",
+      "args": [
+        "9",
+        "1000000"
+      ],
+      "contract": "0xba96a117f4de33c38df72002651f11024ed14a14",
+      "transactionHash": "0x379e800cf57b8e6aba837541ad8d1d15eed07548e0bfafa0431800dd6f7f4229",
+      "blockNumber": "277534831",
+      "status": "success"
+    },
+    {
+      "step": "Claim",
+      "function": "claimCredits",
+      "args": [
+        "9",
+        "1",
+        "100000"
+      ],
+      "contract": "0xba96a117f4de33c38df72002651f11024ed14a14",
+      "transactionHash": "0x586de61479fd72fca6feece603fe58cb63d5165ba7cf4a3a96450bf794b8b260",
+      "blockNumber": "277534850",
+      "status": "success"
+    },
+    {
+      "step": "Buy",
+      "function": "buyLong",
+      "args": [
+        "9",
+        "1",
+        "100000",
+        "204592469013938015"
+      ],
+      "contract": "0xba96a117f4de33c38df72002651f11024ed14a14",
+      "transactionHash": "0x15f4e4f033948eca821321ada39e82ad578f681e794145e1ec146facc7eabd90",
+      "blockNumber": "277534869",
+      "status": "success"
+    }
+  ],
+  "checkedAgainstChain": "each receipt: status success, from = wallet, to = expected contract (test USDC for approve, engine otherwise), zero value"
+}

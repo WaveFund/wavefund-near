@@ -29,7 +29,7 @@ export function createProvider(config, { fetchImpl = fetch, timeoutMs = 20000, m
   if (!config || !['local', 'near-ai'].includes(config.mode)) throw new Error('Explicit inference configuration required');
   // Revalidate even when a caller constructs configuration directly.
   const checked = providerConfig({ WAVEFUND_AGENT_MODE: config.mode, WAVEFUND_AGENT_MODEL: config.model, WAVEFUND_LOCAL_MODEL_URL: config.endpoint, WAVEFUND_ALLOW_REMOTE_INFERENCE: config.mode === 'near-ai' ? '1' : undefined, NEARAI_API_KEY: config.apiKey });
-  if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 60000 || !Number.isInteger(maxCalls) || maxCalls < 1 || maxCalls > 8) throw new Error('Invalid inference limits');
+  if (!Number.isInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 120000 || !Number.isInteger(maxCalls) || maxCalls < 1 || maxCalls > 8) throw new Error('Invalid inference limits');
   let calls = 0;
   return {
     info: Object.freeze({ mode: checked.mode, model: checked.model, attestationVerified: false }),
@@ -51,6 +51,16 @@ export function createProvider(config, { fetchImpl = fetch, timeoutMs = 20000, m
       }
     },
   };
+}
+
+// Paid model calls per round, by operator profile. No retries: a failed call ends the plan phase.
+export const PROFILE_CALLS = Object.freeze({ classic: 4, hybrid: 4, swarm: 8, swarm2: 12 }); // swarm2 = 5 proposers + 8 forecasters
+/** One shared counter for every provider in a round; take() throws on the call after the profile cap. */
+export function roundCallCap(profile) {
+  const cap = PROFILE_CALLS[profile];
+  if (!Number.isSafeInteger(cap)) throw new Error('Unknown agent profile');
+  let used = 0;
+  return Object.freeze({ cap, get used() { return used; }, take() { if (used >= cap) throw new Error('Round model-call cap exhausted'); return ++used; } });
 }
 
 export function subprocessEnvironment(source, inferenceAccess = false) {

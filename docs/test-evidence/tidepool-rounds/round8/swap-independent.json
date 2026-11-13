@@ -1,0 +1,19 @@
+{
+  "chainId": 1313161555,
+  "blockNumber": "277509818",
+  "safe": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11",
+  "tokens": {
+    "stable": {
+      "before": "9974639",
+      "after": "49949259",
+      "routerAllowance": "0"
+    },
+    "asset": {
+      "before": "97071827164402125",
+      "after": "76623853832694518",
+      "routerAllowance": "0"
+    }
+  },
+  "slippageBps": 100,
+  "passed": true
+}

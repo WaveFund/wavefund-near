@@ -6,9 +6,19 @@ import {tidepoolRequest,fetchTidepoolQuote} from '../runtime/tidepool/client.mjs
 import {createIntentsClient} from '../runtime/intents/index.mjs';
 import {fundingDemoPreviewInput,FUNDING_DEMO_LIMITS} from '../runtime/funding/demo-plan.mjs';
 import {readTidepoolFundingProof} from '../runtime/tidepool/read-model.mjs';
+import {readdir} from 'node:fs/promises';
+import {verifyTeeProposals} from '../runtime/agents/tee-proof.mjs';
+import {runSuite,buildAttacks} from './attack-suite.mjs';
+import {ATTACK_ABIS,verifySavedRound,verifyOutsideWallet,fetchNearTx,checkNearSettlement,statusOf} from './lib/judge-checks.mjs';
 const load=async p=>JSON.parse(await readFile(new URL('../'+p,import.meta.url),'utf8'));
 const result={schemaVersion:1,mode:'public-read-only',paidInference:false,fundsMoved:false,checks:[]};
-async function check(name,fn,required=true){try{result.checks.push({name,required,status:'passed',...await fn()});}catch(error){result.checks.push({name,required,status:'unavailable',code:error.code??'PUBLIC_READ_UNAVAILABLE'});if(required)process.exitCode=1;}}
+// passed | failed (public data contradicts the claim) | amber (network unavailable, not a failed claim) | unavailable
+async function check(name,fn,required=true){try{result.checks.push({name,required,status:'passed',...await fn()});}catch(error){
+ const status=statusOf(error);
+ result.checks.push({name,required,status,code:error.code??'PUBLIC_READ_UNAVAILABLE',...(status==='amber'?{note:'network unavailable, not a failed claim'}:{}),...(status==='failed'?{reason:error.message}:{})});
+ if(required&&status!=='amber')process.exitCode=1;}}
+const aurora=()=>createPublicClient({transport:http('https://testnet.aurora.dev',{retryCount:2,timeout:20000})});
+const ROUNDS_DIR='docs/test-evidence/tidepool-rounds';
 await check('live-aurora-outcome-reputation',async()=>{
  const manifest=await load('deployments/aurora-testnet-reputation.json');
  const client=createPublicClient({transport:http('https://testnet.aurora.dev',{retryCount:0,timeout:15000})});
@@ -44,13 +54,8 @@ await check('live-tidepool-delivery-receipts',async()=>{
 });
 await check('live-near-testnet-execute-intents',async()=>{
  const saved=await load('docs/test-evidence/tidepool-v1/near-settlement.json');
- const r=await fetch('https://rpc.testnet.near.org',{method:'POST',headers:{'content-type':'application/json'},
- body:JSON.stringify({jsonrpc:'2.0',id:1,method:'tx',params:{tx_hash:saved.transaction.hash,sender_account_id:saved.transaction.signer_id,wait_until:'FINAL'}}),signal:AbortSignal.timeout(20000)});
- const {result}=await r.json();
- if(result?.final_execution_status!=='FINAL'||result?.status?.SuccessValue===undefined||result.transaction.receiver_id!=='verifier.tidepool-sandbox.testnet'
-   ||!result.transaction.actions.some(a=>a.FunctionCall?.method_name==='execute_intents'))throw Error('NEAR settlement unavailable');
- return {network:'NEAR testnet',provider:'Tidepool community verifier',transactionHash:result.transaction.hash,
-   receiver:result.transaction.receiver_id,method:'execute_intents',final:true};
+ const {rpc,result,attempts}=await fetchNearTx({hash:saved.transaction.hash,signer:saved.transaction.signer_id});
+ return {...checkNearSettlement(result),rpc,attempts};
 });
 await check('live-tidepool-strategy-and-redemptions',async()=>{
  const manifest=await load('deployments/aurora-testnet-tidepool.json');
@@ -73,12 +78,37 @@ await check('live-tidepool-strategy-and-redemptions',async()=>{
    investmentSwapTransaction:tx.hash,pair:manifest.integrations.investmentPair,redeemedForecasters:redeemers.length,
    proposers:'four genuine NEAR AI calls',forecasters:'four scripted test actors',scope:'Test assets, not predictive alpha'};
 });
-await check('saved-round-evidence',async()=>{
- const real=await load('docs/test-evidence/round8-swarm/independent.json');
- const hybrid=await load('docs/test-evidence/round7-hybrid/independent.json');
- if(real.passed!==true||hybrid.passed!==true)throw Error('Evidence unavailable');
- return {source:'saved independent public-chain evidence; not a fresh execution',
-   realAgents:{round:'8',forecasters:'genuine, all abstained',winner:'Hold',fundingPayouts:real.payouts.length},
-   hybrid:{round:'7',proposers:'genuine',forecasters:'scripted',fills:hybrid.fills.length}};
+await check('tidepool-rounds-independently-verified',async()=>{
+ const manifest=await load('deployments/aurora-testnet-tidepool.json');const c=aurora();
+ const rounds=(await readdir(new URL('../'+ROUNDS_DIR,import.meta.url))).map(d=>/^round([0-9]+)$/.exec(d)?.[1]).filter(Boolean).map(Number).sort((a,b)=>a-b);
+ const verified=[];
+ for(const n of rounds){
+  const [independent,report]=await Promise.all([load(`${ROUNDS_DIR}/round${n}/independent.json`),load(`${ROUNDS_DIR}/round${n}/report.json`)]);
+  verified.push(await verifySavedRound({client:c,engine:manifest.contracts.engine,chainId:manifest.chainId,independent,report}));
+ }
+ return {source:'saved independent.json re-checked against public Aurora testnet receipts and engine state',engine:manifest.contracts.engine,
+   rounds:verified,notIncluded:'round 1 (checked above), round 4 (failed and cancelled with refunds; disclosed in SCHEDULE.md)'};
 });
+await check('round9-tee-proofs-offline',async()=>{
+ const [plan,proof,policy]=await Promise.all([load(`${ROUNDS_DIR}/round9/plan.json`),load(`${ROUNDS_DIR}/round9/tee.json`),load('docs/tee-policy.json')]);
+ const proposals=await verifyTeeProposals(plan,proof.receipts,policy);
+ return {round:'9',policy:'docs/tee-policy.json',verifiedProposals:proposals.length,same:'node scripts/verify-tee.mjs 9 --policy docs/tee-policy.json',
+   note:'Offline recheck of captured attestations and on-chain bindings; not a fresh attestation.'};
+});
+await check('round9-outside-wallet-receipts',async()=>{
+ const manifest=await load('deployments/aurora-testnet-tidepool.json');
+ const [outside,report,independent]=await Promise.all(['outside-wallet','report','independent'].map(f=>load(`${ROUNDS_DIR}/round9/${f}.json`)));
+ return verifyOutsideWallet({client:aurora(),engine:manifest.contracts.engine,stable:manifest.contracts.stable,outside,report,independent});
+});
+await check('live-attack-suite',async()=>{
+ const manifest=await load('deployments/aurora-testnet-tidepool.json');const c=aurora();
+ if(await c.getChainId()!==manifest.chainId)throw Error('Wrong chain');
+ const block=await c.getBlockNumber();
+ const results=await runSuite({client:c,manifest,abis:ATTACK_ABIS,block,attacks:buildAttacks(manifest.contracts)});
+ const blocked=results.filter(r=>r.pass).length;
+ if(blocked!==results.length){const e=Error(`${results.length-blocked} attack(s) not blocked with the expected error`);e.code='CLAIM_MISMATCH';throw e;}
+ return {method:'eth_call at one pinned block; no keys, no transactions',blockNumber:String(block),blocked:`${blocked}/${results.length}`,
+   attacks:results.map(r=>({name:r.name,expectedError:r.expectedError,observedError:r.observedError}))};
+});
+result.summary=Object.fromEntries(['passed','failed','amber','unavailable'].map(k=>[k,result.checks.filter(c=>c.status===k).length]));
 console.log(JSON.stringify(result,null,2));

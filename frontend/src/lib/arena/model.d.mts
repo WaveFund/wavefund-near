@@ -59,3 +59,7 @@ export declare function roundSummary(round: TestnetRound): RoundSummary;
 export declare function settlementShares(longPayoutX18: unknown): { long: string; short: string } | null;
 export declare function participantViews(round: TestnetRound): ParticipantView[];
 export declare function localWorkspaceAccess(state: { mode?: string; chainId?: number; stage?: string; running?: boolean } | null | undefined, status?: { loading?: boolean; error?: string | null }): { available: boolean; reason: string; canStart: boolean };
+
+export type SwapSide = { raw: string; decimals: 6 | 18; symbol: 'USDC' | 'ETH' };
+export function swapLeg(swap: { stableDelta?: string | null; assetDelta?: string | null } | null | undefined): { direction: 'buy' | 'sell'; give: SwapSide; get: SwapSide } | null;
+export function swapText(swap: { stableDelta?: string | null; assetDelta?: string | null } | null | undefined): string | null;

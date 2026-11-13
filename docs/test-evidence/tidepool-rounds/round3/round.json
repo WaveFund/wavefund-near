@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "stack": "tidepool",
+  "roundId": "3",
+  "title": "Pre-registered round 3: scripted target Balanced",
+  "files": {
+    "report": "report",
+    "plan": "plan",
+    "independent": "independent",
+    "swap": "swap-independent",
+    "capital": "capital-linkage",
+    "reputation": "reputation"
+  }
+}

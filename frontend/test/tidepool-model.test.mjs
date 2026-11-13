@@ -63,7 +63,8 @@ test('round ids from different engines stay distinct; history is labelled saved;
   assert.equal(exactFactorX18(tidepool.realisedReturnX18), '0.993541889635073190', 'precise values come straight from the evidence');
   assert.equal(tidepool.collateral.seed, '100000000');
   assert.equal(findRound(checked.rounds, tidepool.slug).round, tidepool);
-  assert.equal(findRound(checked.rounds, '7').round?.roundId, '7', 'a unique bare round number still resolves');
+  assert.equal(findRound(checked.rounds.filter(r => r.stack.id === 'original'), '7').round?.roundId, '7', 'a unique bare round number still resolves');
+  assert.deepEqual(findRound(checked.rounds, '7'), { round: null, ambiguous: true }, 'published original and Tidepool round 7 must remain distinct');
   // Two engines with the same round number: slugs differ, a bare number is ambiguous.
   const original = checked.rounds.find((round) => round.roundId === '7');
   const twin = { ...original, roundId: '1', slug: `1313161555-${original.stack.engine}-1` };
@@ -73,7 +74,9 @@ test('round ids from different engines stay distinct; history is labelled saved;
   // A round without a matching network + engine identity is dropped, never shown as "Round 1" alone.
   const raw = JSON.parse(JSON.stringify(await loadRoundEvidence()));
   raw.rounds[2].slug = '1313161555-0x825b31dbc1af25b230d31caf5210c2b5a8fe22af-1';
-  assert.equal(validateRoundEvidence(raw).rounds.some((round) => round.stack.id === 'tidepool'), false);
+  const kept = validateRoundEvidence(raw).rounds;
+  assert.equal(kept.some((round) => round.stack.id === 'tidepool' && round.roundId === '1'), false, 'the corrupted round is dropped');
+  assert.equal(kept.length, raw.rounds.length - 1, 'only the corrupted round is dropped');
 });
 
 test('separate reputation histories keep their stack and are never summed', async () => {

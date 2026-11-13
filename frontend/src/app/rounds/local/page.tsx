@@ -7,7 +7,7 @@ import { localCtx } from "@/components/arena/stages";
 import { RoundWorkspace } from "@/components/arena/workspace";
 import { Icon } from "@/components/funding/primitives";
 import { Button, EmptyState, Notice, Skeleton } from "@/components/ui";
-import { Cap } from "@/components/v2";
+import { Cap, Tip } from "@/components/v2";
 import { useLocalState, useSavedRounds } from "@/lib/arena/hooks";
 import { localJourney, localWorkspaceAccess, percentFromBps, shortReturnX18, type ParticipantView } from "@/lib/arena/model.mjs";
 import "../round.css";
@@ -37,7 +37,7 @@ export default function LocalRoundPage() {
       <Link className="breadcrumb" href="/rounds"><Icon name="chevron" />Rounds</Link>
       <EmptyState icon="alert" title="Local simulation unavailable"
         action={<div className="rw-empty-actions">{tidepool ? <Link className="btn btn-primary" href={`/rounds/${tidepool.slug}`}>Open the completed testnet round<Icon name="arrow" /></Link> : <Link className="btn" href="/rounds">Back to rounds</Link>}</div>}>
-        {access.reason}. To run it, start the local demo with <code>bash scripts/docker-demo/up.sh</code> and reload this page.
+        {access.reason}. The local simulation needs its own running backend. <Tip label="For developers">Run bash scripts/docker-demo/up.sh and reload.</Tip>
       </EmptyState>
     </AppShell>;
   }

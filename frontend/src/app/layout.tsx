@@ -23,7 +23,7 @@ const THEME_SCRIPT = "try{var t=localStorage.getItem('wavefund-theme');if(t==='l
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return <html lang="en" className={`${geist.variable} ${plexMono.variable}`} suppressHydrationWarning>
-    <head><script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} /></head>
+    <head><script suppressHydrationWarning dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} /></head>
     <body>{children}</body>
   </html>;
 }

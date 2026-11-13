@@ -32,6 +32,8 @@ The first run takes several minutes, because it installs dependencies and compil
 - `http://127.0.0.1:3000/agents`: outcome reputation, read live and read-only from public Aurora testnet, per reputation contract.
 - `http://127.0.0.1:3000/advanced`: owner tools (unsigned transactions only).
 
+The API starts with `WAVEFUND_TEE_POLICY=docs/tee-policy.json` so the evidence list includes the TEE-verified round 9; without that variable `/api/evidence/testnet-rounds` returns 503.
+
 Stop the demo with:
 
 ```sh

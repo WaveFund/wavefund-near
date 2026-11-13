@@ -1,12 +1,12 @@
 "use client";
 
+import { TeeStatus } from "./TeeStatus";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import type { DemoState } from "@/lib/state";
 import {
   describeSavedTx, percentFromBps, positionGroups, roundWindows, selectionSignals, settlementShares,
-  type LocalJourney, type PositionGroups, type SavedJourney, type SelectionSignals, type StageId,
-} from "@/lib/arena/model.mjs";
+  type LocalJourney, type PositionGroups, type SavedJourney, type SelectionSignals, type StageId, swapLeg } from "@/lib/arena/model.mjs";
 import { AURORA_TESTNET, formatUnits } from "@/lib/funding/model.mjs";
 import { exactFactorX18, formatPoints, formatSignedUnits, type TestnetRound } from "@/lib/record/model.mjs";
 import type { FreshCheck, TidepoolDemo } from "@/lib/tidepool/model.mjs";
@@ -41,7 +41,7 @@ const STAGE_KEYS: Array<"setup" | StageId> = ["setup", "funded", "proposals", "f
 export function savedCtx(round: TestnetRound, journey: SavedJourney, extra: { fresh: FreshCheck | null; freshing: boolean; onFresh: () => void; now: number }): StageCtx {
   const challengers = round.proposals.filter((item) => item.id !== "0");
   const ai = (round.genuineModelCalls ?? 0) >= challengers.length;
-  const strategies: StrategyView[] = round.proposals.map((item) => ({ id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: item.rationale, source: item.id === "0" ? "baseline" : ai ? "ai" : "fixture" }));
+  const strategies: StrategyView[] = round.proposals.map((item) => ({ id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: item.rationale, source: item.id === "0" ? "baseline" : ai ? "ai" : "fixture", model: (item as { model?: string | null }).model ?? null }));
   const tx = Object.fromEntries(STAGE_KEYS.map((key) => [key, journey.transactions[key].map((item, index) => ({ key: `${key}-${index}`, text: describeSavedTx(item.label), hash: item.transactionHash, chainId: AURORA_TESTNET, href: item.url }))])) as TxByStage;
   if (round.swap) tx.executed = [...tx.executed, { key: "swap", text: "Investment swap", hash: round.swap.transactionHash, chainId: AURORA_TESTNET, href: round.swap.url }];
   if (round.reputation) tx.redeemed = [...tx.redeemed, { key: "rep", text: "Record the outcome point", hash: round.reputation.transactionHash, chainId: AURORA_TESTNET, href: round.reputation.url }];
@@ -61,6 +61,11 @@ export function localCtx(state: DemoState | null, journey: LocalJourney): StageC
 }
 
 // ---------------------------------------------------------------- small shared pieces
+
+/** The model an agent ran on, when the saved evidence records one per agent (multi-model rounds only). */
+function ModelLabel({ model }: { model?: string | null }) {
+  return model ? <div className="muted num" style={{ fontSize: 11, marginTop: 4, overflowWrap: "anywhere" }} title="Model recorded for this agent">{model}</div> : null;
+}
 
 function Fact({ label, tip, value, unit }: { label: string; tip?: ReactNode; value: ReactNode; unit?: string }) {
   return <div className="rw-fact"><span>{label}{tip ? <> <Tip label={`About ${label.toLowerCase()}`}>{tip}</Tip></> : null}</span><b className="num">{value}</b>{unit ? <small>{unit}</small> : null}</div>;
@@ -135,7 +140,7 @@ export function ProposalsStage({ ctx }: { ctx: StageCtx }) {
   const open = ctx.strategies.find((item) => item.id === openId) ?? null;
   const hold = open?.id === "0";
   return <>
-    <div className="strategy-grid rw-cards">{ctx.strategies.map((item) => <StrategyCard key={item.id} strategy={item} compact onSelect={() => setOpenId(item.id)} />)}</div>
+    <div className="strategy-grid rw-cards">{ctx.strategies.map((item) => <div key={item.id}><StrategyCard strategy={item} compact onSelect={() => setOpenId(item.id)} />{item.id !== "0" ? <TeeStatus round={ctx.saved?.round.roundId} proof={ctx.saved?.round.tee?.find(t => t.proposalId === item.id)} /> : null}<ModelLabel model={ctx.saved?.round.proposals.find((p) => p.id === item.id)?.model} /></div>)}</div>
     <Drawer open={open !== null} onClose={() => setOpenId(null)} title={open ? (hold ? "Hold · keep allocation" : open.name) : ""}>
       {open ? <>
         <div className="rw-row"><AllocationRing bps={open.allocationBps} size="lg" /><div><b className="num">{percentFromBps(open.allocationBps)} test ETH</b><div className="muted">{hold ? "what the Safe holds now" : `${percentFromBps(10_000 - open.allocationBps)} test USDC`}</div></div></div>
@@ -160,6 +165,9 @@ export function ForecastingStage({ ctx }: { ctx: StageCtx }) {
       {positions.positions ? <PositionBoard strategies={ctx.strategies} positions={positions} /> : null}
       {positions.abstained.length ? <div className="rw-abstain"><span className="eyebrow">Abstained</span>
         {positions.abstained.map((item) => <span key={item.name} className="rw-pill" title={item.reason ?? "No reason recorded"}><AgentAvatar name={item.name} kind="forecaster" size="sm" />{item.name}</span>)}</div> : null}
+      {round.forecasters.some((item) => item.model) ? <ul className="tx-list">{round.forecasters.map((item) => <li key={item.name}>
+        <span className="who"><AgentAvatar name={item.name} kind="forecaster" size="sm" /><span><b>{item.name}</b><ModelLabel model={item.model} /></span></span>
+        <span className="muted">{item.action === "buy" && item.side ? `${item.side.toUpperCase()} on #${item.proposalId}` : item.action === "abstain" ? "Abstained" : "Unknown"}</span></li>)}</ul> : null}
     </div>;
   }
   const participants = local?.state?.forecast.participants ?? [];
@@ -198,11 +206,11 @@ export function ExecutedStage({ ctx }: { ctx: StageCtx }) {
   }
   if (saved) {
     const { round, demo } = saved;
-    const spent = round.swap?.stableDelta?.startsWith("-") ? round.swap.stableDelta.slice(1) : null;
-    const received = round.swap?.assetDelta && !round.swap.assetDelta.startsWith("-") ? round.swap.assetDelta : null;
-    if (!spent || !received) return <p className="muted">Execution is recorded; its swap amounts are unavailable in the saved evidence.</p>;
+    const leg = swapLeg(round.swap);
+    if (!leg) return <p className="muted">Execution is recorded; its swap amounts are unavailable in the saved evidence.</p>;
+    const show = (side: { raw: string; decimals: 6 | 18 }) => (side.decimals === 6 ? usdc(side.raw) : eth(side.raw, 6));
     return <div className="rw-stack">
-      <SwapVisual spent={{ label: "The Safe sold", amount: usdc(spent), symbol: "test USDC" }} received={{ label: "and received", amount: eth(received, 6), symbol: "test ETH" }} />
+      <SwapVisual spent={{ label: "The Safe sold", amount: show(leg.give), symbol: `test ${leg.give.symbol}` }} received={{ label: "and received", amount: show(leg.get), symbol: `test ${leg.get.symbol}` }} />
       <div className="rw-row">
         {round.swap?.independentlyChecked ? <Cap tone="ok" icon="check">Independently checked</Cap> : <Cap>Executed</Cap>}
         {demo?.swap.stableAfter ? <span className="muted">Safe kept <b className="num">{usdc(demo.swap.stableAfter)}</b> test USDC</span> : null}

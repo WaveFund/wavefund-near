@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "stack": "tidepool",
+  "roundId": "7",
+  "title": "Round 7: Hold won",
+  "files": {
+    "report": "report",
+    "plan": "plan",
+    "independent": "independent"
+  }
+}

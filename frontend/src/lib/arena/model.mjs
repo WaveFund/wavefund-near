@@ -177,11 +177,11 @@ export function selectionSignals(proposals) {
 
 const SAVED_ACTION_STAGE = Object.freeze({ gas: 'setup', mint: 'setup', transfer: 'setup', register: 'setup', bondApproval: 'setup', depositApproval: 'setup',
   authorize: 'proposals', open: 'proposals', propose: 'proposals', deposit: 'forecasting', claim: 'forecasting', trade: 'forecasting',
-  collapse: 'selected', execute: 'executed', settle: 'evaluated', redeem: 'redeemed' });
+  collapse: 'selected', execute: 'executed', settle: 'evaluated', redeem: 'redeemed', redeemFor: 'redeemed' });
 const ORACLE_STAGE = Object.freeze({ open: 'proposals', execute: 'executed', settle: 'evaluated' });
 const SAVED_ACTION_TEXT = Object.freeze({ gas: 'Gas top-up', mint: 'Mint test tokens', transfer: 'Send test tokens', register: 'Register agent', bondApproval: 'Approve proposal bond',
   depositApproval: 'Approve forecast deposit', authorize: 'Safe authorizes the round', open: 'Open the round', propose: 'Propose a strategy', deposit: 'Deposit collateral',
-  claim: 'Claim credits', trade: 'Take a position', collapse: 'Close markets and select', execute: 'Execute through the Safe', settle: 'Settle the measured return', redeem: 'Redeem' });
+  claim: 'Claim credits', trade: 'Take a position', collapse: 'Close markets and select', execute: 'Execute through the Safe', settle: 'Settle the measured return', redeem: 'Redeem', redeemFor: 'Redeem for an outside forecaster (paid to their wallet)' });
 
 /** Journey step for a saved transaction label such as "round1:propose:Momentum". */
 export function savedTxStage(label) {
@@ -205,6 +205,23 @@ export function groupSavedTransactions(transactions) {
   return groups;
 }
 
+/** The executed swap as one leg in either direction: what the Safe gave and what it got. Null unless the deltas are opposite-signed integers. */
+export function swapLeg(swap) {
+  const stable = swap?.stableDelta; const asset = swap?.assetDelta;
+  if (typeof stable !== 'string' || typeof asset !== 'string' || !/^-?\d+$/.test(stable) || !/^-?\d+$/.test(asset)) return null;
+  const stableIn = stable.startsWith('-'); const assetIn = asset.startsWith('-');
+  if (stableIn === assetIn || /^-?0+$/.test(stable) || /^-?0+$/.test(asset)) return null;
+  return stableIn
+    ? { direction: 'buy', give: { raw: stable.slice(1), decimals: 6, symbol: 'USDC' }, get: { raw: asset, decimals: 18, symbol: 'ETH' } }
+    : { direction: 'sell', give: { raw: asset.slice(1), decimals: 18, symbol: 'ETH' }, get: { raw: stable, decimals: 6, symbol: 'USDC' } };
+}
+/** "149.61 USDC → 0.071692 ETH" for either direction, or null. */
+export function swapText(swap) {
+  const leg = swapLeg(swap); if (!leg) return null;
+  const amount = (side) => formatUnits(side.raw, side.decimals, { maxFraction: side.decimals === 6 ? 2 : 6 });
+  return `${amount(leg.give)} ${leg.give.symbol} → ${amount(leg.get)} ${leg.get.symbol}`;
+}
+
 /** A completed public round mapped onto the journey. The linked Tidepool demonstration supplies the funding step. */
 export function savedJourney(round, demo = null) {
   const linked = demo && demo.strategy?.roundSlug === round.slug ? demo : null;
@@ -212,8 +229,6 @@ export function savedJourney(round, demo = null) {
   const buys = round.forecasters.filter((item) => item.action === 'buy').length;
   const redeemed = round.payouts.filter((item) => item.payout !== null).length;
   const challengers = round.proposals.filter((item) => item.id !== '0').length;
-  const spent = round.swap?.stableDelta && round.swap.stableDelta.startsWith('-') ? round.swap.stableDelta.slice(1) : null;
-  const received = round.swap?.assetDelta && !round.swap.assetDelta.startsWith('-') ? round.swap.assetDelta : null;
   const transactions = groupSavedTransactions(round.transactions);
   // Hold is a completed execution decision with no swap: done only when an execution transaction is recorded.
   const holdRecorded = transactions.executed.length > 0;
@@ -222,7 +237,7 @@ export function savedJourney(round, demo = null) {
     `${challengers} strategies + Hold`,
     buys ? `${buys} positions` : 'All abstained',
     isHold ? 'Hold kept' : `${round.winner.name} · ${percentFromBps(round.winner.allocationBps)}`,
-    isHold ? (holdRecorded ? HOLD_APPLIED : HOLD_AWAITING) : spent && received ? `${formatUnits(spent, 6, { maxFraction: 2 })} USDC → ${formatUnits(received, 18, { maxFraction: 6 })} ETH` : 'Executed',
+    isHold ? (holdRecorded ? HOLD_APPLIED : HOLD_AWAITING) : swapText(round.swap) ?? 'Executed',
     shortReturnX18(round.realisedReturnX18) ?? 'Not recorded',
     `${redeemed} redeemed`,
   ];
