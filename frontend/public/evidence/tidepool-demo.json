@@ -1,0 +1,87 @@
+{
+ "schemaVersion": 1,
+ "kind": "tidepool-community-testnet-demo",
+ "official1Click": false,
+ "testnetOnly": true,
+ "evidence": "saved-independently-verified",
+ "method": "provider-linked canonical receipts from trusted RPCs; not a trustless bridge proof",
+ "note": "Tidepool is a community relayer into Aurora testnet, not an official NEAR Intents testnet. Test tokens have no value.",
+ "networks": {
+  "source": {
+   "chainId": 421614,
+   "name": "Arbitrum Sepolia"
+  },
+  "destination": {
+   "chainId": 1313161555,
+   "name": "Aurora testnet"
+  },
+  "settlement": {
+   "name": "NEAR testnet"
+  }
+ },
+ "token": {
+  "address": "0x38d81431b9f76d9699af7517040d5221d9dea252",
+  "symbol": "USDC",
+  "decimals": 6,
+  "label": "Tidepool test USDC"
+ },
+ "contracts": {
+  "safe": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11",
+  "engine": "0xba96a117f4de33c38df72002651f11024ed14a14",
+  "reputation": "0xfa71a652547284d1034ae6813ed4a882cb354e92",
+  "investmentPair": "0x218f2849e4401c194bf9068edf41fd3a8f643a1b"
+ },
+ "funding": {
+  "sourceAmount": "200000000",
+  "deliveredAmount": "199480000",
+  "bridgeCost": "520000",
+  "minAmountOut": "197485200",
+  "sourceTransaction": {
+   "hash": "0xb56675db59f1eda47a2b0998cb4ca28689a83a1e66f2723215aba29a31fd5a69",
+   "blockNumber": "328309683"
+  },
+  "destinationTransaction": {
+   "hash": "0x28999ced84c15e9a7bc53bfe0ea8d368d6a332455cfde3bd8e741d01ce51c45b",
+   "blockNumber": "277272331"
+  },
+  "safeBalance": {
+   "before": "0",
+   "after": "199480000"
+  }
+ },
+ "provider": {
+  "name": "Tidepool community relayer",
+  "reportedStatus": "SUCCESS",
+  "reportedAt": "2026-11-11T21:46:25.555Z",
+  "providerReported": true
+ },
+ "nearSettlement": {
+  "hash": "93tnePQQPVsRDV4xFiQ4eeEYFUZWbQEr1YQXANatCVYC",
+  "receiver": "verifier.tidepool-sandbox.testnet",
+  "signer": "maker.tidepool-sandbox.testnet",
+  "status": "FINAL"
+ },
+ "quote": {
+  "signatureVerified": true,
+  "verification": "offline, existing validateTidepoolQuote",
+  "signer": "ed25519:U1Mu4u1nHnHmgABpCkfDGXt2FZj8k29UGqhkMAu4iWY",
+  "recipient": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11",
+  "recipientType": "DESTINATION_CHAIN",
+  "virtualChainRecipient": null
+ },
+ "strategy": {
+  "roundId": "1",
+  "roundKey": "1313161555:0xba96a117f4de33c38df72002651f11024ed14a14:1",
+  "roundSlug": "1313161555-0xba96a117f4de33c38df72002651f11024ed14a14-1",
+  "preparedStableAmount": "199480000"
+ },
+ "swap": {
+  "hash": "0x4dc76edba6d01cb0eacb6bcd8538ce9d5071b4e24d2872a8c4ed13da61a2de40",
+  "blockNumber": "277273974",
+  "stableIn": "149610000",
+  "stableAfter": "49870000",
+  "assetOut": "71692173391461052",
+  "slippageBps": 100
+ },
+ "observedAt": null
+}

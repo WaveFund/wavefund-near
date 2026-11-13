@@ -1,4 +1,5 @@
 import { apiUrl } from "@/lib/state";
+import { STATIC_DATA, staticFile, liveReputation } from "@/lib/record/static-data";
 import { safeText } from "@/lib/funding/model.mjs";
 import { validateReputationBoard, validateRoundEvidence, type ReputationBoard, type TestnetRound } from "@/lib/record/model.mjs";
 import { validateFreshCheck, validateTidepoolDemo, type FreshCheck, type TidepoolDemo } from "@/lib/tidepool/model.mjs";
@@ -16,6 +17,19 @@ export class RecordUnavailable extends Error {
 }
 
 async function getJson(path: string): Promise<unknown> {
+  if (STATIC_DATA) {
+    if (path.startsWith("/api/agents/reputation")) {
+      try { return await liveReputation(path.endsWith("/tidepool") ? "tidepool" : "original"); }
+      catch { throw new RecordUnavailable("Aurora testnet could not be read right now.", "offline"); }
+    }
+    const file = staticFile(path);
+    if (!file) throw new RecordUnavailable("Not available in the hosted read-only version.", "not-configured");
+    let response: Response;
+    try { response = await fetch(file, { credentials: "omit", signal: AbortSignal.timeout(25_000) }); }
+    catch { throw new RecordUnavailable("The saved evidence did not load.", "offline"); }
+    if (response.status !== 200) throw new RecordUnavailable("The saved evidence is missing from this build.", "not-configured");
+    try { return await response.json(); } catch { throw new RecordUnavailable("The saved evidence is malformed.", "invalid"); }
+  }
   let response: Response;
   try { response = await fetch(apiUrl(path), { cache: "no-store", credentials: "omit", signal: AbortSignal.timeout(25_000) }); }
   catch { throw new RecordUnavailable("The local API did not respond.", "offline"); }
