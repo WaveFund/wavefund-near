@@ -11,7 +11,7 @@
   ],
   "scripts": {
     "demo:local": "node scripts/local-demo.mjs",
-    "dev:api": "node runtime/server.mjs",
+    "dev:api": "WAVEFUND_TEE_POLICY=${WAVEFUND_TEE_POLICY:-docs/tee-policy.json} node runtime/server.mjs",
     "test:runtime": "node --test runtime/test/*.test.mjs runtime/funding/*.test.mjs scripts/lib/*.test.mjs",
     "frontend:build": "npm run build --workspace @wavefund/frontend",
     "frontend:typecheck": "npm run typecheck --workspace @wavefund/frontend",
@@ -22,7 +22,7 @@
     "research:collect": "node scripts/collect-research.mjs",
     "aurora:check": "node scripts/aurora-check.mjs",
     "journal:audit": "node scripts/journal-audit.mjs",
-    "monitor:aurora": "WAVEFUND_NETWORK=aurora-testnet node runtime/server.mjs"
+    "monitor:aurora": "WAVEFUND_NETWORK=aurora-testnet WAVEFUND_TEE_POLICY=${WAVEFUND_TEE_POLICY:-docs/tee-policy.json} node runtime/server.mjs"
   },
   "dependencies": {
     "@phala/dcap-qvl": "0.7.0",

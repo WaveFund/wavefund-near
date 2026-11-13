@@ -108,7 +108,7 @@ if ! "${RUN[@]}" "$IMAGE" sh -c 'mkdir -p .run/home && forge build --skip test >
 fi
 
 echo "› starting local chain, local deployment, API and dashboard (funding preview: $FUNDING)"
-docker run -d --name "$NAME" --user "$(id -u):$(id -g)" -e HOME=/work/.run/home -e WAVEFUND_CONTAINER=1 -e "WAVEFUND_FUNDING=$FUNDING" \
+docker run -d --name "$NAME" --user "$(id -u):$(id -g)" -e HOME=/work/.run/home -e WAVEFUND_CONTAINER=1 -e "WAVEFUND_FUNDING=$FUNDING" -e WAVEFUND_TEE_POLICY=docs/tee-policy.json \
   -p 127.0.0.1:3000:3000 -p 127.0.0.1:3001:3001 -v "$WORK:/work" -w /work "$IMAGE" node scripts/local-demo.mjs >/dev/null
 for _ in $(seq 1 240); do
   if healthy; then

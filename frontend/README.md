@@ -7,11 +7,15 @@ Next.js dashboard for Wavefund, organised around the people who use it: a **mana
 | `/` | **Welcome**: one hero ("Let strategies compete."), a stat card from the saved Tidepool run, and a single "How it works" drawer. No polling. |
 | `/rounds` | **Rounds**: saved Aurora testnet rounds, newest first; the local simulation appears only when a local backend is running. |
 | `/rounds/[id]` | **Round workspace** for one round (network + engine + round id): three headline metrics, a keyboard stage selector (Result, Funded, Proposals, Forecasting, Selected, Executed, Evaluated, Redeemed) synced to `?stage=`, ONE stage body at a time, Replay journey for settled rounds, Observer / Recorded-participant view, receipts and evidence in drawers. |
+| `/rounds/live` | **Live round monitor** for the current Testnet Safe v2 round, with the wallet panel at `/rounds/live#wallet` (header **Connect wallet**): connect on Aurora testnet, deposit, claim and trade LONG/SHORT during the forecasting window. Testnet only; the app holds no keys. |
 | `/rounds/local` | **Local simulation** workspace. Shows "unavailable" (no Start button) unless the backend is the local simulation; Start appears only when it is idle. |
 | `/portfolio` | **Demo portfolio** (never "yours"): Safe selector and Overview / Funding / History / Permissions tabs (`?safe=`, `?tab=`). Permissions are individual checks; no synthesized "ready" flag. Connect Safe is marked not available. |
 | `/portfolio/fund` | **Funding preview**: NEAR Intents 1Click mainnet dry quotes (sending disabled), the completed Tidepool testnet transfer, labelled example states (`?fixtures=1`). |
+| Proposals stage → **Proof ›** | On a TEE-verified proposal (round 9), opens the proof viewer: each check, raw JSON, limits and the offline recheck command. Shown only when the API loaded evidence with `WAVEFUND_TEE_POLICY`. |
 | `/agents` | **Agents**: outcome-score ranking per reputation contract (`?stack=tidepool|original`), never summed; a row drawer separates the cumulative score from each round's own delta. |
 | `/advanced` | **Advanced** (header icon): unsigned Safe Transaction Builder JSON for the local Safe. |
+
+Stack names in the UI: **Testnet Safe v1** (the original stack) and **Testnet Safe v2** (the Tidepool-funded stack); `?stack=original|tidepool` selects them and they are never summed.
 
 Earlier routes redirect (query strings kept): `/arena` → `/rounds`, `/demo` → `/rounds/local`, `/safe` → `/portfolio`, `/safe/fund` and `/fund` → `/portfolio/fund`, `/record` → `/agents`, `/manager` → `/advanced`.
 
