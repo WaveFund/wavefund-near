@@ -5,8 +5,7 @@ import { useState, type ReactNode } from "react";
 import type { DemoState } from "@/lib/state";
 import {
   describeSavedTx, percentFromBps, positionGroups, roundWindows, selectionSignals, settlementShares,
-  type LocalJourney, type PositionGroups, type SavedJourney, type SelectionSignals, type StageId,
-} from "@/lib/arena/model.mjs";
+  type LocalJourney, type PositionGroups, type SavedJourney, type SelectionSignals, type StageId, swapLeg } from "@/lib/arena/model.mjs";
 import { AURORA_TESTNET, formatUnits } from "@/lib/funding/model.mjs";
 import { exactFactorX18, formatPoints, formatSignedUnits, type TestnetRound } from "@/lib/record/model.mjs";
 import type { FreshCheck, TidepoolDemo } from "@/lib/tidepool/model.mjs";
@@ -198,11 +197,11 @@ export function ExecutedStage({ ctx }: { ctx: StageCtx }) {
   }
   if (saved) {
     const { round, demo } = saved;
-    const spent = round.swap?.stableDelta?.startsWith("-") ? round.swap.stableDelta.slice(1) : null;
-    const received = round.swap?.assetDelta && !round.swap.assetDelta.startsWith("-") ? round.swap.assetDelta : null;
-    if (!spent || !received) return <p className="muted">Execution is recorded; its swap amounts are unavailable in the saved evidence.</p>;
+    const leg = swapLeg(round.swap);
+    if (!leg) return <p className="muted">Execution is recorded; its swap amounts are unavailable in the saved evidence.</p>;
+    const show = (side: { raw: string; decimals: 6 | 18 }) => (side.decimals === 6 ? usdc(side.raw) : eth(side.raw, 6));
     return <div className="rw-stack">
-      <SwapVisual spent={{ label: "The Safe sold", amount: usdc(spent), symbol: "test USDC" }} received={{ label: "and received", amount: eth(received, 6), symbol: "test ETH" }} />
+      <SwapVisual spent={{ label: "The Safe sold", amount: show(leg.give), symbol: `test ${leg.give.symbol}` }} received={{ label: "and received", amount: show(leg.get), symbol: `test ${leg.get.symbol}` }} />
       <div className="rw-row">
         {round.swap?.independentlyChecked ? <Cap tone="ok" icon="check">Independently checked</Cap> : <Cap>Executed</Cap>}
         {demo?.swap.stableAfter ? <span className="muted">Safe kept <b className="num">{usdc(demo.swap.stableAfter)}</b> test USDC</span> : null}

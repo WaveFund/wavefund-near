@@ -266,3 +266,14 @@ test('the local workspace is available, and startable, only on an idle local bac
   assert.deepEqual([localWorkspaceAccess(null).available, localWorkspaceAccess(null).canStart], [false, false]);
   assert.equal(localWorkspaceAccess({ mode: 'mystery', chainId: 1, stage: 'idle' }).canStart, false);
 });
+
+test('swap legs read either direction and refuse malformed deltas', async () => {
+  const { swapLeg, swapText } = await import('../src/lib/arena/model.mjs');
+  assert.equal(swapText({ stableDelta: '-149610000', assetDelta: '71692173391461052' }), '149.61 USDC → 0.071692 ETH');
+  assert.equal(swapText({ stableDelta: '138607014', assetDelta: '-66810740833647855' }), '0.06681 ETH → 138.6 USDC');
+  assert.equal(swapLeg({ stableDelta: '-1', assetDelta: '-1' }), null, 'both negative is not a swap');
+  assert.equal(swapLeg({ stableDelta: '1', assetDelta: '1' }), null, 'both positive is not a swap');
+  assert.equal(swapLeg({ stableDelta: '0', assetDelta: '-5' }), null);
+  assert.equal(swapLeg({ stableDelta: '1.5', assetDelta: '-5' }), null);
+  assert.equal(swapLeg(null), null);
+});

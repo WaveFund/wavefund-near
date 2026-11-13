@@ -73,7 +73,9 @@ test('round ids from different engines stay distinct; history is labelled saved;
   // A round without a matching network + engine identity is dropped, never shown as "Round 1" alone.
   const raw = JSON.parse(JSON.stringify(await loadRoundEvidence()));
   raw.rounds[2].slug = '1313161555-0x825b31dbc1af25b230d31caf5210c2b5a8fe22af-1';
-  assert.equal(validateRoundEvidence(raw).rounds.some((round) => round.stack.id === 'tidepool'), false);
+  const kept = validateRoundEvidence(raw).rounds;
+  assert.equal(kept.some((round) => round.stack.id === 'tidepool' && round.roundId === '1'), false, 'the corrupted round is dropped');
+  assert.equal(kept.length, raw.rounds.length - 1, 'only the corrupted round is dropped');
 });
 
 test('separate reputation histories keep their stack and are never summed', async () => {
