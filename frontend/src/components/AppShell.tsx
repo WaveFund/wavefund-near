@@ -78,6 +78,12 @@ export function AppShell({ source, children, home = false }: { source?: ShellSou
     <main className="main">{children}</main>
     <footer className="footer">
       <div className="footer-inner">
+        <nav className="footer-links" aria-label="Footer">
+          <Link href="/rounds">Rounds</Link><Link href="/agents">Agents</Link><Link href="/portfolio">Safe</Link><Link href="/start/forecaster">Forecast</Link>
+          <a href="https://explorer.testnet.aurora.dev/address/0xba96A117f4dE33C38df72002651F11024ED14a14" target="_blank" rel="noreferrer">Contract ↗</a>
+          <a href="https://github.com/WaveFund/wavefund-near" target="_blank" rel="noreferrer">Source ↗</a>
+          <a href="https://github.com/WaveFund/wavefund-near#judge-path-live-testnet-evidence" target="_blank" rel="noreferrer">Judge check ↗</a>
+        </nav>
         <span className="footer-meta"><span>Test assets only</span><span>The app holds no keys · your wallet signs</span></span>
         <span className="footer-meta"><ThemeToggle /><span><i className="dot testnet" /> Aurora testnet · 1313161555</span></span>
       </div>
