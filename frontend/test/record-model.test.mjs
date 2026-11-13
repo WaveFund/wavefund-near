@@ -104,3 +104,20 @@ test('published round evidence validates with explorer links and honest round 8 
   assert.equal(dropped.droppedTransactions, 1); assert.equal(dropped.transactions.length, raw.rounds[0].transactions.length - 1);
   assert.equal(validateRoundEvidence({ ...structuredClone(raw), network: { chainId: 1313161554 } }).ok, false);
 });
+
+test('per-agent models show only when the evidence records them, and only as plain model ids', async () => {
+  const raw = await loadRoundEvidence();
+  const old = validateRoundEvidence(raw);
+  assert.ok(old.rounds.every((round) => round.models === 0 && round.proposals.every((p) => !('model' in p)) && round.forecasters.every((f) => !('model' in f))), 'single-model rounds unchanged');
+  const multi = structuredClone(raw); const round = multi.rounds[multi.rounds.length - 1];
+  round.proposals.forEach((p, i) => { if (p.id !== '0') p.model = `Qwen/Qwen3.${i}-27B`; });
+  round.forecasters.forEach((f, i) => { f.model = i === 0 ? 'anthropic/claude-haiku-5-5' : i === 1 ? '<img src=x onerror=alert(1)>' : 'openai/gpt-4.1-mini'; });
+  const shown = validateRoundEvidence(multi).rounds.at(-1);
+  assert.equal(shown.proposals[0].model, undefined);
+  assert.equal(shown.proposals[1].model, 'Qwen/Qwen3.1-27B');
+  assert.equal(shown.forecasters[0].model, 'anthropic/claude-haiku-5-5');
+  assert.equal(shown.forecasters[1].model, undefined, 'markup is never a model id');
+  // Round 8: four challenger models + claude + gpt (the markup entry is dropped, gpt repeats) = 6 distinct.
+  assert.equal(round.forecasters.length, 4);
+  assert.equal(shown.models, 6);
+});

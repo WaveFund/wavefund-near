@@ -37,6 +37,7 @@ export default function RoundPage() {
         eyebrow="Aurora testnet · saved testnet history" title={<>Round {round.roundId} · {round.stack.label}</>}
         caps={<><Cap tone="ok" icon="check">Settled</Cap><Cap icon="receipt">Saved evidence{round.date ? ` · ${round.date}` : ""}</Cap>
           {round.genuineModelCalls ? <Cap tone="ai" icon="spark">{round.genuineModelCalls} genuine AI calls</Cap> : null}
+          {round.models > 1 ? <Cap title="Distinct models recorded per agent in this round">{round.models} models</Cap> : null}
           {round.scriptedForecasters ? <Cap>{round.scriptedForecasters} scripted forecasters</Cap> : null}
           {round.limitations.some((item) => item.startsWith("All forecast bets are explicitly SCRIPTED fixtures aimed at the pre-registered target")) ? <Cap icon="lock" title="Target fixed in SCHEDULE.md before the round ran">Pre-registered target</Cap> : null}
           {(() => { const artifact = round.limitations.find((item) => item.startsWith("Test-pool artifact")); return artifact ? <><Cap tone="warn" icon="alert">Test-pool artifact</Cap><Tip label="Why this return is not a market result">{artifact}</Tip></> : null; })()}</>}

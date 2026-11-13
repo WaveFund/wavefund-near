@@ -62,6 +62,11 @@ export function localCtx(state: DemoState | null, journey: LocalJourney): StageC
 
 // ---------------------------------------------------------------- small shared pieces
 
+/** The model an agent ran on, when the saved evidence records one per agent (multi-model rounds only). */
+function ModelLabel({ model }: { model?: string | null }) {
+  return model ? <div className="muted num" style={{ fontSize: 11, marginTop: 4, overflowWrap: "anywhere" }} title="Model recorded for this agent">{model}</div> : null;
+}
+
 function Fact({ label, tip, value, unit }: { label: string; tip?: ReactNode; value: ReactNode; unit?: string }) {
   return <div className="rw-fact"><span>{label}{tip ? <> <Tip label={`About ${label.toLowerCase()}`}>{tip}</Tip></> : null}</span><b className="num">{value}</b>{unit ? <small>{unit}</small> : null}</div>;
 }
@@ -135,7 +140,7 @@ export function ProposalsStage({ ctx }: { ctx: StageCtx }) {
   const open = ctx.strategies.find((item) => item.id === openId) ?? null;
   const hold = open?.id === "0";
   return <>
-    <div className="strategy-grid rw-cards">{ctx.strategies.map((item) => <div key={item.id}><StrategyCard strategy={item} compact onSelect={() => setOpenId(item.id)} />{item.id !== "0" ? <TeeStatus proof={ctx.saved?.round.tee?.find(t => t.proposalId === item.id)} /> : null}</div>)}</div>
+    <div className="strategy-grid rw-cards">{ctx.strategies.map((item) => <div key={item.id}><StrategyCard strategy={item} compact onSelect={() => setOpenId(item.id)} />{item.id !== "0" ? <TeeStatus proof={ctx.saved?.round.tee?.find(t => t.proposalId === item.id)} /> : null}<ModelLabel model={ctx.saved?.round.proposals.find((p) => p.id === item.id)?.model} /></div>)}</div>
     <Drawer open={open !== null} onClose={() => setOpenId(null)} title={open ? (hold ? "Hold · keep allocation" : open.name) : ""}>
       {open ? <>
         <div className="rw-row"><AllocationRing bps={open.allocationBps} size="lg" /><div><b className="num">{percentFromBps(open.allocationBps)} test ETH</b><div className="muted">{hold ? "what the Safe holds now" : `${percentFromBps(10_000 - open.allocationBps)} test USDC`}</div></div></div>
@@ -160,6 +165,9 @@ export function ForecastingStage({ ctx }: { ctx: StageCtx }) {
       {positions.positions ? <PositionBoard strategies={ctx.strategies} positions={positions} /> : null}
       {positions.abstained.length ? <div className="rw-abstain"><span className="eyebrow">Abstained</span>
         {positions.abstained.map((item) => <span key={item.name} className="rw-pill" title={item.reason ?? "No reason recorded"}><AgentAvatar name={item.name} kind="forecaster" size="sm" />{item.name}</span>)}</div> : null}
+      {round.forecasters.some((item) => item.model) ? <ul className="tx-list">{round.forecasters.map((item) => <li key={item.name}>
+        <span className="who"><AgentAvatar name={item.name} kind="forecaster" size="sm" /><span><b>{item.name}</b><ModelLabel model={item.model} /></span></span>
+        <span className="muted">{item.action === "buy" && item.side ? `${item.side.toUpperCase()} on #${item.proposalId}` : item.action === "abstain" ? "Abstained" : "Unknown"}</span></li>)}</ul> : null}
     </div>;
   }
   const participants = local?.state?.forecast.participants ?? [];

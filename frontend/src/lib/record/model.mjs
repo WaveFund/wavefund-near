@@ -7,6 +7,9 @@ const SIGNED = /^(0|-?[1-9][0-9]{0,77})$/;
 const CODE = /^[A-Z][A-Z0-9_]{0,63}$/;
 const NAME = /^[A-Za-z][A-Za-z0-9]{0,31}$/;
 const LABEL = /^round[0-9]{1,4}:[A-Za-z0-9:]{1,80}$/;
+// A model id as the runtime allowlist accepts it (e.g. "anthropic/claude-haiku-5-5"); anything else is not shown.
+const MODEL_ID = /^[A-Za-z0-9][A-Za-z0-9_./:-]{0,119}$/;
+export const agentModel = (value) => typeof value === 'string' && MODEL_ID.test(value) ? value : null;
 const isObject = (value) => value !== null && typeof value === 'object' && !Array.isArray(value);
 const isTime = (value) => Number.isSafeInteger(value) && value > 0;
 const MINUS = '−';
@@ -108,7 +111,8 @@ export function reputationCodeText(code) {
 function proposal(item) {
   if (!isObject(item) || typeof item.id !== 'string' || !/^\d{1,3}$/.test(item.id) || typeof item.name !== 'string' || !NAME.test(item.name)
     || !Number.isSafeInteger(item.allocationBps) || item.allocationBps < 0 || item.allocationBps > 10_000) return null;
-  return { id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: safeText(item.rationale, 320) ?? '' };
+  const model = agentModel(item.model);
+  return { id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: safeText(item.rationale, 320) ?? '', ...(model ? { model } : {}) };
 }
 
 const SLUG = /^1313161555-0x[0-9a-f]{40}-\d{1,6}$/;
@@ -128,7 +132,10 @@ function round(item) {
     proposalId: typeof f.proposalId === 'string' && /^\d{1,3}$/.test(f.proposalId) ? f.proposalId : null,
     reason: safeText(f.reason, 200), scripted: f.scripted === true,
     credits: isIntegerString(f.credits) ? f.credits : null,
+    ...(agentModel(f.model) ? { model: f.model } : {}),
   }));
+  // Distinct per-agent models; 0 for single-model rounds whose evidence names no per-agent model.
+  const models = new Set([...proposals, ...forecasters].map((agent) => agent.model).filter(Boolean)).size;
   const payouts = (Array.isArray(item.payouts) ? item.payouts : []).filter(isObject).map((p) => ({
     name: typeof p.name === 'string' && NAME.test(p.name) ? p.name : 'Forecaster',
     deposit: isIntegerString(p.deposit) ? p.deposit : null, payout: isIntegerString(p.payout) ? p.payout : null, profitLoss: isSignedInteger(p.profitLoss) ? p.profitLoss : null,
@@ -161,7 +168,7 @@ function round(item) {
     title: safeText(item.title, 120) ?? `Round ${item.roundId}`, date: safeText(item.date, 20), kind: safeText(item.kind, 80),
     genuineModelCalls: Number.isSafeInteger(item.genuineModelCalls) ? item.genuineModelCalls : null,
     scriptedForecasters: Number.isSafeInteger(item.scriptedForecasters) ? item.scriptedForecasters : null,
-    model: safeText(item.model, 80), tee: (Array.isArray(item.tee) ? item.tee : []).filter(t => Number(item.roundId) > 8 && proposals.some(p => p.id !== '0' && p.id === t?.proposalId && p.name === t.name) && teeDisplay(t).verified),
+    model: safeText(item.model, 80), models, tee: (Array.isArray(item.tee) ? item.tee : []).filter(t => Number(item.roundId) > 8 && proposals.some(p => p.id !== '0' && p.id === t?.proposalId && p.name === t.name) && teeDisplay(t).verified),
     attestationVerified: Number(item.roundId) > 8 && item.attestationVerified === true && proposals.filter(p => p.id !== '0').length === 4 && Array.isArray(item.tee) && item.tee.length === 4 && new Set(item.tee.map(t => t?.proposalId)).size === 4 && item.tee.every(t => proposals.some(p => p.id !== '0' && p.id === t?.proposalId && p.name === t.name) && teeDisplay(t).verified),
     proposals, winner: { ...winner, isHold: winner.id === '0' }, forecasters, swap, market,
     realisedReturnX18: isIntegerString(item.realisedReturnX18) ? item.realisedReturnX18 : null,
