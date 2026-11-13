@@ -31,7 +31,8 @@ export function createAuroraChain({ manifest, artifacts, privateKey, actorKeys, 
   for (const name of actorNames) accounts[name] = privateKeyToAccount(actorKeys[name]);
   requireLive(sameAddress(accounts.owner.address, OPERATOR), 'Wrong dedicated testnet operator');
   requireLive(new Set(Object.values(accounts).map(x => x.address.toLowerCase())).size === actorNames.length + 1, 'Agent wallets must be distinct');
-  const client = createPublicClient({ chain: auroraTestnet, transport: http(RPC, { retryCount: 1, timeout: 20000 }) });
+  // Reads are idempotent, so they retry; broadcasting (below) never retries automatically.
+  const client = createPublicClient({ chain: auroraTestnet, transport: http(RPC, { retryCount: 4, retryDelay: 1500, timeout: 20000 }) });
   const broadcast = createPublicClient({ chain: auroraTestnet, transport: http(RPC, { retryCount: 0, timeout: 20000 }) });
   const abi = (name) => EXTRA_ABIS[name] ?? artifacts[artifactNames[name]].abi;
   const read = (name, functionName, args = [], blockNumber) => client.readContract({ address: contracts[name], abi: abi(name), functionName, args, blockNumber });
@@ -78,10 +79,16 @@ export function createAuroraChain({ manifest, artifacts, privateKey, actorKeys, 
     requireLive(result.moduleEnabled && result.owners.length === 1 && sameAddress(result.owners[0], OPERATOR) && result.threshold === 1, 'Unexpected Safe ownership or module state');
     return result;
   }
+  // A transient RPC failure while waiting must not abandon a live round: keep polling until the wait budget runs out.
+  async function chainTime() {
+    for (let attempt = 0; ; attempt++) {
+      try { return (await client.getBlock()).timestamp; } catch (error) { if (attempt >= 14) throw error; await sleep(4000); }
+    }
+  }
   async function waitUntil(timestamp) {
-    const start = Date.now(); const current = (await client.getBlock()).timestamp;
+    const start = Date.now(); const current = await chainTime();
     const maxWait = Number(timestamp > current ? timestamp - current : 0n) * 1000 + 120000;
-    while ((await client.getBlock()).timestamp < timestamp) {
+    while ((await chainTime()) < timestamp) {
       requireLive(Date.now() - start < maxWait, 'Chain-time wait expired'); await sleep(4000);
     }
   }
