@@ -176,3 +176,7 @@ dialog.drawer::backdrop { background: rgb(0 0 0 / .45); }
   --short: #b2324f; --short-bg: color-mix(in srgb, #b2324f 7%, transparent); --short-bd: color-mix(in srgb, #b2324f 28%, transparent);
   --asset-risk: #1f78b4; --a-balanced: #2f7d70; --a-quant: #9a5a14; --a-conservative: #1f78b4;
 }
+
+/* Header wallet entry: always visible, leads to the live round's wallet panel. */
+.wallet-cta { height: 32px; }
+@media (max-width: 720px) { .wallet-cta { padding: 0 10px; font-size: 12.5px; } }

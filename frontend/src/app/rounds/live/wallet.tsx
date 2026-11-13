@@ -211,7 +211,7 @@ export function WalletForecast({ view }: { view: LiveRound }) {
       </table></div> : null}
     </div>;
   }
-  return <section className="card rw-panel wf-card" aria-labelledby="wf-title">
+  return <section id="wallet" className="card rw-panel wf-card" aria-labelledby="wf-title" style={{ scrollMarginTop: 80 }}>
     {head}
     <div className="rw-body">{body}{tx && (!account || !onAurora) ? <TxLine tx={tx} /> : null}{foot}</div>
   </section>;

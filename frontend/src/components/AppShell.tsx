@@ -66,6 +66,7 @@ export function AppShell({ source, children, home = false }: { source?: ShellSou
           })}
         </nav>
         <div className="header-right">
+          <Link className="btn btn-sm btn-primary wallet-cta" href="/rounds/live#wallet"><Icon name="wallet" />Connect wallet</Link>
           <ContextSelector source={source} />
           <div className="header-tools">
             <ThemeToggle />
