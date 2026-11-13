@@ -9,7 +9,7 @@ import { recoverInterruptedRound } from '../runtime/agents/interrupted-round.mjs
 import { verifySubmittedProposals, verifyWinningProposal } from '../runtime/agents/submitted-proposals.mjs';
 import { makeStrategyPlan, validateStrategyPlan, STRATEGIES, FORECASTERS } from '../runtime/agents/strategy-team.mjs';
 import { collectAgentResearch } from '../runtime/agents/research-context.mjs';
-import { runTerms, requireScriptedWinner, expectedExecution, requireSwapRule, roundScope } from '../runtime/agents/round-rules.mjs';
+import { runTerms, requireScriptedWinner, expectedExecution, requireSwapRule, roundScope, externalDepositors, collateralReconciles } from '../runtime/agents/round-rules.mjs';
 import { manipulationProbe, finishProbe } from '../runtime/agents/manipulation-probe.mjs';
 
 const lines = readline.createInterface({ input: process.stdin, crlfDelay: Infinity });
@@ -89,7 +89,7 @@ try {
       emit({ stage: 'schedule', roundId: id, tradingEnd: end, evaluationEnd: evaluation, executionDeadline: deadline, evaluationSeconds: terms.evaluationSeconds, scriptedTarget: terms.scriptedTarget });
       stage = 'authorize';
       await ownerCall(label('authorize'), 'module', 'authorizeRound', [id, end, evaluation, deadline, 950000000000000000n, 1050000000000000000n, 90n]);
-      await tx(label('open'), 'owner', 'engine', 'openRound', [end, horizon, 950000000000000000n, 1050000000000000000n, 90n]);
+      const opened = await tx(label('open'), 'owner', 'engine', 'openRound', [end, horizon, 950000000000000000n, 1050000000000000000n, 90n]);
       for (const proposal of plan.proposals.filter(p => p.id > 0)) {
         stage = `propose:${proposal.name}`;
         await tx(label(`propose:${proposal.name}`), proposal.name, 'engine', 'propose', [id, { tEthBps: proposal.allocationBps }, `NEAR AI model summary (test assets): ${proposal.rationale}`]);
@@ -165,13 +165,32 @@ try {
         requireLive(after - before === preview, 'Actual redemption differs from preview');
         payouts.push({ name, address, deposit: '10000000', payout: preview, profitLoss: after - initial[name] });
       }
+      // Outside wallets that forecast in this round are settled with redeemFor: the contract pays the user directly.
+      const depositedEvent = parseAbi(['event Deposited(uint256 indexed roundId, address indexed user, uint256 amount)'])[0];
+      const depositLogs = await client.getLogs({ address: contracts.engine, event: depositedEvent, args: { roundId: id }, fromBlock: opened.blockNumber, toBlock: 'latest' });
+      const external = externalDepositors({ deposits: depositLogs.map(log => log.args), own: forecasterNames.map(name => accounts[name].address) });
+      const externalPayouts = [];
+      for (const [index, { user, amount }] of external.entries()) {
+        stage = `redeemFor:${index + 1}`;
+        const preview = await read('engine', 'previewRedeem', [id, user]);
+        if (preview > 0n) await tx(label(`redeemFor:wallet${index + 1}`), 'owner', 'engine', 'redeemFor', [id, user]);
+        // The payout is whatever the chain's Redeemed event says, whether the user redeemed themselves or we called redeemFor.
+        const redeemedEvent = parseAbi(['event Redeemed(uint256 indexed roundId, address indexed user, uint256 payout)'])[0];
+        const redeemedLogs = await client.getLogs({ address: contracts.engine, event: redeemedEvent, args: { roundId: id, user }, fromBlock: opened.blockNumber, toBlock: 'latest' });
+        requireLive(redeemedLogs.length === 1, 'Outside depositor must have exactly one redemption');
+        const paid = redeemedLogs[0].args.payout;
+        requireLive(preview === 0n || paid === preview, 'Outside redemption differs from preview');
+        externalPayouts.push({ address: user, deposit: amount, payout: paid, redeemedBy: preview > 0n ? 'operator-redeemFor' : 'self', transactionHash: redeemedLogs[0].transactionHash });
+        emit({ stage: 'external-redemption', address: user, deposit: amount, payout: paid, transactionHash: redeemedLogs[0].transactionHash });
+      }
       const round = namedOutputs(abi('engine'), 'rounds', await read('engine', 'rounds', [id]));
       const portfolioResult = namedOutputs(abi('tracker'), 'portfolios', await read('tracker', 'portfolios', [id]));
       const engineBalance = await read('stable', 'balanceOf', [contracts.engine]);
       const reserve = await read('engine', 'protocolLiquiditySeed');
       requireLive(round.status === 3 && round.seedReleased && round.depositsOutstanding === 0n, 'Round liabilities not cleared');
-      requireLive(engineBalance === reserve && beforeEngine + BigInt(forecasterNames.length) * 10000000n === engineBalance + payouts.reduce((sum, p) => sum + p.payout, 0n), 'Forecast collateral does not reconcile');
-      emit({ stage: 'complete', chainId: 1313161555, roundId: id, winner, allocation, round, portfolio: portfolioResult, payouts, decisions, reserve,
+      requireLive(collateralReconciles({ beforeEngine, ownDeposits: BigInt(forecasterNames.length) * 10000000n, externalDeposits: external.reduce((sum, item) => sum + item.amount, 0n),
+        engineBalance, reserve, payouts: [...payouts.map(p => p.payout), ...externalPayouts.map(p => p.payout)] }), 'Forecast collateral does not reconcile');
+      emit({ stage: 'complete', chainId: 1313161555, roundId: id, winner, allocation, round, portfolio: portfolioResult, payouts, externalPayouts, decisions, reserve,
         provider: plan.provider, recordHashes: plan.records.map(r => ({ name: r.name, inputHash: r.inputHash, outputHash: r.outputHash })),
         evaluationSeconds: terms.evaluationSeconds, scriptedTarget: terms.scriptedTarget,
         scope: roundScope({ hybrid: config.hybrid === true, swarm: config.swarm === true, scriptedTarget: terms.scriptedTarget, evaluationSeconds: terms.evaluationSeconds, probe: terms.manipulationProbe }) });

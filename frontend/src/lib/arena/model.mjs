@@ -177,11 +177,11 @@ export function selectionSignals(proposals) {
 
 const SAVED_ACTION_STAGE = Object.freeze({ gas: 'setup', mint: 'setup', transfer: 'setup', register: 'setup', bondApproval: 'setup', depositApproval: 'setup',
   authorize: 'proposals', open: 'proposals', propose: 'proposals', deposit: 'forecasting', claim: 'forecasting', trade: 'forecasting',
-  collapse: 'selected', execute: 'executed', settle: 'evaluated', redeem: 'redeemed' });
+  collapse: 'selected', execute: 'executed', settle: 'evaluated', redeem: 'redeemed', redeemFor: 'redeemed' });
 const ORACLE_STAGE = Object.freeze({ open: 'proposals', execute: 'executed', settle: 'evaluated' });
 const SAVED_ACTION_TEXT = Object.freeze({ gas: 'Gas top-up', mint: 'Mint test tokens', transfer: 'Send test tokens', register: 'Register agent', bondApproval: 'Approve proposal bond',
   depositApproval: 'Approve forecast deposit', authorize: 'Safe authorizes the round', open: 'Open the round', propose: 'Propose a strategy', deposit: 'Deposit collateral',
-  claim: 'Claim credits', trade: 'Take a position', collapse: 'Close markets and select', execute: 'Execute through the Safe', settle: 'Settle the measured return', redeem: 'Redeem' });
+  claim: 'Claim credits', trade: 'Take a position', collapse: 'Close markets and select', execute: 'Execute through the Safe', settle: 'Settle the measured return', redeem: 'Redeem', redeemFor: 'Redeem for an outside forecaster (paid to their wallet)' });
 
 /** Journey step for a saved transaction label such as "round1:propose:Momentum". */
 export function savedTxStage(label) {

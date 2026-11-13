@@ -108,3 +108,24 @@ export function roundScope({ hybrid, swarm, scriptedTarget, evaluationSeconds, p
   if (swarm) return `Eight separate agent wallets; four genuine proposer and four genuine forecaster calls to the same NEAR AI model. Test assets, no verified attestation, no forced winner or trade. ${window}${probeText}`;
   return `Four separate agent wallets and four separately prompted calls to the same NEAR AI model; test assets, no verified attestation, no forced winner or trade. ${window}${probeText}`;
 }
+
+/** Outside (non-operator) depositors in a round, from Deposited events: address → summed deposit. Operator forecasters are excluded. */
+export function externalDepositors({ deposits, own }) {
+  const mine = new Set((own ?? []).map((address) => String(address).toLowerCase()));
+  const totals = new Map();
+  for (const item of deposits ?? []) {
+    const user = String(item.user).toLowerCase();
+    if (!/^0x[0-9a-f]{40}$/.test(user)) throw new Error('Invalid depositor address');
+    if (mine.has(user)) continue;
+    const amount = BigInt(item.amount);
+    if (amount <= 0n) throw new Error('Invalid deposit amount');
+    totals.set(user, (totals.get(user) ?? 0n) + amount);
+  }
+  return [...totals.entries()].map(([user, amount]) => ({ user, amount }));
+}
+
+/** Forecast collateral conservation including outside depositors: what came in equals what is left plus what was paid out. */
+export function collateralReconciles({ beforeEngine, ownDeposits, externalDeposits, engineBalance, reserve, payouts }) {
+  const paid = (payouts ?? []).reduce((sum, value) => sum + BigInt(value), 0n);
+  return BigInt(engineBalance) === BigInt(reserve) && BigInt(beforeEngine) + BigInt(ownDeposits) + BigInt(externalDeposits) === BigInt(engineBalance) + paid;
+}
