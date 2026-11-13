@@ -7,7 +7,7 @@ import { RoundFacts, savedCtx } from "@/components/arena/stages";
 import { RoundWorkspace } from "@/components/arena/workspace";
 import { Icon, useNow } from "@/components/funding/primitives";
 import { EmptyState, Skeleton } from "@/components/ui";
-import { Cap } from "@/components/v2";
+import { Cap, Tip } from "@/components/v2";
 import { useFreshCheck, useSavedRounds, useTidepoolDemo } from "@/lib/arena/hooks";
 import { participantViews, roundSummary, savedJourney } from "@/lib/arena/model.mjs";
 import { findRound } from "@/lib/record/model.mjs";
@@ -37,7 +37,9 @@ export default function RoundPage() {
         eyebrow="Aurora testnet · saved testnet history" title={<>Round {round.roundId} · {round.stack.label}</>}
         caps={<><Cap tone="ok" icon="check">Settled</Cap><Cap icon="receipt">Saved evidence{round.date ? ` · ${round.date}` : ""}</Cap>
           {round.genuineModelCalls ? <Cap tone="ai" icon="spark">{round.genuineModelCalls} genuine AI calls</Cap> : null}
-          {round.scriptedForecasters ? <Cap>{round.scriptedForecasters} scripted forecasters</Cap> : null}</>}
+          {round.scriptedForecasters ? <Cap>{round.scriptedForecasters} scripted forecasters</Cap> : null}
+          {round.limitations.some((item) => item.startsWith("All forecast bets are explicitly SCRIPTED fixtures aimed at the pre-registered target")) ? <Cap icon="lock" title="Target fixed in SCHEDULE.md before the round ran">Pre-registered target</Cap> : null}
+          {(() => { const artifact = round.limitations.find((item) => item.startsWith("Test-pool artifact")); return artifact ? <><Cap tone="warn" icon="alert">Test-pool artifact</Cap><Tip label="Why this return is not a market result">{artifact}</Tip></> : null; })()}</>}
         metrics={[summary.allocation ?? "Allocation unavailable", summary.measured ? `${summary.measured} measured` : "Not measured", summary.tradesText]}
         summaryRows={[["Network", "Aurora testnet"], ["Stack", round.stack.label], ["Strategies", `${summary.strategies} + Hold`], ["Selected", summary.selectedName],
           ["Measured", <span key="m" className="num">{summary.measured ?? "—"}</span>], ["Recorded trades", <span key="t" className="num">{summary.trades}</span>], ["Saved", round.date ?? "—"]]}
