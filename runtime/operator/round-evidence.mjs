@@ -368,8 +368,11 @@ export async function loadRoundEvidence({ read = defaultRead, list = defaultList
     const files = {};
     for (const [role, file] of Object.entries(source.files)) files[role] = await read(`${source.dir}/${file}.json`);
     if (files.plan?.teeRequired === true) {
-      check(files.tee && teePolicy, 'TEE evidence requires the reviewed verification policy');
-      files.verifiedTee = await verifyTeeProposals(files.plan, files.tee.receipts, teePolicy);
+      // Without an explicit policy, use the reviewed policy committed with the evidence (docs/tee-policy.json).
+      // verifyTeeProposals validates it; a missing or invalid policy still refuses the round.
+      const policy = teePolicy ?? await read('docs/tee-policy.json').catch(() => undefined);
+      check(files.tee && policy, 'TEE evidence requires the reviewed verification policy');
+      files.verifiedTee = await verifyTeeProposals(files.plan, files.tee.receipts, policy);
     } else check(!files.tee && files.report?.completion?.provider?.attestationVerified !== true, 'Unexpected historical TEE claim');
     rounds.push(projectRound(source, files, stacks[source.stack], manifests[source.stack].manifest, manifests[source.stack].reputationManifest));
   }

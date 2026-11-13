@@ -291,7 +291,9 @@ const multiModel = (mutateReport = () => {}, mutatePlan = () => {}) => async (pa
 
 test('multi-model rounds carry each agent model; single-model rounds stay unchanged', async () => {
   const before = (await loadRoundEvidence()).rounds;
-  assert.ok(before.every((round) => !('models' in round) && round.proposals.every((p) => !('model' in p)) && round.forecasters.every((f) => !('model' in f))), 'old rounds gain no model fields');
+  const committedMulti = before.filter((round) => round.stack.id === 'tidepool' && round.roundId === '9');
+  assert.equal(committedMulti.length, 1); assert.equal(committedMulti[0].models, 12, 'round 9 (swarm2) records 12 distinct models');
+  assert.ok(before.filter((round) => !committedMulti.includes(round)).every((round) => !('models' in round) && round.proposals.every((p) => !('model' in p)) && round.forecasters.every((f) => !('model' in f))), 'old rounds gain no model fields');
   const r8 = (await loadRoundEvidence({ read: multiModel() })).rounds.find((round) => round.roundId === '8' && round.source?.includes('tidepool'));
   assert.equal(r8.models, 8);
   assert.deepEqual(r8.proposals.map((p) => p.model ?? null), [null, ...MODELS.slice(0, 4)]);
