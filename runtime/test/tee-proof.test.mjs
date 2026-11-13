@@ -42,7 +42,7 @@ test('TEE records recheck hardware/signature, literal prompt and normalized deci
 test('actual ProposalCreated event binds each allocation and response hash, not caller-provided proposalBound', async () => {
   const { f, plan, receipts } = await proofFixture(); const opts = { quoteVerifier: f.quoteVerifier };
   const result = await verifyTeeProposals(plan, receipts, f.policy, opts);
-  assert.equal(result.length, 4); assert.ok(result.every(p => p.proposalBound));
+  assert.equal(result.length, 4); assert.ok(result.every(p => p.proposalBound && p.trustBasis === 'observed-at-2026-11-13-not-independently-reproduced'));
   const wrong = structuredClone(receipts); wrong[0].to = `0x${'45'.repeat(20)}`;
   await assert.rejects(verifyTeeProposals(plan, wrong, f.policy, opts), /TEE_PROPOSAL_BINDING_FAILED/);
   await assert.rejects(verifyTeeProposals(plan, [...receipts, receipts[0]], f.policy, opts), /TEE_PROPOSAL_BINDING_FAILED/);

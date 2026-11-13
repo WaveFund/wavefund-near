@@ -6,8 +6,10 @@ const BASE = 'https://cloud-api.near.ai/v1';
 const NRAS = 'https://nras.attestation.nvidia.com/v3/attest/gpu';
 const check = (ok, why) => { if (!ok) throw new Error(why); };
 const REPORT_KEYS = ['nonceBound', 'tdxQuoteVerified', 'configurationBound', 'eventLogVerified', 'measurementPolicyMatched'];
+// The only accepted basis today: values pinned from NEAR AI's live attestation, labelled as not independently reproduced.
+export const TEE_TRUST_BASIS = /^observed-at-\d{4}-\d{2}-\d{2}-not-independently-reproduced$/;
 export function validateTeePolicy(policy) {
-  check(policy?.schemaVersion === 1 && Array.isArray(policy.gatewayMeasurements) && Array.isArray(policy.modelMeasurements)
+  check(policy?.schemaVersion === 1 && TEE_TRUST_BASIS.test(policy.trustBasis ?? '') && Array.isArray(policy.gatewayMeasurements) && Array.isArray(policy.modelMeasurements)
     && policy.gatewayMeasurements.length > 0 && policy.modelMeasurements.length > 0
     && [...policy.gatewayMeasurements, ...policy.modelMeasurements].every(m => /^[a-f0-9]{96}:[a-f0-9]{96}$/.test(m))
     && Array.isArray(policy.nrasKeys) && policy.nrasKeys.length > 0 && policy.nrasKeys.length <= 1024

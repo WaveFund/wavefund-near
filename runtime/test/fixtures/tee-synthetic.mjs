@@ -15,7 +15,7 @@ export async function syntheticTee() {
   const quoteVerifier = async () => quoteResult;
   const report = { model_name: model, signing_address: account.address, signing_algo: 'ecdsa', request_nonce: nonce, intel_quote: '0102', event_log: [], info: { tcb_info: { app_compose: compose } }, nvidia_payload: JSON.stringify({ nonce, evidence_list: [] }) };
   const measurement = `${td.mrTd.toString('hex')}:${config.toString('hex')}`;
-  const policy = { schemaVersion: 1, gatewayMeasurements: [measurement], modelMeasurements: [measurement], nrasKeys: [jwk] };
+  const policy = { schemaVersion: 1, trustBasis: 'observed-at-2026-11-13-not-independently-reproduced', gatewayMeasurements: [measurement], modelMeasurements: [measurement], nrasKeys: [jwk] };
   function gpuToken(overrides = {}) {
     const enc = value => Buffer.from(JSON.stringify(value)).toString('base64url');
     const head = enc({ alg: 'ES384', kid: jwk.kid }); const body = enc({ iss: 'https://nras.attestation.nvidia.com', sub: 'NVIDIA-PLATFORM-ATTESTATION', eat_nonce: nonce, iat: at - 5, exp: at + 100, 'x-nvidia-overall-att-result': true, ...overrides });

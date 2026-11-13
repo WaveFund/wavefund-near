@@ -23,7 +23,7 @@ export async function verifyTeeProposals(plan, receipts, policy, options) {
       }
     }
     fail(matches.length === 1, 'TEE_PROPOSAL_BINDING_FAILED');
-    out.push({ proposalId: String(proposal.id), name: proposal.name, privacy: record.privacy, proposalBound: true, transactionHash: matches[0] });
+    out.push({ proposalId: String(proposal.id), name: proposal.name, privacy: record.privacy, trustBasis: policy.trustBasis, proposalBound: true, transactionHash: matches[0] });
   }
   fail(out.length === 4, 'TEE_PROPOSALS_INCOMPLETE');
   return out;

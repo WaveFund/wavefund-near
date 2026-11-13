@@ -127,3 +127,20 @@ test('a stored "verified" flag is never trusted: kind, schema and every check ar
   }
   assert.match(proposalRationale({ attestationVerified: true, privacy: p }, 'x'), /^NEAR AI \(TEE verified\) sha256:[a-f0-9]{64} · x$/);
 });
+test('committed policy validates with an observed-pinned trust basis; any changed measurement rejects a known-good fixture', async () => {
+  const committed = JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../../docs/tee-policy.json', import.meta.url), 'utf8'));
+  validateTeePolicy(committed);
+  assert.equal(committed.trustBasis, 'observed-at-2026-11-13-not-independently-reproduced');
+  assert.deepEqual(committed.gatewayMeasurements, ['7fe60787222bd394cb516abca2435f22f035ab2cc9c0a4b4b3b148e46297f3d931a237b72f359052c6e657d8c1409173:01b73eed6abc60fbe5eb0ce2bbaacf3bd9b83c9c84f3e6a5b1a091cb679bdbe66f000000000000000000000000000000']);
+  assert.deepEqual(committed.modelMeasurements, ['df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:01e8416a02d6f7ce47baaa52e3925b934fd30834b04fc9086b363db9b1d12c729d000000000000000000000000000000']);
+  assert.ok(committed.sources.length > 0 && committed.sources.every(s => s.url.startsWith('https://') && s.matched));
+  for (const trustBasis of [undefined, 'independently-verified', 'observed-at-2026-11-13', 'published-reference']) assert.throws(() => validateTeePolicy({ ...committed, trustBasis }), /TEE_POLICY_NOT_CONFIGURED/, String(trustBasis));
+  const f = await syntheticTee(); const opts = { quoteVerifier: f.quoteVerifier };
+  const good = { ...committed, gatewayMeasurements: f.policy.gatewayMeasurements, modelMeasurements: f.policy.modelMeasurements, nrasKeys: f.policy.nrasKeys };
+  assert.equal((await verifyTeeEvidence(f.evidence, good, opts)).verified, true);
+  const [mrTd, mrConfigId] = good.modelMeasurements[0].split(':'); const flip = h => (h[0] === '0' ? '1' : '0') + h.slice(1);
+  for (const changed of [`${flip(mrTd)}:${mrConfigId}`, `${mrTd}:${flip(mrConfigId)}`]) {
+    await assert.rejects(verifyTeeEvidence(f.evidence, { ...good, gatewayMeasurements: [changed] }, opts), /TEE_REPORT_REJECTED/);
+    await assert.rejects(verifyTeeEvidence(f.evidence, { ...good, modelMeasurements: [changed] }, opts), /TEE_REPORT_REJECTED/);
+  }
+});
