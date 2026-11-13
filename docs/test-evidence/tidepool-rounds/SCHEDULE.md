@@ -24,3 +24,16 @@ Rules fixed in advance:
 - A round that fails is recorded as failed; it is not silently re-run.
 - Positive, negative and flat outcomes are all reported as measured.
 - Paid model calls: at most 4 per scripted round and 8 for round 7 (28 total), cap USD 0.50.
+
+## Addendum after round 2 (written before round 3 ran)
+
+Round 2 (Conservative, 5% test ETH) measured **+5.39%**, but almost all of it came from our test pool, not
+the market. The investment pool is a private test pool with no arbitrage traders, so it still priced test ETH
+near its seeding level (~2074.6 USDC) while the Supra oracle had real ETH at ~1922.4. Selling 0.0668 test ETH
+into it paid ~7.9% above the oracle; the market move over the 30-minute window was about −0.5% on ETH, i.e.
+roughly −0.03% on the 5% ETH that remained. Round 2's result is published with this explanation.
+
+From round 3 on, one disclosed maintenance step is added **before each round opens**: the operator aligns the
+test pool to the authenticated oracle price, the way an arbitrage trader would on a public market (minting
+test ETH or using test USDC, within 0.25% of the oracle). It never runs while a round is active, and it does
+not change the schedule, the oracle, slippage limits or confidence gates.
