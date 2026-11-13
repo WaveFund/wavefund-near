@@ -165,3 +165,13 @@ Managers supply their own investment capital. Forecasters supply separate collat
 [Outcome reputation](docs/AGENT-REPUTATION.md) is additive to the existing trading stack. Only a selected, executed and settled strategy scores: positive return +1, negative -1, flat 0. Counts and points are per proposer address, not lending creditworthiness. Deployment evidence: [Aurora testnet reputation](deployments/aurora-testnet-reputation.json). The genuine eight-agent runner uses `--profile swarm`; the paid inference flag and a fresh budget remain required.
 
 The separate [Tidepool testnet happy path](docs/TIDEPOOL-DEMO.md) completed cross-chain funding, four genuine AI proposals, scripted forecast trades, an actual Safe investment swap, authenticated settlement, redemptions and outcome scoring. It is community testnet execution with worthless tokens, not official mainnet 1Click delivery.
+
+## Attestation and onboarding follow-up
+
+[NEAR AI TEE verification](docs/TEE-VERIFICATION.md) adds an opt-in, fail-closed hardware/model-signature and proposal-binding path. **No live attested round is claimed yet; rounds 1–8 remain unverified.** A reviewed measurement/key policy and newly approved model calls are prerequisites. Once a new round is verified, open its Proposals stage → TEE verified → What was verified, or rerun `scripts/verify-tee.mjs` offline.
+
+Role guides are available at `/start/manager`, `/start/forecaster` and `/start/observer`; [scope and wallet test boundary](docs/ONBOARDING-VERIFICATION.md).
+
+| NEAR component | Wavefund use | Current evidence |
+| --- | --- | --- |
+| NEAR AI hardware verification | Nonce-bound quote, NVIDIA verdict and exact-response verification path | Genuine public hardware preflight passed; no new attested inference/on-chain round claimed. |

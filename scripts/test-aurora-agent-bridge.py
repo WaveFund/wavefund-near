@@ -20,6 +20,14 @@ class AgentBridgeSafety(unittest.TestCase):
     def run_bridge(self, *args):
         return subprocess.run(self.command + list(args), capture_output=True, text=True, timeout=10)
 
+    def test_tee_requires_expanded_profile_and_separate_policy(self):
+        result = self.run_bridge('--tee', '--run-inference')
+        self.assertIn('--tee applies only', result.stderr)
+        result = self.run_bridge('--tee', '--profile', 'hybrid', '--run-inference', '--target', '3')
+        self.assertIn('--tee and --tee-policy must be supplied together', result.stderr)
+        result = self.run_bridge('--tee-policy', 'missing-policy.json', '--profile', 'hybrid', '--target', '3')
+        self.assertIn('--tee and --tee-policy must be supplied together', result.stderr)
+
     def test_explicit_paid_flag_required_before_reading_credentials(self):
         result = self.run_bridge()
         self.assertNotEqual(result.returncode, 0)

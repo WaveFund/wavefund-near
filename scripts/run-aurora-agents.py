@@ -28,6 +28,8 @@ p.add_argument('--env', type=Path, default=Path('.env.agents'))
 p.add_argument('--artifacts', type=Path, default=Path('out'))
 p.add_argument('--extra-artifacts', type=Path)
 p.add_argument('--run-inference', action='store_true')
+p.add_argument('--tee', action='store_true', help='Require full preflight hardware and model response verification')
+p.add_argument('--tee-policy', type=Path, help='Reviewed public TEE measurement/NVIDIA key policy JSON')
 p.add_argument('--profile', choices=['classic', 'hybrid', 'swarm'], default='classic')
 p.add_argument('--context', default='colima-wavefund')
 p.add_argument('--container', default='wavefund-build-check')
@@ -57,6 +59,10 @@ if a.manipulation_probe_usdc is not None:
     if not amount.is_finite() or raw != raw.to_integral_value() or raw <= 0 or raw > 20000 * 1000000:
         p.error('--manipulation-probe-usdc must be > 0, at most 20000 and at most 6 decimals')
     probe_amount = str(int(raw))
+if a.tee and (a.profile not in ['hybrid', 'swarm'] or a.phase not in ['plan', 'run']):
+    p.error('--tee applies only to hybrid/swarm planning or execution')
+if a.tee != bool(a.tee_policy):
+    p.error('--tee and --tee-policy must be supplied together')
 a.directory.mkdir(parents=True, exist_ok=True)
 lock = (a.directory / 'operator.lock').open('a+')
 try:
@@ -81,6 +87,8 @@ swarm = a.profile == 'swarm'
 expanded = hybrid or swarm
 actor_names = ['Conservative', 'Balanced', 'Momentum', 'HighBeta', 'Quant', 'Guardian', 'FeeAnalyst', 'StressAnalyst'] if expanded else ['Momentum', 'Conservative', 'Quant', 'Guardian']
 config = dict(phase=a.phase, events=events, hybrid=hybrid, swarm=swarm, actorNames=actor_names)
+if a.tee:
+    config['teePolicy'] = json.loads(a.tee_policy.read_text())
 if a.target is not None and not hybrid:
     sys.exit('--target is only for the hybrid profile (scripted forecasters).')
 if a.phase == 'plan' and hybrid and a.target is None:

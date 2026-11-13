@@ -1,5 +1,6 @@
 "use client";
 
+import { TeeStatus } from "./TeeStatus";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import type { DemoState } from "@/lib/state";
@@ -134,7 +135,7 @@ export function ProposalsStage({ ctx }: { ctx: StageCtx }) {
   const open = ctx.strategies.find((item) => item.id === openId) ?? null;
   const hold = open?.id === "0";
   return <>
-    <div className="strategy-grid rw-cards">{ctx.strategies.map((item) => <StrategyCard key={item.id} strategy={item} compact onSelect={() => setOpenId(item.id)} />)}</div>
+    <div className="strategy-grid rw-cards">{ctx.strategies.map((item) => <div key={item.id}><StrategyCard strategy={item} compact onSelect={() => setOpenId(item.id)} />{item.id !== "0" ? <TeeStatus proof={ctx.saved?.round.tee?.find(t => t.proposalId === item.id)} /> : null}</div>)}</div>
     <Drawer open={open !== null} onClose={() => setOpenId(null)} title={open ? (hold ? "Hold · keep allocation" : open.name) : ""}>
       {open ? <>
         <div className="rw-row"><AllocationRing bps={open.allocationBps} size="lg" /><div><b className="num">{percentFromBps(open.allocationBps)} test ETH</b><div className="muted">{hold ? "what the Safe holds now" : `${percentFromBps(10_000 - open.allocationBps)} test USDC`}</div></div></div>

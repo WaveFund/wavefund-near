@@ -1,3 +1,4 @@
+import { verifyTeeProposals } from '../agents/tee-proof.mjs';
 import { readFile, readdir } from 'node:fs/promises';
 
 // Developer C: validated, read-only projection of the published Aurora testnet round evidence for two separate
@@ -25,7 +26,7 @@ export const ROUND_SOURCES = Object.freeze([
 // Pre-registered Tidepool rounds exported by scripts/export-tidepool-round.mjs: one directory per round, each with a
 // round.json manifest naming its files. They are validated exactly like the fixed sources above.
 export const DISCOVERED_ROUNDS_DIR = 'docs/test-evidence/tidepool-rounds';
-export const DISCOVERED_FILES = Object.freeze({ report: 'report', plan: 'plan', independent: 'independent', swap: 'swap-independent', capital: 'capital-linkage', reputation: 'reputation', probe: 'manipulation-probe' });
+export const DISCOVERED_FILES = Object.freeze({ report: 'report', plan: 'plan', independent: 'independent', swap: 'swap-independent', capital: 'capital-linkage', reputation: 'reputation', probe: 'manipulation-probe', tee: 'tee' });
 const ROUND_DIR = /^round([1-9][0-9]{0,3})$/;
 const MAX_PROBE_STABLE = 20000n * 1000000n;
 const PROBE_LABELS = ['approve', 'swap', 'resetApproval', 'approveRestore', 'restore', 'resetRestoreApproval'];
@@ -283,7 +284,7 @@ function projectRound(source, files, stack, manifest, reputationManifest) {
     stack: { id: stack.id, label: stack.label, engine: stack.engine, safe: stack.safe, reputation: stack.reputation },
     evidence: 'saved-independently-verified', title: source.title, date: text(report.date, 'date', 20), kind: text(report.kind, 'kind', 80), source: source.dir,
     genuineModelCalls: count(report.genuineModelCalls, 'genuine model calls'), scriptedForecasters: count(report.scriptedForecasters, 'scripted forecasters'),
-    model: text(completion.provider?.model, 'model', 80), attestationVerified: completion.provider?.attestationVerified === true, modelUsage: usage,
+    model: text(completion.provider?.model, 'model', 80), attestationVerified: Array.isArray(files.verifiedTee) && files.verifiedTee.length === 4, tee: files.verifiedTee ?? [], modelUsage: usage,
     proposals, proposers, winner: { proposalId: winner.id, name: winner.name, allocationBps: winner.allocationBps, isHold: winner.id === '0' },
     forecasters, swap, realisedReturnX18, market,
     totals: { deposits: uint(round.totalDeposits, 'total deposits'), paid: uint(round.totalPaid, 'total paid') },
@@ -339,7 +340,7 @@ export async function discoverRoundSources({ read = defaultRead, list = defaultL
 }
 
 // Loads and validates every round once. Structural problems throw; cross-file disagreements are reported in `checks`.
-export async function loadRoundEvidence({ read = defaultRead, list = defaultList, sources = ROUND_SOURCES, discover = true } = {}) {
+export async function loadRoundEvidence({ read = defaultRead, list = defaultList, sources = ROUND_SOURCES, discover = true, teePolicy } = {}) {
   const stacks = {}; const manifests = {};
   for (const id of Object.keys(STACKS)) {
     const manifest = await read(STACKS[id].manifest); const reputationManifest = await read(STACKS[id].reputationManifest);
@@ -351,6 +352,10 @@ export async function loadRoundEvidence({ read = defaultRead, list = defaultList
     check(Object.hasOwn(stacks, source.stack), `unknown stack ${source.stack}`);
     const files = {};
     for (const [role, file] of Object.entries(source.files)) files[role] = await read(`${source.dir}/${file}.json`);
+    if (files.plan?.teeRequired === true) {
+      check(files.tee && teePolicy, 'TEE evidence requires the reviewed verification policy');
+      files.verifiedTee = await verifyTeeProposals(files.plan, files.tee.receipts, teePolicy);
+    } else check(!files.tee && files.report?.completion?.provider?.attestationVerified !== true, 'Unexpected historical TEE claim');
     rounds.push(projectRound(source, files, stacks[source.stack], manifests[source.stack].manifest, manifests[source.stack].reputationManifest));
   }
   check(new Set(rounds.map((round) => round.key)).size === rounds.length, 'two rounds share one network + engine + round id');
@@ -361,7 +366,8 @@ export async function loadRoundEvidence({ read = defaultRead, list = defaultList
 export async function roundEvidenceFromEnvironment(env = process.env, options = {}) {
   if ((env.WAVEFUND_EVIDENCE ?? '').trim() === 'disabled') return null;
   try {
-    const evidence = await loadRoundEvidence(options);
+    const teePolicy = env.WAVEFUND_TEE_POLICY ? JSON.parse(await readFile(env.WAVEFUND_TEE_POLICY, 'utf8')) : undefined;
+    const evidence = await loadRoundEvidence({ ...options, ...(teePolicy ? { teePolicy } : {}) });
     return { read: () => evidence };
   } catch {
     return { read: () => { throw new EvidenceError('invalid'); } };

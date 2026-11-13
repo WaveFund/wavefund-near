@@ -1,3 +1,4 @@
+import { privacyVerified, sha256 } from './tee.mjs';
 import { anonymousStrategies } from './allocation-evidence.mjs';
 import { boundedLiveProvider, LIVE_MODEL } from './aurora-plan.mjs';
 import { providerConfig } from './provider.mjs';
@@ -59,7 +60,7 @@ export function deliberateProvider({ targetProposalId = 2, views } = {}) {
   } };
 }
 
-export async function makeStrategyPlan({ snapshot, market: input, researchContext, scriptedForecasts = false, scriptedTarget = DEFAULT_SCRIPTED_TARGET, evaluationSeconds = DEFAULT_EVALUATION_SECONDS, env, fixture = false, provider, onRecord, onRequest, now = Math.floor(Date.now() / 1000) }) {
+export async function makeStrategyPlan({ snapshot, market: input, researchContext, scriptedForecasts = false, scriptedTarget = DEFAULT_SCRIPTED_TARGET, evaluationSeconds = DEFAULT_EVALUATION_SECONDS, env, fixture = false, provider, teePolicy, onRecord, onRequest, now = Math.floor(Date.now() / 1000) }) {
   scriptedTargetOf(scriptedTarget); evaluationSecondsOf(evaluationSeconds);
   exactKeys(snapshot, ['chainId', 'roundId', 'safe', 'engine', 'portfolio', 'blockNumber'], 'strategy snapshot');
   exactKeys(snapshot.portfolio, ['stableBalance', 'assetBalance', 'currentAllocationBps'], 'strategy portfolio');
@@ -68,7 +69,7 @@ export async function makeStrategyPlan({ snapshot, market: input, researchContex
   if (researchContext) validateResearchContext(researchContext, { market, now });
   check(!scriptedForecasts || (!fixture && researchContext), 'Hybrid requires live proposers and explicit research context');
   check(market.source === 'external-unverified', 'Public strategy planning requires external research');
-  const selected = provider ?? (fixture ? deliberateProvider() : boundedLiveProvider(providerConfig(env), { onRequest, maxCalls: scriptedForecasts ? 4 : 8, budgetNanoUsd: scriptedForecasts ? 50000000 : 100000000 }));
+  const selected = provider ?? (fixture ? deliberateProvider() : boundedLiveProvider(providerConfig(env), { onRequest, teePolicy, maxCalls: scriptedForecasts ? 4 : 8, budgetNanoUsd: scriptedForecasts ? 50000000 : 100000000 }));
   const scripted = deliberateProvider({ views: scriptedViews(scriptedTarget) });
   check(selected.info.mode === (fixture ? 'test-fixture' : 'near-ai'), 'Wrong strategy provider mode');
   const records = [];
@@ -79,9 +80,11 @@ export async function makeStrategyPlan({ snapshot, market: input, researchContex
   async function ask(spec, role, context, instruction, validate) {
     const task = { system: `${system(evaluationSeconds)}\n${spec.mandate}\n${instruction}`, context: { agent: spec.name, role, ...context } };
     const actor = scriptedForecasts && role === 'forecaster' ? scripted : selected;
-    const response = await actor.complete(task); const decision = validate(response.value);
-    const record = { name: spec.name, role, provider: actor.info.mode, model: actor.info.model, attestationVerified: false,
-      inputHash: digest(task), outputHash: digest(decision), decision, usage: response.usage ?? {}, timestamp: new Date().toISOString() };
+    const response = await actor.complete(task);
+    check(!teePolicy || actor === scripted || (response.privacy?.verified === true && privacyVerified(response.privacy)), 'TEE model response is not verified');
+    const decision = validate(response.value);
+    const record = { name: spec.name, role, provider: actor.info.mode, model: actor.info.model, attestationVerified: response.privacy?.verified === true, ...(response.privacy ? { privacy: response.privacy, teeEvidence: response.teeEvidence } : {}),
+      inputHash: digest(task), outputHash: digest(decision), decision, usage: response.usage ?? {}, ...(response.privacy ? { auxiliaryRequests: response.auxiliaryCalls, collateralFetches: response.collateralFetches } : {}), timestamp: new Date().toISOString() };
     record.input = task; // Public source facts + literal role/policy prompt for judge inspection.
     records.push(record); await onRecord?.(record); return decision;
   }
@@ -99,7 +102,7 @@ export async function makeStrategyPlan({ snapshot, market: input, researchContex
   }
   return { schemaVersion: 2, profile: scriptedForecasts ? 'hybrid-v1' : 'diverse-v1', kind: scriptedForecasts ? 'ai-proposals-scripted-forecasters' : fixture ? 'deliberate-fixture' : 'live-model', chainId: 1313161555,
     roundId: snapshot.roundId, safe: snapshot.safe, engine: snapshot.engine, snapshot, createdAt: now, market,
-    proposals, forecasts, records, provider: { ...selected.info }, ...(researchContext ? { researchContext } : {}), attestationVerified: false,
+    proposals, forecasts, records, provider: { ...selected.info, attestationVerified: Boolean(teePolicy) && records.filter(r => r.provider === 'near-ai').every(r => r.attestationVerified === true) }, ...(researchContext ? { researchContext } : {}), attestationVerified: Boolean(teePolicy) && records.filter(r => r.provider === 'near-ai').every(r => r.attestationVerified === true), teeRequired: Boolean(teePolicy),
     evaluationSeconds, ...(scriptedForecasts ? { scriptedTarget } : {}) };
 }
 
@@ -129,9 +132,11 @@ export function validateStrategyPlan(plan, { contracts, roundId, portfolio, now,
     const decision = validateForecast({ forecasts: forecast.forecasts }, { evidenceIds, proposalIds: [0, 1, 2, 3, 4] });
     check(plan.records[index + 4].name === spec.name && plan.records[index + 4].outputHash === digest(decision), 'Changed forecast decision');
   }
-  check(plan.records.every((r, i) => r.role === (i < 4 ? 'proposer' : 'forecaster') && r.attestationVerified === false && (scriptedForecasts && r.role === 'forecaster'
+  check(plan.records.every((r, i) => r.role === (i < 4 ? 'proposer' : 'forecaster') && (r.attestationVerified === false || (plan.teeRequired === true && r.attestationVerified === true && r.privacy?.verified === true && privacyVerified(r.privacy) && r.privacy.responseSha256 === sha256(Buffer.from(r.teeEvidence?.responseBody ?? '')))) && (scriptedForecasts && r.role === 'forecaster'
     ? r.provider === 'test-fixture' && r.model === scriptedModel()
     : r.provider === plan.provider.mode && r.model === plan.provider.model)), 'Changed expanded provenance');
+  check(!plan.teeRequired || (plan.attestationVerified === true && plan.records.filter(r => r.provider === 'near-ai').every(r => r.attestationVerified === true)), 'TEE plan contains unverified model records');
+  check(plan.attestationVerified !== true || plan.teeRequired === true, 'Unexpected attestation claim');
   if (scriptedForecasts || plan.records.some(r => r.input)) check(plan.records.every(r => r.input && digest(r.input) === r.inputHash), 'Changed recorded research input');
   const evaluation = evaluationSecondsOf(plan.evaluationSeconds ?? DEFAULT_EVALUATION_SECONDS);
   check(plan.records.every(r => !r.input || r.input.context?.policy?.horizonSeconds === evaluation), 'Recorded horizon differs from the pre-registered evaluation window');

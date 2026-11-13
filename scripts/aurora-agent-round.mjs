@@ -1,3 +1,5 @@
+import { verifyPlanTee } from '../runtime/agents/tee-record.mjs';
+import { proposalRationale } from '../runtime/agents/tee.mjs';
 // Explicit one-round CLI. No API server, cloud scheduling, fallback agents or mainnet path.
 import readline from 'node:readline';
 import { parseAbi, decodeEventLog } from 'viem';
@@ -31,7 +33,7 @@ try {
     requireLive(expanded || config.evaluationSeconds === undefined || config.evaluationSeconds === 180, 'The classic profile keeps its 180 second horizon');
     const terms = expanded ? { ...(config.scriptedTarget !== undefined ? { scriptedTarget: config.scriptedTarget } : {}), ...(config.evaluationSeconds !== undefined ? { evaluationSeconds: config.evaluationSeconds } : {}) } : {};
     const plan = await (expanded ? makeStrategyPlan : makeAuroraPlan)({ snapshot: config.snapshot, market: config.market, ...terms,
-      scriptedForecasts: config.hybrid === true, researchContext: config.researchContext,
+      teePolicy: config.teePolicy, scriptedForecasts: config.hybrid === true, researchContext: config.researchContext,
       env: { WAVEFUND_AGENT_MODE: 'near-ai', WAVEFUND_AGENT_MODEL: config.model, WAVEFUND_ALLOW_REMOTE_INFERENCE: '1', NEARAI_API_KEY: config.apiKey },
       onRequest: async request => { emit({ stage: 'inference-request', ...request }); await acknowledge(`inference-${request.request}`); },
       onRecord: record => emit({ stage: 'agent-record', record }) });
@@ -77,6 +79,7 @@ try {
     } else if (config.phase === 'run') {
       const plan = config.plan;
       requireLive(plan, 'A completed matching-profile agent plan is required');
+      await verifyPlanTee(plan, config.teePolicy);
       const prices = await chain.verifiedProof();
       const portfolio = await chain.portfolio(prices);
       (expanded ? validateStrategyPlan : validateAuroraPlan)(plan, { contracts, roundId: nextId, portfolio, now: Math.floor(Date.now() / 1000), scriptedForecasts: config.hybrid === true });
@@ -96,7 +99,7 @@ try {
       const opened = await tx(label('open'), 'owner', 'engine', 'openRound', [end, horizon, 950000000000000000n, 1050000000000000000n, 90n]);
       for (const proposal of plan.proposals.filter(p => p.id > 0)) {
         stage = `propose:${proposal.name}`;
-        await tx(label(`propose:${proposal.name}`), proposal.name, 'engine', 'propose', [id, { tEthBps: proposal.allocationBps }, `NEAR AI model summary (test assets): ${proposal.rationale}`]);
+        await tx(label(`propose:${proposal.name}`), proposal.name, 'engine', 'propose', [id, { tEthBps: proposal.allocationBps }, proposalRationale(plan.records.find(r => r.role === 'proposer' && r.name === proposal.name), proposal.rationale)]);
       }
       let baselineBps = null;
       async function verifyProposalSet() {

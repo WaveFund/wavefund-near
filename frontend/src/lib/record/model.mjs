@@ -1,3 +1,4 @@
+import { teeDisplay } from '../tee.mjs';
 // Pure display logic for the Track record page, shared by the dashboard and `node --test`. No floats for money or
 // returns. Missing or malformed values never become zero: they make the item unavailable instead.
 import { AURORA_TESTNET, explorerUrl, formatUnits, isAddress, isIntegerString, isTxHash, safeText } from '../funding/model.mjs';
@@ -160,7 +161,8 @@ function round(item) {
     title: safeText(item.title, 120) ?? `Round ${item.roundId}`, date: safeText(item.date, 20), kind: safeText(item.kind, 80),
     genuineModelCalls: Number.isSafeInteger(item.genuineModelCalls) ? item.genuineModelCalls : null,
     scriptedForecasters: Number.isSafeInteger(item.scriptedForecasters) ? item.scriptedForecasters : null,
-    model: safeText(item.model, 80), attestationVerified: item.attestationVerified === true,
+    model: safeText(item.model, 80), tee: (Array.isArray(item.tee) ? item.tee : []).filter(t => Number(item.roundId) > 8 && proposals.some(p => p.id !== '0' && p.id === t?.proposalId && p.name === t.name) && teeDisplay(t).verified),
+    attestationVerified: Number(item.roundId) > 8 && item.attestationVerified === true && proposals.filter(p => p.id !== '0').length === 4 && Array.isArray(item.tee) && item.tee.length === 4 && new Set(item.tee.map(t => t?.proposalId)).size === 4 && item.tee.every(t => proposals.some(p => p.id !== '0' && p.id === t?.proposalId && p.name === t.name) && teeDisplay(t).verified),
     proposals, winner: { ...winner, isHold: winner.id === '0' }, forecasters, swap, market,
     realisedReturnX18: isIntegerString(item.realisedReturnX18) ? item.realisedReturnX18 : null,
     payouts, transactions, droppedTransactions: (Array.isArray(item.transactions) ? item.transactions.length : 0) - transactions.length, reputation,

@@ -1,3 +1,4 @@
+import { verifyTeeProposals } from '../runtime/agents/tee-proof.mjs';
 #!/usr/bin/env node
 // Export PUBLIC evidence for one pre-registered Tidepool round into docs/test-evidence/tidepool-rounds/round<N>/.
 // Pure Node + public RPC reads only (no keys, no signing). Usage:
@@ -14,7 +15,7 @@ const { values } = parseArgs({ options: {
   session: { type: 'string' }, round: { type: 'string' }, 'reputation-journal': { type: 'string', default: '.run/tidepool-v1/reputation.jsonl' },
   independent: { type: 'string' }, out: { type: 'string', default: 'docs/test-evidence/tidepool-rounds' },
   manifest: { type: 'string', default: 'deployments/aurora-testnet-tidepool.json' }, 'reputation-manifest': { type: 'string', default: 'deployments/aurora-testnet-tidepool-reputation.json' },
-  replace: { type: 'boolean', default: false },
+  replace: { type: 'boolean', default: false }, 'tee-policy': { type: 'string' },
 } });
 const fail = (message) => { console.error(message); process.exit(1); };
 if (!values.session || !/^[1-9][0-9]{0,3}$/.test(values.round ?? '')) fail('Usage: --session <dir> --round <N> (see header)');
@@ -52,7 +53,24 @@ if (execution?.swaps?.length) {
   swapCheck = { blockNumber: block.toString(), stableBefore, stableAfter, assetBefore, assetAfter, stableAllowance, assetAllowance, slippageBps, token0 };
 }
 
+let teeProof = null;
+if (plan.teeRequired === true) {
+  if (!values['tee-policy']) fail('TEE export requires a separately reviewed --tee-policy file');
+  const client = createPublicClient({ transport: http('https://testnet.aurora.dev', { retryCount: 0, timeout: 20000 }) });
+  if (await client.getChainId() !== 1313161555) fail('Wrong TEE receipt chain');
+  const receipts = [];
+  for (const entry of journal.filter(e => e.stage === 'confirmed' && e.label?.startsWith(`round${roundId}:propose:`))) {
+    const receipt = await client.getTransactionReceipt({ hash: entry.hash });
+    const block = await client.getBlock({ blockNumber: receipt.blockNumber });
+    if (block.hash !== receipt.blockHash || receipt.blockNumber.toString() !== entry.blockNumber.toString()) fail('Noncanonical TEE proposal receipt');
+    receipts.push(receipt);
+  }
+  const policy = await json(values['tee-policy']);
+  await verifyTeeProposals(plan, receipts, policy);
+  teeProof = { schemaVersion: 1, receipts };
+}
 const { files, projection, warnings } = buildRoundEvidence({ roundId, plan, complete, journal, reputationEvents, independent, swapCheck, manifest, reputationManifest });
+if (teeProof) { files['tee.json'] = teeProof; files['round.json'].files.tee = 'tee'; }
 const dir = path.join(values.out, `round${roundId}`);
 if (!values.replace) { try { await access(dir); fail(`${dir} exists; pass --replace to overwrite after review`); } catch (error) { if (error.code !== 'ENOENT') throw error; } }
 await mkdir(dir, { recursive: true });

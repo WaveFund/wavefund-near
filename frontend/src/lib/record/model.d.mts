@@ -1,3 +1,4 @@
+import type { TeeProof } from '../tee.mjs';
 // Type declarations for model.mjs (plain ESM so `node --test` exercises the exact UI logic).
 
 export type AgentReputation = {
@@ -22,7 +23,7 @@ export type TestnetRound = {
   slug: string; roundId: string; stack: RoundStack; evidence: 'saved-independently-verified' | 'unlabelled';
   collateral: { atCollapse: string; ending: string; seed: string } | null;
   totals: { deposits: string | null; paid: string | null }; title: string; date: string | null; kind: string | null;
-  genuineModelCalls: number | null; scriptedForecasters: number | null; model: string | null; attestationVerified: boolean;
+  genuineModelCalls: number | null; scriptedForecasters: number | null; model: string | null; attestationVerified: boolean; tee: TeeProof[];
   proposals: RoundProposal[]; winner: RoundProposal & { isHold: boolean }; forecasters: RoundForecaster[];
   swap: { transactionHash: string; url: string | null; stableDelta: string | null; assetDelta: string | null; independentlyChecked: boolean; slippageBps: number | null } | null;
   market: RoundMarket | null;
