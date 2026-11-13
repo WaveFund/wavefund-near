@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 0,
+  "reviewRequired": true,
+  "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+  "observedAt": "2026-11-13T14:20:04.000Z",
+  "note": "PUBLIC REVIEW CANDIDATE, not an accepted policy. DCAP+nonce+config+event-log and NVIDIA signature verified. Independently review workload measurements/source limitations before extracting proposedPolicy. No inference, response signature or on-chain proposal was verified.",
+  "proposedPolicy": {
+    "schemaVersion": 1,
+    "gatewayMeasurements": [
+      "7fe60787222bd394cb516abca2435f22f035ab2cc9c0a4b4b3b148e46297f3d931a237b72f359052c6e657d8c1409173:01b73eed6abc60fbe5eb0ce2bbaacf3bd9b83c9c84f3e6a5b1a091cb679bdbe66f000000000000000000000000000000"
+    ],
+    "modelMeasurements": [
+      "df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:01e8416a02d6f7ce47baaa52e3925b934fd30834b04fc9086b363db9b1d12c729d000000000000000000000000000000"
+    ],
+    "nrasKeys": [
+      {
+        "kty": "EC",
+        "crv": "P-384",
+        "kid": "nv-eat-kid-prod-20261113124709002-cfd263d1-7899-44da-8832-396dec3861c8",
+        "x": "qtFjAuIxUXBvEr_WFLzOYBvXNtyEAKbSXzV_wEaOlE7qESfnfacQ4mpI1dlRTgFD",
+        "y": "4wQsUY_QiIoOA9OvWs7_sX-G38sM820H9n8BcelzJudCpokdRsZ1K7XuobTUMUzS"
+      }
+    ]
+  }
+}

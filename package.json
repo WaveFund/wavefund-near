@@ -25,6 +25,7 @@
     "monitor:aurora": "WAVEFUND_NETWORK=aurora-testnet node runtime/server.mjs"
   },
   "dependencies": {
+    "@phala/dcap-qvl": "0.7.1",
     "viem": "2.57.17"
   },
   "devDependencies": {

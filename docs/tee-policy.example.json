@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "gatewayMeasurements": [],
+  "modelMeasurements": [],
+  "nrasKeys": [],
+  "note": "Fail-closed template. Review DCAP-verified mrTd:mrConfigId measurements and NVIDIA public ES384 JWKS before supplying this as --tee-policy. Never accept measurements or keys merely because the evidence file supplies them."
+}

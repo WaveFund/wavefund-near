@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "kind": "public-hardware-preflight-not-an-inference",
+  "observedAt": "2026-11-13T14:20:04.000Z",
+  "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+  "paidModelCalls": 0,
+  "apiKeyUsed": false,
+  "transactionSent": false,
+  "reports": [
+    {
+      "role": "gateway",
+      "status": "UpToDate",
+      "advisories": [],
+      "checks": {
+        "nonceBound": true,
+        "tdxQuoteVerified": true,
+        "configurationBound": true,
+        "eventLogVerified": true,
+        "measurementPolicyMatched": false
+      }
+    },
+    {
+      "role": "model",
+      "status": "UpToDate",
+      "advisories": [],
+      "checks": {
+        "nonceBound": true,
+        "tdxQuoteVerified": true,
+        "configurationBound": true,
+        "eventLogVerified": true,
+        "measurementPolicyMatched": false
+      }
+    }
+  ],
+  "gpu": {
+    "nrasHttp": 200,
+    "signatureAndNonceVerified": true,
+    "keysSource": "https://nras.attestation.nvidia.com/.well-known/jwks.json"
+  },
+  "policyApproved": false,
+  "modelResponseVerified": false,
+  "onChainProposalBound": false
+}
