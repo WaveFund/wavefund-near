@@ -278,3 +278,31 @@ test('the exporter refuses unresolved, failed, unverified or secret-bearing sess
   const result = buildRoundEvidence(unrecorded);
   assert.equal(result.files['reputation.json'], undefined); assert.match(result.warnings[0], /record-reputation --round/);
 });
+
+// swarm2: a real saved round re-labelled as a multi-model plan (records get distinct models) must project per-agent models.
+const R8 = 'docs/test-evidence/tidepool-rounds/round8/';
+const MODELS = ['Qwen/Qwen3.6-35B-A3B-FP8', 'Qwen/Qwen3.8-27B', 'z-ai/glm-5.3-flash', 'deepseek-ai/DeepSeek-V4.1-Flash-1017', 'openai/gpt-4.1-mini', 'anthropic/claude-haiku-5-5', 'google/gemini-2.5-flash', 'x-ai/grok-4.6'];
+const multiModel = (mutateReport = () => {}, mutatePlan = () => {}) => async (path) => {
+  const value = await read(path);
+  if (path === `${R8}plan.json`) { value.profile = 'swarm2-v1'; value.records.forEach((r, i) => { r.model = MODELS[i]; }); mutatePlan(value); }
+  if (path === `${R8}report.json`) { const plan = await read(`${R8}plan.json`); value.completion.decisions.forEach((d) => { d.model = MODELS[plan.records.findIndex((r) => r.name === d.name && r.role === 'forecaster')]; }); mutateReport(value); }
+  return value;
+};
+
+test('multi-model rounds carry each agent model; single-model rounds stay unchanged', async () => {
+  const before = (await loadRoundEvidence()).rounds;
+  assert.ok(before.every((round) => !('models' in round) && round.proposals.every((p) => !('model' in p)) && round.forecasters.every((f) => !('model' in f))), 'old rounds gain no model fields');
+  const r8 = (await loadRoundEvidence({ read: multiModel() })).rounds.find((round) => round.roundId === '8' && round.source?.includes('tidepool'));
+  assert.equal(r8.models, 8);
+  assert.deepEqual(r8.proposals.map((p) => p.model ?? null), [null, ...MODELS.slice(0, 4)]);
+  assert.deepEqual(r8.forecasters.map((f) => f.model), MODELS.slice(4));
+});
+
+test('multi-model rounds reject a decision model that differs from its record, or a reused model', async () => {
+  const load = async (reader) => { try { return (await loadRoundEvidence({ read: reader })).rounds.some((round) => round.roundId === '8' && round.source?.includes('tidepool') && round.models === 8); } catch (error) { return error.message; } };
+  assert.equal(await load(multiModel()), true);
+  const wrong = await load(multiModel((report) => { report.completion.decisions[0].model = 'openai/gpt-5-mini'; }));
+  const reused = await load(multiModel(() => {}, (plan) => { plan.records[1].model = plan.records[0].model; }));
+  assert.match(wrong, /decision 0 model differs from its plan record/);
+  assert.match(reused, /a multi-model plan reuses a model/);
+});

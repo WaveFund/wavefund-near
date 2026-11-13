@@ -36,6 +36,7 @@ const ADDRESS = /^0x[0-9a-fA-F]{40}$/;
 const UINT = /^(0|[1-9][0-9]{0,77})$/;
 const INT = /^(0|-?[1-9][0-9]{0,77})$/;
 const NAME = /^[A-Za-z][A-Za-z0-9]{0,31}$/;
+const MODEL = /^[A-Za-z0-9][A-Za-z0-9_./:-]{0,119}$/;
 const LABEL = /^round[0-9]{1,4}:[A-Za-z0-9:]{1,80}$/;
 const CONTROL = /[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028-\u202e\u2060-\u2069\ufeff]/g;
 
@@ -225,10 +226,19 @@ function projectRound(source, files, stack, manifest, reputationManifest) {
   check(String(round.winnerId) === winnerId && independent.winner === winnerId, 'the winner disagrees between files');
 
   check(Array.isArray(plan.proposals) && plan.proposals.length > 0, 'proposals are missing');
+  // Multi-model (swarm2) plans carry one model per agent record; older single-model plans keep their unchanged projection.
+  const multiModel = plan.profile === 'swarm2-v1';
+  const modelFor = (agentName, role) => {
+    const matches = (Array.isArray(plan.records) ? plan.records : []).filter((r) => r?.name === agentName && r?.role === role);
+    check(matches.length === 1 && typeof matches[0].model === 'string' && MODEL.test(matches[0].model), `${role} ${agentName} needs exactly one record with a model id`);
+    return matches[0].model;
+  };
   const proposals = plan.proposals.map((item, index) => {
     check(isObject(item) && Number.isSafeInteger(item.id), `proposal ${index} is malformed`);
-    return { id: String(item.id), name: name(item.name, `proposal ${index} name`), allocationBps: bps(item.allocationBps, `proposal ${index} allocation`), rationale: text(item.rationale, `proposal ${index} rationale`, 320) };
+    const projected = { id: String(item.id), name: name(item.name, `proposal ${index} name`), allocationBps: bps(item.allocationBps, `proposal ${index} allocation`), rationale: text(item.rationale, `proposal ${index} rationale`, 320) };
+    return multiModel && item.id !== 0 ? { ...projected, model: modelFor(projected.name, 'proposer') } : projected;
   });
+  if (multiModel) check(new Set(plan.records.map((r) => r.model)).size === plan.records.length, 'a multi-model plan reuses a model');
   const winner = proposals.find((item) => item.id === winnerId);
   check(winner, 'the winning proposal is not in the plan');
   const records = Array.isArray(plan.records) ? plan.records : [];
@@ -242,6 +252,7 @@ function projectRound(source, files, stack, manifest, reputationManifest) {
     check(isObject(item), `decision ${index} is malformed`);
     const label = `decision ${index}`;
     const base = { name: name(item.name, `${label} name`) };
+    if (multiModel) { base.model = modelFor(base.name, 'forecaster'); check(item.model === base.model, `${label} model differs from its plan record`); }
     if (item.action === 'abstain') return { ...base, action: 'abstain', reason: text(item.reason, `${label} reason`, 200), scripted: fixtureForecasters.has(base.name) };
     check(item.action === 'buy' && ['long', 'short'].includes(item.side) && Number.isSafeInteger(item.proposalId), `${label} must be a buy with a side or an abstention`);
     // Fixture forecasts carry an explicit "functional scenario fixture" rationale or a test-fixture provider record.
@@ -284,7 +295,7 @@ function projectRound(source, files, stack, manifest, reputationManifest) {
     stack: { id: stack.id, label: stack.label, engine: stack.engine, safe: stack.safe, reputation: stack.reputation },
     evidence: 'saved-independently-verified', title: source.title, date: text(report.date, 'date', 20), kind: text(report.kind, 'kind', 80), source: source.dir,
     genuineModelCalls: count(report.genuineModelCalls, 'genuine model calls'), scriptedForecasters: count(report.scriptedForecasters, 'scripted forecasters'),
-    model: text(completion.provider?.model, 'model', 80), attestationVerified: Array.isArray(files.verifiedTee) && files.verifiedTee.length === 4, tee: files.verifiedTee ?? [], modelUsage: usage,
+    model: text(completion.provider?.model, 'model', 80), ...(multiModel ? { models: new Set(plan.records.map((r) => r.model)).size } : {}), attestationVerified: Array.isArray(files.verifiedTee) && files.verifiedTee.length === 4, tee: files.verifiedTee ?? [], modelUsage: usage,
     proposals, proposers, winner: { proposalId: winner.id, name: winner.name, allocationBps: winner.allocationBps, isHold: winner.id === '0' },
     forecasters, swap, realisedReturnX18, market,
     totals: { deposits: uint(round.totalDeposits, 'total deposits'), paid: uint(round.totalPaid, 'total paid') },
