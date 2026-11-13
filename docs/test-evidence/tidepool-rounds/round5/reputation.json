@@ -1,0 +1,40 @@
+[
+  {
+    "stage": "prepared",
+    "label": "reputation:round5",
+    "hash": "0xd9434c9ba61823d907f08294f60a2ed4e416be8b406452efc6ef5e964743a383",
+    "nonce": 334,
+    "gas": "281295",
+    "gasPrice": "70000000"
+  },
+  {
+    "stage": "confirmed",
+    "label": "reputation:round5",
+    "hash": "0xd9434c9ba61823d907f08294f60a2ed4e416be8b406452efc6ef5e964743a383",
+    "blockNumber": "277499795"
+  },
+  {
+    "stage": "reputationComplete",
+    "chainId": 1313161555,
+    "reputation": "0xfa71a652547284d1034ae6813ed4a882cb354e92",
+    "roundId": "5",
+    "winner": "4",
+    "agent": "0x1Ba3C5bf69b1Dd2077d7550Ee4f479bB35B5EA0a",
+    "returnFactor": "999305920665452790",
+    "point": "-1",
+    "score": "-1",
+    "statistics": [
+      "1",
+      "0",
+      "1",
+      "0"
+    ],
+    "previousStatistics": [
+      "0",
+      "0",
+      "0",
+      "0"
+    ],
+    "previousScore": "0"
+  }
+]

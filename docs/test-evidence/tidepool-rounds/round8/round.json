@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "stack": "tidepool",
+  "roundId": "8",
+  "title": "Pre-registered round 8: scripted target Momentum",
+  "files": {
+    "report": "report",
+    "plan": "plan",
+    "independent": "independent",
+    "swap": "swap-independent",
+    "capital": "capital-linkage",
+    "reputation": "reputation",
+    "probe": "manipulation-probe"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "stack": "tidepool",
+  "roundId": "5",
+  "title": "Pre-registered round 5: scripted target HighBeta",
+  "files": {
+    "report": "report",
+    "plan": "plan",
+    "independent": "independent",
+    "swap": "swap-independent",
+    "capital": "capital-linkage",
+    "reputation": "reputation"
+  }
+}
