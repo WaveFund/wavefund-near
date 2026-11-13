@@ -1,6 +1,6 @@
 "use client";
 
-import { TeeStatus } from "./TeeStatus";
+import { AiProvenance } from "./AiProvenance";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import type { DemoState } from "@/lib/state";
@@ -9,6 +9,7 @@ import {
   type LocalJourney, type PositionGroups, type SavedJourney, type SelectionSignals, type StageId, swapLeg } from "@/lib/arena/model.mjs";
 import { AURORA_TESTNET, formatUnits } from "@/lib/funding/model.mjs";
 import { exactFactorX18, formatPoints, formatSignedUnits, type TestnetRound } from "@/lib/record/model.mjs";
+import { roundProvenance, TEE_LABELS } from "@/lib/record/provenance.mjs";
 import type { FreshCheck, TidepoolDemo } from "@/lib/tidepool/model.mjs";
 import { Address, CopyText, Icon } from "@/components/funding/primitives";
 import { DescriptionList } from "@/components/ui";
@@ -39,9 +40,9 @@ export type StageCtx = {
 const STAGE_KEYS: Array<"setup" | StageId> = ["setup", "funded", "proposals", "forecasting", "selected", "executed", "evaluated", "redeemed"];
 
 export function savedCtx(round: TestnetRound, journey: SavedJourney, extra: { fresh: FreshCheck | null; freshing: boolean; onFresh: () => void; now: number }): StageCtx {
-  const challengers = round.proposals.filter((item) => item.id !== "0");
-  const ai = (round.genuineModelCalls ?? 0) >= challengers.length;
-  const strategies: StrategyView[] = round.proposals.map((item) => ({ id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: item.rationale, source: item.id === "0" ? "baseline" : ai ? "ai" : "fixture", model: (item as { model?: string | null }).model ?? null }));
+  // Every saved challenger shows its own provenance: model, provider and TEE status, or that it was scripted.
+  const strategies: StrategyView[] = round.proposals.map((item) => ({ id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: item.rationale,
+    source: item.id === "0" ? "baseline" : "agent", badge: item.id === "0" ? undefined : <AiProvenance round={round} agent={item} role="proposer" /> }));
   const tx = Object.fromEntries(STAGE_KEYS.map((key) => [key, journey.transactions[key].map((item, index) => ({ key: `${key}-${index}`, text: describeSavedTx(item.label), hash: item.transactionHash, chainId: AURORA_TESTNET, href: item.url }))])) as TxByStage;
   if (round.swap) tx.executed = [...tx.executed, { key: "swap", text: "Investment swap", hash: round.swap.transactionHash, chainId: AURORA_TESTNET, href: round.swap.url }];
   if (round.reputation) tx.redeemed = [...tx.redeemed, { key: "rep", text: "Record the outcome point", hash: round.reputation.transactionHash, chainId: AURORA_TESTNET, href: round.reputation.url }];
@@ -61,11 +62,6 @@ export function localCtx(state: DemoState | null, journey: LocalJourney): StageC
 }
 
 // ---------------------------------------------------------------- small shared pieces
-
-/** The model an agent ran on, when the saved evidence records one per agent (multi-model rounds only). */
-function ModelLabel({ model }: { model?: string | null }) {
-  return model ? <div className="muted num" style={{ fontSize: 11, marginTop: 4, overflowWrap: "anywhere" }} title="Model recorded for this agent">{model}</div> : null;
-}
 
 function Fact({ label, tip, value, unit }: { label: string; tip?: ReactNode; value: ReactNode; unit?: string }) {
   return <div className="rw-fact"><span>{label}{tip ? <> <Tip label={`About ${label.toLowerCase()}`}>{tip}</Tip></> : null}</span><b className="num">{value}</b>{unit ? <small>{unit}</small> : null}</div>;
@@ -140,11 +136,11 @@ export function ProposalsStage({ ctx }: { ctx: StageCtx }) {
   const open = ctx.strategies.find((item) => item.id === openId) ?? null;
   const hold = open?.id === "0";
   return <>
-    <div className="strategy-grid rw-cards">{ctx.strategies.map((item) => <div key={item.id}><StrategyCard strategy={item} compact onSelect={() => setOpenId(item.id)} />{item.id !== "0" ? <TeeStatus round={ctx.saved?.round.roundId} proof={ctx.saved?.round.tee?.find(t => t.proposalId === item.id)} /> : null}<ModelLabel model={ctx.saved?.round.proposals.find((p) => p.id === item.id)?.model} /></div>)}</div>
+    <div className="strategy-grid rw-cards">{ctx.strategies.map((item) => <StrategyCard key={item.id} strategy={item} compact onSelect={() => setOpenId(item.id)} />)}</div>
     <Drawer open={open !== null} onClose={() => setOpenId(null)} title={open ? (hold ? "Hold · keep allocation" : open.name) : ""}>
       {open ? <>
         <div className="rw-row"><AllocationRing bps={open.allocationBps} size="lg" /><div><b className="num">{percentFromBps(open.allocationBps)} test ETH</b><div className="muted">{hold ? "what the Safe holds now" : `${percentFromBps(10_000 - open.allocationBps)} test USDC`}</div></div></div>
-        {open.source === "ai" ? <Cap tone="ai" icon="spark">AI-generated proposal</Cap> : open.source === "fixture" ? <Cap>Simulated agent</Cap> : <Cap>Baseline</Cap>}
+        {open.source === "agent" ? (open.badge ? <div className="rw-row">{open.badge}</div> : null) : open.source === "fixture" ? <Cap>Simulated agent</Cap> : <Cap>Baseline</Cap>}
         <p>{hold ? "Keeps the Safe's current token quantities. A challenger must beat it to trade." : open.rationale.replace(/^SIMULATED AGENT:\s*/i, "") || "No rationale recorded."}</p>
         {!hold ? <p className="muted">A target is a weight for the whole portfolio, not a share of a new deposit.</p> : null}
       </> : null}
@@ -165,8 +161,8 @@ export function ForecastingStage({ ctx }: { ctx: StageCtx }) {
       {positions.positions ? <PositionBoard strategies={ctx.strategies} positions={positions} /> : null}
       {positions.abstained.length ? <div className="rw-abstain"><span className="eyebrow">Abstained</span>
         {positions.abstained.map((item) => <span key={item.name} className="rw-pill" title={item.reason ?? "No reason recorded"}><AgentAvatar name={item.name} kind="forecaster" size="sm" />{item.name}</span>)}</div> : null}
-      {round.forecasters.some((item) => item.model) ? <ul className="tx-list">{round.forecasters.map((item) => <li key={item.name}>
-        <span className="who"><AgentAvatar name={item.name} kind="forecaster" size="sm" /><span><b>{item.name}</b><ModelLabel model={item.model} /></span></span>
+      {round.forecasters.length ? <ul className="tx-list">{round.forecasters.map((item) => <li key={item.name}>
+        <span className="who"><AgentAvatar name={item.name} kind="forecaster" size="sm" /><span className="aiprov-stack"><b>{item.name}</b><AiProvenance round={round} agent={item} role="forecaster" /></span></span>
         <span className="muted">{item.action === "buy" && item.side ? `${item.side.toUpperCase()} on #${item.proposalId}` : item.action === "abstain" ? "Abstained" : "Unknown"}</span></li>)}</ul> : null}
     </div>;
   }
@@ -305,6 +301,7 @@ export { TITLES as STAGE_TITLES };
 
 /** Identity, provenance and limitations of a saved round, for a drawer. */
 export function RoundFacts({ round }: { round: TestnetRound }) {
+  const prov = roundProvenance(round);
   const checks: Array<[string, boolean | null]> = [["Independent recomputation passed", round.checks.independentPassed], ["Recorded return matches the recomputation", round.checks.returnRecomputed],
     ["Payouts match the recomputation", round.checks.payoutsRecomputed], ["Safe balance changes match the swap", round.checks.swapChecked]];
   return <>
@@ -313,8 +310,8 @@ export function RoundFacts({ round }: { round: TestnetRound }) {
       { label: "Engine", value: <Address value={round.stack.engine} chainId={AURORA_TESTNET} label="engine" live /> },
       ...(round.stack.safe ? [{ label: "Trading Safe", value: <Address value={round.stack.safe} chainId={AURORA_TESTNET} label="Safe" live /> }] : []),
       ...(round.stack.reputation ? [{ label: "Reputation contract", value: <Address value={round.stack.reputation} chainId={AURORA_TESTNET} label="reputation contract" live /> }] : []),
-      { label: "Round id", value: round.roundId }, { label: "Model", value: round.model ?? "—" }, { label: "Genuine model calls", value: round.genuineModelCalls ?? "—" },
-      { label: "Hardware attestation", value: round.attestationVerified ? "Verified" : "Not verified" }, { label: "Saved", value: round.date ?? "—" },
+      { label: "Round id", value: round.roundId }, { label: prov.models.length > 1 ? `Models (${prov.models.length})` : "Model", value: prov.models.length ? <span className="mono">{prov.models.join(", ")}</span> : round.model ?? "—" }, { label: "Genuine model calls", value: round.genuineModelCalls ?? "—" },
+      { label: "Hardware attestation", value: prov.tee === "verified" ? `TEE verified · ${prov.verified} of ${prov.challengers} proposals` : prov.tee === "partial" ? `${prov.verified} of ${prov.challengers} proposals TEE verified` : TEE_LABELS[prov.tee] }, { label: "Saved", value: round.date ?? "—" },
     ]} />
     <ul className="check-list">{checks.filter(([, ok]) => ok !== null).map(([label, ok]) => <li key={label} className={ok ? "ok" : "no"}><Icon name={ok ? "check" : "cross"} /><div><b>{label}</b></div></li>)}</ul>
     {round.limitations.length ? <div><p className="tech-group-title">Limitations</p><ul className="plain-list">{round.limitations.map((item) => <li key={item}>{item}</li>)}</ul></div> : null}

@@ -11,6 +11,7 @@ import { Cap, Tip } from "@/components/v2";
 import { useFreshCheck, useSavedRounds, useTidepoolDemo } from "@/lib/arena/hooks";
 import { participantViews, roundSummary, savedJourney } from "@/lib/arena/model.mjs";
 import { findRound } from "@/lib/record/model.mjs";
+import { roundProvenance, shortModel, TEE_LABELS, TEE_TIPS } from "@/lib/record/provenance.mjs";
 import "../round.css";
 
 export default function RoundPage() {
@@ -23,6 +24,7 @@ export default function RoundPage() {
   const { round, ambiguous } = findRound(rounds, id);
   const journey = round ? savedJourney(round, demo) : null;
   const summary = round ? roundSummary(round) : null;
+  const prov = round ? roundProvenance(round) : null;
 
   return <AppShell source={{ label: "Aurora testnet", tone: "testnet", detail: "saved evidence" }}>
     <Link className="breadcrumb" href="/rounds"><Icon name="chevron" />Rounds</Link>
@@ -37,7 +39,11 @@ export default function RoundPage() {
         eyebrow="Aurora testnet · saved testnet history" title={<>Round {round.roundId} · {round.stack.label}</>}
         caps={<><Cap tone="ok" icon="check">Settled</Cap><Cap icon="receipt">Saved evidence{round.date ? ` · ${round.date}` : ""}</Cap>
           {round.genuineModelCalls ? <Cap tone="ai" icon="spark">{round.genuineModelCalls} genuine AI calls</Cap> : null}
-          {round.models > 1 ? <Cap title="Distinct models recorded per agent in this round">{round.models} models</Cap> : null}
+          {prov && prov.models.length === 1 ? <Cap title={`Every model call in this round used ${prov.models[0]}`}>{shortModel(prov.models[0])}</Cap>
+            : prov && prov.models.length > 1 ? <Cap title={prov.models.join(", ")}>{prov.models.length} models</Cap> : null}
+          {prov ? (prov.tee === "verified" ? <Cap tone="ai" icon="shield" title={TEE_TIPS.verified}>{prov.verified} of {prov.challengers} proposals TEE verified</Cap>
+            : prov.tee === "before-tee" ? <Cap title={TEE_TIPS["before-tee"]}>{TEE_LABELS["before-tee"]}</Cap>
+            : <Cap title={TEE_TIPS["not-attested"]}>{prov.tee === "partial" ? `${prov.verified} of ${prov.challengers} proposals TEE verified` : TEE_LABELS["not-attested"]}</Cap>) : null}
           {round.scriptedForecasters ? <Cap>{round.scriptedForecasters} scripted forecasters</Cap> : null}
           {round.limitations.some((item) => item.startsWith("All forecast bets are explicitly SCRIPTED fixtures aimed at the pre-registered target")) ? <Cap icon="lock" title="Target fixed in SCHEDULE.md before the round ran">Pre-registered target</Cap> : null}
           {(() => { const artifact = round.limitations.find((item) => item.startsWith("Test-pool artifact")); return artifact ? <><Cap tone="warn" icon="alert">Test-pool artifact</Cap><Tip label="Why this return is not a market result">{artifact}</Tip></> : null; })()}</>}

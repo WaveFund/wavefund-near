@@ -38,6 +38,9 @@ const INT = /^(0|-?[1-9][0-9]{0,77})$/;
 const NAME = /^[A-Za-z][A-Za-z0-9]{0,31}$/;
 const MODEL = /^[A-Za-z0-9][A-Za-z0-9_./:-]{0,119}$/;
 const LABEL = /^round[0-9]{1,4}:[A-Za-z0-9:]{1,80}$/;
+const SHA256 = /^[0-9a-f]{64}$/;
+// Plan record provider -> public provenance provider. A test fixture is a scripted actor, never a model.
+const PROVIDERS = Object.freeze({ 'near-ai': 'near-ai', 'test-fixture': 'scripted' });
 const CONTROL = /[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u2028-\u202e\u2060-\u2069\ufeff]/g;
 
 class EvidenceError extends Error {}
@@ -47,6 +50,7 @@ const uint = (value, label) => { check(typeof value === 'string' && UINT.test(va
 const int = (value, label) => { check(typeof value === 'string' && INT.test(value), `${label} must be an integer string`); return value; };
 const hash = (value, label) => { check(typeof value === 'string' && HASH.test(value), `${label} must be a 32-byte hash`); return value.toLowerCase(); };
 const address = (value, label) => { check(typeof value === 'string' && ADDRESS.test(value) && !/^0x0{40}$/i.test(value), `${label} must be an address`); return value.toLowerCase(); };
+const sha256 = (value, label) => { check(typeof value === 'string' && SHA256.test(value), `${label} must be a lowercase sha256`); return value; };
 const name = (value, label) => { check(typeof value === 'string' && NAME.test(value), `${label} must be a plain name`); return value; };
 const count = (value, label) => { check(Number.isSafeInteger(value) && value >= 0, `${label} must be a non-negative integer`); return value; };
 const bps = (value, label) => { check(Number.isSafeInteger(value) && value >= 0 && value <= 10_000, `${label} must be basis points`); return value; };
@@ -230,23 +234,38 @@ function projectRound(source, files, stack, manifest, reputationManifest) {
   check(String(round.winnerId) === winnerId && independent.winner === winnerId, 'the winner disagrees between files');
 
   check(Array.isArray(plan.proposals) && plan.proposals.length > 0, 'proposals are missing');
-  // Multi-model (swarm2) plans carry one model per agent record; older single-model plans keep their unchanged projection.
+  // Multi-model (swarm2) plans carry a distinct model per agent record and a per-decision model to cross-check.
   const multiModel = plan.profile === 'swarm2-v1';
-  const modelFor = (agentName, role) => {
-    const matches = (Array.isArray(plan.records) ? plan.records : []).filter((r) => r?.name === agentName && r?.role === role);
-    check(matches.length === 1 && typeof matches[0].model === 'string' && MODEL.test(matches[0].model), `${role} ${agentName} needs exactly one record with a model id`);
-    return matches[0].model;
+  const records = Array.isArray(plan.records) ? plan.records : [];
+  check(Array.isArray(report.confirmedTransactions) && report.confirmedTransactions.length > 0, 'confirmed transactions are missing');
+  const transactions = report.confirmedTransactions.map((item, index) => {
+    check(isObject(item) && typeof item.label === 'string' && LABEL.test(item.label), `transaction ${index} label`);
+    return { label: item.label, transactionHash: hash(item.hash, `transaction ${index}`), blockNumber: uint(item.blockNumber, `transaction ${index} block`) };
+  });
+  // AI provenance of one actor, from its single plan record: which model answered (or that it was a scripted fixture),
+  // the operator's own input/output hashes, and for proposers the on-chain propose transaction.
+  const provenanceFor = (agentName, role) => {
+    const matches = records.filter((r) => r?.name === agentName && r?.role === role);
+    check(matches.length === 1, `${role} ${agentName} needs exactly one plan record`);
+    const record = matches[0];
+    check(Object.hasOwn(PROVIDERS, record.provider), `${role} ${agentName} has an unknown provider`);
+    const scripted = PROVIDERS[record.provider] === 'scripted';
+    check(scripted || (typeof record.model === 'string' && MODEL.test(record.model)), `${role} ${agentName} needs a model id`);
+    const out = { model: scripted ? null : record.model, provider: PROVIDERS[record.provider], inputHash: sha256(record.inputHash, `${role} ${agentName} input hash`),
+      outputHash: sha256(record.outputHash, `${role} ${agentName} output hash`), scripted };
+    if (role !== 'proposer') return out;
+    const proposed = transactions.filter((item) => item.label === `round${source.roundId}:propose:${agentName}`);
+    check(proposed.length === 1, `proposer ${agentName} needs exactly one confirmed propose transaction`);
+    return { ...out, proposeTx: proposed[0].transactionHash };
   };
   const proposals = plan.proposals.map((item, index) => {
     check(isObject(item) && Number.isSafeInteger(item.id), `proposal ${index} is malformed`);
     const projected = { id: String(item.id), name: name(item.name, `proposal ${index} name`), allocationBps: bps(item.allocationBps, `proposal ${index} allocation`), rationale: text(item.rationale, `proposal ${index} rationale`, 320) };
-    return multiModel && item.id !== 0 ? { ...projected, model: modelFor(projected.name, 'proposer') } : projected;
+    return item.id === 0 ? projected : { ...projected, ...provenanceFor(projected.name, 'proposer') };
   });
-  if (multiModel) check(new Set(plan.records.map((r) => r.model)).size === plan.records.length, 'a multi-model plan reuses a model');
+  if (multiModel) check(new Set(records.map((r) => r.model)).size === records.length, 'a multi-model plan reuses a model');
   const winner = proposals.find((item) => item.id === winnerId);
   check(winner, 'the winning proposal is not in the plan');
-  const records = Array.isArray(plan.records) ? plan.records : [];
-  const fixtureForecasters = new Set(records.filter((item) => item?.role === 'forecaster' && item?.provider === 'test-fixture').map((item) => item.name));
   const proposers = records.filter((item) => item?.role === 'proposer').map((item) => ({
     name: name(item.name, 'proposer'), provider: text(item.provider, 'proposer provider', 40), confidenceBps: bps(item.decision?.confidenceBps, 'proposer confidence'),
   }));
@@ -256,12 +275,13 @@ function projectRound(source, files, stack, manifest, reputationManifest) {
     check(isObject(item), `decision ${index} is malformed`);
     const label = `decision ${index}`;
     const base = { name: name(item.name, `${label} name`) };
-    if (multiModel) { base.model = modelFor(base.name, 'forecaster'); check(item.model === base.model, `${label} model differs from its plan record`); }
-    if (item.action === 'abstain') return { ...base, action: 'abstain', reason: text(item.reason, `${label} reason`, 200), scripted: fixtureForecasters.has(base.name) };
+    Object.assign(base, provenanceFor(base.name, 'forecaster'));
+    if (multiModel) check(item.model === records.find((r) => r?.name === base.name && r?.role === 'forecaster').model, `${label} model differs from its plan record`);
+    // A fixture rationale on a forecast that claims a model call is contradictory evidence.
+    check(base.scripted || !/fixture/i.test(String(item.forecast?.rationale ?? '')), `${label} has a fixture rationale but a model provider`);
+    if (item.action === 'abstain') return { ...base, action: 'abstain', reason: text(item.reason, `${label} reason`, 200) };
     check(item.action === 'buy' && ['long', 'short'].includes(item.side) && Number.isSafeInteger(item.proposalId), `${label} must be a buy with a side or an abstention`);
-    // Fixture forecasts carry an explicit "functional scenario fixture" rationale or a test-fixture provider record.
-    const scripted = fixtureForecasters.has(base.name) || /fixture/i.test(String(item.forecast?.rationale ?? ''));
-    return { ...base, action: 'buy', side: item.side, proposalId: String(item.proposalId), credits: uint(item.creditAmount, `${label} credits`), scripted };
+    return { ...base, action: 'buy', side: item.side, proposalId: String(item.proposalId), credits: uint(item.creditAmount, `${label} credits`) };
   });
 
   check(Array.isArray(completion.payouts), 'payouts are missing');
@@ -272,11 +292,6 @@ function projectRound(source, files, stack, manifest, reputationManifest) {
   }));
   for (const item of payouts) check(BigInt(item.payout) - BigInt(item.deposit) === BigInt(item.profitLoss), `payout arithmetic for ${item.name}`);
 
-  check(Array.isArray(report.confirmedTransactions) && report.confirmedTransactions.length > 0, 'confirmed transactions are missing');
-  const transactions = report.confirmedTransactions.map((item, index) => {
-    check(isObject(item) && typeof item.label === 'string' && LABEL.test(item.label), `transaction ${index} label`);
-    return { label: item.label, transactionHash: hash(item.hash, `transaction ${index}`), blockNumber: uint(item.blockNumber, `transaction ${index} block`) };
-  });
   const swap = swapFor(source, files, stack, manifest, transactions);
   const realisedReturnX18 = uint(round.realisedReturn, 'realised return');
   // The round's own market terms, read from the completion record: the trading/evaluation window, the TWAP window used for

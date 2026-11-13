@@ -4,13 +4,14 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { AgentAvatar, Chip } from "@/components/arena/parts";
+import { AiProvenance } from "@/components/arena/AiProvenance";
 import { Address, useNow } from "@/components/funding/primitives";
 import { EmptyState, SegmentedControl, Skeleton } from "@/components/ui";
 import { Drawer, PageHead, Tip } from "@/components/v2";
 import { useSavedRounds } from "@/lib/arena/hooks";
 import { percentFromBps } from "@/lib/arena/model.mjs";
 import { AURORA_TESTNET, formatAge } from "@/lib/funding/model.mjs";
-import { attributableRounds, rankAgents, type AgentRow } from "@/lib/record/agents-view.mjs";
+import { agentProposals, attributableRounds, rankAgents, type AgentProposal, type AgentRow } from "@/lib/record/agents-view.mjs";
 import { formatPoints, formatReturnX18, snapshotStale, type ReputationBoard } from "@/lib/record/model.mjs";
 import { RecordUnavailable, loadReputation, type ReputationStackId } from "@/lib/record/loader";
 import "./agents.css";
@@ -35,7 +36,7 @@ function Rules() {
   </ul>;
 }
 
-function AgentDetail({ row, stack, stackLabel, rounds, roundsFailed }: { row: AgentRow; stack: ReputationStackId; stackLabel: string; rounds: ReturnType<typeof attributableRounds> | null; roundsFailed: boolean }) {
+function AgentDetail({ row, stackLabel, rounds, proposals, roundsFailed }: { row: AgentRow; stackLabel: string; rounds: ReturnType<typeof attributableRounds> | null; proposals: AgentProposal[] | null; roundsFailed: boolean }) {
   const points = row.score !== null ? formatPoints(row.score) : null;
   return <>
     <div className="ag-block"><h3>Wallet</h3>{row.address ? <Address value={row.address} chainId={AURORA_TESTNET} label={`${row.name} wallet`} live /> : <span className="ag-na">unavailable</span>}</div>
@@ -56,6 +57,14 @@ function AgentDetail({ row, stack, stackLabel, rounds, roundsFailed }: { row: Ag
           </div>;
         })}</div>}
       <p className="ag-na" style={{ marginTop: 10 }}>The per-round change is separate from the cumulative total above. Stacks are never added together.</p>
+    </div>
+    <div><p className="eyebrow" style={{ marginBottom: 10 }}>Model behind each saved proposal</p>
+      {roundsFailed ? <p className="ag-na">Saved rounds are unavailable.</p> : !proposals ? <Skeleton height={64} />
+        : proposals.length === 0 ? <p className="ag-na">No saved proposal by this agent on this stack.</p>
+        : <div className="ag-rounds">{proposals.map((item) => <div key={item.slug} className="ag-round ag-prov">
+          <Link href={`/rounds/${item.slug}`}>Round {item.roundId}</Link><span className="num" style={{ textAlign: "right" }}>{percentFromBps(item.proposal.allocationBps) ?? "unavailable"} ETH</span>
+          <AiProvenance round={item.round} agent={item.proposal} role="proposer" />
+        </div>)}</div>}
     </div>
   </>;
 }
@@ -109,12 +118,13 @@ export default function AgentsPage() {
     {!current.board && current.error ? <EmptyState icon="alert" title="Reputation unavailable">{problem(current.error)} Nothing is shown as zero while reputation cannot be read. <Tip label="For developers">Start the Wavefund API or run bash scripts/docker-demo/up.sh.</Tip></EmptyState>
       : <div className="card ag-card"><div className="table-wrap"><table className="table ag-table">
         <caption className="sr-only" style={{ position: "absolute", left: -9999 }}>Proposer agents on the {info.label}, ranked by cumulative outcome score</caption>
-        <thead><tr><th>Agent</th><th className="r">Outcome score</th><th className="r">Scored rounds</th><th className="r">+ / − / flat</th></tr></thead>
+        <thead><tr><th>Agent · latest model</th><th className="r">Outcome score</th><th className="r">Scored rounds</th><th className="r">+ / − / flat</th></tr></thead>
         <tbody>{!current.board ? [0, 1, 2, 3].map((i) => <tr key={i}><td><Skeleton width={110} height={20} /></td><td><Skeleton width={30} /></td><td><Skeleton width={30} /></td><td><Skeleton width={60} /></td></tr>)
           : rows.map((item) => {
             const points = item.score !== null ? formatPoints(item.score) : null;
             return <tr key={item.name} onClick={() => setSelected(item.name)}>
-              <td><button type="button" className="ag-name" onClick={(event) => { event.stopPropagation(); setSelected(item.name); }}><AgentAvatar name={item.name} size="sm" />{item.name}</button></td>
+              <td><span className="aiprov-stack"><button type="button" className="ag-name" onClick={(event) => { event.stopPropagation(); setSelected(item.name); }}><AgentAvatar name={item.name} size="sm" />{item.name}</button>
+                {(() => { const latest = rounds ? agentProposals(rounds, stack, item.name)[0] : null; return latest ? <span className="ag-latest"><span className="sr-only">Latest saved proposal, round {latest.roundId}: </span><AiProvenance round={latest.round} agent={latest.proposal} role="proposer" /></span> : null; })()}</span></td>
               {item.available ? <>
                 <td className={`r num ${tone(points)}`}>{points}</td><td className="r num">{item.samples}</td>
                 <td className="r"><span className="ag-split num"><span className="ag-pos">+{item.positive}</span><span className="ag-neg">−{item.negative}</span><span style={{ color: "var(--muted)" }}>{item.flat}</span></span></td></>
@@ -131,7 +141,7 @@ export default function AgentsPage() {
     </div> : null}
 
     <Drawer open={row !== null} onClose={() => setSelected(null)} title={row ? <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}><AgentAvatar name={row.name} size="sm" />{row.name}</span> : "Agent"}>
-      {row ? <AgentDetail row={row} stack={stack} stackLabel={info.label} rounds={attributable} roundsFailed={Boolean(roundsError)} /> : null}
+      {row ? <AgentDetail row={row} stackLabel={info.label} rounds={attributable} proposals={row && rounds ? agentProposals(rounds, stack, row.name) : null} roundsFailed={Boolean(roundsError)} /> : null}
     </Drawer>
   </AppShell>;
 }

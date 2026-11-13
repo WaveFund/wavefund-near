@@ -115,6 +115,45 @@ function proposal(item) {
   return { id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: safeText(item.rationale, 320) ?? '', ...(model ? { model } : {}) };
 }
 
+// ---------------------------------------------------------------- AI provenance
+
+const SHA256 = /^[0-9a-f]{64}$/;
+const PROVIDERS = ['near-ai', 'scripted'];
+// TEE checks were added at round 9; earlier rounds can never be attested retroactively.
+export const LAST_PRE_TEE_ROUND = 8;
+const INVALID = Symbol('invalid provenance');
+
+/**
+ * Provenance of one actor in a saved round: which model answered (or that it was scripted), the operator's own hashes,
+ * the on-chain propose transaction, and the TEE status. When the API sends provenance fields they must all be valid and
+ * agree with the round's own transactions, or the round is rejected. An older API without them gives only what it knows.
+ */
+function actorProvenance(raw, { role, roundId, name, transactions, teeVerified, scriptedHint }) {
+  const tee = teeVerified ? 'verified' : Number(roundId) <= LAST_PRE_TEE_ROUND ? 'before-tee' : 'not-attested';
+  if (raw.provider === undefined) {
+    if (scriptedHint) return { status: 'scripted', model: null, provider: 'scripted', inputHash: null, outputHash: null, proposeTx: null, proposeTxUrl: null, tee };
+    const model = agentModel(raw.model);
+    return { status: model ? 'model' : 'unknown', model, provider: null, inputHash: null, outputHash: null, proposeTx: null, proposeTxUrl: null, tee };
+  }
+  if (!PROVIDERS.includes(raw.provider) || typeof raw.scripted !== 'boolean' || raw.scripted !== (raw.provider === 'scripted')) return INVALID;
+  if (raw.scripted ? raw.model !== null : agentModel(raw.model) === null) return INVALID;
+  if (typeof raw.inputHash !== 'string' || !SHA256.test(raw.inputHash) || typeof raw.outputHash !== 'string' || !SHA256.test(raw.outputHash)) return INVALID;
+  let proposeTx = null;
+  if (role === 'proposer') {
+    if (!isTxHash(raw.proposeTx)) return INVALID;
+    proposeTx = raw.proposeTx.toLowerCase();
+    const label = `round${roundId}:propose:${name}`;
+    if (!transactions.some((t) => t.label === label && t.transactionHash === proposeTx)) return INVALID;
+  } else if (raw.proposeTx !== undefined) return INVALID;
+  return { status: raw.scripted ? 'scripted' : 'model', model: raw.scripted ? null : raw.model, provider: raw.provider, inputHash: raw.inputHash, outputHash: raw.outputHash,
+    proposeTx, proposeTxUrl: proposeTx ? explorerUrl(AURORA_TESTNET, 'tx', proposeTx) : null, tee };
+}
+
+// Where the round's plan.json lives in the public repository, from the evidence directory the API names.
+export const GITHUB_REPO_BLOB = 'https://github.com/WaveFund/wavefund-near/blob/main/';
+const EVIDENCE_DIR = /^docs\/test-evidence\/[a-z0-9-]{1,40}(\/round[1-9][0-9]{0,3})?$/;
+export const evidencePlanUrl = (source) => typeof source === 'string' && EVIDENCE_DIR.test(source) ? `${GITHUB_REPO_BLOB}${source}/plan.json` : null;
+
 const SLUG = /^1313161555-0x[0-9a-f]{40}-\d{1,6}$/;
 function round(item) {
   if (!isObject(item) || typeof item.roundId !== 'string' || !/^\d{1,6}$/.test(item.roundId) || !isObject(item.winner)) return null;
@@ -125,7 +164,8 @@ function round(item) {
   if (!proposals.length || proposals.includes(null)) return null;
   const winner = proposals.find((p) => p.id === item.winner.proposalId);
   if (!winner) return null;
-  const forecasters = (Array.isArray(item.forecasters) ? item.forecasters : []).filter(isObject).map((f) => ({
+  const rawForecasters = (Array.isArray(item.forecasters) ? item.forecasters : []).filter(isObject);
+  const forecasters = rawForecasters.map((f) => ({
     name: typeof f.name === 'string' && NAME.test(f.name) ? f.name : 'Forecaster',
     action: f.action === 'abstain' ? 'abstain' : f.action === 'buy' && ['long', 'short'].includes(f.side) ? 'buy' : 'unknown',
     side: f.side === 'long' || f.side === 'short' ? f.side : null,
@@ -142,6 +182,21 @@ function round(item) {
   }));
   const transactions = (Array.isArray(item.transactions) ? item.transactions : []).filter((t) => isObject(t) && typeof t.label === 'string' && LABEL.test(t.label) && isTxHash(t.transactionHash) && isIntegerString(t.blockNumber))
     .map((t) => ({ label: t.label, transactionHash: t.transactionHash.toLowerCase(), blockNumber: t.blockNumber, url: explorerUrl(AURORA_TESTNET, 'tx', t.transactionHash) }));
+  // Per-actor provenance, checked against the round's own transactions and TEE proofs.
+  const tee = (Array.isArray(item.tee) ? item.tee : []).filter(t => Number(item.roundId) > LAST_PRE_TEE_ROUND && proposals.some(p => p.id !== '0' && p.id === t?.proposalId && p.name === t.name) && teeDisplay(t).verified);
+  const rawProposals = item.proposals;
+  for (const [index, p] of proposals.entries()) {
+    if (p.id === '0') continue;
+    const provenance = actorProvenance(rawProposals[index], { role: 'proposer', roundId: item.roundId, name: p.name, transactions, teeVerified: tee.some((t) => t.proposalId === p.id), scriptedHint: false });
+    if (provenance === INVALID) return null;
+    p.provenance = provenance;
+  }
+  for (const [index, f] of forecasters.entries()) {
+    const provenance = actorProvenance(rawForecasters[index], { role: 'forecaster', roundId: item.roundId, name: f.name, transactions, teeVerified: false, scriptedHint: f.scripted });
+    if (provenance === INVALID || (provenance.provider !== null && provenance.status !== 'unknown' && f.scripted !== (provenance.status === 'scripted'))) return null;
+    f.provenance = provenance;
+  }
+  const nonHold = proposals.filter((p) => p.id !== '0');
   const swap = isObject(item.swap) && isTxHash(item.swap.transactionHash) ? {
     transactionHash: item.swap.transactionHash.toLowerCase(), url: explorerUrl(AURORA_TESTNET, 'tx', item.swap.transactionHash),
     stableDelta: isSignedInteger(item.swap.stableDelta) ? item.swap.stableDelta : null, assetDelta: isSignedInteger(item.swap.assetDelta) ? item.swap.assetDelta : null,
@@ -168,8 +223,10 @@ function round(item) {
     title: safeText(item.title, 120) ?? `Round ${item.roundId}`, date: safeText(item.date, 20), kind: safeText(item.kind, 80),
     genuineModelCalls: Number.isSafeInteger(item.genuineModelCalls) ? item.genuineModelCalls : null,
     scriptedForecasters: Number.isSafeInteger(item.scriptedForecasters) ? item.scriptedForecasters : null,
-    model: safeText(item.model, 80), models, tee: (Array.isArray(item.tee) ? item.tee : []).filter(t => Number(item.roundId) > 8 && proposals.some(p => p.id !== '0' && p.id === t?.proposalId && p.name === t.name) && teeDisplay(t).verified),
-    attestationVerified: Number(item.roundId) > 8 && item.attestationVerified === true && proposals.filter(p => p.id !== '0').length === 4 && Array.isArray(item.tee) && item.tee.length === 4 && new Set(item.tee.map(t => t?.proposalId)).size === 4 && item.tee.every(t => proposals.some(p => p.id !== '0' && p.id === t?.proposalId && p.name === t.name) && teeDisplay(t).verified),
+    model: safeText(item.model, 80), models, tee, source: typeof item.source === 'string' && EVIDENCE_DIR.test(item.source) ? item.source : null, evidenceUrl: evidencePlanUrl(item.source),
+    // Every non-Hold proposal, and only those, carries its own verified TEE proof: n proofs for n proposals, n distinct ids.
+    attestationVerified: Number(item.roundId) > LAST_PRE_TEE_ROUND && item.attestationVerified === true && nonHold.length > 0 && Array.isArray(item.tee) && item.tee.length === nonHold.length
+      && new Set(item.tee.map(t => t?.proposalId)).size === nonHold.length && item.tee.every(t => nonHold.some(p => p.id === t?.proposalId && p.name === t.name) && teeDisplay(t).verified),
     proposals, winner: { ...winner, isHold: winner.id === '0' }, forecasters, swap, market,
     realisedReturnX18: isIntegerString(item.realisedReturnX18) ? item.realisedReturnX18 : null,
     payouts, transactions, droppedTransactions: (Array.isArray(item.transactions) ? item.transactions.length : 0) - transactions.length, reputation,

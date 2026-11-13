@@ -46,3 +46,15 @@ export function attributableRounds(rounds, stackId, agentName) {
     }))
     .sort((a, b) => (BigInt(a.roundId) < BigInt(b.roundId) ? 1 : -1));
 }
+
+/**
+ * Every saved round on one stack where this agent proposed a strategy, newest first, with that proposal (and so its
+ * AI provenance). The first entry is the agent's latest recorded model on the stack.
+ */
+export function agentProposals(rounds, stackId, agentName) {
+  if (!Array.isArray(rounds)) return [];
+  return rounds
+    .filter((round) => round.stack.id === stackId)
+    .flatMap((round) => round.proposals.filter((p) => p.id !== '0' && p.name === agentName).map((proposal) => ({ slug: round.slug, roundId: round.roundId, round, proposal })))
+    .sort((a, b) => (BigInt(a.roundId) < BigInt(b.roundId) ? 1 : -1));
+}

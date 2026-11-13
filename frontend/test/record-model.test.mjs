@@ -105,21 +105,21 @@ test('published round evidence validates with explorer links and honest round 8 
   assert.equal(validateRoundEvidence({ ...structuredClone(raw), network: { chainId: 1313161554 } }).ok, false);
 });
 
-test('per-agent models show only when the evidence records them, and only as plain model ids', async () => {
+test('every saved round names each agent model; markup is never a model id and rejects the round', async () => {
   const raw = await loadRoundEvidence();
   const old = validateRoundEvidence(raw);
   const isR9 = (round) => round.stack.id === 'tidepool' && round.roundId === '9';
+  assert.equal(old.rounds.length, raw.rounds.length, 'every served round validates');
   assert.equal(old.rounds.find(isR9)?.models, 12, 'round 9 shows its 12 models');
-  assert.ok(old.rounds.filter((round) => !isR9(round)).every((round) => round.models === 0 && round.proposals.every((p) => !('model' in p)) && round.forecasters.every((f) => !('model' in f))), 'single-model rounds unchanged');
-  const multi = structuredClone(raw); const r8 = (round) => round.stack.id === 'tidepool' && round.roundId === '8'; const round = multi.rounds.find(r8);
+  assert.ok(old.rounds.filter((round) => !isR9(round)).every((round) => round.models === 1 && round.proposals.every((p) => p.id === '0' ? p.model === undefined : p.model === 'Qwen/Qwen3.6-35B-A3B-FP8')), 'single-model rounds show their one Qwen model');
+  const multi = structuredClone(raw); const r7 = (round) => round.stack.id === 'tidepool' && round.roundId === '7'; const round = multi.rounds.find(r7);
   round.proposals.forEach((p, i) => { if (p.id !== '0') p.model = `Qwen/Qwen3.${i}-27B`; });
-  round.forecasters.forEach((f, i) => { f.model = i === 0 ? 'anthropic/claude-haiku-5-5' : i === 1 ? '<img src=x onerror=alert(1)>' : 'openai/gpt-4.1-mini'; });
-  const shown = validateRoundEvidence(multi).rounds.find(r8);
+  round.forecasters.forEach((f, i) => { f.model = i === 0 ? 'anthropic/claude-haiku-5-5' : 'openai/gpt-4.1-mini'; });
+  const shown = validateRoundEvidence(multi).rounds.find(r7);
   assert.equal(shown.proposals[0].model, undefined);
   assert.equal(shown.proposals[1].model, 'Qwen/Qwen3.1-27B');
-  assert.equal(shown.forecasters[0].model, 'anthropic/claude-haiku-5-5');
-  assert.equal(shown.forecasters[1].model, undefined, 'markup is never a model id');
-  // Round 8: four challenger models + claude + gpt (the markup entry is dropped, gpt repeats) = 6 distinct.
-  assert.equal(round.forecasters.length, 4);
-  assert.equal(shown.models, 6);
+  assert.equal(shown.forecasters[0].provenance.model, 'anthropic/claude-haiku-5-5');
+  assert.equal(shown.models, 6, 'four challenger models + claude + gpt (gpt repeats)');
+  round.forecasters[1].model = '<img src=x onerror=alert(1)>';
+  assert.equal(validateRoundEvidence(multi).rounds.find(r7), undefined, 'a provenance with a markup model id is not shown at all');
 });

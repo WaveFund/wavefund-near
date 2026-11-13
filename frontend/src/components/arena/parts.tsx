@@ -77,7 +77,8 @@ export function MiniTrack({ stages }: { stages: JourneyStage[] }) {
 
 // ---------------------------------------------------------------- strategies and positions
 
-export type StrategyView = { id: string; name: string; allocationBps: number; rationale: string; source: "ai" | "tee" | "fixture" | "baseline"; model?: string | null };
+/** `agent` strategies show their AI provenance line (`badge`); `fixture` is a local simulated agent; `baseline` is Hold. */
+export type StrategyView = { id: string; name: string; allocationBps: number; rationale: string; source: "agent" | "fixture" | "baseline"; badge?: ReactNode };
 
 export function StrategyCard({ strategy, selected = false, dim = false, compact = false, onSelect }: { strategy: StrategyView; selected?: boolean; dim?: boolean; compact?: boolean; onSelect?: () => void }) {
   const hold = strategy.id === "0";
@@ -86,7 +87,7 @@ export function StrategyCard({ strategy, selected = false, dim = false, compact 
     {selected ? <span className="selected-flag"><Icon name="check" />Selected</span> : null}
     <div className="strategy-top">
       <AgentAvatar name={strategy.name} kind={hold ? "hold" : "proposer"} />
-      <div className="strategy-name"><b>{hold ? "Keep allocation" : strategy.name}</b><span>{hold ? "Baseline · Hold" : `Proposal #${strategy.id}`}</span>{!hold && strategy.model ? <span className="num" style={{ fontSize: 11 }} title="AI model that proposed this strategy">{strategy.model}</span> : null}</div>
+      <div className="strategy-name"><b>{hold ? "Keep allocation" : strategy.name}</b><span>{hold ? "Baseline · Hold" : `Proposal #${strategy.id}`}</span></div>
     </div>
     <div className="strategy-alloc">
       <AllocationRing bps={strategy.allocationBps} />
@@ -96,8 +97,7 @@ export function StrategyCard({ strategy, selected = false, dim = false, compact 
       : thesis ? (thesis.length > 150 ? <details><summary>Read the thesis</summary><p>{thesis}</p></details> : <p className="strategy-thesis">{thesis}</p>) : null) : null}
     <div className="strategy-foot">
       {strategy.source === "baseline" ? <Chip tone="plain">Baseline</Chip>
-        : strategy.source === "tee" ? <Chip tone="ai" icon="shield" title="The NEAR AI answer was checked inside a verified enclave (Intel TDX + NVIDIA GPU attestation, signed response) before it was submitted; its hash is in the on-chain proposal.">TEE-verified AI</Chip>
-        : strategy.source === "ai" ? <Chip tone="ai" icon="spark">AI-generated</Chip> : <Chip tone="fixture">Simulated agent</Chip>}
+        : strategy.source === "fixture" ? <Chip tone="fixture">Simulated agent</Chip> : strategy.badge ?? null}
       {onSelect ? <button type="button" className="btn btn-sm btn-ghost strategy-open" onClick={(event) => { event.stopPropagation(); onSelect(); }}>Rationale<Icon name="arrow" /></button> : null}
     </div>
   </article>;
