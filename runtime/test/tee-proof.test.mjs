@@ -10,12 +10,12 @@ import { syntheticTee } from './fixtures/tee-synthetic.mjs';
 const ABI = parseAbi(['event ProposalCreated(uint256 indexed roundId, uint256 indexed proposalId, address indexed proposer, uint16 tEthBps, string rationale)']);
 async function proofFixture() {
   const f = await syntheticTee(); const engine = `0x${'23'.repeat(20)}`;
-  const plan = { teeRequired: true, attestationVerified: true, roundId: '9', engine, market: { evidenceId: 'market' }, records: [], proposals: [{ id: 0, name: 'Hold' }] };
+  const plan = { teeRequired: true, attestationVerified: true, roundId: '9', engine, safe: `0x${'67'.repeat(20)}`, chainId: 1313161555, createdAt: f.at - 1, snapshot: { blockNumber: '100' }, market: { evidenceId: 'market' }, records: [], proposals: [{ id: 0, name: 'Hold' }] };
   const receipts = [];
   for (let id = 1; id <= 4; id++) {
     const raw = { allocationBps: id * 2000, confidenceBps: 4000, rationale: 'Measured test allocation.', risks: ['Risk'], evidenceIds: ['market'] };
-    const decision = validateProposal(raw, { evidenceIds: ['market'] }); const input = { system: 'system', context: {} };
-    const e = structuredClone(f.evidence); e.responseBody = JSON.stringify({ id: 'chat-test', choices: [{ message: { content: JSON.stringify(raw) } }] }); e.signature = await f.signature(e.requestBody, e.responseBody);
+    const decision = validateProposal(raw, { evidenceIds: ['market'] }); const input = { system: 'system', context: { agent: `Agent${id}`, role: 'proposer', roundContext: { chainId: plan.chainId, engine: plan.engine, safe: plan.safe, roundId: plan.roundId, snapshotBlock: '100' } } };
+    const e = structuredClone(f.evidence); e.requestBody = JSON.stringify({ model: f.model, messages: [{ role: 'system', content: input.system }, { role: 'user', content: JSON.stringify({ ...input.context, teeChallenge: f.nonce }) }] }); e.responseBody = JSON.stringify({ id: 'chat-test', choices: [{ message: { content: JSON.stringify(raw) } }] }); e.signature = await f.signature(e.requestBody, e.responseBody);
     const privacy = await verifyTeeEvidence(e, f.policy, { quoteVerifier: f.quoteVerifier });
     const record = { name: `Agent${id}`, role: 'proposer', provider: 'near-ai', attestationVerified: true, input, inputHash: digest(input), decision, outputHash: digest(decision), privacy, teeEvidence: e };
     plan.records.push(record); plan.proposals.push({ id, name: record.name, allocationBps: raw.allocationBps });
@@ -30,6 +30,8 @@ test('TEE records recheck hardware/signature, literal prompt and normalized deci
   await verifyPlanTee(plan, f.policy, opts);
   await assert.rejects(verifyPlanTee({ ...plan, records: [] }, f.policy, opts), /TEE_RECORD_SET_INCOMPLETE/);
   await assert.rejects(verifyPlanTee({ ...plan, teeRequired: false, attestationVerified: false, records: [] }, f.policy, opts), /TEE_REQUESTED_BUT_PLAN_UNVERIFIED/);
+  await assert.rejects(verifyPlanTee({ ...plan, createdAt: undefined }, f.policy, opts), /TEE_ROUND_CONTEXT_MISMATCH/);
+  await assert.rejects(verifyPlanTee({ ...plan, roundId: '10' }, f.policy, opts), /TEE_ROUND_CONTEXT_MISMATCH/);
   const wrong = structuredClone(plan); wrong.records[0].input.system = 'changed'; wrong.records[0].inputHash = digest(wrong.records[0].input);
   await assert.rejects(verifyPlanTee(wrong, f.policy, opts), /TEE_PROMPT_RECORD_MISMATCH/);
   const output = structuredClone(plan); output.records[0].outputHash = '00'.repeat(32);

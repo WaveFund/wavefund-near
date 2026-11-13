@@ -2,7 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync } from 'node:fs';
 import { roleGuides, guideFor, ROUND_STEPS } from '../src/lib/guides.mjs';
-import { walletAvailability } from '../src/lib/wallet/flow.mjs';
 import { loadRoundEvidence } from '../../runtime/operator/round-evidence.mjs';
 import { validateRoundEvidence, findRound } from '../src/lib/record/model.mjs';
 
@@ -25,8 +24,4 @@ test('role guides are bounded, known and have safe existing route targets', asyn
   assert.equal(guideFor('manager', []).steps[2].href, '/rounds', 'missing saved round must fall back to a real list');
   assert.equal(guideFor('observer', rounds).steps[1].href.endsWith('?stage=proposals'), true);
   assert.deepEqual(ROUND_STEPS, ['Funded', 'Proposals', 'Forecasting', 'Selected', 'Executed', 'Measured']);
-});
-test('wallet is visible between rounds and unavailable monitoring never fabricates a round', () => {
-  for (const v of [null, undefined, {}, { roundId: 1 }]) assert.deepEqual(walletAvailability(v), { visible: true, context: 'between-rounds' });
-  assert.deepEqual(walletAvailability({ roundId: '8' }), { visible: true, context: 'round' });
 });

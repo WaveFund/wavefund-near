@@ -10,13 +10,16 @@ const scratch = mkdtempSync(join(tmpdir(), 'wavefund-tee-mutants-'));
 for (const dir of ['runtime/agents', 'frontend/src/lib']) {
   mkdirSync(join(scratch, dir), { recursive: true }); cpSync(join(root, dir), join(scratch, dir), { recursive: true, filter: source => !basename(source).startsWith('.') });
 }
-for (const file of ['runtime/test/tee.test.mjs', 'runtime/test/tee-proof.test.mjs', 'runtime/test/fixtures/tee-synthetic.mjs', 'frontend/test/tee.test.mjs']) {
+for (const file of ['runtime/test/tee.test.mjs', 'runtime/test/tee-proof.test.mjs', 'runtime/test/fixtures/tee-synthetic.mjs', 'frontend/test/tee.test.mjs', 'frontend/test/wallet-availability.test.mjs']) {
   mkdirSync(join(scratch, file, '..'), { recursive: true }); cpSync(join(root, file), join(scratch, file));
 }
 cpSync(join(root, 'package.json'), join(scratch, 'package.json'));
 symlinkSync(join(root, 'node_modules'), join(scratch, 'node_modules'), 'dir');
 process.chdir(scratch);
 const cases = [
+ ['wallet view/chain round match', 'frontend/src/lib/wallet/flow.mjs', 'String(chainRoundId) === round.roundId', 'true'],
+ ['signed request nonce', 'runtime/agents/tee.mjs', "check(JSON.parse(request.messages?.[1]?.content ?? 'null')?.teeChallenge === nonce, 'TEE_REQUEST_NONCE_MISMATCH');", 'void 0;'],
+ ['signed round context', 'runtime/agents/tee-record.mjs', "throw new Error('TEE_ROUND_CONTEXT_MISMATCH')", 'void 0'],
  ['TEE requested on old plan', 'runtime/agents/tee-record.mjs', "throw new Error('TEE_REQUESTED_BUT_PLAN_UNVERIFIED')", 'void 0'],
  ['TEE record set required', 'runtime/agents/tee-record.mjs', "throw new Error('TEE_RECORD_SET_INCOMPLETE')", 'void 0'],
  ['evidence schema', 'runtime/agents/tee-client.mjs', 'evidence?.schemaVersion === 1', 'true'],
@@ -50,7 +53,7 @@ const cases = [
  ['proposal hash', 'runtime/agents/tee.mjs', 'event.rationale.startsWith(`NEAR AI (TEE verified) sha256:${sha256(Buffer.from(record.teeEvidence.responseBody))} · `)', 'true'],
  ['UI every check', 'frontend/src/lib/tee.mjs', 'checks.every(c => c.ok)', 'checks.some(c => c.ok)'],
 ];
-const tests = ['runtime/test/tee.test.mjs','runtime/test/tee-proof.test.mjs','frontend/test/tee.test.mjs'];
+const tests = ['runtime/test/tee.test.mjs','runtime/test/tee-proof.test.mjs','frontend/test/tee.test.mjs', 'frontend/test/wallet-availability.test.mjs'];
 const run = () => spawnSync(process.execPath, ['--test', ...tests], { encoding: 'utf8', timeout: 20000 });
 const baseline = run(); if (baseline.status !== 0) { console.log(baseline.stdout,baseline.stderr); process.exit(2); }
 let caught = 0; const survivors = [];

@@ -20,4 +20,4 @@ export declare function stepStates(next: NextStep | null, reads: TradeReads | nu
 export declare function redeemState(input: { windowKind: WindowKind; deposit: bigint | null; redeemed: boolean | null; winnerHoldings: bigint | null; preview: bigint | null }): { canRedeem: boolean; message: string | null };
 export declare function explainError(failure: { name?: string | null; code?: number | null; message?: string | null } | null | undefined): string;
 
-export declare function walletAvailability(round: unknown): { visible: true; context: 'round' | 'between-rounds' };
+export declare function walletAvailability(round: unknown, chainRoundId?: bigint | string | null): { visible: true; context: 'round' | 'between-rounds'; roundMatches: boolean };

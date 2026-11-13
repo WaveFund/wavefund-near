@@ -93,7 +93,7 @@ export function createTeeProvider(config, { policy, fetchImpl = fetch, quoteVeri
         }
       }
       // Only now can a paid completion leave this process. Serialize once; don't wrap or modify its fetch later.
-      const requestBody = JSON.stringify({ model: checked.model, messages: [{ role: 'system', content: system }, { role: 'user', content: JSON.stringify(context) }], max_tokens: 1800, temperature: 0.2, stream: false, chat_template_kwargs: { enable_thinking: false }, response_format: { type: 'json_object' } });
+      const requestBody = JSON.stringify({ model: checked.model, messages: [{ role: 'system', content: system }, { role: 'user', content: JSON.stringify({ ...context, teeChallenge: nonce }) }], max_tokens: 1800, temperature: 0.2, stream: false, chat_template_kwargs: { enable_thinking: false }, response_format: { type: 'json_object' } });
       const responseBody = await request(`${BASE}/chat/completions`, { method: 'POST', headers: auth, body: requestBody }, 65536);
       const payload = JSON.parse(responseBody); const choice = payload.choices?.[0];
       check(choice?.finish_reason === 'stop' && !choice.message?.tool_calls?.length && typeof choice.message?.content === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(payload.id), 'TEE_COMPLETION_INVALID');

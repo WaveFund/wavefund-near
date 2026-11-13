@@ -56,7 +56,7 @@ export function WalletForecast({ view }: { view: LiveRound | null }) {
   const [quoted, setQuoted] = useState<{ key: string; value: bigint | null; error?: string } | null>(null);
 
   const readSerial = useRef(0);
-  const availability = walletAvailability(view);
+  const availability = walletAvailability(view, pos?.round?.id ?? null);
   const onAurora = isAuroraTestnet(chain);
   const busy = tx?.phase === "signing" || tx?.phase === "pending";
 
@@ -89,7 +89,7 @@ export function WalletForecast({ view }: { view: LiveRound | null }) {
   const next = nextTradeStep({ reads, depositAmount, creditAmount });
 
   const quoteKey = round && creditAmount ? `${round.id}:${proposalId}:${side}:${creditAmount}` : null;
-  const showQuote = win.kind === "open" && !!pos && pos.deposit > 0n;
+  const showQuote = availability.roundMatches && win.kind === "open" && !!pos && pos.deposit > 0n;
   useEffect(() => {
     if (!showQuote || !quoteKey || !round || !creditAmount) return;
     let live = true;
@@ -105,6 +105,7 @@ export function WalletForecast({ view }: { view: LiveRound | null }) {
 
   async function run(label: string, req: TxRequest) {
     if (!provider || !account || !onAurora || !pos || readError || busy) return;
+    if (req.kind !== "redeem" && !availability.roundMatches) return;
     setTx({ label, phase: "signing" });
     try {
       const hash = await send(provider, account, req);
@@ -117,7 +118,7 @@ export function WalletForecast({ view }: { view: LiveRound | null }) {
   }
 
   async function act() {
-    if (!round || next.step === "blocked" || win.kind !== "open" || readError || busy || !onAurora) return;
+    if (!availability.roundMatches || !round || next.step === "blocked" || win.kind !== "open" || readError || busy || !onAurora) return;
     if (next.step === "approve") return run(`Approve ${usdc(next.amount)} test USDC`, { kind: "approve", amount: next.amount });
     if (next.step === "deposit") return run(`Deposit ${usdc(next.amount)} test USDC`, { kind: "deposit", roundId: round.id, amount: next.amount });
     if (next.step === "claim") return run(`Claim ${creditsText(next.amount)}`, { kind: "claim", roundId: round.id, proposalId, amount: next.amount });
@@ -164,7 +165,7 @@ export function WalletForecast({ view }: { view: LiveRound | null }) {
   else if (!pos) body = <p className="muted">{readError ?? "Reading your position from Aurora testnet…"}</p>;
   else {
     const roundNote = round && view && String(round.id) !== view.roundId ? <p className="muted wf-small">The chain reports round {String(round.id)}; this page shows round {view.roundId}. Your position uses the chain&apos;s current round.</p> : null;
-    const needsUsdc = win.kind === "open" && pos.deposit === 0n && pos.balance === 0n;
+    const needsUsdc = availability.roundMatches && win.kind === "open" && pos.deposit === 0n && pos.balance === 0n;
     body = <div className="wf-stack">
       <div className="rw-facts wf-facts">
         <div className="rw-fact"><span>Test USDC</span><b className="num">{usdc(pos.balance)}</b><small>in your wallet</small></div>
@@ -177,7 +178,8 @@ export function WalletForecast({ view }: { view: LiveRound | null }) {
 
       {needsUsdc ? <Notice tone="neutral" icon="fund" title="Ask the operator for test USDC"><p>This wallet holds no test USDC. Send the operator your address:</p><p className="wf-copy"><CopyText value={account} label="your address" /></p></Notice> : null}
 
-      {win.kind === "open" && !needsUsdc ? <div className="wf-stack">
+      {win.kind === "open" && !availability.roundMatches ? <p className="muted">Round details are unavailable or updating. Trading waits until this page matches the current on-chain round.</p> : null}
+      {availability.roundMatches && win.kind === "open" && !needsUsdc ? <div className="wf-stack">
         <Stepper next={next} reads={reads} />
         {pos.deposit === 0n ? <label className="field wf-field">Deposit<small>test USDC, held by the round until you redeem</small>
           <input className="input num" inputMode="decimal" value={depositText} onChange={(e) => setDepositText(e.target.value)} aria-invalid={depositAmount === null} disabled={busy} /></label>

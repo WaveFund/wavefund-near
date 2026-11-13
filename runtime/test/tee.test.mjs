@@ -91,9 +91,13 @@ test('signature checks discriminate claimed signer, exact model and all candidat
   assert.equal(wrong.signatureValid, false);
   const mixed = await verifyCompletion({ ...base, modelReports: [report, { ...report, signingAddress: `0x${'34'.repeat(20)}`, gpuAttested: false }] });
   assert.equal(mixed.gpuAttested, false); assert.equal(mixed.verified, false);
-  const requestBody = JSON.stringify({ model: 'another-model' });
+  const requestBody = JSON.stringify({ ...JSON.parse(base.requestBody), model: 'another-model' });
   const result = await verifyCompletion({ ...base, requestBody, signature: await f.signature(requestBody, base.responseBody) });
   assert.equal(result.verified, false);
+  const staleRequest = JSON.parse(base.requestBody);
+  staleRequest.messages[1].content = JSON.stringify({ teeChallenge: '00'.repeat(32) });
+  const staleBody = JSON.stringify(staleRequest);
+  assert.equal((await verifyCompletion({ ...base, requestBody: staleBody, signature: await f.signature(staleBody, base.responseBody) })).verified, false, 'a real signature with a different request nonce cannot bind fresh hardware evidence');
 });
 test('tampered NVIDIA signature and unpinned kid fail despite valid-looking claims', async () => {
   const f = await syntheticTee(); const token = f.gpuToken(); const parts = token.split('.');

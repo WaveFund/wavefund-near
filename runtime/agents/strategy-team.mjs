@@ -76,6 +76,7 @@ export async function makeStrategyPlan({ snapshot, market: input, researchContex
   const proposals = [{ id: 0, name: 'Hold', allocationBps: snapshot.portfolio.currentAllocationBps, rationale: 'Preserve current token quantities.' }];
   const common = { market, portfolio: { stableBalance: snapshot.portfolio.stableBalance, assetBalance: snapshot.portfolio.assetBalance, currentAllocationBps: snapshot.portfolio.currentAllocationBps }, policy: { horizonSeconds: evaluationSeconds, rMin: '0.95', rMax: '1.05', routerFeeBpsOfTradedNotional: 30 } };
   if (researchContext) common.researchContext = researchContext;
+  if (teePolicy) common.roundContext = { chainId: snapshot.chainId, engine: snapshot.engine, safe: snapshot.safe, roundId: snapshot.roundId, snapshotBlock: String(snapshot.blockNumber) };
   const evidenceIds = [market.evidenceId, ...(researchContext ? [researchContext.evidenceId] : [])];
   async function ask(spec, role, context, instruction, validate) {
     const task = { system: `${system(evaluationSeconds)}\n${spec.mandate}\n${instruction}`, context: { agent: spec.name, role, ...context } };

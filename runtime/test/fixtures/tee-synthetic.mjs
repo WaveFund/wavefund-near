@@ -21,7 +21,7 @@ export async function syntheticTee() {
     const head = enc({ alg: 'ES384', kid: jwk.kid }); const body = enc({ iss: 'https://nras.attestation.nvidia.com', sub: 'NVIDIA-PLATFORM-ATTESTATION', eat_nonce: nonce, iat: at - 5, exp: at + 100, 'x-nvidia-overall-att-result': true, ...overrides });
     const text = `${head}.${body}`; return `${text}.${sign('sha384', Buffer.from(text), { key: privateKey, dsaEncoding: 'ieee-p1363' }).toString('base64url')}`;
   }
-  const requestBody = JSON.stringify({ model, messages: [{ role: 'system', content: 'system' }, { role: 'user', content: '{}' }] });
+  const requestBody = JSON.stringify({ model, messages: [{ role: 'system', content: 'system' }, { role: 'user', content: JSON.stringify({ teeChallenge: nonce }) }] });
   const responseBody = JSON.stringify({ id: 'chat-test', choices: [{ finish_reason: 'stop', message: { content: '{"allocationBps":4500}' } }] });
   async function signature(req = requestBody, resp = responseBody) {
     const text = `${model}:${sha256(Buffer.from(req))}:${sha256(Buffer.from(resp))}`;

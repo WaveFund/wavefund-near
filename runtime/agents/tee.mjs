@@ -81,6 +81,7 @@ export async function verifyCompletion({ model, nonce, requestBody, responseBody
     hex(nonce, 32);
     check(signature?.signature_kind === 'provider_tee' && signature.signing_algo === 'ecdsa' && !signature.error_code, 'TEE_MODEL_SIGNATURE_REQUIRED');
     const request = JSON.parse(requestBody); check(request.model === model, 'TEE_MODEL_MISMATCH');
+    check(JSON.parse(request.messages?.[1]?.content ?? 'null')?.teeChallenge === nonce, 'TEE_REQUEST_NONCE_MISMATCH');
     const text = `${model}:${requestSha256}:${responseSha256}`;
     if (signature.text === text) {
       const signer = await recoverMessageAddress({ message: text, signature: signature.signature });

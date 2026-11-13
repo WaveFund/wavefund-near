@@ -129,8 +129,8 @@ export function explainError(failure) {
 }
 
 /** A wallet remains usable without the monitoring API; trades still require fresh on-chain round reads. */
-export function walletAvailability(round) {
-  return round && typeof round === 'object' && typeof round.roundId === 'string'
-    ? { visible: true, context: 'round' }
-    : { visible: true, context: 'between-rounds' };
+export function walletAvailability(round, chainRoundId = null) {
+  const identified = !!round && typeof round === 'object' && typeof round.roundId === 'string' && /^[1-9][0-9]*$/.test(round.roundId);
+  return { visible: true, context: identified ? 'round' : 'between-rounds',
+    roundMatches: identified && chainRoundId !== null && String(chainRoundId) === round.roundId };
 }
