@@ -79,3 +79,7 @@ Momentum its second sample. Final order: **5 HighBeta (re-run) · 6 Hold · 7 ge
 3 paid calls were spent; no round was opened. Under the no-retry rule that plan session is closed. The proposer set
 becomes 4 TEE-verified models (Conservative Qwen3.6, Balanced Qwen3.8, Momentum DeepSeek-V4.1-Flash, HighBeta
 Qwen3-VL), 12 paid calls, everything else as pre-registered above. Proposal 1 (outside-wallet LONG) is still Conservative.
+**Second plan attempt (still nothing on-chain):** all 4 TEE-verified proposer calls and 2 forecaster calls succeeded;
+the 7th call (`google/gemini-2.5-flash`) returned truncated JSON after spending its budget on hidden reasoning.
+7 paid calls spent, session closed. Three forecaster models that failed or were too slow on a full-size test prompt
+were replaced (FeeAnalyst gpt-4.1, StressAnalyst grok-4.7, Skeptic kimi-k3); per-call limit 90 s. The design above is unchanged.
