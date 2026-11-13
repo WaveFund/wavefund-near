@@ -9,6 +9,8 @@ import { recoverInterruptedRound } from '../runtime/agents/interrupted-round.mjs
 import { verifySubmittedProposals, verifyWinningProposal } from '../runtime/agents/submitted-proposals.mjs';
 import { makeStrategyPlan, validateStrategyPlan, STRATEGIES, FORECASTERS } from '../runtime/agents/strategy-team.mjs';
 import { collectAgentResearch } from '../runtime/agents/research-context.mjs';
+import { runTerms, requireScriptedWinner, expectedExecution, requireSwapRule, roundScope } from '../runtime/agents/round-rules.mjs';
+import { manipulationProbe, finishProbe } from '../runtime/agents/manipulation-probe.mjs';
 
 const lines = readline.createInterface({ input: process.stdin, crlfDelay: Infinity });
 const iterator = lines[Symbol.asyncIterator]();
@@ -19,11 +21,15 @@ async function acknowledge(hash) {
   requireLive(!next.done && JSON.parse(next.value).ack === hash, 'Prepared journal entry was not durably acknowledged');
 }
 const expanded = config.hybrid === true || config.swarm === true;
+
 let stage = config.phase;
 try {
   if (config.phase === 'plan') {
     requireLive(!config.privateKey && !config.actorKeys, 'Wallet credentials must not enter inference process');
-    const plan = await (expanded ? makeStrategyPlan : makeAuroraPlan)({ snapshot: config.snapshot, market: config.market,
+    requireLive(config.scriptedTarget === undefined || config.hybrid === true, 'Only the hybrid profile takes a scripted target');
+    requireLive(expanded || config.evaluationSeconds === undefined || config.evaluationSeconds === 180, 'The classic profile keeps its 180 second horizon');
+    const terms = expanded ? { ...(config.scriptedTarget !== undefined ? { scriptedTarget: config.scriptedTarget } : {}), ...(config.evaluationSeconds !== undefined ? { evaluationSeconds: config.evaluationSeconds } : {}) } : {};
+    const plan = await (expanded ? makeStrategyPlan : makeAuroraPlan)({ snapshot: config.snapshot, market: config.market, ...terms,
       scriptedForecasts: config.hybrid === true, researchContext: config.researchContext,
       env: { WAVEFUND_AGENT_MODE: 'near-ai', WAVEFUND_AGENT_MODEL: config.model, WAVEFUND_ALLOW_REMOTE_INFERENCE: '1', NEARAI_API_KEY: config.apiKey },
       onRequest: async request => { emit({ stage: 'inference-request', ...request }); await acknowledge(`inference-${request.request}`); },
@@ -70,6 +76,7 @@ try {
       const prices = await chain.verifiedProof();
       const portfolio = await chain.portfolio(prices);
       (expanded ? validateStrategyPlan : validateAuroraPlan)(plan, { contracts, roundId: nextId, portfolio, now: Math.floor(Date.now() / 1000), scriptedForecasts: config.hybrid === true });
+      const terms = runTerms({ config, plan, hybrid: config.hybrid === true });
       requireLive(BigInt(state.sponsorReserve) >= BigInt(plan.proposals.length) * 5000000n, 'All proposals need separate forecasting seed');
       const id = nextId;
       const label = name => `round${id}:${name}`;
@@ -77,11 +84,12 @@ try {
       const initial = Object.fromEntries(await Promise.all(forecasterNames.map(async name => [name, await read('stable', 'balanceOf', [accounts[name].address])])));
       await refresh(label('oracle:open'));
       const now = (await client.getBlock()).timestamp;
-      const end = now + (expanded ? 420n : 300n); const evaluation = end + 180n; const deadline = end + 100n;
-      emit({ stage: 'schedule', roundId: id, tradingEnd: end, evaluationEnd: evaluation, executionDeadline: deadline });
+      const horizon = BigInt(terms.evaluationSeconds); // QuantumRound.openRound horizon == evaluationEnd - tradingEnd, authorized identically
+      const end = now + (expanded ? 420n : 300n); const evaluation = end + horizon; const deadline = end + 100n;
+      emit({ stage: 'schedule', roundId: id, tradingEnd: end, evaluationEnd: evaluation, executionDeadline: deadline, evaluationSeconds: terms.evaluationSeconds, scriptedTarget: terms.scriptedTarget });
       stage = 'authorize';
       await ownerCall(label('authorize'), 'module', 'authorizeRound', [id, end, evaluation, deadline, 950000000000000000n, 1050000000000000000n, 90n]);
-      await tx(label('open'), 'owner', 'engine', 'openRound', [end, 180n, 950000000000000000n, 1050000000000000000n, 90n]);
+      await tx(label('open'), 'owner', 'engine', 'openRound', [end, horizon, 950000000000000000n, 1050000000000000000n, 90n]);
       for (const proposal of plan.proposals.filter(p => p.id > 0)) {
         stage = `propose:${proposal.name}`;
         await tx(label(`propose:${proposal.name}`), proposal.name, 'engine', 'propose', [id, { tEthBps: proposal.allocationBps }, `NEAR AI model summary (test assets): ${proposal.rationale}`]);
@@ -121,24 +129,31 @@ try {
       await tx(label('collapse'), 'owner', 'engine', 'collapse', [id]);
       const [winner, allocation] = await read('engine', 'winningAllocation', [id]);
       verifyWinningProposal({ proposals: plan.proposals, winner: Number(winner), allocationBps: Number(allocation), baselineBps });
-      if (config.hybrid) requireLive(winner === 3n, 'Scripted target did not win; do not claim AI-strategy rebalance');
+      requireScriptedWinner({ hybrid: config.hybrid === true, scriptedTarget: terms.scriptedTarget, winner });
       emit({ stage: 'winner', winner, allocationBps: allocation });
       stage = 'execution';
-      await refresh(label('oracle:execute'));
+      const [executeStablePrice, executeAssetPrice] = await refresh(label('oracle:execute'));
+      const maxSlippageBps = BigInt(await read('module', 'maxSlippageBps'));
+      const expectedSwap = expectedExecution({ winner, targetBps: BigInt(allocation), stableBalance: BigInt(plan.snapshot.portfolio.stableBalance), assetBalance: BigInt(plan.snapshot.portfolio.assetBalance),
+        stablePrice: executeStablePrice, assetPrice: executeAssetPrice, maxSlippageBps });
       const execution = await tx(label('execute'), 'owner', 'module', 'execute', [id, 0n, deadline]);
       requireLive(await read('engine', 'roundExecuted', [id]), 'Strategy execution was not recorded');
       for (const token of ['stable', 'asset']) requireLive(await read(token, 'allowance', [contracts.safe, contracts.router]) === 0n, 'Safe router allowance remained live');
       const factory = '0x60913758635b54e6C9685f92201A5704eEe74748';
       const pair = await client.readContract({ address: factory, abi: parseAbi(['function getPair(address,address) view returns(address)']), functionName: 'getPair', args: [contracts.stable, contracts.asset] });
+      if (config.manifest?.integrations?.investmentPair) requireLive(sameAddress(config.manifest.integrations.investmentPair, pair), 'Manifest investment pair differs from the factory pair');
       const swapAbi = parseAbi(['event Swap(address indexed sender,uint256 amount0In,uint256 amount1In,uint256 amount0Out,uint256 amount1Out,address indexed to)']);
       const swaps = execution.logs.filter(x => sameAddress(x.address, pair)).flatMap(entry => { try { return [decodeEventLog({ abi: swapAbi, ...entry }).args]; } catch { return []; } });
       requireLive(swaps.every(s => sameAddress(s.to, contracts.safe)), 'Unexpected AMM recipient');
-      if (config.hybrid) requireLive(swaps.length > 0, 'Hybrid test must produce an actual investment AMM swap');
-      emit({ stage: 'execution', hash: execution.transactionHash, swaps, note: swaps.length ? 'Actual investment AMM swap' : 'Chosen allocation required no swap; do not claim a venue fill' });
+      if (config.hybrid) requireSwapRule({ expected: expectedSwap, swaps });
+      emit({ stage: 'execution', hash: execution.transactionHash, swaps, expectedSwap: { required: expectedSwap.required, buyAsset: expectedSwap.buyAsset, amountIn: expectedSwap.amountIn, minimumOut: expectedSwap.minimumOut },
+        note: swaps.length ? 'Actual investment AMM swap' : 'Chosen allocation required no swap; do not claim a venue fill' });
+      const probe = terms.manipulationProbe ? await manipulationProbe({ chain, id, label, pair, expectedSwap, maxSlippageBps, stableAmount: terms.manipulationProbe.stableAmount, emit, setStage: value => { stage = value; } }) : null;
       emit({ stage: 'waiting', until: evaluation }); await waitUntil(evaluation);
       stage = 'settlement';
-      await refresh(label('oracle:settle'), evaluation);
-      await tx(label('settle'), 'owner', 'tracker', 'settle', [id]);
+      const [settleStablePrice, settleAssetPrice, settlePublishedAt] = await refresh(label('oracle:settle'), evaluation);
+      const settlement = await tx(label('settle'), 'owner', 'tracker', 'settle', [id]);
+      if (probe) await finishProbe({ chain, id, label, probe, settlement, prices: { stablePrice: settleStablePrice, assetPrice: settleAssetPrice, publishedAt: settlePublishedAt }, emit, setStage: value => { stage = value; } });
       const payouts = [];
       for (const name of forecasterNames) {
         stage = `redeem:${name}`;
@@ -158,7 +173,8 @@ try {
       requireLive(engineBalance === reserve && beforeEngine + BigInt(forecasterNames.length) * 10000000n === engineBalance + payouts.reduce((sum, p) => sum + p.payout, 0n), 'Forecast collateral does not reconcile');
       emit({ stage: 'complete', chainId: 1313161555, roundId: id, winner, allocation, round, portfolio: portfolioResult, payouts, decisions, reserve,
         provider: plan.provider, recordHashes: plan.records.map(r => ({ name: r.name, inputHash: r.inputHash, outputHash: r.outputHash })),
-        scope: config.hybrid ? 'HYBRID TEST: four genuine NEAR AI proposer calls with assigned exposure mandates; four SCRIPTED forecasters deliberately target proposal3. Actual testnet swaps/payouts are not evidence of AI forecasting alpha.' : config.swarm ? 'Eight separate agent wallets; four genuine proposer and four genuine forecaster calls to the same NEAR AI model. Test assets, no verified attestation, no forced winner or trade.' : 'Four separate agent wallets and four separately prompted calls to the same NEAR AI model; test assets, no verified attestation, no forced winner or trade.' });
+        evaluationSeconds: terms.evaluationSeconds, scriptedTarget: terms.scriptedTarget,
+        scope: roundScope({ hybrid: config.hybrid === true, swarm: config.swarm === true, scriptedTarget: terms.scriptedTarget, evaluationSeconds: terms.evaluationSeconds, probe: terms.manipulationProbe }) });
     } else throw new Error('Unknown phase');
     }
   }

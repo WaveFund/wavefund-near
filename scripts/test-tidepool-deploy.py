@@ -63,6 +63,37 @@ class BridgeSafety(unittest.TestCase):
         self.assertIn('Existing funding attempt',result.stderr)
         self.assertNotIn('no-wallet.json',result.stderr)
 
+    def test_record_reputation_requires_an_explicit_round_and_forwards_receipts(self):
+        import os
+        for args, message in [([], 'requires --round N'), (['--round', '0'], 'requires --round N')]:
+            result = subprocess.run(self.command + ['--phase', 'record-reputation'] + args, capture_output=True, text=True, timeout=10)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn(message, result.stderr)
+        result = subprocess.run(self.command + ['--round', '2'], capture_output=True, text=True, timeout=10)
+        self.assertIn('applies only to record-reputation', result.stderr)
+        for name in ['SupraPortfolioOracle', 'AuroraTestToken', 'SafeProxy', 'Safe',
+                     'ProposalTokens', 'ProposerRegistry', 'WaveV4ProposalMarket',
+                     'QuantumRound', 'WaveHook', 'HookDeployer', 'PerformanceTracker',
+                     'TradingSafeModule', 'AgentReputation']:
+            (self.artifacts / f'{name}.json').write_text(json.dumps({'abi': [], 'bytecode': {'object': '0x00'}}))
+        wallet = self.root / 'wallet.json'
+        wallet.write_text(json.dumps({'private_key': 'unit-test-placeholder'}))
+        manifest = self.root / 'manifest.json'
+        manifest.write_text('{}')
+        self.journal.write_text(json.dumps({'stage': 'confirmed', 'label': 'reputation:round1', 'hash': '0xabc'}) + '\n'
+                                + json.dumps({'stage': 'confirmed', 'label': 'fund:source', 'hash': '0xdef'}) + '\n')
+        docker = self.root / 'docker'
+        docker.write_text('#!/usr/bin/env python3\nimport sys,json\nc=json.loads(sys.stdin.readline())\n'
+                          'print(json.dumps({"stage":"seen","roundId":c["roundId"],"receipts":c["receipts"]}))\n')
+        docker.chmod(0o700)
+        command = [sys.executable, str(Path(__file__).with_name('run-tidepool-deploy.py')), '--phase', 'record-reputation', '--round', '2',
+                   '--artifacts', str(self.artifacts), '--wallet', str(wallet), '--journal', str(self.journal), '--manifest', str(manifest)]
+        result = subprocess.run(command, capture_output=True, text=True, timeout=10,
+                                env={**os.environ, 'PATH': str(self.root) + os.pathsep + os.environ['PATH']})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        seen = json.loads(result.stdout.splitlines()[-1])
+        self.assertEqual(seen, {'stage': 'seen', 'roundId': '2', 'receipts': {'reputation:round1': '0xabc'}})
+
 
 if __name__ == '__main__':
     unittest.main()

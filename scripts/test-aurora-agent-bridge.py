@@ -80,6 +80,76 @@ class AgentBridgeSafety(unittest.TestCase):
         self.assertEqual(len(plan['actors']), 8)
         self.assertEqual(plan['research']['evidenceId'], 'fixture')
 
+    def fake_docker(self, event_stage):
+        executable = self.root / 'docker'
+        executable.write_text('#!/usr/bin/env python3\nimport sys,json\nc=json.loads(sys.stdin.readline())\n'
+                              'keys=["scriptedTarget","evaluationSeconds","manipulationProbe","hybrid"]\n'
+                              f'print(json.dumps({{"stage":"{event_stage}",' + ('"plan":' if event_stage == 'plan' else '"seen":') +
+                              '{k:c.get(k) for k in keys}}))\n')
+        executable.chmod(0o700)
+        return {**os.environ, 'PATH': str(self.root) + os.pathsep + os.environ['PATH']}
+
+    def test_hybrid_plan_requires_and_forwards_a_pre_registered_target_and_window(self):
+        (self.root / 'snapshot.json').write_text(json.dumps({'snapshot': {}, 'market': {}, 'researchContext': {'evidenceId': 'fixture'}}))
+        environment_file = self.root / 'fake.env'
+        environment_file.write_text('NEARAI_API_KEY=unit-test-placeholder\n')
+        environment = self.fake_docker('plan')
+        base = self.command + ['--profile', 'hybrid', '--run-inference', '--env', str(environment_file)]
+        missing = subprocess.run(base, capture_output=True, text=True, timeout=10, env=environment)
+        self.assertNotEqual(missing.returncode, 0)
+        self.assertIn('explicit pre-registered --target', missing.stderr)
+        result = subprocess.run(base + ['--target', '1', '--evaluation-seconds', '900'], capture_output=True, text=True, timeout=10, env=environment)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        plan = json.loads((self.root / 'plan.json').read_text())
+        self.assertEqual([plan['scriptedTarget'], plan['evaluationSeconds'], plan['manipulationProbe']], [1, 900, None])
+
+    def test_round_term_flags_are_bounded_and_phase_scoped(self):
+        for args, message in [(['--evaluation-seconds', '179'], '180..3600'), (['--evaluation-seconds', '3601'], '180..3600'),
+                              (['--target', '5'], 'invalid choice'), (['--target', '2'], 'only for the hybrid profile'),
+                              (['--manipulation-probe-usdc', '10'], 'only to the run phase'),
+                              (['--profile', 'classic', '--evaluation-seconds', '600', '--run-inference'], 'classic profile keeps its 180')]:
+            result = self.run_bridge(*args)
+            self.assertNotEqual(result.returncode, 0, args)
+            self.assertIn(message, result.stderr, args)
+        # Discriminates: in-range values pass argument validation and reach snapshot loading.
+        self.assertIn('snapshot.json', self.run_bridge('--profile', 'swarm', '--evaluation-seconds', '3600', '--run-inference').stderr)
+
+    def run_phase(self, plan, *args):
+        manifest = self.root / 'manifest.json'
+        manifest.write_text('{}')
+        artifacts = self.root / 'out'
+        artifacts.mkdir(exist_ok=True)
+        for name in ['SupraPortfolioOracle', 'AuroraTestToken', 'Safe', 'ProposalTokens', 'ProposerRegistry',
+                     'WaveV4ProposalMarket', 'QuantumRound', 'WaveHook', 'PerformanceTracker', 'TradingSafeModule']:
+            (artifacts / f'{name}.json').write_text(json.dumps({'abi': []}))
+        wallet = self.root / 'wallet.json'
+        wallet.write_text(json.dumps({'private_key': 'unit-test-placeholder'}))
+        actors = self.root / 'actors.json'
+        actors.write_text(json.dumps({n: 'unit-test-placeholder' for n in ['Conservative', 'Balanced', 'Momentum', 'HighBeta', 'Quant', 'Guardian', 'FeeAnalyst', 'StressAnalyst']}))
+        actors.chmod(0o600)
+        (self.root / 'plan.json').write_text(json.dumps(plan))
+        command = self.command.copy()
+        command[command.index('plan')] = 'run'
+        return subprocess.run(command + ['--profile', 'hybrid', '--manifest', str(manifest), '--artifacts', str(artifacts),
+                                         '--wallet', str(wallet), '--actors', str(actors)] + list(args),
+                              capture_output=True, text=True, timeout=10, env=self.fake_docker('complete'))
+
+    def test_run_phase_reads_terms_from_the_plan_and_caps_the_probe(self):
+        plan = {'scriptedTarget': 2, 'evaluationSeconds': 900}
+        result = self.run_phase(plan, '--manipulation-probe-usdc', '1500.25')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        seen = json.loads((self.root / 'complete.json').read_text())['seen']
+        self.assertEqual(seen, {'scriptedTarget': 2, 'evaluationSeconds': 900, 'manipulationProbe': {'stableAmount': '1500250000'}, 'hybrid': True})
+        for args, message in [(['--target', '3'], 'differs from the pre-registered plan'), (['--evaluation-seconds', '180'], 'differs from the pre-registered plan'),
+                              (['--manipulation-probe-usdc', '20000.000001'], 'at most 20000'), (['--manipulation-probe-usdc', '0'], 'must be > 0'),
+                              (['--manipulation-probe-usdc', '1.0000001'], '6 decimals'), (['--manipulation-probe-usdc', 'nan'], 'at most 20000')]:
+            result = self.run_phase(plan, *args)
+            self.assertNotEqual(result.returncode, 0, args)
+            self.assertIn(message, result.stderr, args)
+        self.assertEqual(self.run_phase(plan, '--target', '2', '--manipulation-probe-usdc', '20000').returncode, 0)
+        seen = json.loads((self.root / 'complete.json').read_text())['seen']
+        self.assertEqual(seen['manipulationProbe'], {'stableAmount': '20000000000'})
+
 
 if __name__ == '__main__':
     unittest.main()

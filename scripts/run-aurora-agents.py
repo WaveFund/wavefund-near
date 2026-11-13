@@ -5,6 +5,7 @@ Only the inference phase receives the NEAR AI key. Non-inference phases receive
 dedicated testnet wallet keys. All credentials travel through ephemeral stdin, not argv.
 """
 import argparse
+from decimal import Decimal, InvalidOperation
 import fcntl
 import json
 import os
@@ -26,7 +27,30 @@ p.add_argument('--run-inference', action='store_true')
 p.add_argument('--profile', choices=['classic', 'hybrid', 'swarm'], default='classic')
 p.add_argument('--context', default='colima-wavefund')
 p.add_argument('--container', default='wavefund-build-check')
+# Pre-registered round terms. Plan phase records them in plan.json; run phase reads them from the plan only.
+p.add_argument('--target', type=int, choices=range(5), metavar='{0..4}',
+               help='hybrid plan phase: scripted forecaster target (0 Hold, 1 Conservative, 2 Balanced, 3 Momentum, 4 HighBeta)')
+p.add_argument('--evaluation-seconds', type=int, help='plan phase: evaluation window 180..3600 seconds after trading end')
+p.add_argument('--manipulation-probe-usdc', help='run phase: operator pool-manipulation probe size in whole test USDC (max 20000, up to 6 decimals)')
 a = p.parse_args()
+if a.evaluation_seconds is not None and not 180 <= a.evaluation_seconds <= 3600:
+    p.error('--evaluation-seconds must be an integer in 180..3600')
+if a.target is not None and a.phase not in ['plan', 'run']:
+    p.error('--target applies only to the plan phase (and may be repeated, unchanged, at run)')
+if a.evaluation_seconds is not None and a.phase not in ['plan', 'run']:
+    p.error('--evaluation-seconds applies only to the plan phase (and may be repeated, unchanged, at run)')
+probe_amount = None
+if a.manipulation_probe_usdc is not None:
+    if a.phase != 'run':
+        p.error('--manipulation-probe-usdc applies only to the run phase')
+    try:
+        amount = Decimal(a.manipulation_probe_usdc)
+    except InvalidOperation:
+        p.error('--manipulation-probe-usdc must be a decimal number of test USDC')
+    raw = amount * 1000000
+    if not amount.is_finite() or raw != raw.to_integral_value() or raw <= 0 or raw > 20000 * 1000000:
+        p.error('--manipulation-probe-usdc must be > 0, at most 20000 and at most 6 decimals')
+    probe_amount = str(int(raw))
 a.directory.mkdir(parents=True, exist_ok=True)
 lock = (a.directory / 'operator.lock').open('a+')
 try:
@@ -44,6 +68,12 @@ swarm = a.profile == 'swarm'
 expanded = hybrid or swarm
 actor_names = ['Conservative', 'Balanced', 'Momentum', 'HighBeta', 'Quant', 'Guardian', 'FeeAnalyst', 'StressAnalyst'] if expanded else ['Momentum', 'Conservative', 'Quant', 'Guardian']
 config = dict(phase=a.phase, events=events, hybrid=hybrid, swarm=swarm, actorNames=actor_names)
+if a.target is not None and not hybrid:
+    sys.exit('--target is only for the hybrid profile (scripted forecasters).')
+if a.phase == 'plan' and hybrid and a.target is None:
+    sys.exit('Hybrid plan requires an explicit pre-registered --target {0..4}.')
+if a.phase == 'plan' and not expanded and a.evaluation_seconds not in [None, 180]:
+    sys.exit('The classic profile keeps its 180 second horizon.')
 if a.phase == 'plan':
     if not a.run_inference:
         sys.exit('Use --run-inference to explicitly spend credits on at most eight model calls for swarm, four otherwise.')
@@ -51,6 +81,10 @@ if a.phase == 'plan':
         sys.exit('Inference already attempted in this session. No automatic paid retry.')
     snapshot = json.loads((a.directory / 'snapshot.json').read_text())
     config.update(snapshot=snapshot['snapshot'], market=snapshot['market'])
+    if a.target is not None:
+        config['scriptedTarget'] = a.target
+    if a.evaluation_seconds is not None:
+        config['evaluationSeconds'] = a.evaluation_seconds
     if expanded or snapshot.get('researchContext'):
         config['researchContext'] = snapshot['researchContext']
     environment = {}
@@ -101,7 +135,18 @@ else:
     if a.phase == 'run':
         if any(e.get('stage') == 'schedule' for e in events):
             sys.exit('A timed round was already started; inspect/recover it instead of replaying.')
-        config['plan'] = json.loads((a.directory / 'plan.json').read_text())
+        plan = json.loads((a.directory / 'plan.json').read_text())
+        planned_seconds = plan.get('evaluationSeconds', 180)
+        if a.evaluation_seconds is not None and a.evaluation_seconds != planned_seconds:
+            sys.exit('--evaluation-seconds differs from the pre-registered plan; the plan wins, refusing to run.')
+        if a.target is not None and a.target != plan.get('scriptedTarget'):
+            sys.exit('--target differs from the pre-registered plan; the plan wins, refusing to run.')
+        config['evaluationSeconds'] = planned_seconds
+        if hybrid and 'scriptedTarget' in plan:
+            config['scriptedTarget'] = plan['scriptedTarget']
+        if probe_amount is not None:
+            config['manipulationProbe'] = {'stableAmount': probe_amount}
+        config['plan'] = plan
 
 with journal_path.open('a') as journal, (a.directory / 'worker.stderr').open('a') as errors:
     child = subprocess.Popen(['docker', '--context', a.context, 'exec', '-i', a.container,

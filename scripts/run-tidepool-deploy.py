@@ -21,7 +21,12 @@ p.add_argument('--wallet', type=pathlib.Path, required=True)
 p.add_argument('--journal', type=pathlib.Path, required=True)
 p.add_argument('--context', default='colima-wavefund')
 p.add_argument('--container', default='wavefund-build-check')
+p.add_argument('--round', type=int, help='record-reputation only: the settled round id to record')
 a = p.parse_args()
+if a.phase == 'record-reputation' and (a.round is None or a.round < 1):
+    p.error('record-reputation requires --round N (a positive settled round id)')
+if a.phase != 'record-reputation' and a.round is not None:
+    p.error('--round applies only to record-reputation')
 a.journal.parent.mkdir(parents=True, exist_ok=True)
 guard = a.journal.with_suffix('.lock').open('a+')
 try:
@@ -58,6 +63,10 @@ config = dict(privateKey=wallet['private_key'], artifacts=artifacts, contracts=c
               completed=completed, phase=a.phase, schedule=schedule)
 del wallet
 if a.phase in ['fund','record-reputation']: config['manifest'] = json.loads(a.manifest.read_text())
+if a.phase == 'record-reputation':
+    config['roundId'] = str(a.round)
+    # Public receipts only, so an already-recorded round is verified from this journal instead of re-sent.
+    config['receipts'] = {e['label']: e['hash'] for e in events if e.get('stage') == 'confirmed' and str(e.get('label', '')).startswith('reputation:round')}
 with a.journal.open('a') as journal:
     process = subprocess.Popen(['docker', '--context', a.context, 'exec', '-i', a.container,
                                 'node', '/work/runtime/tidepool/' + ('fund.mjs' if a.phase == 'fund' else 'record.mjs' if a.phase == 'record-reputation' else 'deploy.mjs')],

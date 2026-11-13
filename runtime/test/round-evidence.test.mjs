@@ -3,7 +3,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { startServer } from '../server.mjs';
-import { ROUND_SOURCES, loadRoundEvidence, roundEvidenceFromEnvironment } from '../operator/round-evidence.mjs';
+import { ROUND_SOURCES, loadRoundEvidence, roundEvidenceFromEnvironment, discoverRoundSources } from '../operator/round-evidence.mjs';
+import { buildRoundEvidence } from '../operator/tidepool-round-export.mjs';
+import { roundScope, v2AmountOut, moduleCheckAtPool } from '../agents/round-rules.mjs';
 
 const ROOT = new URL('../../', import.meta.url);
 const read = async (path) => JSON.parse(await readFile(new URL(path, ROOT), 'utf8'));
@@ -71,7 +73,7 @@ test('GET /api/evidence/testnet-rounds only; disabled is 404 and invalid evidenc
   try {
     const response = await call('/api/evidence/testnet-rounds');
     assert.equal(response.status, 200);
-    assert.deepEqual((await response.json()).rounds.map((round) => round.roundId), ['7', '8', '1']);
+    assert.deepEqual((await response.json()).rounds.slice(0, 3).map((round) => round.roundId), ['7', '8', '1'], 'fixed sources first, discovered rounds after');
     for (const method of ['POST', 'PUT', 'DELETE']) assert.equal((await call('/api/evidence/testnet-rounds', { method, headers: { 'Content-Type': 'application/json' }, body: '{}' })).status, 404, method);
     assert.equal((await call('/api/evidence')).status, 404);
     assert.equal((await call('/api/evidence/testnet-rounds', { headers: { Origin: 'https://evil.example' } })).status, 403);
@@ -117,4 +119,155 @@ test('evidence naming another Safe, engine or reputation contract than its stack
     ['deployments/aurora-testnet-tidepool-reputation.json', (m) => { m.contracts.engine = '0x825b31dbc1af25b230d31caf5210c2b5a8fe22af'; }, /different engine/],
   ];
   for (const [file, mutate, expected] of cases) await assert.rejects(loadRoundEvidence({ read: tampered(file, mutate) }), expected, String(expected));
+});
+
+// ---------------------------------------------------------------- discovered pre-registered Tidepool rounds
+// Fixtures are SYNTHETIC: the public Tidepool round 1 files relabelled as another round id, with pre-registered terms.
+const V1 = 'docs/test-evidence/tidepool-v1';
+const ONE = 10n ** 18n;
+const SETTLE = { stablePrice: 999920000000000000n, assetPrice: 2068220000000000000000n }; // public round 1 settlement oracle update
+const relabel = (value, n) => JSON.parse(JSON.stringify(value).replaceAll('"round1:', `"round${n}:`).replaceAll('reputation:round1"', `reputation:round${n}"`));
+
+function probeEvent(n, completion, transactions) {
+  const rs = 80000000000n; const ra = rs * 10n ** 30n / 2070000000000000000000n; const amount = 5000000000n;
+  const reserves = (stable, asset, blockNumber) => ({ blockNumber, reserveStable: String(stable), reserveAsset: String(asset), poolAssetPriceX18: String(stable * 10n ** 30n / asset) });
+  const bought = v2AmountOut(amount, rs, ra);
+  const back = v2AmountOut(bought, ra - bought, rs + amount);
+  const p = completion.portfolio; const ending = BigInt(p.stableQty6) * SETTLE.stablePrice / 1000000n + BigInt(p.assetQty18) * SETTLE.assetPrice / ONE;
+  const inputs = { stablePrice: SETTLE.stablePrice, assetPrice: SETTLE.assetPrice, maxSlippageBps: 100n, referenceStableIn: 149610000n, referenceAssetIn: 71692173391461052n };
+  const str = (value) => JSON.parse(JSON.stringify(value, (_, v) => typeof v === 'bigint' ? v.toString() : v));
+  const settle = transactions.find((t) => t.label === `round${n}:settle`);
+  return str({ stage: 'manipulation-probe', roundId: String(n), status: 'complete', pair: '0x218f2849e4401c194bf9068edf41fd3a8f643a1b', router: '0x26ec2afbdfdfb972f106100a3deae5887353d9b9',
+    token0: '0x38d81431b9f76d9699af7517040d5221d9dea252', stableAmount: amount, before: reserves(rs, ra, '10'), manipulated: reserves(rs + amount, ra - bought, '12'),
+    atSettlement: reserves(rs + amount, ra - bought, settle.blockNumber), restored: reserves(rs + amount - back, ra, '20'),
+    oracleAtManipulation: { stablePrice: SETTLE.stablePrice, assetPrice: SETTLE.assetPrice, publishedAt: '1794434600' }, poolDeviationBeforeBps: '8', poolDeviationManipulatedBps: '1300',
+    assetBought: bought, stableRecovered: back, stableAllowanceAfter: '0', assetAllowanceAfter: '0',
+    settlement: { settleHash: settle.hash, oracle: { ...SETTLE, publishedAt: p.oraclePublishedAt }, stableQty6: p.stableQty6, assetQty18: p.assetQty18, startingValueX18: p.startingValueX18,
+      measuredReturnX18: p.realisedReturn, oracleEndingValueX18: ending, oracleRecomputedReturnX18: ending * ONE / BigInt(p.startingValueX18), observationHash: p.observationHash, usedOracle: true, poolMarkedReturnX18: '1020000000000000000' },
+    moduleCheck: { computedNotExecuted: true, referenceIsExecutedSwap: true,
+      before: moduleCheckAtPool({ reserves: { reserveStable: rs, reserveAsset: ra }, ...inputs }), manipulated: moduleCheckAtPool({ reserves: { reserveStable: rs + amount, reserveAsset: ra - bought }, ...inputs }) },
+    transactions: ['approve', 'swap', 'approveRestore', 'restore'].map((name, i) => ({ label: `round${n}:probe:${name}`, hash: `0x${String(i + 1).repeat(64)}`, blockNumber: String(10 + i * 4) })) });
+}
+
+// A session as the operator would hold it: plan, completion, journal (confirmed + prepared), reputation journal, verifier output.
+async function session(n, { target = 3, hold = false, flat = false, probe = false, evaluationSeconds = 180 } = {}) {
+  const report = relabel(await read(`${V1}/happy-path.json`), n); const plan = relabel(await read(`${V1}/plan.json`), n);
+  const independent = await read(`${V1}/independent-round.json`); const reputation = relabel(await read(`${V1}/reputation.json`), n);
+  const completion = report.completion; const id = String(n);
+  for (const item of [plan, plan.snapshot, completion, independent]) item.roundId = id;
+  Object.assign(plan, { scriptedTarget: target, evaluationSeconds });
+  Object.assign(completion, { scriptedTarget: target, evaluationSeconds, scope: roundScope({ hybrid: true, scriptedTarget: target, evaluationSeconds, probe: probe ? { stableAmount: 5000000000n } : null }) });
+  completion.round.evaluationEnd = String(BigInt(completion.round.tradingEnd) + BigInt(evaluationSeconds));
+  if (hold) { completion.winner = '0'; completion.round.winnerId = 0; independent.winner = '0'; }
+  if (flat) for (const holder of [completion.round, completion.portfolio]) holder.realisedReturn = ONE.toString();
+  if (flat) independent.recomputedReturn = ONE.toString();
+  const done = reputation.find((e) => e.stage === 'reputationComplete'); done.roundId = id; done.returnFactor = completion.round.realisedReturn; done.point = flat ? '0' : '-1';
+  const confirmed = report.confirmedTransactions.map((t) => ({ ...t }));
+  // A later round has its own execute transaction; the manifest's demonstration swap belongs to round 1 only.
+  if (n !== 1) confirmed.find((t) => t.label === `round${n}:execute`).hash = `0x${'e7'.repeat(32)}`;
+  if (probe) confirmed.push(...probeEvent(n, completion, confirmed).transactions.map((t) => ({ stage: 'confirmed', label: t.label, actor: 'owner', hash: t.hash, blockNumber: t.blockNumber, gasUsed: '50000', gasPrice: '70000000' })));
+  const execute = confirmed.find((t) => t.label === `round${n}:execute`);
+  const journal = [...confirmed.flatMap((t) => [{ stage: 'prepared', label: t.label, hash: t.hash, nonce: 1, calldataHash: `0x${'c'.repeat(64)}` }, t]),
+    { stage: 'execution', hash: execute.hash, swaps: hold ? [] : [{ sender: '0x26ec2aFBDFdFB972F106100A3deaE5887353d9B9', to: '0x37947266Fc1c2B20FFa36869af5DD531F2D80f11', amount0In: '149610000', amount1In: '0', amount0Out: '0', amount1Out: '71692173391461052' }] },
+    ...(probe ? [probeEvent(n, completion, confirmed)] : [])];
+  const swapCheck = hold ? null : { blockNumber: execute.blockNumber, stableBefore: '199480000', stableAfter: '49870000', assetBefore: '0', assetAfter: '71692173391461052', stableAllowance: '0', assetAllowance: '0', slippageBps: 100, token0: '0x38d81431b9f76d9699af7517040d5221d9dea252' };
+  return { roundId: id, plan, complete: completion, journal, reputationEvents: hold ? [] : reputation, independent, swapCheck,
+    manifest: await read('deployments/aurora-testnet-tidepool.json'), reputationManifest: await read('deployments/aurora-testnet-tidepool-reputation.json') };
+}
+// Serves exported files as if they were committed under docs/test-evidence/tidepool-rounds/.
+function serving(exports) {
+  const files = new Map(); const dirs = [];
+  for (const [n, output] of Object.entries(exports)) { dirs.push({ name: n, directory: true }); for (const [name, value] of Object.entries(output)) files.set(`docs/test-evidence/tidepool-rounds/${n}/${name}`, structuredClone(value)); }
+  return { list: async () => dirs, read: async (path) => files.has(path) ? structuredClone(files.get(path)) : read(path), files };
+}
+
+test('exported pre-registered rounds are discovered and validated like fixed sources: scored+probe, Hold and flat-0', async () => {
+  const scored = buildRoundEvidence(await session(2, { probe: true }));
+  const hold = buildRoundEvidence(await session(3, { target: 0, hold: true, evaluationSeconds: 900 }));
+  const flat = buildRoundEvidence(await session(4, { flat: true }));
+  assert.deepEqual(Object.keys(scored.files).sort(), ['capital-linkage.json', 'independent.json', 'manipulation-probe.json', 'plan.json', 'report.json', 'reputation.json', 'round.json', 'swap-independent.json']);
+  assert.deepEqual(Object.keys(hold.files).sort(), ['independent.json', 'plan.json', 'report.json', 'round.json'], 'Hold: no swap, capital or reputation file');
+  assert.ok(!JSON.stringify(scored.files['report.json'].confirmedTransactions).includes('calldataHash'), 'prepared journal internals are not exported');
+  const { list, read: served } = serving({ round2: scored.files, round3: hold.files, round4: flat.files });
+  const evidence = await loadRoundEvidence({ list, read: served });
+  assert.deepEqual(evidence.rounds.map((round) => round.roundId), ['7', '8', '1', '2', '3', '4']);
+  const [r2, r3, r4] = evidence.rounds.slice(3);
+  assert.equal(r2.key, '1313161555:0xba96a117f4de33c38df72002651f11024ed14a14:2');
+  assert.deepEqual(r2.preRegistration, { scriptedTarget: '3', evaluationSeconds: 180 });
+  assert.equal(r2.swap.stableDelta, '-149610000'); assert.equal(r2.reputation.score, '-1');
+  assert.deepEqual(r2.checks, { independentPassed: true, returnRecomputed: true, payoutsRecomputed: true, swapChecked: true, probeOracleUsed: true });
+  assert.equal(r2.manipulationProbe.measuredReturnX18, r2.realisedReturnX18); assert.equal(r2.manipulationProbe.moduleCheck.manipulated.buyAsset.wouldReject, true);
+  assert.equal(r2.manipulationProbe.transactions.length, 4);
+  assert.deepEqual(r3.winner, { proposalId: '0', name: 'Hold', allocationBps: 0, isHold: true });
+  assert.deepEqual([r3.swap, r3.reputation, r3.manipulationProbe], [null, null, null]);
+  assert.deepEqual(r3.preRegistration, { scriptedTarget: '0', evaluationSeconds: 900 });
+  assert.equal(r3.market.evaluationEnd - 0, Number(r3.market.tradingEnd) + 900);
+  assert.equal(r4.realisedReturnX18, ONE.toString()); assert.equal(r4.reputation.score, '0', 'flat round scores zero');
+  // The fixed sources are untouched by discovery.
+  const fixed = await loadRoundEvidence({ discover: false });
+  assert.deepEqual(evidence.rounds.slice(0, 3), fixed.rounds);
+  assert.deepEqual(await discoverRoundSources(), [], 'no rounds are committed yet');
+});
+
+test('malformed discovered rounds are rejected, not displayed', async () => {
+  const good = buildRoundEvidence(await session(2, { probe: true })).files;
+  const holdFiles = buildRoundEvidence(await session(3, { target: 0, hold: true })).files;
+  const round3Reputation = buildRoundEvidence(await session(3)).files['reputation.json'];
+  const variant = (mutate, name = 'round2', files = good) => { const copy = structuredClone(files); mutate(copy); return { [name]: copy }; };
+  const cases = [
+    [variant(() => {}, 'round02'), /unexpected evidence directory/],
+    [variant(() => {}, 'round3'), /manifest names round 2/],
+    [variant((f) => { f['round.json'].files.swap = 'swap'; }), /manifest file swap/],
+    [variant((f) => { delete f['round.json'].files.capital; }), /swap and capital linkage come together/],
+    [variant((f) => { f['round.json'].stack = 'original'; }), /Tidepool stack/],
+    [variant((f) => { f['round.json'].extra = true; }), /unexpected fields/],
+    [variant((f) => { delete f['round.json'].files.independent; }), /missing report, plan or independent/],
+    [variant((f) => { delete f['report.json'].completion.scriptedTarget; delete f['report.json'].completion.evaluationSeconds; delete f['plan.json'].scriptedTarget; }), /pre-registered target and evaluation window/],
+    [variant((f) => { f['plan.json'].scriptedTarget = 2; f['report.json'].completion.scriptedTarget = 2; }), /winner is not the pre-registered scripted target/],
+    [variant((f) => { f['plan.json'].scriptedTarget = 2; }), /disagree on the scripted target/],
+    [variant((f) => { f['report.json'].completion.evaluationSeconds = 600; f['plan.json'].evaluationSeconds = 600; }), /evaluationEnd - tradingEnd/],
+    [variant((f) => { f['report.json'].completion.evaluationSeconds = 4000; }), /180\.\.3600/],
+    [variant((f) => { f['report.json'].completion.scope = 'Forecasters picked proposal3.'; }), /SCRIPTED/],
+    [variant((f) => { f['reputation.json'][2].point = '1'; }), /sign\(return - 1\)/],
+    [variant((f) => { f['reputation.json'][1].label = 'reputation:round1'; }), /labelled for another round/],
+    [variant((f) => { f['reputation.json'] = structuredClone(round3Reputation); f['round.json'].files.reputation = 'reputation'; }, 'round3', holdFiles), /Hold rounds never score/],
+    [variant((f) => { f['manipulation-probe.json'].settlement.measuredReturnX18 = '1000000000000000000'; }), /disagrees with the round portfolio/],
+    [variant((f) => { f['manipulation-probe.json'].settlement.oracleRecomputedReturnX18 = '1'; }), /oracle arithmetic/],
+    [variant((f) => { f['manipulation-probe.json'].pair = '0x' + '12'.repeat(20); }), /investment pair/],
+    [variant((f) => { f['manipulation-probe.json'].stableAmount = '20000000001'; }), /20000 test USDC cap/],
+    [variant((f) => { f['manipulation-probe.json'].transactions[1].hash = '0x' + '9'.repeat(64); }), /not a confirmed round transaction/],
+    [variant((f) => { f['manipulation-probe.json'].moduleCheck.manipulated.buyAsset.wouldReject = false; }), /rejection does not follow/],
+    [variant((f) => { f['manipulation-probe.json'].settlement.usedOracle = false; }), /status and oracle check disagree/],
+    [variant((f) => { f['manipulation-probe.json'].secret = 'x'; }), /unexpected fields/],
+    [variant((f) => { f['manipulation-probe.json'].manipulated.poolAssetPriceX18 = '1'; }), /price does not match its reserves/],
+    [variant((f) => { f['manipulation-probe.json'].settlement.settleHash = '0x' + '4'.repeat(64); }), /settlement other than the round settle/],
+  ];
+  for (const [exports, expected] of cases) {
+    const { list, read: served } = serving(exports);
+    await assert.rejects(loadRoundEvidence({ list, read: served }), expected, String(expected));
+  }
+  // Discriminates: the unmodified exports load, and a duplicate of the fixed round 1 is caught by the key check.
+  const ok = serving({ round2: good }); assert.equal((await loadRoundEvidence(ok)).rounds.length, 4);
+  const dup = buildRoundEvidence(await session(1)).files;
+  await assert.rejects(loadRoundEvidence(serving({ round1: dup })), /share one network \+ engine \+ round id/);
+});
+
+test('the exporter refuses unresolved, failed, unverified or secret-bearing sessions', async () => {
+  const cases = [
+    [(s) => { s.journal.push({ stage: 'prepared', label: 'round2:redeem:Quant', hash: '0x' + 'f'.repeat(64) }); }, /unresolved prepared/],
+    [(s) => { s.independent.passed = false; }, /independent verifier/],
+    [(s) => { s.independent.recomputedReturn = '1'; }, /disagrees with the completion/],
+    [(s) => { s.swapCheck = null; }, /balance read is required/],
+    [(s) => { s.plan.records[0].apiKey = 'unit-test-placeholder'; }, /looks secret/],
+    [(s) => { s.plan.records[0].note = `0x${'ab'.repeat(120)}`; }, /raw signed bytes/],
+    [(s) => { s.journal.push({ stage: 'run', status: 'failed', reason: 'x' }); }, /failed stage/],
+    [(s) => { s.complete.roundId = '5'; }, /another round/],
+    [(s) => { s.swapCheck.stableAllowance = '7'; }, /projection checks failed/],
+  ];
+  for (const [mutate, expected] of cases) { const s = await session(2); mutate(s); assert.throws(() => buildRoundEvidence(s), expected, String(expected)); }
+  const hold = await session(3, { target: 0, hold: true }); hold.reputationEvents = (await session(3)).reputationEvents;
+  assert.throws(() => buildRoundEvidence(hold), /Hold rounds never score/);
+  const unrecorded = await session(2); unrecorded.reputationEvents = [];
+  const result = buildRoundEvidence(unrecorded);
+  assert.equal(result.files['reputation.json'], undefined); assert.match(result.warnings[0], /record-reputation --round/);
 });
