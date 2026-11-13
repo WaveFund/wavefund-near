@@ -30,7 +30,7 @@ p.add_argument('--extra-artifacts', type=Path)
 p.add_argument('--run-inference', action='store_true')
 p.add_argument('--tee', action='store_true', help='Require full preflight hardware and model response verification')
 p.add_argument('--tee-policy', type=Path, help='Reviewed public TEE measurement/NVIDIA key policy JSON')
-p.add_argument('--profile', choices=['classic', 'hybrid', 'swarm'], default='classic')
+p.add_argument('--profile', choices=['classic', 'hybrid', 'swarm', 'swarm2'], default='classic')
 p.add_argument('--context', default='colima-wavefund')
 p.add_argument('--container', default='wavefund-build-check')
 # Pre-registered round terms. Plan phase records them in plan.json; run phase reads them from the plan only.
@@ -59,8 +59,8 @@ if a.manipulation_probe_usdc is not None:
     if not amount.is_finite() or raw != raw.to_integral_value() or raw <= 0 or raw > 20000 * 1000000:
         p.error('--manipulation-probe-usdc must be > 0, at most 20000 and at most 6 decimals')
     probe_amount = str(int(raw))
-if a.tee and (a.profile not in ['hybrid', 'swarm'] or a.phase not in ['plan', 'run']):
-    p.error('--tee applies only to hybrid/swarm planning or execution')
+if a.tee and (a.profile not in ['hybrid', 'swarm', 'swarm2'] or a.phase not in ['plan', 'run']):
+    p.error('--tee applies only to hybrid/swarm/swarm2 planning or execution')
 if a.tee != bool(a.tee_policy):
     p.error('--tee and --tee-policy must be supplied together')
 a.directory.mkdir(parents=True, exist_ok=True)
@@ -84,9 +84,18 @@ if a.phase != 'align-pool' and align_journal:
     sys.exit('This directory holds a pool-alignment journal; use a separate round directory.')
 hybrid = a.profile == 'hybrid'
 swarm = a.profile == 'swarm'
-expanded = hybrid or swarm
-actor_names = ['Conservative', 'Balanced', 'Momentum', 'HighBeta', 'Quant', 'Guardian', 'FeeAnalyst', 'StressAnalyst'] if expanded else ['Momentum', 'Conservative', 'Quant', 'Guardian']
+swarm2 = a.profile == 'swarm2'
+expanded = hybrid or swarm or swarm2
+# Paid model calls per plan phase, by profile (mirrors runtime/agents/provider.mjs PROFILE_CALLS). No retries.
+CALL_CAPS = {'classic': 4, 'hybrid': 4, 'swarm': 8, 'swarm2': 14}
+call_cap = CALL_CAPS[a.profile]
+# swarm2 adds two proposers and four forecasters (runtime/agents/swarm-config.mjs); prepare generates their keys.
+SWARM2_ACTORS = ['Conservative', 'Balanced', 'Momentum', 'HighBeta', 'Contrarian', 'VolAware',
+                 'Quant', 'Guardian', 'FeeAnalyst', 'StressAnalyst', 'BaseRate', 'VolAnalyst', 'Regime', 'Skeptic']
+actor_names = SWARM2_ACTORS if swarm2 else ['Conservative', 'Balanced', 'Momentum', 'HighBeta', 'Quant', 'Guardian', 'FeeAnalyst', 'StressAnalyst'] if expanded else ['Momentum', 'Conservative', 'Quant', 'Guardian']
 config = dict(phase=a.phase, events=events, hybrid=hybrid, swarm=swarm, actorNames=actor_names)
+if swarm2:
+    config['swarm2'] = True
 if a.tee:
     config['teePolicy'] = json.loads(a.tee_policy.read_text())
 if a.target is not None and not hybrid:
@@ -97,7 +106,7 @@ if a.phase == 'plan' and not expanded and a.evaluation_seconds not in [None, 180
     sys.exit('The classic profile keeps its 180 second horizon.')
 if a.phase == 'plan':
     if not a.run_inference:
-        sys.exit('Use --run-inference to explicitly spend credits on at most eight model calls for swarm, four otherwise.')
+        sys.exit('Use --run-inference to explicitly spend credits on at most fourteen model calls for swarm2, eight for swarm, four otherwise.')
     if any(e.get('stage') == 'inference-request' for e in events):
         sys.exit('Inference already attempted in this session. No automatic paid retry.')
     snapshot = json.loads((a.directory / 'snapshot.json').read_text())
@@ -111,11 +120,12 @@ if a.phase == 'plan':
     environment = {}
     for line in a.env.read_text().splitlines():
         key, sep, value = line.partition('=')
-        if sep and key.strip() in ['NEARAI_API_KEY', 'WAVEFUND_AGENT_MODEL']:
+        if sep and key.strip() in ['NEARAI_API_KEY', 'WAVEFUND_AGENT_MODEL'] and not (swarm2 and key.strip() == 'WAVEFUND_AGENT_MODEL'):
             environment[key.strip()] = value.strip().strip('"').strip("'")
     if not environment.get('NEARAI_API_KEY'):
         sys.exit('Configure the private NEAR AI key locally; never paste it in chat.')
-    config.update(apiKey=environment['NEARAI_API_KEY'], model=environment.get('WAVEFUND_AGENT_MODEL'))
+    # swarm2 assigns one allowlisted model per agent in code; a single env model is never used.
+    config.update(apiKey=environment['NEARAI_API_KEY'], model=None if swarm2 else environment.get('WAVEFUND_AGENT_MODEL'))
     del environment
 else:
     config['manifest'] = json.loads(a.manifest.read_text())
@@ -176,8 +186,17 @@ with journal_path.open('a') as journal, (a.directory / 'worker.stderr').open('a'
     child.stdin.write(json.dumps(config) + '\n')
     child.stdin.flush()
     del config
+    inference_requests = 0
     for line in child.stdout:
         event = json.loads(line)
+        if event.get('stage') == 'inference-request':
+            inference_requests += 1
+            if inference_requests > call_cap or event.get('request') != inference_requests:
+                # Never acknowledge a call beyond the profile cap: the worker waits for the ack before spending.
+                child.kill()
+                journal.write(json.dumps({'stage': 'inference-cap', 'status': 'failed', 'cap': call_cap, 'request': event.get('request')}) + '\n')
+                journal.flush()
+                sys.exit(f'Model-call cap exceeded: {a.profile} allows {call_cap} calls; worker stopped before the extra call.')
         journal.write(json.dumps(event) + '\n')
         journal.flush()
         os.fsync(journal.fileno())

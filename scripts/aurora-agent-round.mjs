@@ -5,11 +5,12 @@ import readline from 'node:readline';
 import { parseAbi, decodeEventLog } from 'viem';
 import { createAuroraChain, sameAddress, requireLive } from '../runtime/agents/aurora-chain.mjs';
 import { makeAuroraPlan, validateAuroraPlan } from '../runtime/agents/aurora-plan.mjs';
-import { chooseTrade } from '../runtime/agents/policy.mjs';
+import { chooseTrade, chooseProbabilityTrade } from '../runtime/agents/policy.mjs';
 import { namedOutputs } from '../runtime/chain.mjs';
 import { recoverInterruptedRound } from '../runtime/agents/interrupted-round.mjs';
 import { verifySubmittedProposals, verifyWinningProposal } from '../runtime/agents/submitted-proposals.mjs';
-import { makeStrategyPlan, validateStrategyPlan, STRATEGIES, FORECASTERS } from '../runtime/agents/strategy-team.mjs';
+import { makeStrategyPlan, validateStrategyPlan, makeSwarm2Plan, validateSwarm2Plan, SWARM2_MIN_EDGE_BPS, STRATEGIES, FORECASTERS } from '../runtime/agents/strategy-team.mjs';
+import { SWARM2_PROPOSERS, SWARM2_FORECASTERS } from '../runtime/agents/swarm-config.mjs';
 import { collectAgentResearch } from '../runtime/agents/research-context.mjs';
 import { runTerms, requireScriptedWinner, expectedExecution, requireSwapRule, roundScope, externalDepositors, collateralReconciles } from '../runtime/agents/round-rules.mjs';
 import { manipulationProbe, finishProbe } from '../runtime/agents/manipulation-probe.mjs';
@@ -23,7 +24,12 @@ async function acknowledge(hash) {
   const next = await iterator.next();
   requireLive(!next.done && JSON.parse(next.value).ack === hash, 'Prepared journal entry was not durably acknowledged');
 }
-const expanded = config.hybrid === true || config.swarm === true;
+const swarm2 = config.swarm2 === true;
+if (swarm2 && (config.hybrid === true || config.swarm === true)) throw new Error('Choose exactly one agent profile');
+const expanded = config.hybrid === true || config.swarm === true || swarm2;
+// swarm2: proposer-only TEE. verifyPlanTee checks the proposer records (6); forecasters are proxied and never claim attestation.
+const teeView = plan => swarm2 ? { ...plan, records: plan.records.filter(r => r.role === 'proposer') } : plan;
+const swarm2Scope = ({ evaluationSeconds, probe, tee }) => `Fourteen separate agent wallets; six genuine proposer calls and eight genuine forecaster calls, each agent on a different NEAR AI model. Forecasters give a probability that each challenger beats Hold and trade only when it differs from the on-chain entry price by at least ${SWARM2_MIN_EDGE_BPS / 100} points. ${tee ? 'Proposer responses TEE-verified; forecaster models are proxied and unattested.' : 'No verified attestation.'} Test assets, no forced winner or trade. Evaluation window ${evaluationSeconds}s after trading end.${probe ? ` Operator manipulation probe swapped ${probe.stableAmount} raw test USDC through the investment pool after execution; return is still oracle-marked.` : ''}`;
 
 let stage = config.phase;
 try {
@@ -32,7 +38,10 @@ try {
     requireLive(config.scriptedTarget === undefined || config.hybrid === true, 'Only the hybrid profile takes a scripted target');
     requireLive(expanded || config.evaluationSeconds === undefined || config.evaluationSeconds === 180, 'The classic profile keeps its 180 second horizon');
     const terms = expanded ? { ...(config.scriptedTarget !== undefined ? { scriptedTarget: config.scriptedTarget } : {}), ...(config.evaluationSeconds !== undefined ? { evaluationSeconds: config.evaluationSeconds } : {}) } : {};
-    const plan = await (expanded ? makeStrategyPlan : makeAuroraPlan)({ snapshot: config.snapshot, market: config.market, ...terms,
+    const plan = swarm2 ? await makeSwarm2Plan({ snapshot: config.snapshot, market: config.market, ...terms, teePolicy: config.teePolicy, researchContext: config.researchContext,
+      env: { WAVEFUND_ALLOW_REMOTE_INFERENCE: '1', NEARAI_API_KEY: config.apiKey },
+      onRequest: async request => { emit({ stage: 'inference-request', ...request }); await acknowledge(`inference-${request.request}`); },
+      onRecord: record => emit({ stage: 'agent-record', record }) }) : await (expanded ? makeStrategyPlan : makeAuroraPlan)({ snapshot: config.snapshot, market: config.market, ...terms,
       teePolicy: config.teePolicy, scriptedForecasts: config.hybrid === true, researchContext: config.researchContext,
       env: { WAVEFUND_AGENT_MODE: 'near-ai', WAVEFUND_AGENT_MODEL: config.model, WAVEFUND_ALLOW_REMOTE_INFERENCE: '1', NEARAI_API_KEY: config.apiKey },
       onRequest: async request => { emit({ stage: 'inference-request', ...request }); await acknowledge(`inference-${request.request}`); },
@@ -42,8 +51,8 @@ try {
     const chain = createAuroraChain({ ...config, emit, acknowledge });
     delete config.privateKey; delete config.actorKeys;
     const { contracts, accounts, client, abi, read, tx, send, ownerCall, refresh, waitUntil } = chain;
-    const proposerNames = expanded ? STRATEGIES.map(s => s.name) : ['Momentum', 'Conservative'];
-    const forecasterNames = expanded ? FORECASTERS.map(s => s.name) : ['Quant', 'Guardian'];
+    const proposerNames = swarm2 ? SWARM2_PROPOSERS.map(s => s.name) : expanded ? STRATEGIES.map(s => s.name) : ['Momentum', 'Conservative'];
+    const forecasterNames = swarm2 ? SWARM2_FORECASTERS.map(s => s.name) : expanded ? FORECASTERS.map(s => s.name) : ['Quant', 'Guardian'];
     if (config.phase === 'recover-cancel') {
       await recoverInterruptedRound({ chain: { ...chain, roundRecord: async id => namedOutputs(abi('engine'), 'rounds', await read('engine', 'rounds', [id])) }, events: config.events, emit });
     } else if (config.phase === 'align-pool') {
@@ -79,10 +88,10 @@ try {
     } else if (config.phase === 'run') {
       const plan = config.plan;
       requireLive(plan, 'A completed matching-profile agent plan is required');
-      await verifyPlanTee(plan, config.teePolicy);
+      await verifyPlanTee(teeView(plan), config.teePolicy);
       const prices = await chain.verifiedProof();
       const portfolio = await chain.portfolio(prices);
-      (expanded ? validateStrategyPlan : validateAuroraPlan)(plan, { contracts, roundId: nextId, portfolio, now: Math.floor(Date.now() / 1000), scriptedForecasts: config.hybrid === true });
+      (swarm2 ? validateSwarm2Plan : expanded ? validateStrategyPlan : validateAuroraPlan)(plan, { contracts, roundId: nextId, portfolio, now: Math.floor(Date.now() / 1000), scriptedForecasts: config.hybrid === true });
       const terms = runTerms({ config, plan, hybrid: config.hybrid === true });
       requireLive(BigInt(state.sponsorReserve) >= BigInt(plan.proposals.length) * 5000000n, 'All proposals need separate forecasting seed');
       const id = nextId;
@@ -92,7 +101,7 @@ try {
       await refresh(label('oracle:open'));
       const now = (await client.getBlock()).timestamp;
       const horizon = BigInt(terms.evaluationSeconds); // QuantumRound.openRound horizon == evaluationEnd - tradingEnd, authorized identically
-      const end = now + (expanded ? 420n : 300n); const evaluation = end + horizon; const deadline = end + 100n;
+      const end = now + (swarm2 ? 600n : expanded ? 420n : 300n); const evaluation = end + horizon; const deadline = end + 100n;
       emit({ stage: 'schedule', roundId: id, tradingEnd: end, evaluationEnd: evaluation, executionDeadline: deadline, evaluationSeconds: terms.evaluationSeconds, scriptedTarget: terms.scriptedTarget });
       stage = 'authorize';
       await ownerCall(label('authorize'), 'module', 'authorizeRound', [id, end, evaluation, deadline, 950000000000000000n, 1050000000000000000n, 90n]);
@@ -124,9 +133,9 @@ try {
         const creditAmount = config.hybrid && forecasterIndex === 0 ? 400000n : 100000n;
         const blockNumber = await client.getBlockNumber();
         const quotes = await Promise.all(plan.proposals.flatMap(p => ['long', 'short'].map(async side => ({ proposalId: p.id, side, outcomeAmount: await read('market', side === 'long' ? 'quoteBuyLong' : 'quoteBuyShort', [id, BigInt(p.id), creditAmount], blockNumber) }))));
-        const trade = chooseTrade({ forecasts: forecaster.forecasts, quotes, creditAmount });
-        if (!trade) { const decision = { name: forecaster.name, action: 'abstain', reason: 'No forecast clears confidence and actual entry-cost edge checks' }; decisions.push(decision); emit({ stage: 'trade-decision', ...decision }); continue; }
-        const decision = { name: forecaster.name, action: 'buy', ...trade }; decisions.push(decision); emit({ stage: 'trade-decision', ...decision });
+        const trade = swarm2 ? chooseProbabilityTrade({ forecasts: forecaster.forecasts, quotes, creditAmount, minEdgeBps: plan.minEdgeBps }) : chooseTrade({ forecasts: forecaster.forecasts, quotes, creditAmount });
+        if (!trade) { const decision = { name: forecaster.name, ...(swarm2 ? { model: forecaster.model } : {}), action: 'abstain', reason: swarm2 ? `No probability differs from the actual entry price by at least ${plan.minEdgeBps} bps` : 'No forecast clears confidence and actual entry-cost edge checks' }; decisions.push(decision); emit({ stage: 'trade-decision', ...decision }); continue; }
+        const decision = { name: forecaster.name, ...(swarm2 ? { model: forecaster.model } : {}), action: 'buy', ...trade }; decisions.push(decision); emit({ stage: 'trade-decision', ...decision });
         await tx(label(`claim:${forecaster.name}`), forecaster.name, 'engine', 'claimCredits', [id, BigInt(trade.proposalId), 10000000n]);
         await tx(label(`trade:${forecaster.name}`), forecaster.name, 'engine', trade.side === 'long' ? 'buyLong' : 'buyShort', [id, BigInt(trade.proposalId), creditAmount, trade.minimumOutcomes]);
       }
@@ -198,9 +207,9 @@ try {
       requireLive(collateralReconciles({ beforeEngine, ownDeposits: BigInt(forecasterNames.length) * 10000000n, externalDeposits: external.reduce((sum, item) => sum + item.amount, 0n),
         engineBalance, reserve, payouts: [...payouts.map(p => p.payout), ...externalPayouts.map(p => p.payout)] }), 'Forecast collateral does not reconcile');
       emit({ stage: 'complete', chainId: 1313161555, roundId: id, winner, allocation, round, portfolio: portfolioResult, payouts, externalPayouts, decisions, reserve,
-        provider: plan.provider, recordHashes: plan.records.map(r => ({ name: r.name, inputHash: r.inputHash, outputHash: r.outputHash })),
+        provider: plan.provider, recordHashes: plan.records.map(r => ({ name: r.name, ...(swarm2 ? { model: r.model } : {}), inputHash: r.inputHash, outputHash: r.outputHash })),
         evaluationSeconds: terms.evaluationSeconds, scriptedTarget: terms.scriptedTarget,
-        scope: roundScope({ hybrid: config.hybrid === true, swarm: config.swarm === true, scriptedTarget: terms.scriptedTarget, evaluationSeconds: terms.evaluationSeconds, probe: terms.manipulationProbe }) });
+        scope: swarm2 ? swarm2Scope({ evaluationSeconds: terms.evaluationSeconds, probe: terms.manipulationProbe, tee: plan.teeRequired === true }) : roundScope({ hybrid: config.hybrid === true, swarm: config.swarm === true, scriptedTarget: terms.scriptedTarget, evaluationSeconds: terms.evaluationSeconds, probe: terms.manipulationProbe }) });
     } else throw new Error('Unknown phase');
     }
   }

@@ -27,7 +27,7 @@ export function createAuroraChain({ manifest, artifacts, privateKey, actorKeys, 
   requireLive(manifest?.chainId === 1313161555 && manifest.schemaVersion === 1, 'Aurora testnet manifest required');
   const contracts = manifest.contracts;
   const accounts = { owner: privateKeyToAccount(privateKey) };
-  requireLive(Array.isArray(actorNames) && actorNames.length >= 4 && actorNames.length <= 8 && new Set(actorNames).size === actorNames.length && actorNames.every(n => /^[A-Za-z]{1,24}$/.test(n) && n !== 'owner'), 'Invalid actor roster');
+  requireLive(Array.isArray(actorNames) && actorNames.length >= 4 && actorNames.length <= 14 && new Set(actorNames).size === actorNames.length && actorNames.every(n => /^[A-Za-z]{1,24}$/.test(n) && n !== 'owner'), 'Invalid actor roster');
   for (const name of actorNames) accounts[name] = privateKeyToAccount(actorKeys[name]);
   requireLive(sameAddress(accounts.owner.address, OPERATOR), 'Wrong dedicated testnet operator');
   requireLive(new Set(Object.values(accounts).map(x => x.address.toLowerCase())).size === actorNames.length + 1, 'Agent wallets must be distinct');

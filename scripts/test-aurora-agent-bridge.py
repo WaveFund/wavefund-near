@@ -208,5 +208,45 @@ class AgentBridgeSafety(unittest.TestCase):
         self.assertIn('pool-alignment journal', self.run_bridge('--run-inference').stderr)
 
 
+    def swarm2_worker(self, requests):
+        """Fake worker: records its config, then asks for `requests` acknowledged inference calls, then emits a plan."""
+        (self.root / 'snapshot.json').write_text(json.dumps({'snapshot': {}, 'market': {}, 'researchContext': {'evidenceId': 'fixture'}}))
+        environment_file = self.root / 'fake.env'
+        environment_file.write_text('NEARAI_API_KEY=unit-test-placeholder\nWAVEFUND_AGENT_MODEL=unit-test-model\n')
+        executable = self.root / 'docker'
+        executable.write_text('#!/usr/bin/env python3\nimport sys,json\nc=json.loads(sys.stdin.readline())\n'
+                              f'for i in range(1, {requests} + 1):\n'
+                              '    print(json.dumps({"stage":"inference-request","request":i}), flush=True)\n'
+                              '    ack=json.loads(sys.stdin.readline())\n'
+                              '    assert ack["ack"]==f"inference-{i}"\n'
+                              'print(json.dumps({"stage":"plan","plan":{"swarm2":c.get("swarm2"),"swarm":c["swarm"],"hybrid":c["hybrid"],"actors":c["actorNames"],"model":c["model"],"tee":"teePolicy" in c}}), flush=True)\n')
+        executable.chmod(0o700)
+        environment = {**os.environ, 'PATH': str(self.root) + os.pathsep + os.environ['PATH']}
+        return subprocess.run(self.command + ['--profile', 'swarm2', '--run-inference', '--env', str(environment_file)], capture_output=True, text=True, timeout=10, env=environment)
+
+    def test_swarm2_forwards_fourteen_actors_and_no_single_model_within_fourteen_calls(self):
+        result = self.swarm2_worker(14)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        plan = json.loads((self.root / 'plan.json').read_text())
+        self.assertEqual([plan['swarm2'], plan['swarm'], plan['hybrid'], plan['model']], [True, False, False, None])
+        self.assertEqual(len(plan['actors']), 14)
+        self.assertEqual(len(set(plan['actors'])), 14)
+        self.assertIn('Contrarian', plan['actors'])
+        self.assertIn('Skeptic', plan['actors'])
+
+    def test_swarm2_never_acknowledges_a_fifteenth_model_call(self):
+        result = self.swarm2_worker(15)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('Model-call cap exceeded: swarm2 allows 14 calls', result.stderr)
+        self.assertFalse((self.root / 'plan.json').exists())
+        journal = [json.loads(line) for line in (self.root / 'journal.jsonl').read_text().splitlines()]
+        self.assertEqual(sum(1 for e in journal if e.get('stage') == 'inference-request'), 14)
+        self.assertEqual(journal[-1], {'stage': 'inference-cap', 'status': 'failed', 'cap': 14, 'request': 15})
+
+    def test_swarm2_accepts_tee_with_policy(self):
+        result = self.run_bridge('--tee', '--tee-policy', 'missing-policy.json', '--profile', 'swarm2', '--run-inference')
+        self.assertNotIn('--tee applies only', result.stderr)
+        self.assertNotIn('invalid choice', result.stderr)
+
 if __name__ == '__main__':
     unittest.main()
