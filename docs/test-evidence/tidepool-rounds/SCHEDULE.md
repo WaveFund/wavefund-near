@@ -56,3 +56,8 @@ Remaining schedule, renumbered and otherwise unchanged:
 | 7 | 3 · Momentum (75%) | Momentum's second sample |
 | 8 | none · genuine AI forecasters | Real AI forecasting attempt |
 | 9 | 3 · Momentum (75%) + manipulation-resistance probe | Measured return must follow the oracle |
+
+**Budget correction (same day, before round 5 ran):** the round-4 re-run costs four extra model calls, which
+would exceed the 28-call approval. The standalone Momentum round is dropped; the probe round still gives
+Momentum its second sample. Final order: **5 HighBeta (re-run) · 6 Hold · 7 genuine AI forecasters (8 calls)
+· 8 Momentum + manipulation-resistance probe.** Total model calls: 28.
