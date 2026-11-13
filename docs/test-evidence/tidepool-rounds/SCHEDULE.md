@@ -37,3 +37,22 @@ From round 3 on, one disclosed maintenance step is added **before each round ope
 test pool to the authenticated oracle price, the way an arbitrage trader would on a public market (minting
 test ETH or using test USDC, within 0.25% of the oracle). It never runs while a round is active, and it does
 not change the schedule, the oracle, slippage limits or confidence gates.
+
+## Addendum after round 4 (written before round 5 ran)
+
+Round 4 (scripted target 4 · HighBeta) **failed**: a public Aurora testnet RPC request errored while the
+operator waited for trading to close, and the runner stopped before selection/execution. Following the rule
+above it was not resumed silently: the existing recovery phase collapsed it, cancelled it after the execution
+deadline (`abortExpired`, tx `0xbe011db1242d61d4d962de0b81d03ddb18d8c1b23cfa56ac316c05b2660086ec`) and refunded
+all four forecasters; the Safe's balances were identical before and after. No reputation is recorded.
+The runner now retries idempotent reads (never broadcasts).
+
+Remaining schedule, renumbered and otherwise unchanged:
+
+| Round | Scripted forecasters back | Purpose |
+|---|---|---|
+| 5 | 4 · HighBeta (95%) | Disclosed re-run of the failed round 4 target |
+| 6 | 0 · Hold | Hold applied, no swap, no reputation score |
+| 7 | 3 · Momentum (75%) | Momentum's second sample |
+| 8 | none · genuine AI forecasters | Real AI forecasting attempt |
+| 9 | 3 · Momentum (75%) + manipulation-resistance probe | Measured return must follow the oracle |
