@@ -68,6 +68,16 @@ test('preflight failure never reaches paid completion; success preserves exact r
   const p = createTeeProvider(config, options); const result = await p.complete({ system: 'system', context: {} });
   assert.equal(result.privacy.verified, true); assert.equal(result.teeEvidence.requestBody, req);
   await assert.rejects(p.complete({ system: 'system', context: {} }), /TEE_CALL_BUDGET_EXHAUSTED/);
+  const hiddenRaw = JSON.stringify({ id: 'chat-test', choices: [{ finish_reason: 'stop', message: { content: '{"allocationBps":4500}', reasoning_content: 'synthetic hidden reasoning must not be exported' } }] });
+  let hiddenRequest;
+  const hidden = createTeeProvider(config, { ...options, fetchImpl: async (url, init) => {
+    if (url.endsWith('/chat/completions')) { hiddenRequest = init.body; return new Response(hiddenRaw); }
+    if (url.includes('/signature/')) return Response.json(await f.signature(hiddenRequest, hiddenRaw));
+    return fetchImpl(url, init);
+  } });
+  await assert.rejects(hidden.complete({ system: 'system', context: {} }), /TEE_COMPLETION_INVALID/);
+  const malformed = createTeeProvider(config, { ...options, fetchImpl: async (url, init) => url.endsWith('/chat/completions') ? new Response('{synthetic-private-error-detail') : fetchImpl(url, init) });
+  await assert.rejects(malformed.complete({ system: 'system', context: {} }), error => error.message === 'TEE_INFERENCE_OR_VERIFICATION_FAILED');
   seen.length = 0;
   const bad = createTeeProvider(config, { ...options, quoteVerifier: async () => ({ status: 'Revoked' }) });
   await assert.rejects(bad.complete({ system: 's', context: {} }), /TEE_REPORT_REJECTED/);

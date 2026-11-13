@@ -66,6 +66,7 @@ export function createTeeProvider(config, { policy, fetchImpl = fetch, quoteVeri
   return {
     info: Object.freeze({ mode: 'near-ai', model: checked.model, attestationVerified: false, teeRequired: true }),
     async complete({ system, context }) {
+      try {
       check(++calls <= maxCalls, 'TEE_CALL_BUDGET_EXHAUSTED');
       const auxiliaryBefore = auxiliaryCalls;
       const nonce = nonceFactory(); hex(nonce, 32);
@@ -96,13 +97,17 @@ export function createTeeProvider(config, { policy, fetchImpl = fetch, quoteVeri
       const requestBody = JSON.stringify({ model: checked.model, messages: [{ role: 'system', content: system }, { role: 'user', content: JSON.stringify({ ...context, teeChallenge: nonce }) }], max_tokens: 1800, temperature: 0.2, stream: false, chat_template_kwargs: { enable_thinking: false }, response_format: { type: 'json_object' } });
       const responseBody = await request(`${BASE}/chat/completions`, { method: 'POST', headers: auth, body: requestBody }, 65536);
       const payload = JSON.parse(responseBody); const choice = payload.choices?.[0];
-      check(choice?.finish_reason === 'stop' && !choice.message?.tool_calls?.length && typeof choice.message?.content === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(payload.id), 'TEE_COMPLETION_INVALID');
+      check(choice?.finish_reason === 'stop' && !choice.message?.tool_calls?.length && !choice.message?.reasoning_content && !choice.message?.reasoning && typeof choice.message?.content === 'string' && /^[A-Za-z0-9_-]{1,128}$/.test(payload.id), 'TEE_COMPLETION_INVALID');
       auxiliaryCalls++;
       const signature = JSON.parse(await request(`${BASE}/signature/${payload.id}?signing_algo=ecdsa`, { headers: auth }, 65536));
       const teeEvidence = { schemaVersion: 1, nonce, preflightTime, verificationTime: now(), requestBody, responseBody, attestationReport, collateral, gpuTokens, signature };
       const privacy = await verifyTeeEvidence(teeEvidence, policy, { quoteVerifier });
       check(privacy.verified, 'TEE_RESPONSE_REJECTED');
       return { value: JSON.parse(choice.message.content), usage: { inputTokens: payload.usage?.prompt_tokens ?? null, outputTokens: payload.usage?.completion_tokens ?? null }, privacy, teeEvidence, auxiliaryCalls: auxiliaryCalls - auxiliaryBefore, collateralFetches: reports.length };
+      } catch (error) {
+        if (/^TEE_[A-Z0-9_]+$/.test(error?.message ?? '')) throw error;
+        throw new Error('TEE_INFERENCE_OR_VERIFICATION_FAILED');
+      }
     },
   };
 }

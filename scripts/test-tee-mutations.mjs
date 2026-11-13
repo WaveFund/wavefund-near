@@ -17,6 +17,8 @@ cpSync(join(root, 'package.json'), join(scratch, 'package.json'));
 symlinkSync(join(root, 'node_modules'), join(scratch, 'node_modules'), 'dir');
 process.chdir(scratch);
 const cases = [
+ ['no hidden reasoning export', 'runtime/agents/tee-client.mjs', '!choice.message?.reasoning_content && ', ''],
+ ['sanitized provider errors', 'runtime/agents/tee-client.mjs', "throw new Error('TEE_INFERENCE_OR_VERIFICATION_FAILED')", 'throw error'],
  ['wallet view/chain round match', 'frontend/src/lib/wallet/flow.mjs', 'String(chainRoundId) === round.roundId', 'true'],
  ['signed request nonce', 'runtime/agents/tee.mjs', "check(JSON.parse(request.messages?.[1]?.content ?? 'null')?.teeChallenge === nonce, 'TEE_REQUEST_NONCE_MISMATCH');", 'void 0;'],
  ['signed round context', 'runtime/agents/tee-record.mjs', "throw new Error('TEE_ROUND_CONTEXT_MISMATCH')", 'void 0'],

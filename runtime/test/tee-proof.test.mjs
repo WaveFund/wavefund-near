@@ -15,7 +15,7 @@ async function proofFixture() {
   for (let id = 1; id <= 4; id++) {
     const raw = { allocationBps: id * 2000, confidenceBps: 4000, rationale: 'Measured test allocation.', risks: ['Risk'], evidenceIds: ['market'] };
     const decision = validateProposal(raw, { evidenceIds: ['market'] }); const input = { system: 'system', context: { agent: `Agent${id}`, role: 'proposer', roundContext: { chainId: plan.chainId, engine: plan.engine, safe: plan.safe, roundId: plan.roundId, snapshotBlock: '100' } } };
-    const e = structuredClone(f.evidence); e.requestBody = JSON.stringify({ model: f.model, messages: [{ role: 'system', content: input.system }, { role: 'user', content: JSON.stringify({ ...input.context, teeChallenge: f.nonce }) }] }); e.responseBody = JSON.stringify({ id: 'chat-test', choices: [{ message: { content: JSON.stringify(raw) } }] }); e.signature = await f.signature(e.requestBody, e.responseBody);
+    const e = structuredClone(f.evidence); e.requestBody = JSON.stringify({ model: f.model, messages: [{ role: 'system', content: input.system }, { role: 'user', content: JSON.stringify({ ...input.context, teeChallenge: f.nonce }) }] }); e.responseBody = JSON.stringify({ id: 'chat-test', choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(raw) } }] }); e.signature = await f.signature(e.requestBody, e.responseBody);
     const privacy = await verifyTeeEvidence(e, f.policy, { quoteVerifier: f.quoteVerifier });
     const record = { name: `Agent${id}`, role: 'proposer', provider: 'near-ai', attestationVerified: true, input, inputHash: digest(input), decision, outputHash: digest(decision), privacy, teeEvidence: e };
     plan.records.push(record); plan.proposals.push({ id, name: record.name, allocationBps: raw.allocationBps });
