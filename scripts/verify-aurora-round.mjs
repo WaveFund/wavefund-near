@@ -41,8 +41,13 @@ const actors = events.find(e => e.stage === 'actors').actors;
 const forecasters = events.filter(e => e.stage === 'confirmed' && e.label.startsWith(`round${id}:deposit:`)).map(e => e.actor);
 const addresses = await Promise.all(['creditToken', 'longToken', 'shortToken'].map(functionName => client.readContract({ address: contracts.tokens, abi: factoryAbi, functionName, args: [id, winner], blockNumber: pinned })));
 const payouts = [];
-for (const name of forecasters) {
-  const address = actors[name];
+// Operator forecasters (journal labels) and outside wallets the runner settled (external-redemption events) are
+// derived the same way from on-chain state at collapse; outside ones are reported separately.
+const participants = [
+  ...forecasters.map(name => ({ name, address: actors[name], redeemHash: events.find(e => e.stage === 'confirmed' && e.label === `round${id}:redeem:${name}`)?.hash, external: false })),
+  ...events.filter(e => e.stage === 'external-redemption').map((e, i) => ({ name: `wallet${i + 1}`, address: e.address, redeemHash: e.transactionHash, external: true })),
+];
+for (const { name, address, redeemHash, external } of participants) {
   const [deposit, claimed, ...balances] = await Promise.all([
     readEngine('deposits', [id, address], pinned), readEngine('creditsClaimed', [id, winner, address], pinned),
     ...addresses.map(token => client.readContract({ address: token, abi: tokenAbi, functionName: 'balanceOf', args: [address], blockNumber: pinned })),
@@ -50,12 +55,12 @@ for (const name of forecasters) {
   const [credit, long, short] = balances;
   const unclaimedPrincipal = deposit - claimed;
   const derivedPayout = unclaimedPrincipal + credit + long * round.pi / 10n ** 30n + short * (10n ** 18n - round.pi) / 10n ** 30n;
-  const paid = events.find(e => e.stage === 'confirmed' && e.label === `round${id}:redeem:${name}`);
-  const receipt = await client.getTransactionReceipt({ hash: paid.hash });
+  check(typeof redeemHash === 'string', `Missing redemption for ${name}`);
+  const receipt = await client.getTransactionReceipt({ hash: redeemHash });
   const redeemed = receipt.logs.filter(l => l.address.toLowerCase() === contracts.engine.toLowerCase()).flatMap(l => { try { const e = decodeEventLog({ abi: engineAbi, ...l }); return e.eventName === 'Redeemed' ? [e.args] : []; } catch { return []; } });
   check(receipt.status === 'success' && redeemed.length === 1 && redeemed[0].payout === derivedPayout && redeemed[0].user.toLowerCase() === address.toLowerCase(), `Wrong derived payout for ${name}`);
   check(await readEngine('previewRedeem', [id, address]) === 0n, 'Liabilities remain after redemption');
-  payouts.push({ name, address, deposit, claimedWinningCredits: claimed, unclaimedPrincipal, credit, long, short, derivedPayout, actualPayout: redeemed[0].payout });
+  payouts.push({ name, address, external, deposit, claimedWinningCredits: claimed, unclaimedPrincipal, credit, long, short, derivedPayout, actualPayout: redeemed[0].payout });
 }
 const fills = [];
 for (const event of events.filter(e => e.stage === 'confirmed' && e.label.startsWith(`round${id}:trade:`))) {
