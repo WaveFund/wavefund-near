@@ -58,7 +58,7 @@ export function buildRoundEvidence({ roundId, plan, complete, journal, reputatio
     'Tidepool community testnet, not official mainnet 1Click execution.',
     'Investment and forecast tokens/liquidity are worthless test assets.',
     ...(plan.profile === 'swarm2-v1'
-      ? ['Six real proposals and eight forecasts each come from a different NEAR AI model; mandates and allocation bounds are operator-defined. Forecasters are proxied third-party models with no hardware attestation.',
+      ? [`${plan.proposals.length - 1} real proposals and ${plan.forecasts.length} forecasts each come from a different NEAR AI model; mandates and allocation bounds are operator-defined. Forecasters are proxied third-party models with no hardware attestation.`,
         `Forecasters state each proposal's expected return over the evaluation horizon; the ${plan.tradeRule} rule values one LONG at clamp((1 + R - rMin) / (rMax - rMin), 0, 1) of that point forecast and one SHORT at 1 minus it, which is how the selected proposal's tokens actually settle, and trades only when that value beats the actual on-chain entry price by at least ${plan.minEdgeBps} bps. A point forecast is not an expectation over a return distribution.`]
       : ['Four real proposals use the same model and operator-defined risk mandates.']),
     ...(hybrid ? [`All forecast bets are explicitly SCRIPTED fixtures aimed at the pre-registered target (proposal ${target}, ${NAMES[target]}); the winner reflects that script, not forecasting skill.`] : []),

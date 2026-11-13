@@ -54,7 +54,7 @@ export function createProvider(config, { fetchImpl = fetch, timeoutMs = 20000, m
 }
 
 // Paid model calls per round, by operator profile. No retries: a failed call ends the plan phase.
-export const PROFILE_CALLS = Object.freeze({ classic: 4, hybrid: 4, swarm: 8, swarm2: 14 });
+export const PROFILE_CALLS = Object.freeze({ classic: 4, hybrid: 4, swarm: 8, swarm2: 13 }); // swarm2 = 5 proposers + 8 forecasters
 /** One shared counter for every provider in a round; take() throws on the call after the profile cap. */
 export function roundCallCap(profile) {
   const cap = PROFILE_CALLS[profile];

@@ -87,11 +87,14 @@ swarm = a.profile == 'swarm'
 swarm2 = a.profile == 'swarm2'
 expanded = hybrid or swarm or swarm2
 # Paid model calls per plan phase, by profile (mirrors runtime/agents/provider.mjs PROFILE_CALLS). No retries.
-CALL_CAPS = {'classic': 4, 'hybrid': 4, 'swarm': 8, 'swarm2': 14}
+CALL_CAPS = {'classic': 4, 'hybrid': 4, 'swarm': 8, 'swarm2': 13}
 call_cap = CALL_CAPS[a.profile]
-# swarm2 adds two proposers and four forecasters (runtime/agents/swarm-config.mjs); prepare generates their keys.
-SWARM2_ACTORS = ['Conservative', 'Balanced', 'Momentum', 'HighBeta', 'Contrarian', 'VolAware',
+# swarm2 adds one proposer and four forecasters (runtime/agents/swarm-config.mjs); prepare generates their keys.
+SWARM2_ACTORS = ['Conservative', 'Balanced', 'Momentum', 'HighBeta', 'Contrarian',
                  'Quant', 'Guardian', 'FeeAnalyst', 'StressAnalyst', 'BaseRate', 'VolAnalyst', 'Regime', 'Skeptic']
+# Exactly one paid call per swarm2 agent: the cap is proposers + forecasters, never more.
+if CALL_CAPS['swarm2'] != len(SWARM2_ACTORS):
+    sys.exit('swarm2 call cap must equal its proposer + forecaster count')
 actor_names = SWARM2_ACTORS if swarm2 else ['Conservative', 'Balanced', 'Momentum', 'HighBeta', 'Quant', 'Guardian', 'FeeAnalyst', 'StressAnalyst'] if expanded else ['Momentum', 'Conservative', 'Quant', 'Guardian']
 config = dict(phase=a.phase, events=events, hybrid=hybrid, swarm=swarm, actorNames=actor_names)
 if swarm2:
@@ -106,7 +109,7 @@ if a.phase == 'plan' and not expanded and a.evaluation_seconds not in [None, 180
     sys.exit('The classic profile keeps its 180 second horizon.')
 if a.phase == 'plan':
     if not a.run_inference:
-        sys.exit('Use --run-inference to explicitly spend credits on at most fourteen model calls for swarm2, eight for swarm, four otherwise.')
+        sys.exit('Use --run-inference to explicitly spend credits on at most thirteen model calls for swarm2, eight for swarm, four otherwise.')
     if any(e.get('stage') == 'inference-request' for e in events):
         sys.exit('Inference already attempted in this session. No automatic paid retry.')
     snapshot = json.loads((a.directory / 'snapshot.json').read_text())

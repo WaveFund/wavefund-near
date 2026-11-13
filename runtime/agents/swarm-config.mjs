@@ -1,10 +1,13 @@
-// swarm2: six proposers + Hold and eight forecasters, every agent on a DIFFERENT NEAR AI catalog model.
+// swarm2: five proposers + Hold and eight forecasters, every agent on a DIFFERENT NEAR AI catalog model.
 // Pure data + validation: no network, clock or credentials. Model ids, features and prices were read from the public
 // catalog (GET https://cloud-api.near.ai/v1/models) on 2026-11-13; re-check before a live round.
 //
 // Proposers use models NEAR AI serves from its own attested CVMs: GET /v1/attestation/report returned a gateway + model
-// report for each of the six proposer ids on 2026-11-13. Proposer TEE verification still needs each model's
-// mrTd:mrConfigId in the reviewed --tee-policy; three of them share the Qwen3.6 measurement, GLM and DeepSeek do not.
+// report for each of the five proposer ids on 2026-11-13 (scripts/tee-preflight.mjs rechecks this for free).
+// Proposer TEE verification needs each model's mrTd:mrConfigId in the reviewed --tee-policy (docs/tee-policy.json).
+// No abliterated (safety-removed) weights are used. No sixth attestable non-abliterated model was available:
+// deepseek/deepseek-v4.1-flash and moonshotai/kimi-k2.6 list a hugging_face_id but returned "No provider found that
+// supports attestation reports" on 2026-11-13.
 // Forecasters are third-party models proxied by NEAR AI: no hardware attestation is claimed for them.
 
 const check = (condition, message) => { if (!condition) throw new Error(message); };
@@ -22,7 +25,6 @@ export const SWARM2_MODELS = Object.freeze(Object.fromEntries([
   ['z-ai/glm-5.3-flash', { family: 'GLM', hosting: 'near-attested', priceIn: 80, priceOut: 500, responseFormat: 'json_object', temperature: true, maxTokens: 1800, thinkingOff: { enable_thinking: false } }],
   ['deepseek-ai/DeepSeek-V4.1-Flash-1017', { family: 'DeepSeek', hosting: 'near-attested', priceIn: 300, priceOut: 1200, responseFormat: 'none', temperature: false, maxTokens: 1800, thinkingOff: { enable_thinking: false, thinking: false } }],
   ['Qwen/Qwen3-VL-30B-A3B-Instruct', { family: 'Qwen', hosting: 'near-attested', priceIn: 150, priceOut: 550, responseFormat: 'json_schema', temperature: true, maxTokens: 1800, thinkingOff: null }],
-  ['Qwen/Qwen3.8-27B-abliterated', { family: 'Qwen', hosting: 'near-attested', priceIn: 40, priceOut: 1350, responseFormat: 'json_schema', temperature: true, maxTokens: 1800, thinkingOff: { enable_thinking: false } }],
   ['openai/gpt-4.1-mini', { family: 'OpenAI', hosting: 'proxied', priceIn: 400, priceOut: 1600, responseFormat: 'json_object', temperature: true, maxTokens: 1800, thinkingOff: null }],
   ['anthropic/claude-haiku-5-5', { family: 'Anthropic', hosting: 'proxied', priceIn: 100, priceOut: 500, responseFormat: 'json_schema', temperature: false, maxTokens: 4000, thinkingOff: null }],
   ['google/gemini-2.5-flash', { family: 'Google', hosting: 'proxied', priceIn: 300, priceOut: 2500, responseFormat: 'json_object', temperature: true, maxTokens: 4000, thinkingOff: null }],
@@ -33,15 +35,14 @@ export const SWARM2_MODELS = Object.freeze(Object.fromEntries([
   ['z-ai/glm-5.3', { family: 'GLM', hosting: 'proxied', priceIn: 1800, priceOut: 5750, responseFormat: 'none', temperature: true, maxTokens: 4000, thinkingOff: null }],
 ].map(([id, spec]) => [id, Object.freeze(spec)])));
 
-// Proposal ids follow array order: 0 Hold, 1..6 below. The first four keep the classic swarm ids and bounds.
-// Allocation intervals never overlap, so six valid proposals are always six distinct allocations.
+// Proposal ids follow array order: 0 Hold, 1..5 below. The first four keep the classic swarm ids and bounds.
+// Allocation intervals never overlap, so five valid proposals are always five distinct allocations.
 export const SWARM2_PROPOSERS = Object.freeze([
   { name: 'Conservative', min: 0, max: 2000, target: 1000, model: 'Qwen/Qwen3.6-35B-A3B-FP8', mandate: 'Capital preservation: choose a low asset exposure within the assigned mandate.' },
   { name: 'Balanced', min: 3500, max: 5000, target: 4500, model: 'Qwen/Qwen3.8-27B', mandate: 'Balanced treasury: choose a diversified cash/asset allocation within the assigned mandate.' },
   { name: 'Momentum', min: 6500, max: 8000, target: 7500, model: 'z-ai/glm-5.3-flash', mandate: 'Growth exposure: assess trend risk while retaining the assigned growth exposure.' },
   { name: 'HighBeta', min: 9000, max: 10000, target: 9500, model: 'deepseek-ai/DeepSeek-V4.1-Flash-1017', mandate: 'High asset exposure: assess downside and choose a weight inside the assigned high-exposure mandate.' },
   { name: 'Contrarian', min: 2100, max: 3400, target: 3000, model: 'Qwen/Qwen3-VL-30B-A3B-Instruct', mandate: 'Contrarian: question the recent trend; choose a weight inside the assigned interval that would hold up if the recent move reverses.' },
-  { name: 'VolAware', min: 5100, max: 6400, target: 6000, model: 'Qwen/Qwen3.8-27B-abliterated', mandate: 'Volatility-aware: size asset exposure inside the assigned interval inversely to the realised volatility in the supplied history.' },
 ].map(Object.freeze));
 
 export const SWARM2_FORECASTERS = Object.freeze([
@@ -55,7 +56,7 @@ export const SWARM2_FORECASTERS = Object.freeze([
   { name: 'Skeptic', model: 'z-ai/glm-5.3', mandate: 'Argue against the most popular view; stay near zero expected return unless the evidence clearly supports a move.' },
 ].map(Object.freeze));
 
-export const SWARM2_CALLS = SWARM2_PROPOSERS.length + SWARM2_FORECASTERS.length; // 14 paid calls, no retries
+export const SWARM2_CALLS = SWARM2_PROPOSERS.length + SWARM2_FORECASTERS.length; // 13 paid calls (5 + 8), no retries
 export const SWARM2_PROPOSAL_IDS = Object.freeze([0, ...SWARM2_PROPOSERS.map((_, i) => i + 1)]);
 export const SWARM2_FORECAST_IDS = SWARM2_PROPOSAL_IDS; // every proposal, Hold included: each has its own LONG/SHORT market
 // Trade rule (runtime/agents/policy.mjs chooseValueTrade): trade only when the forecast payout beats the actual entry
@@ -63,7 +64,7 @@ export const SWARM2_FORECAST_IDS = SWARM2_PROPOSAL_IDS; // every proposal, Hold 
 export const SWARM2_MIN_EDGE_BPS = 300;
 export const SWARM2_TRADE_RULE = 'expected-payout-value-v1';
 export const SWARM2_ACTORS = Object.freeze([...SWARM2_PROPOSERS, ...SWARM2_FORECASTERS].map(a => a.name));
-export const SWARM2_INPUT_BYTES = 20480; // forecaster context grows with seven anonymous strategies
+export const SWARM2_INPUT_BYTES = 20480; // forecaster context grows with six anonymous strategies
 export const SWARM2_TIMEOUT_MS = 60000;
 
 // Client-side reservation per call: every input byte counted as a token (an upper bound) plus the full output allowance.
@@ -78,7 +79,7 @@ export function callAllowanceNanoUsd(model, inputBytes) {
 export const SWARM2_BUDGET_NANO_USD = [...SWARM2_PROPOSERS, ...SWARM2_FORECASTERS].reduce((sum, a) => sum + callAllowanceNanoUsd(a.model, SWARM2_INPUT_BYTES), 0);
 
 export function validateSwarmConfig({ proposers = SWARM2_PROPOSERS, forecasters = SWARM2_FORECASTERS, models = SWARM2_MODELS } = {}) {
-  check(proposers.length === 6 && forecasters.length === 8, 'swarm2 needs exactly six proposers and eight forecasters');
+  check(proposers.length === 5 && forecasters.length === 8, 'swarm2 needs exactly five proposers and eight forecasters');
   check(proposers.length + 1 <= 10, 'Contract allows at most ten proposals including Hold');
   const agents = [...proposers, ...forecasters];
   check(new Set(agents.map(a => a.name)).size === agents.length && agents.every(a => /^[A-Za-z][A-Za-z0-9]{0,31}$/.test(a.name) && a.name !== 'Hold'), 'Agent names must be distinct identifiers');
