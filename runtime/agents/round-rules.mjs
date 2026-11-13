@@ -129,3 +129,91 @@ export function collateralReconciles({ beforeEngine, ownDeposits, externalDeposi
   const paid = (payouts ?? []).reduce((sum, value) => sum + BigInt(value), 0n);
   return BigInt(engineBalance) === BigInt(reserve) && BigInt(beforeEngine) + BigInt(ownDeposits) + BigInt(externalDeposits) === BigInt(engineBalance) + paid;
 }
+
+// ---------------------------------------------------------------- pool alignment (operator arbitrage before a round)
+// The investment pair is a private test pool with no arbitrageurs, so its price drifts from the oracle. Before a round
+// the operator trades it back to the authenticated oracle price, as an arbitrageur would on a public market.
+export const ALIGN_TARGET_BPS = 10n; // the trade must land the pool mid price within this of the oracle
+export const ALIGN_NONE_BPS = 25n; // already this close: no trade
+export const MAX_ALIGN_ASSET = 5n * ONE; // 5 test ETH (18 decimals)
+export const MAX_ALIGN_STABLE = 20000n * 1000000n; // 20,000 test USDC (6 decimals)
+const absolute = (x) => x < 0n ? -x : x;
+/** Pool mid price of one asset in USD X18: reserves give test USDC per asset, the oracle converts USDC to USD. */
+export const poolAssetUsdX18 = (reserves, stablePrice) => poolAssetPriceX18(reserves) * stablePrice / ONE;
+const withinBps = (price, reference, bps) => absolute(price - reference) * BPS <= bps * reference;
+
+/**
+ * Smallest exact-input V2 swap that moves the pool mid price to (just past) the oracle price.
+ * reserves: { reserveStable (6 dec), reserveAsset (18 dec) } as orderedReserves returns them.
+ * stablePrice, assetPrice: oracle USD prices X18, exactly as SupraPortfolioOracle.read() returns them.
+ */
+export function alignmentTrade({ reserves, stablePrice, assetPrice, feeBps = 30n }) {
+  const { reserveStable, reserveAsset } = reserves ?? {};
+  for (const value of [reserveStable, reserveAsset, stablePrice, assetPrice, feeBps]) check(typeof value === 'bigint', 'Alignment inputs must be bigints');
+  check(reserveStable > 0n && reserveAsset > 0n, 'Empty investment pool');
+  check(stablePrice > 0n && assetPrice > 0n, 'Oracle prices must be positive');
+  check(feeBps === 30n, 'Only the 0.3% V2 pool fee is modelled');
+  const priceBefore = poolAssetUsdX18(reserves, stablePrice);
+  const common = { oracleAssetPrice: assetPrice, oracleStablePrice: stablePrice, reservesBefore: { reserveStable, reserveAsset }, priceBefore, deviationBeforeBps: deviationBps(priceBefore, assetPrice) };
+  if (withinBps(priceBefore, assetPrice, ALIGN_NONE_BPS)) {
+    return { direction: 'none', amountIn: 0n, expectedOut: 0n, ...common, reservesAfter: common.reservesBefore, priceAfter: priceBefore, deviationAfterBps: common.deviationBeforeBps };
+  }
+  const sell = priceBefore > assetPrice; // pool overprices the asset: sell asset into it
+  const after = (amountIn) => {
+    const out = sell ? v2AmountOut(amountIn, reserveAsset, reserveStable) : v2AmountOut(amountIn, reserveStable, reserveAsset);
+    const next = sell ? { reserveStable: reserveStable - out, reserveAsset: reserveAsset + amountIn } : { reserveStable: reserveStable + amountIn, reserveAsset: reserveAsset - out };
+    return { out, reserves: next, price: poolAssetUsdX18(next, stablePrice) };
+  };
+  const reaches = (amountIn) => sell ? after(amountIn).price <= assetPrice : after(amountIn).price >= assetPrice;
+  const cap = sell ? MAX_ALIGN_ASSET : MAX_ALIGN_STABLE;
+  check(reaches(cap), `Alignment needs more than the ${sell ? '5 test ETH' : '20000 test USDC'} cap; refusing`);
+  let low = 0n; let high = cap; // invariant: reaches(high), and low === 0n or !reaches(low)
+  while (high - low > 1n) { const mid = (low + high) / 2n; if (reaches(mid)) high = mid; else low = mid; }
+  const result = after(high);
+  check(withinBps(result.price, assetPrice, ALIGN_TARGET_BPS), 'Alignment trade cannot land within 10 bps of the oracle');
+  return { direction: sell ? 'sell-asset' : 'buy-asset', amountIn: high, expectedOut: result.out, ...common,
+    reservesAfter: result.reserves, priceAfter: result.price, deviationAfterBps: deviationBps(result.price, assetPrice) };
+}
+/** Exact post-trade tolerance check used after the live alignment swap. */
+export const alignedWithin = (price, assetPrice, bps = ALIGN_NONE_BPS) => withinBps(price, assetPrice, bps);
+
+// ---------------------------------------------------------------- return attribution
+const valueAt = (stable6, asset18, { stablePrice, assetPrice }) => mulDiv(stable6, stablePrice, 1000000n) + mulDiv(asset18, assetPrice, ONE);
+/**
+ * Splits a settled return into (a) the execution fill versus the oracle and (b) the oracle move on what was held.
+ * startingValue is the module's oracle value of the pre-trade holdings; settlement marks the post-trade holdings at the
+ * end oracle. So: return = post/start (fill gap, same oracle) × end/post (market, same holdings). Both legs must reconcile
+ * exactly with the chain's numbers, otherwise the supplied oracle prices are not the ones the contracts used.
+ */
+export function poolGapAttribution({ startingValueX18, stableBefore6, assetBefore18, stableAfter6, assetAfter18, oraclePriceAtExecution, oraclePriceAtEnd, realisedReturnX18, executionPoolPrice }) {
+  for (const value of [startingValueX18, stableBefore6, assetBefore18, stableAfter6, assetAfter18, realisedReturnX18, oraclePriceAtExecution?.stablePrice, oraclePriceAtExecution?.assetPrice, oraclePriceAtEnd?.stablePrice, oraclePriceAtEnd?.assetPrice])
+    check(typeof value === 'bigint' && value >= 0n, 'Attribution inputs must be non-negative bigints');
+  check(startingValueX18 > 0n, 'Empty starting value');
+  check(valueAt(stableBefore6, assetBefore18, oraclePriceAtExecution) === startingValueX18, 'Starting value does not reconcile with the execution oracle prices');
+  const postTradeValueX18 = valueAt(stableAfter6, assetAfter18, oraclePriceAtExecution);
+  const endingValueX18 = valueAt(stableAfter6, assetAfter18, oraclePriceAtEnd);
+  check(postTradeValueX18 > 0n, 'Empty post-trade portfolio');
+  check(mulDiv(endingValueX18, ONE, startingValueX18) === realisedReturnX18, 'Realised return does not reconcile with the end oracle prices');
+  const stableDelta = stableAfter6 - stableBefore6; const assetDelta = assetAfter18 - assetBefore18;
+  check((stableDelta === 0n) === (assetDelta === 0n) && (stableDelta === 0n || (stableDelta > 0n) !== (assetDelta > 0n)), 'Holdings change is not a single swap');
+  let fill = null;
+  if (assetDelta !== 0n) {
+    const stableAmount = absolute(stableDelta); const assetAmount = absolute(assetDelta);
+    const fillPriceX18 = stableAmount * 10n ** 12n * ONE / assetAmount; // test USDC per asset
+    fill = { side: assetDelta < 0n ? 'sell-asset' : 'buy-asset', stableAmount, assetAmount, fillPriceX18,
+      fillPremiumBps: deviationBps(fillPriceX18 * oraclePriceAtExecution.stablePrice / ONE, oraclePriceAtExecution.assetPrice) };
+  }
+  const relative = (x, base) => (x - base) * ONE / base; // signed X18 fraction
+  return {
+    startingValueX18, postTradeValueX18, endingValueX18, realisedReturnX18,
+    totalReturnX18: realisedReturnX18 - ONE,
+    executionGapX18: relative(postTradeValueX18, startingValueX18), // (a) fill vs oracle, same prices before and after
+    marketMoveX18: relative(endingValueX18, postTradeValueX18), // (b) oracle move on the post-trade holdings
+    // Additive split in bps of the starting value: gap + market = total (up to 1 bp of truncation).
+    executionGapBps: (postTradeValueX18 - startingValueX18) * BPS / startingValueX18,
+    marketMoveBps: (endingValueX18 - postTradeValueX18) * BPS / startingValueX18,
+    totalBps: (endingValueX18 - startingValueX18) * BPS / startingValueX18,
+    fill,
+    poolPremiumBps: typeof executionPoolPrice === 'bigint' ? deviationBps(executionPoolPrice * oraclePriceAtExecution.stablePrice / ONE, oraclePriceAtExecution.assetPrice) : null,
+  };
+}

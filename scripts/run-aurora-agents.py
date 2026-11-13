@@ -3,6 +3,10 @@
 
 Only the inference phase receives the NEAR AI key. Non-inference phases receive
 dedicated testnet wallet keys. All credentials travel through ephemeral stdin, not argv.
+
+align-pool trades the private investment pool back to the verified oracle price before a
+round (owner wallet only). Give it its own --directory (e.g. .run/tidepool-v1/align-r3):
+round journals and alignment journals never mix.
 """
 import argparse
 from decimal import Decimal, InvalidOperation
@@ -15,7 +19,7 @@ import subprocess
 import sys
 
 p = argparse.ArgumentParser()
-p.add_argument('--phase', required=True, choices=['prepare', 'snapshot', 'plan', 'run', 'recover-cancel'])
+p.add_argument('--phase', required=True, choices=['prepare', 'snapshot', 'plan', 'run', 'recover-cancel', 'align-pool'])
 p.add_argument('--directory', type=Path, default=Path('.run/aurora-agents/round2'))
 p.add_argument('--manifest', type=Path, default=Path('deployments/aurora-testnet.json'))
 p.add_argument('--wallet', type=Path, default=Path('secrets/aurora-testnet-wallet.json'))
@@ -33,6 +37,8 @@ p.add_argument('--target', type=int, choices=range(5), metavar='{0..4}',
 p.add_argument('--evaluation-seconds', type=int, help='plan phase: evaluation window 180..3600 seconds after trading end')
 p.add_argument('--manipulation-probe-usdc', help='run phase: operator pool-manipulation probe size in whole test USDC (max 20000, up to 6 decimals)')
 a = p.parse_args()
+if a.phase == 'align-pool' and a.run_inference:
+    p.error('--run-inference does not apply to align-pool (no model calls)')
 if a.evaluation_seconds is not None and not 180 <= a.evaluation_seconds <= 3600:
     p.error('--evaluation-seconds must be an integer in 180..3600')
 if a.target is not None and a.phase not in ['plan', 'run']:
@@ -63,6 +69,13 @@ confirmed = {e['hash'] for e in events if e.get('stage') == 'confirmed'}
 pending = [e['hash'] for e in events if e.get('stage') == 'prepared' and e['hash'] not in confirmed]
 if pending:
     sys.exit('Unresolved transaction: inspect receipts before continuing: ' + ', '.join(pending))
+round_journal = any(e.get('stage') in ['schedule', 'actors', 'prepared-actors', 'snapshot', 'plan', 'inference-request'] or
+                    str(e.get('label', '')).startswith('round') for e in events)
+align_journal = any(e.get('stage') == 'align-start' or str(e.get('label', '')).startswith('align') for e in events)
+if a.phase == 'align-pool' and round_journal:
+    sys.exit('This directory holds a round journal; use a separate alignment directory (e.g. .run/tidepool-v1/align-r3).')
+if a.phase != 'align-pool' and align_journal:
+    sys.exit('This directory holds a pool-alignment journal; use a separate round directory.')
 hybrid = a.profile == 'hybrid'
 swarm = a.profile == 'swarm'
 expanded = hybrid or swarm
@@ -164,7 +177,7 @@ with journal_path.open('a') as journal, (a.directory / 'worker.stderr').open('a'
             acknowledgement = event['hash'] if event['stage'] == 'prepared' else f"inference-{event['request']}"
             child.stdin.write(json.dumps({'ack': acknowledgement}) + '\n')
             child.stdin.flush()
-        if event.get('stage') in ['snapshot', 'plan', 'complete']:
+        if event.get('stage') in ['snapshot', 'plan', 'complete', 'pool-aligned']:
             name = event['stage']
             value = event['plan'] if name == 'plan' else event
             temporary = a.directory / f'{name}.json.tmp'

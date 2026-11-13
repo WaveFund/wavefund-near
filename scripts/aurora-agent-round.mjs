@@ -11,6 +11,7 @@ import { makeStrategyPlan, validateStrategyPlan, STRATEGIES, FORECASTERS } from 
 import { collectAgentResearch } from '../runtime/agents/research-context.mjs';
 import { runTerms, requireScriptedWinner, expectedExecution, requireSwapRule, roundScope, externalDepositors, collateralReconciles } from '../runtime/agents/round-rules.mjs';
 import { manipulationProbe, finishProbe } from '../runtime/agents/manipulation-probe.mjs';
+import { alignPool } from '../runtime/agents/pool-alignment.mjs';
 
 const lines = readline.createInterface({ input: process.stdin, crlfDelay: Infinity });
 const iterator = lines[Symbol.asyncIterator]();
@@ -43,6 +44,9 @@ try {
     const forecasterNames = expanded ? FORECASTERS.map(s => s.name) : ['Quant', 'Guardian'];
     if (config.phase === 'recover-cancel') {
       await recoverInterruptedRound({ chain: { ...chain, roundRecord: async id => namedOutputs(abi('engine'), 'rounds', await read('engine', 'rounds', [id])) }, events: config.events, emit });
+    } else if (config.phase === 'align-pool') {
+      // Owner-only pre-round arbitrage of the private investment pool to the verified oracle. Refuses under a live round.
+      await alignPool({ chain, manifest: config.manifest, events: config.events, emit });
     } else {
     const state = await chain.inspect();
     const nextId = BigInt(state.currentRoundId) + 1n;

@@ -150,6 +150,55 @@ class AgentBridgeSafety(unittest.TestCase):
         seen = json.loads((self.root / 'complete.json').read_text())['seen']
         self.assertEqual(seen['manipulationProbe'], {'stableAmount': '20000000000'})
 
+    def align_phase(self, journal_events=(), *args):
+        manifest = self.root / 'manifest.json'
+        manifest.write_text(json.dumps({'chainId': 1313161555}))
+        artifacts = self.root / 'out'
+        artifacts.mkdir(exist_ok=True)
+        for name in ['SupraPortfolioOracle', 'AuroraTestToken', 'Safe', 'ProposalTokens', 'ProposerRegistry',
+                     'WaveV4ProposalMarket', 'QuantumRound', 'WaveHook', 'PerformanceTracker', 'TradingSafeModule']:
+            (artifacts / f'{name}.json').write_text(json.dumps({'abi': []}))
+        wallet = self.root / 'wallet.json'
+        wallet.write_text(json.dumps({'private_key': 'unit-test-placeholder'}))
+        actors = self.root / 'actors.json'
+        actors.write_text(json.dumps({n: 'unit-test-placeholder' for n in ['Momentum', 'Conservative', 'Quant', 'Guardian']}))
+        actors.chmod(0o600)
+        (self.root / 'journal.jsonl').write_text(''.join(json.dumps(e) + '\n' for e in journal_events))
+        executable = self.root / 'docker'
+        executable.write_text('#!/usr/bin/env python3\nimport sys,json\nc=json.loads(sys.stdin.readline())\n'
+                              'print(json.dumps({"stage":"pool-aligned","seen":{"phase":c["phase"],"chainId":c["manifest"].get("chainId"),'
+                              '"plan":"plan" in c,"apiKey":"apiKey" in c,"events":len(c["events"])}}))\n')
+        executable.chmod(0o700)
+        command = self.command.copy()
+        command[command.index('plan')] = 'align-pool'
+        return subprocess.run(command + ['--manifest', str(manifest), '--artifacts', str(artifacts), '--wallet', str(wallet), '--actors', str(actors)] + list(args),
+                              capture_output=True, text=True, timeout=10,
+                              env={**os.environ, 'PATH': str(self.root) + os.pathsep + os.environ['PATH']})
+
+    def test_align_pool_needs_no_plan_or_model_key_and_writes_its_report(self):
+        result = self.align_phase()
+        self.assertEqual(result.returncode, 0, result.stderr)
+        seen = json.loads((self.root / 'pool-aligned.json').read_text())['seen']
+        self.assertEqual(seen, {'phase': 'align-pool', 'chainId': 1313161555, 'plan': False, 'apiKey': False, 'events': 0})
+        # A repeat in the same alignment directory is allowed; the worker numbers attempts from the journal.
+        result = self.align_phase([{'stage': 'align-start', 'attempt': 1}])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads((self.root / 'pool-aligned.json').read_text())['seen']['events'], 1)
+
+    def test_align_pool_and_round_journals_never_mix(self):
+        for event in [{'stage': 'schedule'}, {'stage': 'actors'}, {'stage': 'confirmed', 'hash': '0x1', 'label': 'round3:open'}]:
+            result = self.align_phase([event])
+            self.assertNotEqual(result.returncode, 0, event)
+            self.assertIn('separate alignment directory', result.stderr, event)
+        for flag, message in [(['--run-inference'], 'does not apply to align-pool'), (['--target', '1'], 'only to the plan phase'),
+                              (['--manipulation-probe-usdc', '10'], 'only to the run phase'), (['--evaluation-seconds', '600'], 'only to the plan phase')]:
+            result = self.align_phase((), *flag)
+            self.assertNotEqual(result.returncode, 0, flag)
+            self.assertIn(message, result.stderr, flag)
+        # Symmetric: a round phase refuses an alignment journal.
+        (self.root / 'journal.jsonl').write_text(json.dumps({'stage': 'align-start', 'attempt': 1}) + '\n')
+        self.assertIn('pool-alignment journal', self.run_bridge('--run-inference').stderr)
+
 
 if __name__ == '__main__':
     unittest.main()
