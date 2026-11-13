@@ -11,8 +11,8 @@ const CHAIN_ID = 1313161555;
 const ROOT = new URL('../../', import.meta.url);
 
 export const STACKS = Object.freeze({
-  original: Object.freeze({ label: 'Original testnet stack', manifest: 'deployments/aurora-testnet.json', reputationManifest: 'deployments/aurora-testnet-reputation.json' }),
-  tidepool: Object.freeze({ label: 'Tidepool testnet stack', manifest: 'deployments/aurora-testnet-tidepool.json', reputationManifest: 'deployments/aurora-testnet-tidepool-reputation.json' }),
+  original: Object.freeze({ label: 'Testnet Safe v1', manifest: 'deployments/aurora-testnet.json', reputationManifest: 'deployments/aurora-testnet-reputation.json' }),
+  tidepool: Object.freeze({ label: 'Testnet Safe v2', manifest: 'deployments/aurora-testnet-tidepool.json', reputationManifest: 'deployments/aurora-testnet-tidepool-reputation.json' }),
 });
 export const ROUND_SOURCES = Object.freeze([
   Object.freeze({ stack: 'original', roundId: '7', dir: 'docs/test-evidence/round7-hybrid', files: { report: 'report', plan: 'plan', independent: 'independent', swap: 'swap-independent' },

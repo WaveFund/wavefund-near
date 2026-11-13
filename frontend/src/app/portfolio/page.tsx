@@ -20,7 +20,7 @@ import {
 
 const usdc = (raw: string | null | undefined) => formatUnits(raw, 6, { maxFraction: 2 }) ?? "unavailable";
 const TABS: Array<{ id: TabId; label: string }> = [{ id: "overview", label: "Overview" }, { id: "funding", label: "Funding" }, { id: "history", label: "History" }, { id: "permissions", label: "Permissions" }];
-const TITLES: Record<SafeId, string> = { tidepool: "Tidepool testnet Safe", original: "Original testnet Safe", local: "Local simulation Safe" };
+const TITLES: Record<SafeId, string> = { tidepool: "Testnet Safe v2", original: "Testnet Safe v1", local: "Local simulation Safe" };
 
 function useInspection(enabled: boolean) {
   const [data, setData] = useState<Inspection | null>(null);

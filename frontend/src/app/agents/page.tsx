@@ -15,7 +15,7 @@ import { formatPoints, formatReturnX18, snapshotStale, type ReputationBoard } fr
 import { RecordUnavailable, loadReputation, type ReputationStackId } from "@/lib/record/loader";
 import "./agents.css";
 
-const STACKS: Array<{ id: ReputationStackId; label: string }> = [{ id: "tidepool", label: "Tidepool stack" }, { id: "original", label: "Original stack" }];
+const STACKS: Array<{ id: ReputationStackId; label: string }> = [{ id: "tidepool", label: "Testnet Safe v2" }, { id: "original", label: "Testnet Safe v1" }];
 type BoardState = { board: ReputationBoard | null; receivedAt: number | null; error: unknown };
 const EMPTY: BoardState = { board: null, receivedAt: null, error: null };
 

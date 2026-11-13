@@ -23,7 +23,7 @@ export default function RoundsPage() {
     <PageHead eyebrow="Rounds · saved testnet history" title="Rounds" line="Open a round to see its strategies, forecasts, execution and result."
       actions={live ? undefined : <Link className="link" href="/rounds/live">Live view<Icon name="arrow" /></Link>} />
     {live ? <Link className="rw-item" href="/rounds/live" style={{ marginBottom: 16 }}>
-      <span className="rw-item-main"><b>Live now · Round {live.roundId} · Tidepool testnet stack</b><span className="muted">{live.phase}</span></span>
+      <span className="rw-item-main"><b>Live now · Round {live.roundId} · Testnet Safe v2</b><span className="muted">{live.phase}</span></span>
       <span className="rw-item-cap"><Cap tone="warn">Live</Cap></span><span className="rw-item-open">Watch<Icon name="arrow" /></span>
     </Link> : null}
     {!rounds && !error ? <div className="stack">{[0, 1, 2].map((i) => <Skeleton key={i} height={72} />)}</div> : (

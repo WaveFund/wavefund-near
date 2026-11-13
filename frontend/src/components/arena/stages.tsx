@@ -41,7 +41,7 @@ const STAGE_KEYS: Array<"setup" | StageId> = ["setup", "funded", "proposals", "f
 export function savedCtx(round: TestnetRound, journey: SavedJourney, extra: { fresh: FreshCheck | null; freshing: boolean; onFresh: () => void; now: number }): StageCtx {
   const challengers = round.proposals.filter((item) => item.id !== "0");
   const ai = (round.genuineModelCalls ?? 0) >= challengers.length;
-  const strategies: StrategyView[] = round.proposals.map((item) => ({ id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: item.rationale, source: item.id === "0" ? "baseline" : ai ? "ai" : "fixture" }));
+  const strategies: StrategyView[] = round.proposals.map((item) => ({ id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: item.rationale, source: item.id === "0" ? "baseline" : ai ? "ai" : "fixture", model: (item as { model?: string | null }).model ?? null }));
   const tx = Object.fromEntries(STAGE_KEYS.map((key) => [key, journey.transactions[key].map((item, index) => ({ key: `${key}-${index}`, text: describeSavedTx(item.label), hash: item.transactionHash, chainId: AURORA_TESTNET, href: item.url }))])) as TxByStage;
   if (round.swap) tx.executed = [...tx.executed, { key: "swap", text: "Investment swap", hash: round.swap.transactionHash, chainId: AURORA_TESTNET, href: round.swap.url }];
   if (round.reputation) tx.redeemed = [...tx.redeemed, { key: "rep", text: "Record the outcome point", hash: round.reputation.transactionHash, chainId: AURORA_TESTNET, href: round.reputation.url }];

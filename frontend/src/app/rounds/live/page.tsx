@@ -49,7 +49,7 @@ function Fact({ label, value, unit, tip }: { label: string; value: ReactNode; un
 }
 
 function toStrategies(view: LiveRound): StrategyView[] {
-  return view.proposals.map((item) => ({ id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: item.rationale, source: item.id === "0" ? "baseline" : /^NEAR AI/i.test(item.rationale) ? "ai" : "fixture" }));
+  return view.proposals.map((item) => ({ id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: item.rationale, source: item.id === "0" ? "baseline" : /^NEAR AI \(TEE verified\) sha256:[a-f0-9]{64}/.test(item.rationale) ? "tee" : /^NEAR AI/i.test(item.rationale) ? "ai" : "fixture" }));
 }
 
 function Forecasting({ view }: { view: LiveRound }) {
@@ -154,7 +154,7 @@ export default function LiveRoundPage() {
     <Link className="breadcrumb" href="/rounds"><Icon name="chevron" />Rounds</Link>
     {local.error ? <div className="page-notice"><Notice tone="warning" title="Connection problem"><p>{local.error} Showing the last snapshot from {checked}.</p></Notice></div> : null}
     {view.note ? <div className="page-notice lv-note"><Notice tone="info" title="Price data unavailable"><p>{view.note} Values that depend on prices are not shown.</p></Notice></div> : null}
-    <PageHead eyebrow="Aurora testnet · live monitor" title={<>Round {view.roundId} · Tidepool testnet stack<span className={`lv-live ${view.live ? "" : "is-over"}`}>{view.live ? <i className="pulse-dot" aria-hidden="true" /> : null}{view.live ? "LIVE" : view.settled ? "SETTLED" : "CANCELLED"}</span></>}
+    <PageHead eyebrow="Aurora testnet · live monitor" title={<>Round {view.roundId} · Testnet Safe v2<span className={`lv-live ${view.live ? "" : "is-over"}`}>{view.live ? <i className="pulse-dot" aria-hidden="true" /> : null}{view.live ? "LIVE" : view.settled ? "SETTLED" : "CANCELLED"}</span></>}
       line={<span className="rw-caps"><Cap tone={view.settled ? "ok" : view.cancelled ? "bad" : "warn"}>{view.phase}</Cap><Cap>Test assets</Cap></span>} />
     <div className="rw-metrics">
       <div className="rw-metric"><b className="num">{headline}</b><span>{view.countdown && view.countdown.seconds ? `${view.countdown.target.toLowerCase()} · approx.` : "status"}</span></div>

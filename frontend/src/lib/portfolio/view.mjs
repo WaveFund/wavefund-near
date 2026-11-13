@@ -23,7 +23,7 @@ export function parseTabParam(value) {
 
 /** The Safes the selector offers. Local simulation appears only for a local backend. */
 export function safeOptions({ localAllowed = false } = {}) {
-  const options = [{ id: 'tidepool', label: 'Tidepool testnet Safe' }, { id: 'original', label: 'Original testnet Safe' }];
+  const options = [{ id: 'tidepool', label: 'Testnet Safe v2' }, { id: 'original', label: 'Testnet Safe v1' }];
   if (localAllowed === true) options.push({ id: 'local', label: 'Local simulation Safe' });
   return options;
 }
