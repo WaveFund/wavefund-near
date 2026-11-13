@@ -61,3 +61,15 @@ Remaining schedule, renumbered and otherwise unchanged:
 would exceed the 28-call approval. The standalone Momentum round is dropped; the probe round still gives
 Momentum its second sample. Final order: **5 HighBeta (re-run) · 6 Hold · 7 genuine AI forecasters (8 calls)
 · 8 Momentum + manipulation-resistance probe.** Total model calls: 28.
+
+## Round 9 — pre-registered showcase (written before it ran, 2026-11-13)
+
+- Profile `swarm2`: 5 genuine AI proposers on 5 different NEAR-hosted models, each call **TEE-verified**
+  (`--tee`, policy `docs/tee-policy.json`, trust basis observed-pinned) and bound to its on-chain proposal; plus Hold.
+- 8 genuine AI forecasters on 8 different models (6 families). **No scripted target.** Each forecaster states an
+  expected return per proposal; it trades only when the implied LONG/SHORT value beats the on-chain quote by
+  ≥ 3 points (`chooseValueTrade`, `minEdgeBps` 300). Abstaining is a valid outcome.
+- One outside wallet (not an operator actor) buys **0.1 credits LONG on proposal 1** through the web UI during the
+  forecasting window, from a 1 test USDC deposit, and is settled with `redeemFor` if it has not redeemed itself.
+- Evaluation window 1800 s. Pool aligned to the oracle before opening. 13 paid model calls.
+- Whatever wins, loses or abstains is published as measured. A failure is recorded, not silently re-run.
