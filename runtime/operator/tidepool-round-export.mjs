@@ -34,7 +34,14 @@ export function buildRoundEvidence({ roundId, plan, complete, journal, reputatio
   const confirmedHashes = new Set(own.filter((e) => e.stage === 'confirmed').map((e) => e.hash));
   const unresolved = own.filter((e) => e.stage === 'prepared' && !confirmedHashes.has(e.hash));
   check(unresolved.length === 0, `unresolved prepared transactions: ${unresolved.map((e) => e.label).join(', ')}`);
-  check(!journal.some((e) => e?.status === 'failed' && e.stage !== 'manipulation-probe-failed'), 'the session journal records a failed stage');
+  // A failure is acceptable only if it happened before the round was scheduled (nothing of this round on-chain yet);
+  // such pre-flight failures are published, not hidden. Any failure after scheduling still refuses the export.
+  const scheduleAt = journal.findIndex((e) => e?.stage === 'schedule');
+  const failedAt = journal.map((e, i) => (e?.status === 'failed' && e.stage !== 'manipulation-probe-failed' ? i : -1)).filter((i) => i >= 0);
+  // The round starts with the Safe's authorization / the engine's open; wallet preparation before that is not the round.
+  const started = (i) => journal.slice(0, i).some((e) => e?.stage === 'confirmed' && (e.label === `${prefix}authorize` || e.label === `${prefix}open`));
+  check(failedAt.every((i) => scheduleAt >= 0 && i < scheduleAt && !started(i)), 'the session journal records a failed stage after the round started');
+  const preflightFailures = failedAt.map((i) => ({ stage: String(journal[i].stage), reason: String(journal[i].reason ?? '').slice(0, 200) }));
   const confirmedTransactions = own.filter((e) => e.stage === 'confirmed').map((e) => pick(e, ['stage', 'label', 'actor', 'hash', 'blockNumber', 'gasUsed', 'gasPrice']));
   const winner = String(complete.winner);
   const target = complete.scriptedTarget ?? null;
@@ -69,7 +76,7 @@ export function buildRoundEvidence({ roundId, plan, complete, journal, reputatio
     kind: hybrid ? 'tidepool-funded-real-ai-proposals-scripted-forecasters' : 'tidepool-funded-real-ai-agents',
     genuineModelCalls: genuine.length, scriptedForecasters: scripted.length, modelUsage: sumUsage(genuine),
     maximumAuthorizedCostUsd: hybrid ? '0.05' : '0.10', preRegistration: { scriptedTarget: target, evaluationSeconds, ...(plan.profile === 'swarm2-v1' ? { tradeRule: plan.tradeRule, minEdgeBps: plan.minEdgeBps } : {}) },
-    completion: complete, confirmedTransactions, limitations };
+    completion: complete, confirmedTransactions, limitations: [...limitations, ...preflightFailures.map((f) => `Pre-flight attempt stopped before the round was scheduled (${f.reason}); nothing of this round was on-chain yet.`.slice(0, 240))] };
   files.plan = plan;
   files.independent = independent;
 

@@ -1,5 +1,5 @@
-import { verifyTeeProposals } from '../runtime/agents/tee-proof.mjs';
 #!/usr/bin/env node
+import { verifyTeeProposals } from '../runtime/agents/tee-proof.mjs';
 // Export PUBLIC evidence for one pre-registered Tidepool round into docs/test-evidence/tidepool-rounds/round<N>/.
 // Pure Node + public RPC reads only (no keys, no signing). Usage:
 //   node scripts/export-tidepool-round.mjs --session .run/tidepool-v1/r2-conservative --round 2 \

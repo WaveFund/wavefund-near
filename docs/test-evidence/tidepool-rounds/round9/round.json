@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "stack": "tidepool",
+  "roundId": "9",
+  "title": "Round 9: Momentum won",
+  "files": {
+    "report": "report",
+    "plan": "plan",
+    "independent": "independent",
+    "swap": "swap-independent",
+    "capital": "capital-linkage",
+    "reputation": "reputation",
+    "tee": "tee"
+  }
+}
