@@ -22,8 +22,11 @@ Stack naming in prose: **Testnet Safe v1** is the original Aurora testnet stack 
 **Team starting point:** [Engineer handoff, current blockers and verified evidence](docs/ENGINEER-HANDOFF.md).
 
 **Live NEAR verification, no wallet or AI key:** after installing locked dependencies,
-run `node scripts/judge-check.mjs`. It checks live reputation, signed dry quotes,
-actual Tidepool funding receipts and final NEAR testnet `execute_intents`.
+run `node scripts/judge-check.mjs` (about 45 s). It checks live reputation, signed dry quotes,
+actual Tidepool funding receipts, final NEAR testnet `execute_intents`, rounds 2-9 against public
+receipts, the round 9 TEE proofs (offline), the outside wallet's own transactions and the 12-attack suite.
+Each check reports `passed`, `failed` (public data contradicts the claim; exit 1) or `amber`
+(network unavailable, not a failed claim).
 See [the separate testnet flow and exact scope](docs/TIDEPOOL-DEMO.md).
 
 Solidity implementation targeting Aurora testnet (chain 1313161555). A [genuine public Safe round](docs/AURORA-SAFE-ROUND.md) completed v4 forecasting, an actual Trisolaris swap, Supra-authenticated settlement and forecaster redemption. This is a single-operator rehearsal with freely minted test assets, not an audited or production-approved deployment.
@@ -211,7 +214,7 @@ All steps below are read-only. Start the demo first (`bash scripts/docker-demo/u
 | Open **Round 8**, read its limitations and the probe | Pool price pushed up (deviation 7 bps to 528 bps) after execution; the module's buy check would have rejected at that price; measured return 1.000105 equals the oracle-recomputed return, while a pool-marked return would have been 1.039273 | `round8/manipulation-probe.json` |
 | Open **Round 2** | The +5.39% return is labelled a test-pool artifact (see below) | `round2/report.json` `limitations`, SCHEDULE.md addendum |
 | Press **Connect wallet** (header) | `/rounds/live#wallet`: connect on Aurora testnet, deposit, claim and trade LONG/SHORT. Works only during a live round's forecasting window; you need test assets from the team (no faucet) | `docs/ONBOARDING-VERIFICATION.md` |
-| `node scripts/judge-check.mjs` | Read-only live checks of reputation, signed dry quote, funding receipts and the NEAR testnet `execute_intents` call (that last one needs a reachable public NEAR testnet RPC; otherwise it reports `unavailable` and the script exits 1). Its saved-evidence section still describes the earlier round 7/8 on Testnet Safe v1, not rounds 2-9 | script output |
+| `node scripts/judge-check.mjs` | Ten read-only checks, no key, no transaction: live reputation; signed Tidepool dry quote; funding receipts; the NEAR testnet `execute_intents` call (two archival public RPCs, each retried; if both are down it reports `amber`, "network unavailable, not a failed claim", and does not fail the run); round 1 strategy and redemptions; **rounds 2-9**: each saved `independent.json` re-checked against the engine state and every fill (`Bought`) and redemption (`Redeemed`) receipt; **round 9 TEE proofs** rechecked offline against `docs/tee-policy.json`; the **outside wallet's** approve, deposit, claimCredits and buyLong (sender, target, calldata, zero value) plus its `redeemFor` settlement; the **attack suite**, 12 attacks by `eth_call` that must each revert with their named error | script output; `summary` counts passed/failed/amber |
 
 ### Results: rounds on Testnet Safe v2 (Tidepool-funded)
 
