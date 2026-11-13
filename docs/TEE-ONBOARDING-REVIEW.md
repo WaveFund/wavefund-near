@@ -11,7 +11,7 @@ Branch: `feat/tee-onboarding`, separate worktree `wavefund-near-codex`, base `fe
 - Signed request includes the fresh nonce and exact Safe/engine/round/snapshot identity; evidence times must fit the plan window. This closes a review-discovered response-replay gap.
 - Exact-byte signature verification, normalized decision/prompt recheck, hashed proposal rationale and actual `ProposalCreated` event binding.
 - Export and API recheck use a separately reviewed policy; per-proposal UI checks; offline recheck CLI. Old rounds stay unverified.
-- One pinned dependency: `@phala/dcap-qvl@0.7.1`; no Solidity changes.
+- One pinned dependency: `@phala/dcap-qvl@0.7.0`; no Solidity changes.
 
 ## Verification
 
