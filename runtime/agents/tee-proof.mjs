@@ -1,5 +1,5 @@
 import { decodeEventLog, parseAbi } from 'viem';
-import { verifyPlanTee } from './tee-record.mjs';
+import { verifyPlanTee, teeRecords } from './tee-record.mjs';
 import { proposalBinding } from './tee.mjs';
 const ABI = parseAbi(['event ProposalCreated(uint256 indexed roundId, uint256 indexed proposalId, address indexed proposer, uint16 tEthBps, string rationale)']);
 const fail = (ok, message) => { if (!ok) throw new Error(message); };
@@ -8,9 +8,14 @@ const fail = (ok, message) => { if (!ok) throw new Error(message); };
 export async function verifyTeeProposals(plan, receipts, policy, options) {
   fail(plan.teeRequired === true && Number(plan.roundId) > 8, 'TEE_HISTORICAL_ROUND_NOT_ATTESTED');
   await verifyPlanTee(plan, policy, options);
+  // One bound proposal per challenger in the plan (1..9), never a hard-coded count.
+  const expected = plan.proposals.filter(p => p.id !== 0).length;
+  fail(expected >= 1 && expected <= 9 && plan.proposals.filter(p => p.id === 0).length === 1, 'TEE_PROPOSALS_INCOMPLETE');
   const out = [];
   for (const proposal of plan.proposals.filter(p => p.id !== 0)) {
-    const record = plan.records.find(r => r.role === 'proposer' && r.name === proposal.name);
+    const matching = plan.records.filter(r => r.role === 'proposer' && r.name === proposal.name);
+    fail(matching.length === 1 && teeRecords(plan)?.includes(matching[0]), 'TEE_PROPOSALS_INCOMPLETE');
+    const record = matching[0];
     const matches = [];
     for (const receipt of receipts) {
       if (receipt.status !== 'success' || receipt.to?.toLowerCase() !== plan.engine.toLowerCase()) continue;
@@ -25,6 +30,6 @@ export async function verifyTeeProposals(plan, receipts, policy, options) {
     fail(matches.length === 1, 'TEE_PROPOSAL_BINDING_FAILED');
     out.push({ proposalId: String(proposal.id), name: proposal.name, privacy: record.privacy, trustBasis: policy.trustBasis, proposalBound: true, transactionHash: matches[0] });
   }
-  fail(out.length === 4, 'TEE_PROPOSALS_INCOMPLETE');
+  fail(out.length === expected && plan.records.filter(r => r.role === 'proposer').length === expected, 'TEE_PROPOSALS_INCOMPLETE');
   return out;
 }

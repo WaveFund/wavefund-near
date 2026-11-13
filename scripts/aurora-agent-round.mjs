@@ -27,8 +27,6 @@ async function acknowledge(hash) {
 const swarm2 = config.swarm2 === true;
 if (swarm2 && (config.hybrid === true || config.swarm === true)) throw new Error('Choose exactly one agent profile');
 const expanded = config.hybrid === true || config.swarm === true || swarm2;
-// swarm2: proposer-only TEE. verifyPlanTee checks the proposer records (6); forecasters are proxied and never claim attestation.
-const teeView = plan => swarm2 ? { ...plan, records: plan.records.filter(r => r.role === 'proposer') } : plan;
 const swarm2Scope = ({ evaluationSeconds, probe, tee }) => `Fourteen separate agent wallets; six genuine proposer calls and eight genuine forecaster calls, each agent on a different NEAR AI model. Forecasters give each proposal's expected return over the evaluation horizon; a fixed rule (${SWARM2_TRADE_RULE}) values one LONG at the clamped scaled payout clamp((1+R-rMin)/(rMax-rMin),0,1) of that return and one SHORT at 1 minus it, and buys only when that value beats the actual on-chain entry price by at least ${SWARM2_MIN_EDGE_BPS / 100} points. ${tee ? 'Proposer responses TEE-verified; forecaster models are proxied and unattested.' : 'No verified attestation.'} Test assets, no forced winner or trade. Evaluation window ${evaluationSeconds}s after trading end.${probe ? ` Operator manipulation probe swapped ${probe.stableAmount} raw test USDC through the investment pool after execution; return is still oracle-marked.` : ''}`;
 
 let stage = config.phase;
@@ -88,7 +86,7 @@ try {
     } else if (config.phase === 'run') {
       const plan = config.plan;
       requireLive(plan, 'A completed matching-profile agent plan is required');
-      await verifyPlanTee(teeView(plan), config.teePolicy);
+      await verifyPlanTee(plan, config.teePolicy); // swarm2 teeScope 'proposers': exactly the proposer records
       const prices = await chain.verifiedProof();
       const portfolio = await chain.portfolio(prices);
       (swarm2 ? validateSwarm2Plan : expanded ? validateStrategyPlan : validateAuroraPlan)(plan, { contracts, roundId: nextId, portfolio, now: Math.floor(Date.now() / 1000), scriptedForecasts: config.hybrid === true });

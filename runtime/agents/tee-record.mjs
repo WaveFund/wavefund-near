@@ -2,14 +2,31 @@ import { verifyTeeEvidence } from './tee-client.mjs';
 import { digest, validateProposal, validateForecast } from './policy.mjs';
 import { privacyVerified } from './tee.mjs';
 
+// The records whose TEE evidence must be rechecked, matched exactly to the plan, or null when the set is wrong.
+// teeScope 'proposers' (swarm2): exactly one attested record per non-Hold proposal (1..9 proposers); every other record
+// must be unattested and carry no TEE fields. Older single-model plans keep their 4..8 NEAR AI record set.
+export function teeRecords(plan) {
+  if (!Array.isArray(plan?.records) || !Array.isArray(plan?.proposals)) return null;
+  if (plan.teeScope === 'proposers') {
+    const challengers = plan.proposals.filter(p => p?.id !== 0);
+    const proposers = plan.records.filter(r => r?.role === 'proposer');
+    if (challengers.length < 1 || challengers.length > 9 || challengers.length !== plan.proposals.length - 1 || proposers.length !== challengers.length
+      || !challengers.every(p => proposers.filter(r => r.name === p.name).length === 1)
+      || !plan.records.every(r => r?.role === 'proposer' ? r.provider === 'near-ai' && r.attestationVerified === true : r?.attestationVerified === false && !r.privacy && !r.teeEvidence)) return null;
+    return proposers;
+  }
+  const records = plan.records.filter(r => r?.provider === 'near-ai');
+  return records.length < 4 || records.length > 8 ? null : records;
+}
+
 export async function verifyPlanTee(plan, policy, options) {
   if (plan.teeRequired !== true) {
     if (policy) throw new Error('TEE_REQUESTED_BUT_PLAN_UNVERIFIED');
     if (plan.attestationVerified === true || plan.records?.some(r => r.attestationVerified === true)) throw new Error('TEE_UNEXPECTED_CLAIM');
     return;
   }
-  const records = plan.records?.filter(r => r.provider === 'near-ai');
-  if (!records || records.length < 4 || records.length > 8 || !plan.attestationVerified) throw new Error('TEE_RECORD_SET_INCOMPLETE');
+  const records = teeRecords(plan);
+  if (!records || !plan.attestationVerified) throw new Error('TEE_RECORD_SET_INCOMPLETE');
   try {
   for (const record of records) {
     const evidence = record.teeEvidence;
