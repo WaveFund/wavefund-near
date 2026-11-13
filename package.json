@@ -22,7 +22,9 @@
     "research:collect": "node scripts/collect-research.mjs",
     "aurora:check": "node scripts/aurora-check.mjs",
     "journal:audit": "node scripts/journal-audit.mjs",
-    "monitor:aurora": "WAVEFUND_NETWORK=aurora-testnet WAVEFUND_TEE_POLICY=${WAVEFUND_TEE_POLICY:-docs/tee-policy.json} node runtime/server.mjs"
+    "monitor:aurora": "WAVEFUND_NETWORK=aurora-testnet WAVEFUND_TEE_POLICY=${WAVEFUND_TEE_POLICY:-docs/tee-policy.json} node runtime/server.mjs",
+    "evidence:static": "node scripts/build-static-evidence.mjs",
+    "evidence:static:check": "node scripts/build-static-evidence.mjs --check"
   },
   "dependencies": {
     "@phala/dcap-qvl": "0.7.0",

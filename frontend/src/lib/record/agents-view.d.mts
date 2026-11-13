@@ -1,4 +1,4 @@
-import type { ReputationBoard, TestnetRound } from './model.mjs';
+import type { ReputationBoard, RoundProposal, TestnetRound } from './model.mjs';
 
 export type AgentRow = {
   name: string; address: string | null; code: string | null; available: boolean;
@@ -7,3 +7,5 @@ export type AgentRow = {
 export type AttributableRound = { slug: string; roundId: string; allocationBps: number; returnX18: string | null; delta: string | null };
 export declare function rankAgents(board: ReputationBoard | null | undefined): AgentRow[];
 export declare function attributableRounds(rounds: TestnetRound[] | null | undefined, stackId: 'original' | 'tidepool', agentName: string): AttributableRound[];
+export type AgentProposal = { slug: string; roundId: string; round: TestnetRound; proposal: RoundProposal };
+export declare function agentProposals(rounds: TestnetRound[] | null | undefined, stackId: 'original' | 'tidepool', agentName: string): AgentProposal[];

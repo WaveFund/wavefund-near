@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // The floating dev-tools badge overlaps the mobile tab bar during local demos.
   devIndicators: false,
+  // The hosted static mode imports the shared, Node-free reputation reader and pinned manifests from the repo root.
+  experimental: { externalDir: true },
   // Earlier routes keep working. v2 navigation is Rounds / Portfolio / Agents; query strings carry over.
   async redirects() {
     return [

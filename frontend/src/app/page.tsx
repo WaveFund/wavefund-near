@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { roleGuides, ROUND_STEPS } from "@/lib/guides.mjs";
 import { Drawer } from "@/components/v2";
@@ -10,7 +10,34 @@ import { useSavedRounds, useTidepoolDemo } from "@/lib/arena/hooks";
 import { percentFromBps } from "@/lib/arena/model.mjs";
 import { formatUnits } from "@/lib/funding/model.mjs";
 import { formatReturnX18 } from "@/lib/record/model.mjs";
+import { loadReputation } from "@/lib/record/loader";
 import "./welcome.css";
+
+const ROLE_ICON: Record<string, string> = { manager: "🏦", forecaster: "🎯", observer: "👀" };
+const STEP_NOTE: Record<string, { line: string; ai?: boolean }> = {
+  Funded: { line: "Capital reaches the Safe via NEAR Intents" },
+  Proposals: { line: "4 AI agents propose allocations", ai: true },
+  Forecasting: { line: "AI and wallets take LONG / SHORT", ai: true },
+  Selected: { line: "Best TWAP beats Hold by > 0.5 pt" },
+  Executed: { line: "Safe swaps within its limits" },
+  Measured: { line: "Oracle return settles every claim" },
+};
+const short = (model: string | null | undefined) => (model ? model.split("/").pop() : "unknown model");
+type Rep = { name: string; score: string | null };
+function useLiveReputation() {
+  const [state, setState] = useState<{ agents: Rep[]; block: string | null } | null>(null);
+  const [failed, setFailed] = useState(false);
+  useEffect(() => {
+    let active = true;
+    loadReputation("tidepool").then((board) => {
+      if (!active) return;
+      const agents = (board.agents as Array<{ name: string; reputation?: { score?: string; blockNumber?: string } | null }>);
+      setState({ agents: agents.map((a) => ({ name: a.name, score: a.reputation?.score ?? null })), block: agents.map((a) => a.reputation?.blockNumber).find(Boolean) ?? null });
+    }, () => { if (active) setFailed(true); });
+    return () => { active = false; };
+  }, []);
+  return { live: state, liveFailed: failed };
+}
 
 const usdc = (raw: string | null | undefined) => formatUnits(raw, 6);
 
@@ -39,7 +66,10 @@ export default function HomePage() {
   const { rounds, error: roundsError } = useSavedRounds();
   const { demo, error: demoError } = useTidepoolDemo();
   const [help, setHelp] = useState(false);
-  const round = rounds?.find((item) => item.stack.id === "tidepool") ?? null;
+  const { live, liveFailed } = useLiveReputation();
+  const v2 = [...(rounds?.filter((item) => item.stack.id === "tidepool") ?? [])].sort((a, b) => Number(a.roundId) - Number(b.roundId));
+  const round = v2.at(-1) ?? null;
+  const showcase = [...v2].reverse().find((item) => item.attestationVerified) ?? null;
   const failed = Boolean(roundsError || demoError);
   const loading = !failed && (!rounds || !demo);
   const delivered = demo ? usdc(demo.funding.deliveredAmount) : null;
@@ -61,29 +91,60 @@ export default function HomePage() {
         </div>
       </div>
 
-      <aside className="card wl-card" aria-label="Historical saved testnet run">
-        <p className="eyebrow">Historical · saved testnet run</p>
-        {failed ? <p className="wl-unavailable">Saved run data is unavailable.</p> : loading ? <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 12 }} aria-busy="true">
-          <Skeleton width={160} height={40} /><Skeleton height={14} /><Skeleton height={14} /><Skeleton height={14} /><Skeleton height={14} /></div> : <>
-          <div className="wl-big"><span className="num">{delivered ?? "unavailable"}</span><small>test USDC delivered</small></div>
-          <dl className="wl-rows">
-            <div><dt>Selected</dt><dd>{round ? <><b>{round.winner.name}</b><span className="num">{percentFromBps(round.winner.allocationBps) ?? "unavailable"} ETH</span></> : na}</dd></div>
-            <div><dt>Measured result</dt><dd>{result ? <span className="num">{result}</span> : na}</dd></div>
-            <div><dt>AI model calls</dt><dd className="ai">{round && round.genuineModelCalls !== null ? <><span className="num">{round.genuineModelCalls}</span> genuine</> : na}</dd></div>
-            <div><dt>Forecasters</dt><dd>{round && round.scriptedForecasters !== null ? <><span className="num">{round.scriptedForecasters}</span> scripted</> : na}</dd></div>
-            <div><dt>Swap</dt><dd>{swapIn && eth ? <span className="num">{swapIn} USDC → {eth} ETH</span> : na}</dd></div>
-          </dl></>}
+      <aside className="card wl-card" aria-label="Testnet Safe v2, live from chain">
+        <p className="eyebrow"><span className="pip pulse-dot" />Testnet Safe v2 · live from chain</p>
+        {liveFailed ? <p className="wl-unavailable">Live chain read unavailable right now.</p> : !live ? <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 12 }} aria-busy="true"><Skeleton width={160} height={40} /><Skeleton height={14} /><Skeleton height={14} /></div> : <>
+          <div className="wl-big"><span className="num">{v2.length || "–"}</span><small>rounds settled on Aurora testnet</small></div>
+          <p className="wl-sub">Agent reputation, read now{live.block ? <> at block <span className="num">{live.block}</span></> : null}</p>
+          <dl className="wl-rows">{live.agents.map((a) => <div key={a.name}><dt>{a.name}</dt><dd><span className={`num wl-score ${Number(a.score) > 0 ? "up" : Number(a.score) < 0 ? "down" : ""}`}>{a.score === null ? "–" : Number(a.score) > 0 ? `+${a.score}` : a.score}</span></dd></div>)}</dl></>}
+        <dl className="wl-rows wl-saved">
+          <div><dt>Latest · round {round?.roundId ?? "–"}</dt><dd className="wl-nowrap">{failed ? na : loading ? "…" : round ? <><b>{round.winner.name}</b><span className="num">{percentFromBps(round.winner.allocationBps) ?? "–"} ETH · {result ?? "–"}</span></> : na}</dd></div>
+          <div><dt>Funding delivered</dt><dd>{delivered ? <span className="num">{delivered} USDC</span> : na}</dd></div>
+          <div><dt>Swap</dt><dd>{swapIn && eth ? <span className="num">{swapIn} USDC → {eth} ETH</span> : na}</dd></div>
+        </dl>
+        <p className="wl-foot">Scores: live <code>eth_call</code> · rows below the line: saved receipts</p>
       </aside>
     </section>
 
-    <section aria-labelledby="roles-title" style={{ marginTop: 32 }}>
+    <section aria-labelledby="roles-title" className="wl-section">
       <h2 id="roles-title">I am a…</h2>
-      <div className="ledger-grid onboarding-roles" style={{ marginTop: 12 }}>{roleGuides().map((role) => <Link className="card" key={role.id} href={`/start/${role.id}`} style={{ padding: 20 }}>
-        <h3>{role.title} →</h3><p>{role.line}</p>
+      <div className="onboarding-roles">{roleGuides().map((role) => <Link className="card wl-role" key={role.id} href={`/start/${role.id}`}>
+        <span className="wl-emoji" aria-hidden="true">{ROLE_ICON[role.id] ?? "•"}</span>
+        <h3>{role.title}</h3><p>{role.line}</p>
+        <span className="wl-steps">{role.steps.length} steps <span aria-hidden="true">→</span></span>
       </Link>)}</div>
     </section>
-    <section aria-labelledby="moves-title" style={{ marginTop: 24 }}><h2 id="moves-title">How a round moves</h2>
-      <ol className="ledger-grid onboarding-moves" style={{ listStyle: "none", padding: 0, marginTop: 12 }}>{ROUND_STEPS.map((step) => <li className="card" key={step} style={{ padding: 12, color: step === "Proposals" ? "var(--ai)" : undefined }}>{step}</li>)}</ol>
+
+    <section aria-labelledby="moves-title" className="wl-section">
+      <h2 id="moves-title">How a round moves</h2>
+      <ol className="onboarding-moves">{ROUND_STEPS.map((step, i) => { const note = STEP_NOTE[step]; return <li className={`card wl-move ${note?.ai ? "ai" : ""}`} key={step}>
+        <span className="wl-move-n num">{String(i + 1).padStart(2, "0")}{note?.ai ? <em>AI</em> : null}</span>
+        <b>{step}</b><small>{note?.line}</small>
+      </li>; })}</ol>
+    </section>
+
+    <section aria-labelledby="ai-title" className="wl-section">
+      <h2 id="ai-title">Where AI works {showcase ? <small className="wl-h-note">Round {showcase.roundId} · every model named</small> : null}</h2>
+      {failed ? <p className="wl-unavailable">Saved round data is unavailable.</p> : !showcase ? <Skeleton height={120} /> : <div className="wl-ai-grid">
+        <article className="card wl-ai">
+          <p className="wl-ai-kicker">◆ Proposers · strategy authors</p>
+          <h3>{showcase.proposals.filter((p) => p.id !== "0").length} models, each in a NEAR AI TEE</h3>
+          <ul>{showcase.proposals.filter((p) => p.id !== "0").map((p) => <li key={p.id}><span>{p.name}</span><code>{short(p.model)}</code></li>)}</ul>
+          <Link className="wl-proof" href={`/rounds/${showcase.slug}?stage=proposals`}>◆ TEE verified · Proof ›</Link>
+        </article>
+        <article className="card wl-ai">
+          <p className="wl-ai-kicker">◆ Forecasters · bet on strategies</p>
+          <h3>{showcase.forecasters.length} models, each a different lab</h3>
+          <ul>{showcase.forecasters.map((f) => <li key={f.name}><span>{f.name}</span><code>{short(f.model)}</code><i className={f.action === "buy" ? "bet" : ""}>{f.action === "buy" ? `${f.side?.toUpperCase()} #${f.proposalId}` : "abstain"}</i></li>)}</ul>
+          <Link className="wl-proof muted" href={`/rounds/${showcase.slug}?stage=forecasting`}>Proxied via NEAR AI · not TEE-attested · Decisions ›</Link>
+        </article>
+        <article className="card wl-ai rule">
+          <p className="wl-ai-kicker">Not AI · on-chain rules</p>
+          <h3>AI suggests. Contracts decide.</h3>
+          <ul className="plain"><li>Selection: market TWAP must beat Hold by &gt; 0.5 pt</li><li>Safe module caps what the swap can do</li><li>Every proposal hash is bound on-chain</li><li>12/12 attacks revert with named errors</li></ul>
+          <Link className="wl-proof muted" href="/agents">Agent scores ›</Link>
+        </article>
+      </div>}
     </section>
     <Drawer open={help} onClose={() => setHelp(false)} title="How it works"><Education /></Drawer>
   </AppShell>;

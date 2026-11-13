@@ -3,15 +3,18 @@
 import Link from "next/link";
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { AppShell } from "@/components/AppShell";
+import { AiProvenance } from "@/components/arena/AiProvenance";
 import { AgentAvatar, ResultPanel, SignalBoard, StrategyCard, SwapVisual, type StrategyView } from "@/components/arena/parts";
 import { CopyText, Icon } from "@/components/funding/primitives";
 import { EmptyState, Notice, Skeleton } from "@/components/ui";
 import { Cap, PageHead, Tip } from "@/components/v2";
-import { useLocalState } from "@/lib/arena/hooks";
+import { useLocalState, useSavedRounds } from "@/lib/arena/hooks";
 import { formatCountdown, defaultLiveStage, liveRound, liveSignals, type LiveRound } from "@/lib/arena/live.mjs";
 import { percentFromBps, settlementShares, shortReturnX18, type StageId } from "@/lib/arena/model.mjs";
 import { formatUnits } from "@/lib/funding/model.mjs";
 import type { DemoState } from "@/lib/state";
+import type { TestnetRound } from "@/lib/record/model.mjs";
+import { savedRoundForLive } from "@/lib/record/provenance.mjs";
 import "../round.css";
 import "./live.css";
 import { WalletForecast } from "./wallet";
@@ -48,12 +51,16 @@ function Fact({ label, value, unit, tip }: { label: string; value: ReactNode; un
   return <div className="rw-fact"><span>{label}{tip ? <> <Tip label={`About ${label.toLowerCase()}`}>{tip}</Tip></> : null}</span><b className="num">{value}</b>{unit ? <small>{unit}</small> : null}</div>;
 }
 
-function toStrategies(view: LiveRound): StrategyView[] {
-  return view.proposals.map((item) => ({ id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: item.rationale, source: item.id === "0" ? "baseline" : /^NEAR AI \(TEE verified\) sha256:[a-f0-9]{64}/.test(item.rationale) ? "tee" : /^NEAR AI/i.test(item.rationale) ? "ai" : "fixture" }));
+const LIVE_UNKNOWN = "The live monitor reads the chain only and does not report which model wrote this. It is shown once the round's evidence is saved.";
+
+/** Provenance comes from the matching saved round when there is one; otherwise it is honestly unknown, never read from rationale text. */
+function toStrategies(view: LiveRound, saved: TestnetRound | null): StrategyView[] {
+  return view.proposals.map((item) => ({ id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: item.rationale, source: item.id === "0" ? "baseline" : "agent",
+    badge: item.id === "0" ? undefined : <AiProvenance round={saved} agent={saved?.proposals.find((p) => p.id === item.id) ?? null} role="proposer" unknownNote={LIVE_UNKNOWN} /> }));
 }
 
-function Forecasting({ view }: { view: LiveRound }) {
-  const sig = liveSignals(view); const strategies = toStrategies(view);
+function Forecasting({ view, saved }: { view: LiveRound; saved: TestnetRound | null }) {
+  const sig = liveSignals(view); const strategies = toStrategies(view, saved);
   if (!sig) return <p className="muted">Market prices are unavailable right now.</p>;
   const hold = sig.signals.holdPercent; const line = sig.signals.thresholdPercent;
   return <div className="rw-stack">
@@ -68,8 +75,8 @@ function Forecasting({ view }: { view: LiveRound }) {
   </div>;
 }
 
-function Selected({ view }: { view: LiveRound }) {
-  const strategies = toStrategies(view); const winner = strategies.find((item) => item.id === view.winnerId);
+function Selected({ view, saved }: { view: LiveRound; saved: TestnetRound | null }) {
+  const strategies = toStrategies(view, saved); const winner = strategies.find((item) => item.id === view.winnerId);
   if (!winner) return <p className="muted">{view.status === 1 ? "Selection happens after trading closes." : "Selection is unavailable."}</p>;
   const sig = liveSignals(view);
   return <div className="rw-stack">
@@ -79,8 +86,8 @@ function Selected({ view }: { view: LiveRound }) {
   </div>;
 }
 
-function Executed({ view, state }: { view: LiveRound; state: DemoState }) {
-  const winner = toStrategies(view).find((item) => item.id === view.winnerId);
+function Executed({ view, state, saved }: { view: LiveRound; state: DemoState; saved: TestnetRound | null }) {
+  const winner = toStrategies(view, saved).find((item) => item.id === view.winnerId);
   if (view.cancelled) return <Notice tone="warning" title="Round cancelled"><p>The round did not finish normally, so no return was measured.</p></Notice>;
   return <div className="rw-stack">
     {view.isHold ? <div className="rw-hold"><AgentAvatar name="Hold" kind="hold" size="lg" /><div><b>Hold selected</b><div className="muted">The Safe keeps its current token quantities; no swap is needed.</div></div></div>
@@ -100,7 +107,7 @@ function Evaluated({ view }: { view: LiveRound }) {
   </ResultPanel>;
 }
 
-function Body({ stage, view, state }: { stage: StageId; view: LiveRound; state: DemoState }) {
+function Body({ stage, view, state, saved }: { stage: StageId; view: LiveRound; state: DemoState; saved: TestnetRound | null }) {
   const info = view.stages.find((item) => item.id === stage);
   if (!info || info.status === "upcoming") return <p className="muted">{NOT_YET}</p>;
   switch (stage) {
@@ -110,10 +117,10 @@ function Body({ stage, view, state }: { stage: StageId; view: LiveRound; state: 
       <Fact label="Forecast collateral" value={usdc(state.forecast.deposits)} unit="test USDC" tip="Forecasters' own deposits this round, held by the market. Separate from the Safe's budget." /></div>
       <div className="rw-row"><span className="muted">Safe</span><span className="lv-addr"><CopyText value={state.safe.address} label="Safe" /></span></div></div>;
     case "proposals": return view.challengers < 1 ? <p className="muted">Waiting for the first strategy proposals…</p>
-      : <div className="strategy-grid rw-cards">{toStrategies(view).map((item) => <StrategyCard key={item.id} strategy={item} compact />)}</div>;
-    case "forecasting": return <Forecasting view={view} />;
-    case "selected": return <Selected view={view} />;
-    case "executed": return <Executed view={view} state={state} />;
+      : <div className="strategy-grid rw-cards">{toStrategies(view, saved).map((item) => <StrategyCard key={item.id} strategy={item} compact />)}</div>;
+    case "forecasting": return <Forecasting view={view} saved={saved} />;
+    case "selected": return <Selected view={view} saved={saved} />;
+    case "executed": return <Executed view={view} state={state} saved={saved} />;
     case "evaluated": return <Evaluated view={view} />;
     case "redeemed": return <div className="rw-stack"><div className="rw-row"><Cap tone="ok" icon="check">Redemption open</Cap></div><p className="muted">Forecasters can now redeem. The read-only API does not report individual redemptions.</p></div>;
   }
@@ -127,6 +134,8 @@ export default function LiveRoundPage() {
   const state = local.data;
   const aurora = state?.mode === "aurora-testnet-readonly";
   const view = aurora ? liveRound(state, now) : null;
+  const { rounds: savedRounds } = useSavedRounds();
+  const saved = view ? savedRoundForLive(savedRounds, view.roundId, view.proposals) : null;
   const source = { label: "Aurora testnet", tone: "testnet" as const, detail: aurora ? "live, read-only" : "unavailable" };
 
   if (local.loading && !state) return <AppShell source={source}><div className="stack">{[0, 1, 2].map((i) => <Skeleton key={i} height={64} />)}</div></AppShell>;
@@ -165,7 +174,7 @@ export default function LiveRoundPage() {
     <section className="card rw-panel" role="tabpanel" id="lv-panel" aria-labelledby={`lv-tab-${selected}`} tabIndex={-1}>
       <header className="rw-panel-head"><h2>{info.label}</h2>
         {info.status === "done" ? <Cap tone="ok" icon="check">Recorded</Cap> : info.status === "current" ? <Cap tone="warn" icon="clock">In progress</Cap> : info.status === "halted" ? <Cap tone="bad" icon="alert">Halted</Cap> : <Cap>Not reached</Cap>}</header>
-      <div className="rw-body"><Body key={selected} stage={selected} view={view} state={state} /></div>
+      <div className="rw-body"><Body key={selected} stage={selected} view={view} state={state} saved={saved} /></div>
     </section>
     <WalletForecast view={view} />
     <p className="lv-meta"><span>updated {checked}</span><span>polling every 5 s</span><span>chain times vs this device clock: approximate</span></p>

@@ -284,16 +284,18 @@ const R8 = 'docs/test-evidence/tidepool-rounds/round8/';
 const MODELS = ['Qwen/Qwen3.6-35B-A3B-FP8', 'Qwen/Qwen3.8-27B', 'z-ai/glm-5.3-flash', 'deepseek-ai/DeepSeek-V4.1-Flash-1017', 'openai/gpt-4.1-mini', 'anthropic/claude-haiku-5-5', 'google/gemini-2.5-flash', 'x-ai/grok-4.6'];
 const multiModel = (mutateReport = () => {}, mutatePlan = () => {}) => async (path) => {
   const value = await read(path);
-  if (path === `${R8}plan.json`) { value.profile = 'swarm2-v1'; value.tradeRule = 'expected-payout-value-v1'; value.minEdgeBps = 300; value.records.forEach((r, i) => { r.model = MODELS[i]; }); mutatePlan(value); }
-  if (path === `${R8}report.json`) { const plan = await read(`${R8}plan.json`); value.completion.decisions.forEach((d) => { d.model = MODELS[plan.records.findIndex((r) => r.name === d.name && r.role === 'forecaster')]; }); mutateReport(value); }
+  if (path === `${R8}plan.json`) { value.profile = 'swarm2-v1'; value.tradeRule = 'expected-payout-value-v1'; value.minEdgeBps = 300; value.records.forEach((r, i) => { r.model = MODELS[i]; r.provider = 'near-ai'; }); mutatePlan(value); }
+  if (path === `${R8}report.json`) { const plan = await read(`${R8}plan.json`); value.completion.decisions.forEach((d) => { d.model = MODELS[plan.records.findIndex((r) => r.name === d.name && r.role === 'forecaster')]; if (d.forecast) d.forecast.rationale = 'Synthetic multi-model forecast.'; }); mutateReport(value); }
   return value;
 };
 
-test('multi-model rounds carry each agent model; single-model rounds stay unchanged', async () => {
+test('multi-model rounds count distinct models; single-model rounds carry per-agent provenance but no model count', async () => {
   const before = (await loadRoundEvidence()).rounds;
   const committedMulti = before.filter((round) => round.stack.id === 'tidepool' && round.roundId === '9');
   assert.equal(committedMulti.length, 1); assert.equal(committedMulti[0].models, 12, 'round 9 (swarm2) records 12 distinct models');
-  assert.ok(before.filter((round) => !committedMulti.includes(round)).every((round) => !('models' in round) && round.proposals.every((p) => !('model' in p)) && round.forecasters.every((f) => !('model' in f))), 'old rounds gain no model fields');
+  const old = before.filter((round) => !committedMulti.includes(round));
+  assert.ok(old.every((round) => !('models' in round)), 'single-model rounds have no distinct-model count');
+  assert.ok(old.every((round) => round.proposals.every((p) => p.id === '0' ? !('model' in p) : 'model' in p) && round.forecasters.every((f) => 'model' in f)), 'every actor carries provenance');
   const r8 = (await loadRoundEvidence({ read: multiModel() })).rounds.find((round) => round.roundId === '8' && round.source?.includes('tidepool'));
   assert.equal(r8.models, 8);
   assert.deepEqual(r8.proposals.map((p) => p.model ?? null), [null, ...MODELS.slice(0, 4)]);
@@ -317,4 +319,54 @@ test('multi-model rounds reject a decision model that differs from its record, o
   const reused = await load(multiModel(() => {}, (plan) => { plan.records[1].model = plan.records[0].model; }));
   assert.match(wrong, /decision 0 model differs from its plan record/);
   assert.match(reused, /a multi-model plan reuses a model/);
+});
+
+// AI provenance: every actor names its model (or that it was scripted), the operator's hashes, and the propose transaction.
+const R2 = 'docs/test-evidence/tidepool-rounds/round2/';
+const tidepoolRound = (rounds, id) => rounds.find((round) => round.stack.id === 'tidepool' && round.roundId === id);
+
+test('single-model round 2: four Qwen proposers with hashes and propose transactions, four scripted forecasters with no model', async () => {
+  const r2 = tidepoolRound((await loadRoundEvidence()).rounds, '2');
+  const plan = await read(`${R2}plan.json`); const report = await read(`${R2}report.json`);
+  const [hold, ...challengers] = r2.proposals;
+  assert.equal(hold.id, '0'); assert.ok(!('provider' in hold) && !('model' in hold), 'Hold made no model call and carries no provenance');
+  assert.equal(challengers.length, 4);
+  for (const p of challengers) {
+    const record = plan.records.find((r) => r.role === 'proposer' && r.name === p.name);
+    const tx = report.confirmedTransactions.find((t) => t.label === `round2:propose:${p.name}`);
+    assert.deepEqual({ model: p.model, provider: p.provider, scripted: p.scripted, inputHash: p.inputHash, outputHash: p.outputHash, proposeTx: p.proposeTx },
+      { model: 'Qwen/Qwen3.6-35B-A3B-FP8', provider: 'near-ai', scripted: false, inputHash: record.inputHash, outputHash: record.outputHash, proposeTx: tx.hash.toLowerCase() });
+  }
+  assert.equal(challengers[0].proposeTx, '0xe6b3749e70e2356485789b93f8f60648d7cf80f2d5a2ebbc4a82dda67daa8bf7');
+  assert.equal(new Set(challengers.map((p) => p.proposeTx)).size, 4, 'each proposer has its own transaction');
+  assert.equal(r2.forecasters.length, 4);
+  for (const f of r2.forecasters) {
+    assert.equal(f.provider, 'scripted'); assert.equal(f.model, null); assert.equal(f.scripted, true); assert.ok(!('proposeTx' in f));
+    assert.match(f.inputHash, /^[0-9a-f]{64}$/); assert.match(f.outputHash, /^[0-9a-f]{64}$/);
+  }
+  assert.ok(!('models' in r2));
+});
+
+test('round 9: four proposers and eight forecasters each carry a distinct model, none scripted', async () => {
+  const r9 = tidepoolRound((await loadRoundEvidence()).rounds, '9');
+  const actors = [...r9.proposals.filter((p) => p.id !== '0'), ...r9.forecasters];
+  assert.equal(actors.length, 12);
+  assert.ok(actors.every((a) => a.provider === 'near-ai' && a.scripted === false && /^[0-9a-f]{64}$/.test(a.inputHash) && /^[0-9a-f]{64}$/.test(a.outputHash)));
+  assert.equal(new Set(actors.map((a) => a.model)).size, 12);
+  assert.deepEqual(r9.proposals.slice(1).map((p) => p.model), ['Qwen/Qwen3.6-35B-A3B-FP8', 'Qwen/Qwen3.8-27B', 'deepseek-ai/DeepSeek-V4.1-Flash-1017', 'Qwen/Qwen3-VL-30B-A3B-Instruct']);
+  assert.equal(r9.forecasters.find((f) => f.name === 'Guardian').model, 'anthropic/claude-haiku-5-5');
+  assert.ok(r9.proposals.slice(1).every((p) => r9.transactions.some((t) => t.label === `round9:propose:${p.name}` && t.transactionHash === p.proposeTx)));
+  assert.equal(r9.attestationVerified, true);
+});
+
+test('provenance that cannot be tied to one record, a known provider, a sha256 or one propose transaction is rejected', async () => {
+  const cases = [
+    [tampered(`${R2}plan.json`, (plan) => { plan.records[0].provider = 'openai-direct'; }), /proposer Conservative has an unknown provider/],
+    [tampered(`${R2}plan.json`, (plan) => { plan.records[0].inputHash = `0x${plan.records[0].inputHash}`; }), /proposer Conservative input hash must be a lowercase sha256/],
+    [tampered(`${R2}plan.json`, (plan) => { plan.records[1].model = 'not a model'; }), /proposer Balanced needs a model id/],
+    [tampered(`${R2}plan.json`, (plan) => { plan.records.push({ ...plan.records[4] }); }), /forecaster Quant needs exactly one plan record/],
+    [tampered(`${R2}report.json`, (report) => { report.confirmedTransactions = report.confirmedTransactions.filter((t) => t.label !== 'round2:propose:Momentum'); }), /proposer Momentum needs exactly one confirmed propose transaction/],
+    [tampered(`${R2}plan.json`, (plan) => { plan.records[4].provider = 'near-ai'; plan.records[4].model = 'Qwen/Qwen3.6-35B-A3B-FP8'; }), /fixture rationale but a model provider/],
+  ];
+  for (const [reader, error] of cases) await assert.rejects(loadRoundEvidence({ read: reader }), error);
 });

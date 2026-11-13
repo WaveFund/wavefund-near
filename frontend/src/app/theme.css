@@ -215,3 +215,6 @@ dialog.drawer:has(.tee-proof) { width: min(1100px, 100vw); }
 .tee-links { display: flex; flex-direction: column; gap: 8px; }
 .tee-links a { overflow-wrap: anywhere; }
 .drawer-body .mono { overflow-wrap: anywhere; }
+
+.footer-links { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; width: 100%; }
+.footer-links a { color: var(--muted); } .footer-links a:hover { color: var(--accent); }
