@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "stack": "tidepool",
+  "roundId": "2",
+  "title": "Pre-registered round 2: scripted target Conservative",
+  "files": {
+    "report": "report",
+    "plan": "plan",
+    "independent": "independent",
+    "swap": "swap-independent",
+    "capital": "capital-linkage",
+    "reputation": "reputation"
+  }
+}

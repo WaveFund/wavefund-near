@@ -68,8 +68,12 @@ for (const event of events.filter(e => e.stage === 'confirmed' && e.label.starts
   fills.push({ name: event.actor, hash: event.hash, ...fill });
 }
 const collateralAtCollapse = await client.readContract({ address: contracts.stable, abi: tokenAbi, functionName: 'balanceOf', args: [contracts.engine], blockNumber: pinned });
-const endingCollateral = await client.readContract({ address: contracts.stable, abi: tokenAbi, functionName: 'balanceOf', args: [contracts.engine] });
-const reserve = await readEngine('protocolLiquiditySeed', []);
+// Pin the ending state at this round's last redemption, so later rounds cannot change what is checked here.
+const redemptions = events.filter(e => e.stage === 'confirmed' && (e.label.startsWith(`round${id}:redeem:`) || e.label.startsWith(`round${id}:redeemFor:`)));
+check(redemptions.length > 0, 'Missing redemption receipts');
+const endBlock = redemptions.map(e => BigInt(e.blockNumber)).reduce((a, b) => (a > b ? a : b));
+const endingCollateral = await client.readContract({ address: contracts.stable, abi: tokenAbi, functionName: 'balanceOf', args: [contracts.engine], blockNumber: endBlock });
+const reserve = await readEngine('protocolLiquiditySeed', [], endBlock);
 check(endingCollateral === reserve && reserve + payouts.reduce((s, p) => s + p.derivedPayout, 0n) === collateralAtCollapse && round.seedReleased && round.depositsOutstanding === 0n, 'Collateral conservation failed');
 const portfolio = namedOutputs(trackerAbi, 'portfolios', await client.readContract({ address: contracts.tracker, abi: trackerAbi, functionName: 'portfolios', args: [id] }));
 const settlementPrices = events.find(e => e.stage === 'oracle' && e.label === `round${id}:oracle:settle`).values.map(BigInt);
