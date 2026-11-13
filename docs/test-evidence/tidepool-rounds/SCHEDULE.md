@@ -83,3 +83,6 @@ Qwen3-VL), 12 paid calls, everything else as pre-registered above. Proposal 1 (o
 the 7th call (`google/gemini-2.5-flash`) returned truncated JSON after spending its budget on hidden reasoning.
 7 paid calls spent, session closed. Three forecaster models that failed or were too slow on a full-size test prompt
 were replaced (FeeAnalyst gpt-4.1, StressAnalyst grok-4.7, Skeptic kimi-k3); per-call limit 90 s. The design above is unchanged.
+**Third plan attempt (nothing on-chain):** 11 of 12 calls succeeded, including all 4 TEE-verified proposers;
+the 12th (`moonshotai/kimi-k3`) failed. 12 paid calls spent, session closed. Skeptic moves to
+`google/gemini-2.5-flash-lite`; forecasters are 8 distinct models across 5 families. Design otherwise unchanged.
