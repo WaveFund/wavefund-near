@@ -115,3 +115,15 @@ test('tampered NVIDIA signature and unpinned kid fail despite valid-looking clai
   assert.equal(verifyGpuToken(parts.join('.'), f.nonce, f.policy.nrasKeys, f.at), false);
   assert.equal(verifyGpuToken(token, f.nonce, f.policy.nrasKeys.map(k => ({ ...k, kid: 'different' })), f.at), false);
 });
+
+test('a stored "verified" flag is never trusted: kind, schema and every check are recomputed', async () => {
+  const f = await syntheticTee(); const p = await verifyTeeEvidence(f.evidence, f.policy, { quoteVerifier: f.quoteVerifier });
+  assert.equal(privacyVerified(p), true);
+  assert.equal(privacyVerified({ ...p, signatureKind: 'other' }), false, 'only provider_tee signatures count');
+  assert.equal(privacyVerified({ ...p, schemaVersion: 2 }), false, 'unknown schema is not verified');
+  for (const field of ['nonceBound', 'tdxQuoteVerified', 'gpuAttested', 'signatureValid']) {
+    const forged = { ...p, [field]: false, verified: true }; // claims verified, one check is false
+    assert.throws(() => proposalRationale({ attestationVerified: true, privacy: forged }, 'x'), /TEE_RECORD_UNVERIFIED/, field);
+  }
+  assert.match(proposalRationale({ attestationVerified: true, privacy: p }, 'x'), /^NEAR AI \(TEE verified\) sha256:[a-f0-9]{64} · x$/);
+});
