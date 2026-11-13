@@ -16,19 +16,19 @@ const options = { contracts, roundId: BigInt(snapshot.roundId), portfolio: snaps
 
 // ---------------------------------------------------------------- config
 
-test('swarm2 config: 5 proposers + 8 forecasters, 13 distinct allowlisted models, attested proposers, no abliterated weights', () => {
-  assert.equal(SWARM2_PROPOSERS.length, 5); assert.equal(SWARM2_FORECASTERS.length, 8); assert.equal(SWARM2_CALLS, 13);
-  assert.deepEqual(SWARM2_PROPOSERS.map(p => p.name), ['Conservative', 'Balanced', 'Momentum', 'HighBeta', 'Contrarian']);
+test('swarm2 config: 4 proposers + 8 forecasters, 12 distinct allowlisted models, attested proposers, no abliterated weights', () => {
+  assert.equal(SWARM2_PROPOSERS.length, 4); assert.equal(SWARM2_FORECASTERS.length, 8); assert.equal(SWARM2_CALLS, 12);
+  assert.deepEqual(SWARM2_PROPOSERS.map(p => p.name), ['Conservative', 'Balanced', 'Momentum', 'HighBeta']);
   assert.ok(Object.keys(SWARM2_MODELS).every(m => !/abliterated/i.test(m)));
   const models = [...SWARM2_PROPOSERS, ...SWARM2_FORECASTERS].map(a => a.model);
-  assert.equal(new Set(models).size, 13);
+  assert.equal(new Set(models).size, 12);
   assert.ok(models.every(m => Object.hasOwn(SWARM2_MODELS, m)));
   assert.ok(SWARM2_PROPOSERS.every(p => SWARM2_MODELS[p.model].hosting === 'near-attested'));
   assert.ok(SWARM2_FORECASTERS.every(f => SWARM2_MODELS[f.model].hosting === 'proxied'));
   // 6 families: Moonshot (kimi-k2.6, empty JSON) and proxied Qwen3.7-max (HTTP 500) failed a live smoke test on 2026-11-13.
   assert.ok(new Set(SWARM2_FORECASTERS.map(f => SWARM2_MODELS[f.model].family)).size >= 6);
-  assert.equal(SWARM2_ACTORS.length, 13);
-  assert.equal(PROFILE_CALLS.swarm2, 13); assert.equal(PROFILE_CALLS.swarm2, SWARM2_CALLS); assert.equal(PROFILE_CALLS.swarm, 8); assert.equal(PROFILE_CALLS.hybrid, 4); assert.equal(PROFILE_CALLS.classic, 4);
+  assert.equal(SWARM2_ACTORS.length, 12);
+  assert.equal(PROFILE_CALLS.swarm2, 12); assert.equal(PROFILE_CALLS.swarm2, SWARM2_CALLS); assert.equal(PROFILE_CALLS.swarm, 8); assert.equal(PROFILE_CALLS.hybrid, 4); assert.equal(PROFILE_CALLS.classic, 4);
 });
 
 test('swarm2 config rejects a shared model, an unknown model, a proxied proposer and overlapping mandates', () => {
@@ -36,9 +36,9 @@ test('swarm2 config rejects a shared model, an unknown model, a proxied proposer
   assert.throws(() => validateSwarmConfig({ proposers: p, forecasters: f.map((x, i) => i === 1 ? { ...x, model: f[0].model } : x) }), /different model/);
   assert.throws(() => validateSwarmConfig({ proposers: p, forecasters: f.map((x, i) => i === 0 ? { ...x, model: 'openai/gpt-5-mini' } : x) }), /Unknown model/);
   assert.throws(() => validateSwarmConfig({ proposers: p.map((x, i) => i === 0 ? { ...x, model: 'openai/gpt-4.1-mini' } : x), forecasters: f.map((x, i) => i === 0 ? { ...x, model: p[0].model } : x) }), /NEAR-attested/);
-  assert.throws(() => validateSwarmConfig({ proposers: p.map((x, i) => i === 4 ? { ...x, max: 3500 } : x), forecasters: f }), /overlap/);
-  assert.throws(() => validateSwarmConfig({ proposers: p.slice(0, 4), forecasters: f }), /five proposers/);
-  assert.throws(() => validateSwarmConfig({ proposers: [...p, { name: 'VolAware', min: 5100, max: 6400, target: 6000, model: 'Qwen/Qwen3.8-27B-abliterated', mandate: 'm' }], forecasters: f }), /five proposers/);
+  assert.throws(() => validateSwarmConfig({ proposers: p.map((x, i) => i === 3 ? { ...x, min: 7900 } : x), forecasters: f }), /overlap/);
+  assert.throws(() => validateSwarmConfig({ proposers: p.slice(0, 3), forecasters: f }), /four proposers/);
+  assert.throws(() => validateSwarmConfig({ proposers: p.map((x, i) => i === 0 ? { ...x, model: 'Qwen/Qwen3.8-27B-abliterated' } : x), forecasters: f }), /Unknown model/);
   assert.deepEqual(validateSwarmConfig().proposers, SWARM2_PROPOSERS);
 });
 
@@ -62,7 +62,7 @@ test('round budget equals the sum of worst-case reservations and fits no extra c
   assert.ok(SWARM2_BUDGET_NANO_USD < 400000000); // under $0.40 even at the byte-as-token bound
   assert.throws(() => callAllowanceNanoUsd('openai/gpt-4.1-mini', 20481), /input limit/);
   const cap = roundCallCap('swarm2');
-  for (let i = 1; i <= 13; i++) assert.equal(cap.take(), i);
+  for (let i = 1; i <= 12; i++) assert.equal(cap.take(), i);
   assert.throws(() => cap.take(), /Round model-call cap exhausted/);
   assert.throws(() => roundCallCap('swarm3'), /Unknown agent profile/);
 });
@@ -192,17 +192,17 @@ function fakeLive(log = []) {
 
 test('fixture swarm2 plan validates with explicit fixture provenance', async () => {
   const plan = await makeSwarm2Plan({ snapshot, market, now, fixture: true });
-  assert.equal(plan.proposals.length, 6); assert.equal(plan.forecasts.length, 8); assert.equal(plan.records.length, 13);
-  assert.deepEqual(plan.proposals.map(p => p.name), ['Hold', 'Conservative', 'Balanced', 'Momentum', 'HighBeta', 'Contrarian']);
+  assert.equal(plan.proposals.length, 5); assert.equal(plan.forecasts.length, 8); assert.equal(plan.records.length, 12);
+  assert.deepEqual(plan.proposals.map(p => p.name), ['Hold', 'Conservative', 'Balanced', 'Momentum', 'HighBeta']);
   assert.equal(validateSwarm2Plan(plan, { ...options, fixture: true }), plan);
   assert.throws(() => validateSwarm2Plan(plan, options), /provenance mismatch/);
 });
 
-test('live swarm2 plan records a different model per agent, 13 capped calls, real-size inputs', async () => {
+test('live swarm2 plan records a different model per agent, 12 capped calls, real-size inputs', async () => {
   const log = []; const requests = [];
   const plan = await makeSwarm2Plan({ snapshot, market, researchContext, now, providerFor: fakeLive(log), onRequest: r => requests.push(r) });
   assert.equal(plan.kind, 'live-multi-model'); assert.equal(plan.teeScope, 'none'); assert.equal(plan.attestationVerified, false);
-  assert.deepEqual(requests.map(r => r.request), [...Array(13).keys()].map(i => i + 1));
+  assert.deepEqual(requests.map(r => r.request), [...Array(12).keys()].map(i => i + 1));
   assert.deepEqual(plan.records.map(r => r.model), [...SWARM2_PROPOSERS, ...SWARM2_FORECASTERS].map(a => a.model));
   assert.deepEqual(plan.provider.models, plan.records.map(r => r.model));
   assert.ok(plan.forecasts.every((x, i) => x.model === SWARM2_FORECASTERS[i].model));
@@ -265,5 +265,5 @@ test('an unattested forecaster call that carries attestation fields is refused, 
   const live = fakeLive(); const records = [];
   const providerFor = (agent, role) => { const p = live(agent, role); return role === 'forecaster' ? { info: p.info, async complete(task) { return { ...(await p.complete(task)), privacy: { verified: true } }; } } : p; };
   await assert.rejects(makeSwarm2Plan({ snapshot, market, researchContext, now, providerFor, onRecord: r => records.push(r) }), /Unexpected attestation on an unattested call/);
-  assert.equal(records.length, 5);
+  assert.equal(records.length, 4);
 });

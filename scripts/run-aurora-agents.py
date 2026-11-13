@@ -87,10 +87,10 @@ swarm = a.profile == 'swarm'
 swarm2 = a.profile == 'swarm2'
 expanded = hybrid or swarm or swarm2
 # Paid model calls per plan phase, by profile (mirrors runtime/agents/provider.mjs PROFILE_CALLS). No retries.
-CALL_CAPS = {'classic': 4, 'hybrid': 4, 'swarm': 8, 'swarm2': 13}
+CALL_CAPS = {'classic': 4, 'hybrid': 4, 'swarm': 8, 'swarm2': 12}
 call_cap = CALL_CAPS[a.profile]
 # swarm2 adds one proposer and four forecasters (runtime/agents/swarm-config.mjs); prepare generates their keys.
-SWARM2_ACTORS = ['Conservative', 'Balanced', 'Momentum', 'HighBeta', 'Contrarian',
+SWARM2_ACTORS = ['Conservative', 'Balanced', 'Momentum', 'HighBeta',
                  'Quant', 'Guardian', 'FeeAnalyst', 'StressAnalyst', 'BaseRate', 'VolAnalyst', 'Regime', 'Skeptic']
 # Exactly one paid call per swarm2 agent: the cap is proposers + forecasters, never more.
 if CALL_CAPS['swarm2'] != len(SWARM2_ACTORS):
