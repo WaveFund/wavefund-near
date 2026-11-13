@@ -1,0 +1,11 @@
+export declare function isSecretKey(key: string): boolean;
+export declare function sanitizeProof(value: unknown): unknown;
+export declare function explorerTxUrl(hash: unknown): string | null;
+export declare function evidenceFileUrl(round: unknown, file?: string): string | null;
+export declare function recheckCommand(round: unknown): string | null;
+export declare const GITHUB_EVIDENCE_BASE: string;
+export declare const EXPLORER_TX_BASE: string;
+export declare const NOT_VERIFIED: readonly string[];
+export type ProofClaim = { id: string; tone: 'plain' | 'ai' | 'ok'; text: string; keys: string[] };
+export declare function jsonRows(json: string): { rows: Array<{ n: number; text: string; key: string | null }>; truncated: boolean };
+export declare function proofView(proof: unknown, round: unknown): { verified: boolean; model: string | null; checks: Array<{ key: string; label: string; detail: string; ok: boolean }>; trustBasis: string | null; json: string; rows: Array<{ n: number; text: string; key: string | null }>; truncated: boolean; title: string; verifiedAt: string | null; txUrl: string | null; evidenceUrl: string | null; command: string | null; notVerified: readonly string[]; claims: ProofClaim[]; headline: string };

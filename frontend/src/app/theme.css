@@ -180,3 +180,38 @@ dialog.drawer::backdrop { background: rgb(0 0 0 / .45); }
 /* Header wallet entry: always visible, leads to the live round's wallet panel. */
 .wallet-cta { height: 32px; }
 @media (max-width: 720px) { .wallet-cta { padding: 0 10px; font-size: 12.5px; } }
+
+/* TEE proof viewer */
+.tee-row { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+dialog.drawer:has(.tee-proof) { width: min(1100px, 100vw); }
+.tee-title { display: flex; flex-direction: column; gap: 2px; font-size: 16px; overflow-wrap: anywhere; }
+.tee-title small { font-size: 12px; font-weight: 400; }
+.tee-proof { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 24px; align-items: start; }
+@media (max-width: 760px) { .tee-proof { grid-template-columns: minmax(0, 1fr); } }
+.tee-left, .tee-right { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.tee-left h3, .tee-right h3 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.tee-claims, .tee-not, .tee-checks, .tee-links { list-style: none; padding: 0; margin: 0; }
+.tee-claims { display: flex; flex-direction: column; gap: 6px; }
+.tee-claims li, .tee-checks li { padding: 8px 10px; border-radius: 8px; border: 1px solid var(--line); outline-offset: 2px; }
+.tee-claims li:hover, .tee-claims li:focus, .tee-checks li:hover, .tee-checks li:focus { background: var(--sunken); }
+.tee-mark { display: inline-block; width: 18px; font-weight: 700; color: var(--accent); }
+.tee-claims .tone-ai .tee-mark, .tee-claims .tone-ai { color: var(--ai); }
+.tee-claims .tone-plain .tee-mark { color: var(--muted); }
+.tee-checks { gap: 8px; margin-top: 8px; }
+.tee-checks p { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.tee-ok { color: var(--accent); } .tee-bad { color: var(--bad); }
+.tee-checks-all summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+.tee-not { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--text-2); }
+.tee-not li::before { content: "– "; color: var(--warn); }
+.tee-rawhead { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.tee-json, .tee-cmd { font-family: var(--mono); font-size: 11.5px; line-height: 1.55; background: var(--sunken); border: 1px solid var(--line); border-radius: 8px; padding: 10px 0; }
+.tee-json { max-height: 70vh; overflow: auto; margin: 0; white-space: pre; }
+.tee-line { display: block; padding: 0 12px 0 0; }
+.tee-line i { display: inline-block; width: 36px; padding-right: 10px; text-align: right; color: var(--muted); font-style: normal; user-select: none; }
+.tee-line.hl { background: var(--ai-soft); }
+.tee-cmd { display: block; padding: 10px 12px; overflow-wrap: anywhere; white-space: pre-wrap; }
+.tee-foot { font-size: 12px; }
+.tee-actions { display: flex; gap: 8px; }
+.tee-links { display: flex; flex-direction: column; gap: 8px; }
+.tee-links a { overflow-wrap: anywhere; }
+.drawer-body .mono { overflow-wrap: anywhere; }
