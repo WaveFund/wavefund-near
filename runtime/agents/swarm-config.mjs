@@ -33,6 +33,7 @@ export const SWARM2_MODELS = Object.freeze(Object.fromEntries([
   ['openai/gpt-4.1', { family: 'OpenAI', hosting: 'proxied', priceIn: 2000, priceOut: 8000, responseFormat: 'json_object', temperature: true, maxTokens: 1800, thinkingOff: null }],
   ['x-ai/grok-4.7', { family: 'xAI', hosting: 'proxied', priceIn: 2000, priceOut: 6000, responseFormat: 'json_object', temperature: true, maxTokens: 4000, thinkingOff: null }],
   ['moonshotai/kimi-k3', { family: 'Moonshot', hosting: 'proxied', priceIn: 3300, priceOut: 16500, responseFormat: 'json_object', temperature: true, maxTokens: 4000, thinkingOff: null }],
+  ['google/gemini-2.5-flash-lite', { family: 'Google', hosting: 'proxied', priceIn: 100, priceOut: 400, responseFormat: 'json_object', temperature: true, maxTokens: 1800, thinkingOff: null }],
   ['deepseek/deepseek-v3.2', { family: 'DeepSeek', hosting: 'proxied', priceIn: 1100, priceOut: 1100, responseFormat: 'json_object', temperature: true, maxTokens: 1800, thinkingOff: null }],
   ['google/gemini-3.1-flash-lite', { family: 'Google', hosting: 'proxied', priceIn: 250, priceOut: 1500, responseFormat: 'json_object', temperature: true, maxTokens: 1800, thinkingOff: null }],
   ['z-ai/glm-5.3', { family: 'GLM', hosting: 'proxied', priceIn: 1800, priceOut: 5750, responseFormat: 'none', temperature: true, maxTokens: 4000, thinkingOff: null }],
@@ -55,7 +56,7 @@ export const SWARM2_FORECASTERS = Object.freeze([
   { name: 'BaseRate', model: 'anthropic/claude-sonnet-5', mandate: 'Anchor on the base rate that short-horizon returns are close to zero, then adjust only for supplied evidence.' },
   { name: 'VolAnalyst', model: 'deepseek/deepseek-v3.2', mandate: 'Relate each allocation to realised volatility: more asset exposure means a wider spread of outcomes, not a higher expected return.' },
   { name: 'Regime', model: 'google/gemini-3.1-flash-lite', mandate: 'Judge whether the supplied history looks trending or mean-reverting and what that implies for each allocation\'s return.' },
-  { name: 'Skeptic', model: 'moonshotai/kimi-k3', mandate: 'Argue against the most popular view; stay near zero expected return unless the evidence clearly supports a move.' },
+  { name: 'Skeptic', model: 'google/gemini-2.5-flash-lite', mandate: 'Argue against the most popular view; stay near zero expected return unless the evidence clearly supports a move.' },
 ].map(Object.freeze));
 
 export const SWARM2_CALLS = SWARM2_PROPOSERS.length + SWARM2_FORECASTERS.length; // 12 paid calls (4 + 8), no retries. z-ai/glm-5.3-flash was dropped as a proposer on 2026-11-13: it always returns a hidden reasoning field, which TEE verification rejects by design.

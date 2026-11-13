@@ -25,8 +25,8 @@ test('swarm2 config: 4 proposers + 8 forecasters, 12 distinct allowlisted models
   assert.ok(models.every(m => Object.hasOwn(SWARM2_MODELS, m)));
   assert.ok(SWARM2_PROPOSERS.every(p => SWARM2_MODELS[p.model].hosting === 'near-attested'));
   assert.ok(SWARM2_FORECASTERS.every(f => SWARM2_MODELS[f.model].hosting === 'proxied'));
-  // 6 families: Moonshot (kimi-k2.6, empty JSON) and proxied Qwen3.7-max (HTTP 500) failed a live smoke test on 2026-11-13.
-  assert.ok(new Set(SWARM2_FORECASTERS.map(f => SWARM2_MODELS[f.model].family)).size >= 6);
+  // 5 families after live failures on 2026-11-13 (kimi-k2.6 empty, qwen3.7-max HTTP 500, glm-5.3 empty, kimi-k3 failed in round 9).
+  assert.ok(new Set(SWARM2_FORECASTERS.map(f => SWARM2_MODELS[f.model].family)).size >= 5);
   assert.equal(SWARM2_ACTORS.length, 12);
   assert.equal(PROFILE_CALLS.swarm2, 12); assert.equal(PROFILE_CALLS.swarm2, SWARM2_CALLS); assert.equal(PROFILE_CALLS.swarm, 8); assert.equal(PROFILE_CALLS.hybrid, 4); assert.equal(PROFILE_CALLS.classic, 4);
 });
