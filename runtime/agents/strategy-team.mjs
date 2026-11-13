@@ -4,7 +4,7 @@ import { boundedLiveProvider, LIVE_MODEL } from './aurora-plan.mjs';
 import { createProvider, providerConfig, roundCallCap, PROFILE_CALLS } from './provider.mjs';
 import { createTeeProvider } from './tee-client.mjs';
 import { digest, exactKeys, validateProposal, validateForecast, validateReturnForecast } from './policy.mjs';
-import { SWARM2_PROPOSERS, SWARM2_FORECASTERS, SWARM2_FORECAST_IDS, SWARM2_INPUT_BYTES, SWARM2_BUDGET_NANO_USD, SWARM2_TIMEOUT_MS, SWARM2_CALLS, SWARM2_MIN_EDGE_BPS, SWARM2_TRADE_RULE, callAllowanceNanoUsd, modelOf, requestBodyFor } from './swarm-config.mjs';
+import { SWARM2_TEE_TIMEOUT_MS, SWARM2_PROPOSERS, SWARM2_FORECASTERS, SWARM2_FORECAST_IDS, SWARM2_INPUT_BYTES, SWARM2_BUDGET_NANO_USD, SWARM2_TIMEOUT_MS, SWARM2_CALLS, SWARM2_MIN_EDGE_BPS, SWARM2_TRADE_RULE, callAllowanceNanoUsd, modelOf, requestBodyFor } from './swarm-config.mjs';
 import { validateMarket } from './market.mjs';
 import { validateResearchContext } from './research-context.mjs';
 
@@ -185,7 +185,7 @@ export function swarm2FixtureProvider() {
 export function swarm2LiveProvider(agent, role, { apiKey, teePolicy, fetchImpl = fetch } = {}) {
   check(modelOf(agent.name) === agent.model, 'Agent model differs from the swarm2 allowlist');
   const config = { mode: 'near-ai', model: agent.model, apiKey };
-  if (teePolicy && role === 'proposer') return createTeeProvider(config, { policy: teePolicy, fetchImpl, maxCalls: 1, timeoutMs: SWARM2_TIMEOUT_MS });
+  if (teePolicy && role === 'proposer') return createTeeProvider(config, { policy: teePolicy, fetchImpl, maxCalls: 1, timeoutMs: SWARM2_TEE_TIMEOUT_MS });
   return createProvider(config, { maxCalls: 1, timeoutMs: SWARM2_TIMEOUT_MS, fetchImpl: (url, options) =>
     fetchImpl(url, { ...options, body: JSON.stringify(requestBodyFor(agent.model, role, JSON.parse(options.body))) }) });
 }

@@ -67,6 +67,7 @@ export const SWARM2_MIN_EDGE_BPS = 300;
 export const SWARM2_TRADE_RULE = 'expected-payout-value-v1';
 export const SWARM2_ACTORS = Object.freeze([...SWARM2_PROPOSERS, ...SWARM2_FORECASTERS].map(a => a.name));
 export const SWARM2_INPUT_BYTES = 20480; // forecaster context grows with six anonymous strategies
+export const SWARM2_TEE_TIMEOUT_MS = 60000; // TEE client ceiling; attested proposers answered in under 20 s live
 export const SWARM2_TIMEOUT_MS = 90000; // live 2026-11-13: kimi-k3 46 s, grok-4.7 33 s on a full-size forecaster prompt
 
 // Client-side reservation per call: every input byte counted as a token (an upper bound) plus the full output allowance.

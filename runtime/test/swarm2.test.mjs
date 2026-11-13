@@ -267,3 +267,12 @@ test('an unattested forecaster call that carries attestation fields is refused, 
   await assert.rejects(makeSwarm2Plan({ snapshot, market, researchContext, now, providerFor, onRecord: r => records.push(r) }), /Unexpected attestation on an unattested call/);
   assert.equal(records.length, 4);
 });
+
+test('swarm2 time limits fit the clients that use them (TEE proposers <= 60 s, forecasters <= provider ceiling)', async () => {
+  const cfg = await import('../agents/swarm-config.mjs'); const { createTeeProvider } = await import('../agents/tee-client.mjs'); const { createProvider } = await import('../agents/provider.mjs');
+  const policy = JSON.parse(await (await import('node:fs/promises')).readFile(new URL('../../docs/tee-policy.json', import.meta.url), 'utf8'));
+  const model = SWARM2_PROPOSERS[0].model;
+  assert.doesNotThrow(() => createTeeProvider({ mode: 'near-ai', model, apiKey: 'x' }, { policy, maxCalls: 1, timeoutMs: cfg.SWARM2_TEE_TIMEOUT_MS, fetchImpl: async () => { throw new Error('no network'); } }));
+  assert.throws(() => createTeeProvider({ mode: 'near-ai', model, apiKey: 'x' }, { policy, maxCalls: 1, timeoutMs: cfg.SWARM2_TIMEOUT_MS, fetchImpl: async () => { throw new Error('no network'); } }), /TEE_INVALID_LIMITS/);
+  assert.doesNotThrow(() => createProvider({ mode: 'near-ai', model: SWARM2_FORECASTERS[0].model, apiKey: 'x' }, { maxCalls: 1, timeoutMs: cfg.SWARM2_TIMEOUT_MS }));
+});
