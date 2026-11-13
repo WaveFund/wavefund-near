@@ -206,7 +206,14 @@ test('exported pre-registered rounds are discovered and validated like fixed sou
   // The fixed sources are untouched by discovery.
   const fixed = await loadRoundEvidence({ discover: false });
   assert.deepEqual(evidence.rounds.slice(0, 3), fixed.rounds);
-  assert.deepEqual(await discoverRoundSources(), [], 'no rounds are committed yet');
+  // Discovery returns exactly the committed round folders, in order, and each one validates through the real loader.
+  const { readdir } = await import('node:fs/promises');
+  const onDisk = (await readdir(new URL('../../docs/test-evidence/tidepool-rounds/', import.meta.url), { withFileTypes: true }).catch(() => []))
+    .filter((entry) => entry.isDirectory() && /^round[0-9]+$/.test(entry.name)).map((entry) => entry.name.slice(5)).sort((a, b) => Number(a) - Number(b));
+  const discovered = await discoverRoundSources();
+  assert.deepEqual(discovered.map((source) => source.roundId), onDisk);
+  const live = await loadRoundEvidence();
+  assert.deepEqual(live.rounds.filter((round) => round.stack.id === 'tidepool').map((round) => round.roundId).slice(1), onDisk);
 });
 
 test('malformed discovered rounds are rejected, not displayed', async () => {
