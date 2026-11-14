@@ -196,7 +196,11 @@ This adapts an existing Wavefund project; reused forecasting contracts are basel
 
 The project uses Safe 1.4.1, Uniswap v4 core/periphery and Permit2, OpenZeppelin, forge-std, Solmate, RedStone adapter dependencies, Next.js, React and viem. Solidity sources are pinned in [dependency-pins.json](docs/dependency-pins.json); JavaScript versions are locked in [package-lock.json](package-lock.json). Claude Code and Codex assisted implementation, testing and documentation. Upstream forecasting attribution and dependency licenses remain intact.
 
-Team members also work on the independent [CashFlowFi NEAR](https://github.com/CashFlowFi/CashFlowFi-Near) project: invoice financing and payment workflows. Wavefund is the separate strategy-selection, forecasting and Trading Safe project, with its own repository, contracts and demo.
+### Other hackathon project: CashFlowFi
+
+Our second, independent NEAR HACKATHON project is **CashFlowFi**: invoice financing and payment workflows. [Repository](https://github.com/CashFlowFi/CashFlowFi-Near) · [Live demo](https://cashflowfi-near.vercel.app/).
+
+Wavefund is the separate strategy-selection, forecasting and Trading Safe project, with its own repository, contracts and demo. This disclosure identifies our other project under [official rule Q-015](https://nearhackathon.com/HACKATHON.md).
 
 ## Current execution and funding model
 
