@@ -9,8 +9,7 @@ import { Icon } from "@/components/funding/primitives";
 import { Button, EmptyState, Notice, Skeleton } from "@/components/ui";
 import { Cap, Tip } from "@/components/v2";
 import { useLocalState, useSavedRounds } from "@/lib/arena/hooks";
-import { localJourney, localWorkspaceAccess, percentFromBps, shortReturnX18, type ParticipantView } from "@/lib/arena/model.mjs";
-import "../round.css";
+import { localJourney, localWorkspaceAccess, percentFromBps, settlementShares, shortReturnX18, type ParticipantView } from "@/lib/arena/model.mjs";
 
 export default function LocalRoundPage() {
   const local = useLocalState(1500);
@@ -59,7 +58,12 @@ export default function LocalRoundPage() {
       eyebrow="Local simulation · disposable chain 31337" title={<>Round {state?.roundId && state.roundId !== "0" ? state.roundId : "1"} · Local simulation</>}
       caps={<><Cap tone={journey.complete ? "ok" : journey.running ? "warn" : undefined}>{status}</Cap><Cap>Simulated prices</Cap><Cap>Scripted agents</Cap></>}
       actions={access.canStart ? <Button variant="primary" icon="play" loading={starting} onClick={() => void run()}>Run local simulation</Button> : undefined}
-      metrics={[winnerName ? (winnerName === "Hold" ? "Hold selected" : `${percentFromBps(winnerBps ?? -1) ?? "—"} ETH selected`) : "No selection yet", journey.evaluated ? `${shortReturnX18(journey.returnX18)} measured` : "Not measured", `${depositors} ${depositors === 1 ? "forecaster" : "forecasters"}`]}
+      metrics={[
+        { label: "Selected", value: winnerName ?? "Not yet", avatar: winnerName ? { name: winnerName, hold: winnerName === "Hold" } : undefined, sub: winnerName ? (winnerName === "Hold" ? "kept the allocation" : `${percentFromBps(winnerBps ?? -1) ?? "—"} ETH target`) : "after forecasting closes" },
+        { label: "Measured return", value: journey.evaluated ? shortReturnX18(journey.returnX18) ?? "—" : "Not measured", tone: journey.evaluated ? (shortReturnX18(journey.returnX18)?.startsWith("−") ? "neg" : shortReturnX18(journey.returnX18)?.startsWith("+") ? "pos" : null) : null, sub: "simulated prices" },
+        { label: "LONG settles at", value: settlementShares(journey.longPayoutX18)?.long ?? "—", sub: settlementShares(journey.longPayoutX18) ? `SHORT ${settlementShares(journey.longPayoutX18)?.short}` : "after measurement" },
+        { label: "Forecasters", value: String(depositors), sub: depositors === 1 ? "has deposited" : "have deposited" },
+      ]}
       summaryRows={[["Network", "Local chain 31337"], ["Status", status], ["Strategies", journey.proposals.length ? `${journey.proposals.length - 1} + Hold` : "—"], ["Selected", winnerName ?? "—"]]}
       participants={people}
       activityExtra={state?.messages?.length ? <section><h3 className="rw-h3">Event log</h3><ul className="feed-mini">{state.messages.map((item, index) => <li key={`${item.timestamp}-${index}`}><span>{item.stage}</span>{item.message}</li>)}</ul></section> : null} />

@@ -7,27 +7,9 @@ import { formatReturnX18 } from "@/lib/record/model.mjs";
 import { CopyText, ExplorerLink, Icon, type IconName } from "@/components/funding/primitives";
 import { Tip } from "@/components/v2";
 
-// ---------------------------------------------------------------- identity
-
-const AGENT_VARS: Record<string, string> = {
-  hold: "--a-hold", conservative: "--a-conservative", balanced: "--a-balanced", momentum: "--a-momentum", highbeta: "--a-highbeta",
-  quant: "--a-quant", guardian: "--a-guardian", feeanalyst: "--a-fee", stressanalyst: "--a-stress",
-};
-/** Each agent keeps one colour everywhere; unknown names get a stable fallback. */
-export function agentVar(name: string): string {
-  const key = name.toLowerCase().replace(/[^a-z]/g, "");
-  if (AGENT_VARS[key]) return AGENT_VARS[key];
-  let sum = 0; for (const char of key) sum = (sum + char.charCodeAt(0)) % 4;
-  return `--a-x${sum + 1}`;
-}
-
-/** Proposer agents are tiles, forecasters are round, and Hold is a dashed "keep" mark. */
-export function AgentAvatar({ name, kind = "proposer", size }: { name: string; kind?: "proposer" | "forecaster" | "hold"; size?: "sm" | "lg" }) {
-  if (kind === "hold" || name === "Hold") {
-    return <span className={`av hold ${size ?? ""}`} aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><path d="M6 9.5h12M6 14.5h12" /></svg></span>;
-  }
-  return <span className={`av ${kind === "forecaster" ? "round" : ""} ${size ?? ""}`} style={{ "--av": `var(${agentVar(name)})` } as CSSProperties} aria-hidden="true">{name.slice(0, 1).toUpperCase()}</span>;
-}
+export { AgentAvatar, agentVar } from "./identity";
+import { AgentAvatar, agentVar as agentVarFn } from "./identity";
+import { AllocationBar, RaceChart } from "@/components/viz";
 
 /** Share of the risk asset (test ETH) in a target allocation; the rest is the stable asset. */
 export function AllocationRing({ bps, size, label }: { bps: number; size?: "lg"; label?: string }) {
@@ -83,15 +65,16 @@ export type StrategyView = { id: string; name: string; allocationBps: number; ra
 export function StrategyCard({ strategy, selected = false, dim = false, compact = false, onSelect }: { strategy: StrategyView; selected?: boolean; dim?: boolean; compact?: boolean; onSelect?: () => void }) {
   const hold = strategy.id === "0";
   const thesis = strategy.rationale.replace(/^SIMULATED AGENT:\s*/i, "");
-  return <article className={`strategy ${hold ? "is-hold" : ""} ${selected ? "is-selected" : ""} ${dim ? "is-dim" : ""} ${onSelect ? "is-pickable" : ""}`} onClick={onSelect} aria-label={`${hold ? "Keep current allocation" : strategy.name}${selected ? ", selected" : ""}`}>
-    {selected ? <span className="selected-flag"><Icon name="check" />Selected</span> : null}
+  return <article className={`strategy ${hold ? "is-hold" : ""} ${selected ? "is-selected" : ""} ${dim ? "is-dim" : ""} ${onSelect ? "is-pickable" : ""}`} onClick={onSelect}
+    style={{ "--c": `var(${hold ? "--a-hold" : agentVarFn(strategy.name)})` } as CSSProperties} aria-label={`${hold ? "Keep current allocation" : strategy.name}${selected ? ", selected" : ""}`}>
     <div className="strategy-top">
       <AgentAvatar name={strategy.name} kind={hold ? "hold" : "proposer"} />
-      <div className="strategy-name"><b>{hold ? "Keep allocation" : strategy.name}</b><span>{hold ? "Baseline · Hold" : `Proposal #${strategy.id}`}</span></div>
+      <div className="strategy-name"><b>{hold ? "Hold" : strategy.name}</b><span>{hold ? "Baseline · keep allocation" : `Proposal #${strategy.id}`}</span></div>
+      {selected ? <span className="selected-flag"><Icon name="check" />Selected</span> : null}
     </div>
     <div className="strategy-alloc">
-      <AllocationRing bps={strategy.allocationBps} />
-      <div><b>{percentFromBps(strategy.allocationBps)} test ETH</b><span>{hold ? "what the Safe holds now" : `${percentFromBps(10_000 - strategy.allocationBps)} USDC`}</span></div>
+      <div className="strategy-alloc-num"><b className="num">{percentFromBps(strategy.allocationBps)}</b><span>{hold ? "ETH held now" : "target ETH"}</span></div>
+      <AllocationBar bps={strategy.allocationBps} compact />
     </div>
     {!compact ? (hold ? <p className="strategy-thesis">Keeps the Safe&apos;s current token quantities. A challenger must beat it to trade.</p>
       : thesis ? (thesis.length > 150 ? <details><summary>Read the thesis</summary><p>{thesis}</p></details> : <p className="strategy-thesis">{thesis}</p>) : null) : null}
@@ -102,7 +85,6 @@ export function StrategyCard({ strategy, selected = false, dim = false, compact 
     </div>
   </article>;
 }
-
 const credits = (raw: string | null) => (raw ? `${formatUnits(raw, 6) ?? "—"} credits` : null);
 
 /** LONG and SHORT positions per strategy, drawn as opposing sides. Credits belong to that strategy's world only. */
@@ -128,15 +110,8 @@ export function PositionBoard({ strategies, positions }: { strategies: StrategyV
 /** Final-window market averages against Hold, with the qualifying line the best challenger had to clear. */
 export function SignalBoard({ signals, strategies }: { signals: SelectionSignals; strategies: StrategyView[] }) {
   return <div className="signals">
-    {signals.rows.map((row) => {
-      const strategy = strategies.find((item) => item.id === row.id);
-      return <div key={row.id} className={`signal ${row.qualifies ? "qualifies" : ""} ${row.isHold ? "is-hold" : ""}`}>
-        <span className="signal-name"><AgentAvatar name={strategy?.name ?? row.id} kind={row.isHold ? "hold" : "proposer"} size="sm" /><span>{row.isHold ? "Keep allocation" : strategy?.name ?? `#${row.id}`}</span></span>
-        <span className="signal-bar" aria-hidden="true"><i style={{ width: `${row.percent ?? 0}%` }} />{!row.isHold ? <span className="threshold" style={{ left: `${signals.thresholdPercent}%` }} /> : null}</span>
-        <span className="signal-value">{row.percent === null ? "—" : `${row.percent.toFixed(3)}%`}</span>
-      </div>;
-    })}
-    <p className="signal-legend"><i aria-hidden="true" />Line: Hold&apos;s average plus 0.5 points ({signals.thresholdPercent.toFixed(3)}%). Only a strategy past it can be selected.</p>
+    <RaceChart signals={signals} strategies={strategies} />
+    <p className="signal-legend"><i aria-hidden="true" />To beat: Hold&apos;s average plus 0.5 points ({signals.thresholdPercent.toFixed(3)}%). Only a strategy past it can be selected; otherwise Hold stays.</p>
   </div>;
 }
 

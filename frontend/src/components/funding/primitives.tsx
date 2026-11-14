@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { explorerUrl, formatDuration, formatUnits, isAddress, shortHex } from "@/lib/funding/model.mjs";
 
 export type IconName = "wallet" | "intents" | "aurora" | "safe" | "check" | "cross" | "lock" | "alert" | "arrow" | "copy" | "external" | "refund" | "clock" | "shield" | "spark" | "eye"
-  | "fund" | "chart" | "sliders" | "down" | "bolt" | "receipt" | "users" | "trophy" | "pulse" | "route" | "play" | "chevron" | "download" | "layers" | "sun" | "moon";
+  | "fund" | "chart" | "sliders" | "down" | "bolt" | "receipt" | "users" | "trophy" | "pulse" | "route" | "play" | "chevron" | "download" | "layers" | "sun" | "moon" | "search" | "book" | "grid";
 
 const stroke = { fill: "none", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
 const PATHS: Record<IconName, ReactNode> = {
@@ -40,6 +40,9 @@ const PATHS: Record<IconName, ReactNode> = {
   layers: <><path d="m12 4 8.5 4.5L12 13 3.5 8.5 12 4Z" {...stroke} /><path d="m3.5 13 8.5 4.5 8.5-4.5" {...stroke} /></>,
   sun: <><circle cx="12" cy="12" r="4" {...stroke} /><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" {...stroke} /></>,
   moon: <path d="M20 14.6A8.2 8.2 0 0 1 9.4 4a8.2 8.2 0 1 0 10.6 10.6Z" {...stroke} />,
+  search: <><circle cx="11" cy="11" r="6.5" {...stroke} /><path d="m16 16 4.5 4.5" {...stroke} /></>,
+  book: <><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z" {...stroke} /><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20v3H6.5" {...stroke} /></>,
+  grid: <><rect x="4" y="4" width="6.5" height="6.5" rx="1.5" {...stroke} /><rect x="13.5" y="4" width="6.5" height="6.5" rx="1.5" {...stroke} /><rect x="4" y="13.5" width="6.5" height="6.5" rx="1.5" {...stroke} /><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.5" {...stroke} /></>,
 };
 
 export function Icon({ name, className }: { name: IconName; className?: string }) {

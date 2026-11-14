@@ -11,7 +11,6 @@ import { explorerUrl, formatUnits, parseUnits } from "@/lib/funding/model.mjs";
 import type { LiveRound } from "@/lib/arena/live.mjs";
 import { accounts, chainIdOf, confirm, failureOf, injected, OUTCOME_DECIMALS, quote as readQuote, readPosition, send, STABLE_DECIMALS, switchToAurora, type Position, type TxRequest } from "@/lib/wallet/client";
 import { AURORA_TESTNET_ID, DEFAULT_SLIPPAGE_BPS, explainError, isAuroraTestnet, minimumOut, nextTradeStep, redeemState, stepStates, windowFor, walletAvailability, type NextStep } from "@/lib/wallet/flow.mjs";
-import "./wallet.css";
 
 const usdc = (v: bigint | null | undefined) => (typeof v === "bigint" ? formatUnits(v.toString(), STABLE_DECIMALS) ?? "unavailable" : "unavailable");
 const outcome = (v: bigint | null | undefined) => (typeof v === "bigint" ? formatUnits(v.toString(), OUTCOME_DECIMALS, { maxFraction: 4 }) ?? "unavailable" : "unavailable");

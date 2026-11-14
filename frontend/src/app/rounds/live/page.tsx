@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { AppShell } from "@/components/AppShell";
 import { AiProvenance } from "@/components/arena/AiProvenance";
 import { AgentAvatar, ResultPanel, SignalBoard, StrategyCard, SwapVisual, type StrategyView } from "@/components/arena/parts";
@@ -15,37 +15,13 @@ import { formatUnits } from "@/lib/funding/model.mjs";
 import type { DemoState } from "@/lib/state";
 import type { TestnetRound } from "@/lib/record/model.mjs";
 import { savedRoundForLive } from "@/lib/record/provenance.mjs";
-import "../round.css";
-import "./live.css";
 import { WalletForecast } from "./wallet";
+import { MetricStrip, Stepper, type Dot } from "@/components/arena/workspace";
 
 const usdc = (raw: string | null | undefined) => formatUnits(raw, 6) ?? "unavailable";
 const eth = (raw: string | null | undefined) => formatUnits(raw, 18, { maxFraction: 6 }) ?? "unavailable";
 const NOT_YET = "Not reached yet.";
 const hhmmss = (ms: number) => new Date(ms).toLocaleTimeString("en-GB", { hour12: false });
-
-type Dot = "done" | "current" | "upcoming" | "halted";
-
-function Tabs({ view, selected, onSelect }: { view: LiveRound; selected: StageId; onSelect: (id: StageId) => void }) {
-  const refs = useRef<Array<HTMLButtonElement | null>>([]);
-  function onKey(event: KeyboardEvent<HTMLButtonElement>, index: number) {
-    const last = view.stages.length - 1;
-    const next = event.key === "ArrowRight" ? Math.min(last, index + 1) : event.key === "ArrowLeft" ? Math.max(0, index - 1) : event.key === "Home" ? 0 : event.key === "End" ? last : null;
-    if (next === null) return;
-    event.preventDefault(); onSelect(view.stages[next].id); refs.current[next]?.focus();
-  }
-  return <div className="rw-tabs-wrap"><div className="rw-tabs" role="tablist" aria-label="Round stages">
-    {view.stages.map((stage, index) => {
-      const on = stage.id === selected; const dot = stage.status as Dot;
-      return <button key={stage.id} ref={(node) => { refs.current[index] = node; }} type="button" role="tab" id={`lv-tab-${stage.id}`} aria-selected={on} aria-controls="lv-panel" tabIndex={on ? 0 : -1}
-        className="rw-tab" onClick={() => onSelect(stage.id)} onKeyDown={(event) => onKey(event, index)}>
-        <span className={`rw-dot ${dot}`} aria-hidden="true">{dot === "done" ? <Icon name="check" /> : null}</span>
-        <span>{stage.label}</span>
-        <span className="sr-only">{`, ${dot === "done" ? "done" : dot === "current" ? "in progress" : dot === "halted" ? "halted" : "not reached"}`}</span>
-      </button>;
-    })}
-  </div></div>;
-}
 
 function Fact({ label, value, unit, tip }: { label: string; value: ReactNode; unit?: string; tip?: ReactNode }) {
   return <div className="rw-fact"><span>{label}{tip ? <> <Tip label={`About ${label.toLowerCase()}`}>{tip}</Tip></> : null}</span><b className="num">{value}</b>{unit ? <small>{unit}</small> : null}</div>;
@@ -165,12 +141,12 @@ export default function LiveRoundPage() {
     {view.note ? <div className="page-notice lv-note"><Notice tone="info" title="Price data unavailable"><p>{view.note} Values that depend on prices are not shown.</p></Notice></div> : null}
     <PageHead eyebrow="Aurora testnet · live monitor" title={<>Round {view.roundId} · Testnet Safe v2<span className={`lv-live ${view.live ? "" : "is-over"}`}>{view.live ? <i className="pulse-dot" aria-hidden="true" /> : null}{view.live ? "LIVE" : view.settled ? "SETTLED" : "CANCELLED"}</span></>}
       line={<span className="rw-caps"><Cap tone={view.settled ? "ok" : view.cancelled ? "bad" : "warn"}>{view.phase}</Cap><Cap>Test assets</Cap></span>} />
-    <div className="rw-metrics">
-      <div className="rw-metric"><b className="num">{headline}</b><span>{view.countdown && view.countdown.seconds ? `${view.countdown.target.toLowerCase()} · approx.` : "status"}</span></div>
-      <div className="rw-metric"><b className="num">{winnerName ?? "—"}</b><span>{winnerName ? "selected" : "not selected yet"}</span></div>
-      <div className="rw-metric"><b className="num">{view.settled ? shortReturnX18(view.realisedReturnX18) ?? "—" : "—"}</b><span>{view.settled ? "measured" : "not measured yet"}</span></div>
-    </div>
-    <Tabs view={view} selected={selected} onSelect={setPicked} />
+    <MetricStrip metrics={[
+      { label: view.countdown && view.countdown.seconds ? `${view.countdown.target} · approx.` : "Status", value: headline },
+      { label: "Selected", value: winnerName ?? "Not yet", avatar: winnerName ? { name: winnerName, hold: winnerName === "Hold" } : undefined, sub: winnerName ? undefined : "after trading closes" },
+      { label: "Measured return", value: view.settled ? shortReturnX18(view.realisedReturnX18) ?? "—" : "Not measured", sub: view.settled ? "test assets" : "recorded at settlement" },
+    ]} />
+    <Stepper idBase="lv" items={view.stages.map((stage) => ({ id: stage.id, label: stage.label, status: stage.status as Dot }))} selected={selected} onSelect={(id) => setPicked(id as StageId)} />
     <section className="card rw-panel" role="tabpanel" id="lv-panel" aria-labelledby={`lv-tab-${selected}`} tabIndex={-1}>
       <header className="rw-panel-head"><h2>{info.label}</h2>
         {info.status === "done" ? <Cap tone="ok" icon="check">Recorded</Cap> : info.status === "current" ? <Cap tone="warn" icon="clock">In progress</Cap> : info.status === "halted" ? <Cap tone="bad" icon="alert">Halted</Cap> : <Cap>Not reached</Cap>}</header>

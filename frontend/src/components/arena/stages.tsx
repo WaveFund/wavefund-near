@@ -261,11 +261,13 @@ export function RedeemedStage({ ctx }: { ctx: StageCtx }) {
   return <RedemptionTable rows={participants.map((item) => ({ name: item.name, deposit: item.deposit, payout: item.payout, profitLoss: item.profitLoss }))} />;
 }
 
+const RECAP_ICON: Record<StageId, "safe" | "spark" | "users" | "trophy" | "bolt" | "pulse" | "refund"> = { funded: "safe", proposals: "spark", forecasting: "users", selected: "trophy", executed: "bolt", evaluated: "pulse", redeemed: "refund" };
+
 /** Compact recap for a finished round. Each step opens its stage; Replay journey walks them from Funded. */
 export function ResultStage({ ctx, onReplay, onPick }: { ctx: StageCtx; onReplay: () => void; onPick: (stage: StageId) => void }) {
   const stages = ctx.journey.stages;
   const redeemed = ctx.saved ? (ctx.saved.round.totals.paid ? `${usdc(ctx.saved.round.totals.paid)} test USDC` : stages[6].summary) : stages[6].summary;
-  const cells: Array<{ id: StageId; label: string; value: string | null; sub?: string }> = [
+  const cells: Array<{ id: StageId; label: string; value: string | null }> = [
     { id: "funded", label: "Funded", value: stages[0].summary },
     { id: "selected", label: "Selected", value: stages[3].summary },
     { id: "executed", label: "Executed", value: stages[4].summary },
@@ -275,13 +277,18 @@ export function ResultStage({ ctx, onReplay, onPick }: { ctx: StageCtx; onReplay
   const round = ctx.saved?.round ?? null;
   return <div className="rw-stack">
     <ol className="rw-recap" aria-label="Round recap">
-      {cells.map((cell) => <li key={cell.id}><button type="button" onClick={() => onPick(cell.id)}><span className="eyebrow">{cell.label}</span><b className="num">{cell.value ?? "—"}</b></button></li>)}
+      {cells.map((cell) => <li key={cell.id}><button type="button" onClick={() => onPick(cell.id)}>
+        <span className="rw-recap-ico" aria-hidden="true"><Icon name={RECAP_ICON[cell.id]} /></span>
+        <span className="rw-recap-text"><span>{cell.label}</span><b className="num">{cell.value ?? "—"}</b></span>
+        <Icon name="chevron" className="rw-recap-go" />
+      </button></li>)}
     </ol>
-    <div className="rw-row">
+    {ctx.signals ? <div className="rw-stack"><h3 className="rw-h3">How the market decided</h3><SignalBoard signals={ctx.signals} strategies={ctx.strategies} /></div> : null}
+    <div className="rw-row between rw-result-foot">
       {round ? (round.reputation
-        ? <span><span className="eyebrow">This round&apos;s outcome point</span> <b className="num">{formatPoints(round.reputation.score)}</b> <span className="muted">{round.winner.name}</span> <Link className="link" href={`/agents?stack=${round.stack.id}`}>Agent records<Icon name="arrow" /></Link></span>
+        ? <span className="rw-rep"><span className="muted">Outcome point</span> <b className={`num ${signTone(formatPoints(round.reputation.score))}`}>{formatPoints(round.reputation.score)}</b> <span className="muted">for {round.winner.name}</span> <Link className="link" href={`/agents?stack=${round.stack.id}`}>Agent records<Icon name="arrow" /></Link></span>
         : <span className="muted">No outcome point this round{ctx.isHold ? " (Hold is not scored)" : ""}.</span>) : <span />}
-      <button type="button" className="btn btn-primary" onClick={onReplay}><Icon name="play" />Replay journey</button>
+      <button type="button" className="btn btn-primary" onClick={onReplay}><Icon name="play" />Replay step by step</button>
     </div>
   </div>;
 }

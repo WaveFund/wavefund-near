@@ -1,11 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { AppShell } from "@/components/AppShell";
-import { AgentAvatar, Chip } from "@/components/arena/parts";
+import { AgentAvatar, Chip, agentVar } from "@/components/arena/parts";
 import { AiProvenance } from "@/components/arena/AiProvenance";
-import { Address, useNow } from "@/components/funding/primitives";
+import { Address, Icon, useNow } from "@/components/funding/primitives";
 import { EmptyState, SegmentedControl, Skeleton } from "@/components/ui";
 import { Drawer, PageHead, Tip } from "@/components/v2";
 import { useSavedRounds } from "@/lib/arena/hooks";
@@ -14,7 +14,6 @@ import { AURORA_TESTNET, formatAge } from "@/lib/funding/model.mjs";
 import { agentProposals, attributableRounds, rankAgents, type AgentProposal, type AgentRow } from "@/lib/record/agents-view.mjs";
 import { formatPoints, formatReturnX18, snapshotStale, type ReputationBoard } from "@/lib/record/model.mjs";
 import { RecordUnavailable, loadReputation, type ReputationStackId } from "@/lib/record/loader";
-import "./agents.css";
 
 const STACKS: Array<{ id: ReputationStackId; label: string }> = [{ id: "tidepool", label: "Testnet Safe v2" }, { id: "original", label: "Testnet Safe v1" }];
 type BoardState = { board: ReputationBoard | null; receivedAt: number | null; error: unknown };
@@ -107,30 +106,42 @@ export default function AgentsPage() {
   const attributable = row && rounds ? attributableRounds(rounds, stack, row.name) : null;
 
   return <AppShell source={{ label: "Aurora testnet", tone: "testnet", detail: current.board ? (stale ? "stale read" : "read once") : "reading", status: current.board ? (stale ? "warn" : "ok") : current.error ? "off" : "pending" }}>
-    <PageHead ai eyebrow="Proposer agents · outcome reputation" title="Agents" line="A proposer earns a point only when its strategy is selected, executed and settled." />
+    <PageHead ai eyebrow="Proposer agents · on-chain outcome reputation" title="Agents" line="Four AI proposers compete round after round. An agent earns or loses a point only when its strategy is selected, executed and settled." />
 
-    <div className="ag-bar">
+    <div className="list-toolbar">
       <SegmentedControl label="Reputation contract" value={stack} onChange={choose} options={STACKS.map((item) => ({ id: item.id, label: item.label }))} />
-      <span className="ag-tools"><Tip label="How outcome points work"><Rules /></Tip>
-        <button type="button" className="btn btn-sm" onClick={() => void load()} disabled={refreshing} aria-busy={refreshing}>{refreshing ? "Refreshing…" : "Refresh"}</button></span>
+      <button type="button" className="btn btn-sm" onClick={() => void load()} disabled={refreshing} aria-busy={refreshing}>{refreshing ? <span className="spinner" aria-hidden="true" /> : <Icon name="refund" />}{refreshing ? "Reading…" : "Re-read chain"}</button>
     </div>
 
-    {!current.board && current.error ? <EmptyState icon="alert" title="Reputation unavailable">{problem(current.error)} Nothing is shown as zero while reputation cannot be read. <Tip label="For developers">Start the Wavefund API or run bash scripts/docker-demo/up.sh.</Tip></EmptyState>
-      : <div className="card ag-card"><div className="table-wrap"><table className="table ag-table">
-        <caption className="sr-only" style={{ position: "absolute", left: -9999 }}>Proposer agents on the {info.label}, ranked by cumulative outcome score</caption>
-        <thead><tr><th>Agent · latest model</th><th className="r">Outcome score</th><th className="r">Scored rounds</th><th className="r">+ / − / flat</th></tr></thead>
-        <tbody>{!current.board ? [0, 1, 2, 3].map((i) => <tr key={i}><td><Skeleton width={110} height={20} /></td><td><Skeleton width={30} /></td><td><Skeleton width={30} /></td><td><Skeleton width={60} /></td></tr>)
-          : rows.map((item) => {
-            const points = item.score !== null ? formatPoints(item.score) : null;
-            return <tr key={item.name} onClick={() => setSelected(item.name)}>
-              <td><span className="aiprov-stack"><button type="button" className="ag-name" onClick={(event) => { event.stopPropagation(); setSelected(item.name); }}><AgentAvatar name={item.name} size="sm" />{item.name}</button>
-                {(() => { const latest = rounds ? agentProposals(rounds, stack, item.name)[0] : null; return latest ? <span className="ag-latest"><span className="sr-only">Latest saved proposal, round {latest.roundId}: </span><AiProvenance round={latest.round} agent={latest.proposal} role="proposer" /></span> : null; })()}</span></td>
-              {item.available ? <>
-                <td className={`r num ${tone(points)}`}>{points}</td><td className="r num">{item.samples}</td>
-                <td className="r"><span className="ag-split num"><span className="ag-pos">+{item.positive}</span><span className="ag-neg">−{item.negative}</span><span style={{ color: "var(--muted)" }}>{item.flat}</span></span></td></>
-                : <td className="r ag-na" colSpan={3}>unavailable</td>}
-            </tr>;
-          })}</tbody></table></div></div>}
+    {!current.board && current.error ? <div className="card"><EmptyState icon="alert" title="Reputation unavailable">{problem(current.error)} Nothing is shown as zero while reputation cannot be read. <Tip label="For developers">Start the Wavefund API or run bash scripts/docker-demo/up.sh.</Tip></EmptyState></div>
+      : <div className="ag-layout">
+        <ol className="ag-board" aria-label={`Proposer agents on the ${info.label}, ranked by cumulative outcome score`}>
+          {!current.board ? [0, 1, 2, 3].map((i) => <li key={i} className="card ag-agent"><Skeleton height={40} width={160} /><Skeleton height={34} width={70} /><Skeleton height={8} /></li>)
+            : rows.map((item, index) => {
+              const points = item.score !== null ? formatPoints(item.score) : null;
+              const latest = rounds ? agentProposals(rounds, stack, item.name)[0] : null;
+              const total = item.available ? Number(item.positive ?? 0) + Number(item.negative ?? 0) + Number(item.flat ?? 0) : 0;
+              const share = (value: string | null) => (total ? `${(Number(value ?? 0) / total) * 100}%` : "0%");
+              return <li key={item.name} className="card ag-agent" style={{ "--c": `var(${agentVar(item.name)})` } as CSSProperties}>
+                <button type="button" className="ag-hit" onClick={() => setSelected(item.name)} aria-label={`${item.name}: open record`} />
+                <div className="ag-top">
+                  <span className="ag-rank num">#{index + 1}</span>
+                  <AgentAvatar name={item.name} size="lg" />
+                  <div className="ag-id"><b>{item.name}</b>{latest ? <span className="num">Last proposed {percentFromBps(latest.proposal.allocationBps) ?? "—"} ETH · round {latest.roundId}</span> : <span>No saved proposal on this Safe</span>}</div>
+                  {item.available ? <span className={`ag-score num ${tone(points)}`}>{points}<small>points</small></span> : <span className="ag-score ag-na">unavailable</span>}
+                </div>
+                {item.available ? <div className="ag-record">
+                  <div className="ag-bar-track" role="img" aria-label={`${item.positive} positive, ${item.negative} negative, ${item.flat} flat of ${item.samples} scored rounds`}>
+                    <i className="up" style={{ width: share(item.positive) }} /><i className="down" style={{ width: share(item.negative) }} /><i className="flat" style={{ width: share(item.flat) }} />
+                  </div>
+                  <div className="ag-record-legend num"><span><i className="up" />{item.positive} up</span><span><i className="down" />{item.negative} down</span><span><i className="flat" />{item.flat} flat</span><span className="ag-samples">{item.samples} scored {item.samples === "1" ? "round" : "rounds"}</span></div>
+                </div> : <p className="ag-na">Reputation could not be read for this agent{item.code ? ` (${item.code})` : ""}.</p>}
+                {latest ? <div className="ag-latest"><span className="sr-only">Latest saved proposal, round {latest.roundId}: </span><AiProvenance round={latest.round} agent={latest.proposal} role="proposer" /></div> : null}
+              </li>;
+            })}
+        </ol>
+        <aside className="card ag-rules-card"><h2><Icon name="book" />How points work</h2><Rules /><p className="muted">Click an agent to see the rounds behind its score and the model behind each proposal.</p></aside>
+      </div>}
 
     {current.board ? <div className="ag-meta">
       <span>{info.label}</span>

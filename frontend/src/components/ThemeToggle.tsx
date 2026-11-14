@@ -10,7 +10,11 @@ type Theme = "light" | "dark";
 export function ThemeToggle() {
   const [theme, setTheme] = useState<Theme | null>(null);
   useEffect(() => {
-    setTheme(document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark");
+    const read = () => setTheme(document.documentElement.getAttribute("data-theme") === "light" ? "light" : "dark");
+    read();
+    // The command palette can switch the theme too; every toggle follows it.
+    window.addEventListener("wavefund-theme", read);
+    return () => window.removeEventListener("wavefund-theme", read);
   }, []);
   function toggle() {
     const next: Theme = theme === "light" ? "dark" : "light";
@@ -18,6 +22,7 @@ export function ThemeToggle() {
     // A remembered choice is a per-browser convenience; the page works the same if storage is unavailable.
     try { window.localStorage.setItem(THEME_KEY, next); } catch { /* storage blocked */ }
     setTheme(next);
+    window.dispatchEvent(new Event("wavefund-theme"));
   }
   const label = theme === "light" ? "Switch to dark theme" : "Switch to light theme";
   return <button type="button" className="theme-toggle" onClick={toggle} aria-label={label} title={label}>

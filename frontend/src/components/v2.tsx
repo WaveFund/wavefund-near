@@ -10,7 +10,11 @@ export function Cap({ tone, icon, children, title }: { tone?: "ok" | "ai" | "war
 
 /** A small "i" that reveals a definition on hover or keyboard focus. */
 export function Tip({ label, children }: { label: string; children: ReactNode }) {
-  return <span className="tip"><button type="button" aria-label={label}>i</button><span role="tooltip">{children}</span></span>;
+  const ref = useRef<HTMLSpanElement>(null);
+  const [edge, setEdge] = useState<"" | "edge-left" | "edge-right">("");
+  // Keeps the bubble on screen: near a viewport edge it aligns to that edge instead of centring.
+  const place = () => { const box = ref.current?.getBoundingClientRect(); if (!box) return; setEdge(box.left < 150 ? "edge-left" : window.innerWidth - box.right < 150 ? "edge-right" : ""); };
+  return <span ref={ref} className={`tip ${edge}`} onMouseEnter={place} onFocus={place}><button type="button" aria-label={label}>i</button><span role="tooltip">{children}</span></span>;
 }
 
 /** Eyebrow, one H1, at most one supporting line, optional actions on the right. */

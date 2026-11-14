@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { useEffect, useState, type ReactNode } from "react";
-import "./portfolio.css";
 import { AppShell } from "@/components/AppShell";
 import { Address, CopyText, Icon } from "@/components/funding/primitives";
 import { TidepoolEvidence, TidepoolFundingSteps } from "@/components/tidepool/TidepoolParts";
 import { Cap, DrawerButton, PageHead, Tip } from "@/components/v2";
-import { Skeleton, TabPanel, Tabs } from "@/components/ui";
+import { SegmentedControl, Skeleton, TabPanel, Tabs } from "@/components/ui";
 import { useLocalState, useSavedRounds, useTidepoolDemo } from "@/lib/arena/hooks";
 import { backendKind } from "@/lib/arena/capabilities.mjs";
 import { localJourney, percentFromBps, shortReturnX18 } from "@/lib/arena/model.mjs";
@@ -77,7 +76,7 @@ export default function PortfolioPage() {
       : holdings.status === "not-in-evidence" ? <p className="pf-empty">Balances for this Safe are not part of the saved evidence.</p>
       : holdings.status === "unavailable" ? <p className="pf-empty">The local simulation is not running, so no balances are shown.</p>
       : <>
-        <div className="pf-holdings">{holdings.rows.map((item) => <div key={item.symbol} className="pf-holding"><span>{item.symbol}</span>{item.text ? <b className="num">{item.text}</b> : <b className="pf-na">unavailable</b>}</div>)}</div>
+        <div className="pf-holdings">{holdings.rows.map((item) => <div key={item.symbol} className="pf-holding"><span><i className={`tok ${/eth/i.test(item.symbol) ? "eth" : "usdc"}`} aria-hidden="true">{/eth/i.test(item.symbol) ? "Ξ" : "$"}</i>{item.symbol}</span>{item.text ? <b className="num">{item.text}</b> : <b className="pf-na">unavailable</b>}</div>)}</div>
         {holdings.value ? <p className="pf-value">{holdings.value.text === "Value unavailable" ? <Cap>Value unavailable</Cap> : <><b className="num">{holdings.value.text}</b></>}{holdings.value.note ? <span>{holdings.value.note}</span> : null}</p> : null}
       </>}
     <p className="pf-note">Manager capital and forecasting collateral are separate<Tip label="About manager capital">Manager investment capital is separate from forecasting collateral; market seed backs the forecasting system.</Tip></p>
@@ -161,14 +160,10 @@ export default function PortfolioPage() {
   </section>;
 
   return <AppShell source={source}>
-    <PageHead eyebrow="Demo portfolio · Aurora testnet" title="Demo portfolio" line="You control the Safe. Selected strategies execute within its approved limits." />
+    <PageHead eyebrow="Manager view · Aurora testnet" title="Portfolio" line="You keep custody of the Safe. Only the selected strategy can trade it, and only within the limits you approved." />
 
     <div className="pf-controls">
-      <label className="pf-select">Safe
-        <select value={safe} onChange={(event) => chooseSafe(event.target.value as SafeId)} aria-label="Safe">
-          {safeOptions({ localAllowed }).map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
-        </select>
-      </label>
+      <SegmentedControl label="Safe" value={safe} onChange={chooseSafe} options={safeOptions({ localAllowed }).map((item) => ({ id: item.id as SafeId, label: item.label }))} />
       <span className="pf-addr">{address ? (safe === "local" ? <CopyText value={address} label="Safe address" /> : <Address value={address} chainId={AURORA_TESTNET} label="Safe address" live />) : <span className="unavailable">address unavailable</span>}</span>
       <span className="pf-connect"><Cap icon="lock">Connect Safe · Not available</Cap><Tip label="About connecting a Safe">Connecting a Safe is not available yet. These are configured demo Safes.</Tip></span>
     </div>

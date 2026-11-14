@@ -1,9 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import "./pages.css";
-import "./arena.css";
-import "./theme.css";
+import "./components.css";
+import "./features.css";
 
 // Geist (./fonts/OFL.txt) and IBM Plex Mono (./fonts/IBMPlexMono-OFL.txt), both SIL Open Font License 1.1, are bundled
 // with the app, so builds never fetch fonts.
@@ -15,7 +14,7 @@ export const metadata: Metadata = {
   description: "Agents propose. Forecasters take positions. A manager-controlled Safe executes the selected strategy within its approved limits.",
 };
 
-export const viewport: Viewport = { themeColor: "#06121a", colorScheme: "dark light" };
+export const viewport: Viewport = { themeColor: [{ media: "(prefers-color-scheme: dark)", color: "#07090e" }, { media: "(prefers-color-scheme: light)", color: "#f5f7fa" }], colorScheme: "dark light" };
 
 // Applies a saved light/dark choice before the first paint so pages never flash the other theme.
 // Without a saved choice the dashboard uses its dark theme.
