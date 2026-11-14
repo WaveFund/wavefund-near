@@ -5,6 +5,7 @@ import { useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { ROUND_STEPS } from "@/lib/guides.mjs";
 import { Drawer } from "@/components/v2";
+import { Icon, type IconName } from "@/components/funding/primitives";
 import { Skeleton } from "@/components/ui";
 import { useSavedRounds } from "@/lib/arena/hooks";
 import { percentFromBps } from "@/lib/arena/model.mjs";
@@ -48,9 +49,9 @@ export default function HomePage() {
   const href = round ? `/rounds/${round.slug}` : "/rounds";
   const stages = ["funded", "proposals", "forecasting", "selected", "executed", "evaluated"];
   const roles = [
-    { id: "manager", title: "Manager", icon: "▣", line: "Compare competing strategies for your Safe.", action: "Explore the Safe" },
-    { id: "forecaster", title: "Forecaster", icon: "↗", line: "Back or doubt a strategy with LONG or SHORT positions.", action: "Explore forecasting" },
-    { id: "observer", title: "Just looking", icon: "◎", line: "Follow a completed round from proposal to payout.", action: "Watch the journey" },
+    { id: "manager", title: "Manager", icon: "safe", line: "Compare competing strategies for your Safe.", action: "Explore the Safe" },
+    { id: "forecaster", title: "Forecaster", icon: "chart", line: "Back or doubt a strategy with LONG or SHORT positions.", action: "Explore forecasting" },
+    { id: "observer", title: "Just looking", icon: "eye", line: "Follow a completed round from proposal to payout.", action: "Watch the journey" },
   ];
   return <AppShell home source={{ label: "Aurora testnet", tone: "testnet", detail: "product & saved history" }}>
     <section className="wl-hero wl-product-hero" aria-labelledby="wl-title">
@@ -62,12 +63,12 @@ export default function HomePage() {
       </div>
       <aside className="card wl-decision" aria-label="Product decision flow">
         <p className="wl-ai-kicker">Many perspectives. One decision.</p>
-        <div className="wl-decision-flow"><div><span className="wl-decision-icon">▣</span><b>Your Safe</b><small>Investment capital</small></div><span className="wl-arrow" aria-hidden="true">→</span><div><span className="wl-decision-icon ai">◇</span><b>Strategy arena</b><small>Proposals + forecasting</small></div><span className="wl-arrow" aria-hidden="true">→</span><div><span className="wl-decision-icon">✓</span><b>Selected allocation</b><small>Execution within limits</small></div></div>
+        <div className="wl-decision-flow"><div><span className="wl-decision-icon"><Icon name="safe" /></span><b>Your Safe</b><small>Investment capital</small></div><span className="wl-arrow" aria-hidden="true">→</span><div><span className="wl-decision-icon ai"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m6 6 6 6 6-6M12 12v7M6 6h12" /><circle cx="6" cy="6" r="2.5" fill="var(--surface)" /><circle cx="18" cy="6" r="2.5" fill="var(--surface)" /><circle cx="12" cy="19" r="2.5" fill="var(--surface)" /><circle cx="12" cy="12" r="2.5" fill="var(--surface)" /></svg></span><b>Strategy arena</b><small>Proposals + forecasting</small></div><span className="wl-arrow" aria-hidden="true">→</span><div><span className="wl-decision-icon"><Icon name="chart" /></span><b>Selected allocation</b><small>Execution within limits</small></div></div>
       </aside>
     </section>
 
     <section className="onboarding-roles wl-product-roles" aria-label="Choose your path">{roles.map(role => <Link className="card wl-role" key={role.id} href={`/start/${role.id}`}>
-      <div className="wl-section-head"><h2>{role.title}</h2><span className="wl-product-role-icon" aria-hidden="true">{role.icon}</span></div>
+      <div className="wl-section-head"><h2>{role.title}</h2><span className="wl-product-role-icon" aria-hidden="true"><Icon name={role.icon as IconName} /></span></div>
       <p>{role.line}</p><span className="wl-steps">{role.action} →</span>
     </Link>)}</section>
 
