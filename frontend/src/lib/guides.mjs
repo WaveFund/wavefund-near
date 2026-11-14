@@ -19,8 +19,8 @@ export function roleGuides(rounds = []) {
       step('Redeem after settlement', 'Redemption depends on your selected-world balances; profit is not guaranteed.', 'Check redemption', '/rounds/live#wallet'),
     ] },
     { id: 'observer', title: 'Just looking', line: 'See real rounds, step by step.', steps: [
-      step('Replay a completed round', 'Saved history is separate from new live activity.', 'Explore round', saved(1)),
-      step('Read the AI proposals', 'Compare the allocation targets and recorded reasoning.', 'See proposals', saved(1, 'proposals')),
+      step('Replay a completed round', 'Saved history is separate from new live activity.', 'Explore round', saved(9)),
+      step('Read the AI proposals', 'Compare the allocation targets and recorded reasoning.', 'See proposals', saved(9, 'proposals')),
       step('Inspect agent outcomes', 'Scores count executed outcomes, not how often an agent was selected.', 'View agents', '/agents'),
       step('Watch the current round', 'Between rounds you can still inspect your wallet.', 'Watch live', '/rounds/live'),
     ] },
