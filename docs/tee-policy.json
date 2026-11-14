@@ -19,7 +19,8 @@
   "observedAt": "2026-11-13T15:34:30Z",
   "note": "Measurements pinned from NEAR AI's live attestation on 2026-11-13; not independently reproduced. Covers the five swarm2 proposer models (see models; modelMeasurements is their union and the report's model_name is checked separately). All share one mrTd; the Qwen models share one mrConfigId, GLM and DeepSeek each have their own, and DeepSeek was observed on two compose hashes (19 of 20 samples 01448683..., 1 of 20 01c53e25...), both pinned. Each entry is mrTd:mrConfigId. The mrTd half was recomputed from public dstack v0.5.12 firmware; the mrConfigId half (NEAR AI's app-compose hash) has no published reference and is pinned as observed. nrasKeys must be refreshed from NVIDIA's JWKS before a live round (NVIDIA rotates keys frequently).",
   "gatewayMeasurements": [
-    "7fe60787222bd394cb516abca2435f22f035ab2cc9c0a4b4b3b148e46297f3d931a237b72f359052c6e657d8c1409173:01b73eed6abc60fbe5eb0ce2bbaacf3bd9b83c9c84f3e6a5b1a091cb679bdbe66f000000000000000000000000000000"
+    "7fe60787222bd394cb516abca2435f22f035ab2cc9c0a4b4b3b148e46297f3d931a237b72f359052c6e657d8c1409173:01b73eed6abc60fbe5eb0ce2bbaacf3bd9b83c9c84f3e6a5b1a091cb679bdbe66f000000000000000000000000000000",
+    "7fe60787222bd394cb516abca2435f22f035ab2cc9c0a4b4b3b148e46297f3d931a237b72f359052c6e657d8c1409173:012643bc7ae47ecf4cf84509a647d2c2cc3bcacad95a87b8a73d543e6c48ad3b22000000000000000000000000000000"
   ],
   "modelMeasurements": [
     "df4d77c857de652bd0fafa343a2026b51071ee03773d076d283abf1a7d36ff91ffa279ee4a617ac664f7e2a2c8d5891b:01e8416a02d6f7ce47baaa52e3925b934fd30834b04fc9086b363db9b1d12c729d000000000000000000000000000000",
@@ -1544,6 +1545,398 @@
       "kid": "nv-eat-kid-prod-20261113150715760-acda3785-ab12-46b9-a8b0-7fe32c6e992d",
       "x": "ohz4nFJXi_90Jk9MDElztuBjTl0G0ywdUWf9i2HC3pbhg7ZhdY2CGQ_ZOhhF6H4s",
       "y": "4YLX-j9lepgHlDtOI4kqjmk3gvZB1AvH039gBoJ9PujPpMmjOsgj9lTUjSLeygAk"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114010732007-d6460ed1-61ab-4187-a6a4-99c144d36373",
+      "x": "QdfoUVjGQjkr2JvbCSS5hWcNlsj3STTJL8XIXR7REq4d4s4gbH6olqwkzIuxYDjf",
+      "y": "HoteensbNmRCeAmVzipe-4YDCLUZTJIswJ31tDAvbpX0sbSa82M8-ZznbRQj46pk"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114011420943-70974bae-255b-43c2-8595-abb9274d72e8",
+      "x": "DC6w95fafIZtMyrprjFwF7k3VRyY6OtjtSXa_LkxOpUIqRsEexz8yikuBve_LK1D",
+      "y": "1ZoWDx85wkTj9wQdEGzq5M-3_Sx8FoN6o0PT7gL8_nGpmREjd4ZYGSYRY0UqQbsN"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113222931310-1d16c634-5182-41b0-9132-86cc2cb9171d",
+      "x": "SlRQOg0HARo5p4KDVnJ5dpQs4MgHCsBAPp8Kj-36pbBcASW-7Zx3SRaSkHGU13-f",
+      "y": "MTSGXgMdmEoOmBHD9enfK3Rd-XMmvMi12GEi4gGmsnoVTYN8U01zAGhN6nnes7g0"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114004833432-1171c7b9-0331-40e1-97b8-4919b15e62da",
+      "x": "pGRuJw56kjSWEblv2gFkuPI5FeqnI0Fw-LmnBz61pLobgiPBzowfC1mJ5J-Kv8_X",
+      "y": "EXHNtstGXEC_-D7KBo_QJT-lyxEqytMhbDMKaBcOeiA_NLIkddISQumJnHAqcehD"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114011308369-15db769a-2303-4196-a672-f82f53394b2a",
+      "x": "lh7NQethVVWaTtW3SlzsTPYoTncNR927JSQba1-TtqAYsNvYgrqLzxa7p1lWqud3",
+      "y": "xTt1SVS0g4KO0JGHDn5sNgOzTw4VjmXLA-lp7Nnz-LhazJneqqjjtPdF5POyi4Cj"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114003931728-8cfd5109-7af0-4dad-a2ff-66a1a49c881c",
+      "x": "ZAphiAYavLbdlDfq_nWip2liqfvGHLlAeYc0XUX_3OGI3Hn84NvX9WcsdMZj11_E",
+      "y": "bhp1N9Ql4G6lLw_fzKoDZVm3ylamWKqY0xK1WlPWKQVBw-zzBcpu8z3OmAXHGm0M"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113222833047-3215db0c-c263-4594-8f46-831cecc57bdd",
+      "x": "bfjgDLR2r2_XoWzHC1jJENEQ4GVbzy7zctv_UJtFI72wTLE1911gZaw6UdJ4smzG",
+      "y": "ekY_2YubDjOgTZ8iBXjY7m2ItyhaFEMqqJLi0mSy0oTzerEHkUruJ3-QuaW3pvK1"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113221901436-a3d2d960-d85c-4991-a810-b9d53ecea4ff",
+      "x": "AC4doF75zg5XughfkogVMXbWcTBQTt9gKQC32zIrC9zor70hV5BcFIx5HEvSyzNf",
+      "y": "PnwWv_cDEBFfBcLwBsZYlvXBNqEtfym7FGEqhqBG7xccz4HN0EXmnoiu083KlK_-"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114004923304-1752a343-d2e5-4577-8c42-72f4180012d2",
+      "x": "FVXfIjzOhaQrQyBQyctzT-uyfBkfKUaLt893tIiO7tTb7gpcfvaE2BXDs7VoqYwl",
+      "y": "vMmu2LVjMWeUqhVmH9nF2XY2YXkeyxLSKQ1S3DzK6ET3hqbVA-5rTue0H_iqWzKz"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114004809016-c09e3629-f06e-4873-a712-921e1009ba97",
+      "x": "gnqXiQ-c7P_chJm9Uek7LoMyzF3NncZE9IsHs9jleugKUwRlpy1nt56N7nLql7vJ",
+      "y": "1g_3hykwzPZi2cs9MP2GsMudSTJU8UmESVgG5tyTn8BIlKzHYQ_LLPd68NqlRpVx"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113223709438-fe9c161b-c2fb-4792-a5ee-9f523f8f0e04",
+      "x": "AbAQM9YPF0jPvhjQeF8zywLSIzbGtTrF1cH1-15tcS9IErjKVtjOLdtdYxJv_Mf7",
+      "y": "Sskdmg02kOPOry_v-sxf8DO3z3VTiXOKRH7-DhaXX5ZcGVcjucZQjd87kjRn5sxh"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114010750739-dbbc909c-708a-4cc5-8fbd-cb3a1bae8080",
+      "x": "dWwea9QTDtxxkvqF2lZ0iEHE6eYjmA91RporzeUHZTe5yqYBfssgd3MgogY4IOHp",
+      "y": "GpYVdeeZGEu3q5FN7FzAvy2JqfdWToqqalmNWsNLf9NLkwB9Bic2EGSn3rvyQpeP"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113223016434-19d28e2d-8e5e-47c0-aadb-b5de3088eea0",
+      "x": "mvSUwZWmbbneRFs2OYhGvlMEYZc7sMz2vvfdaA7Zo8Dsjl0UWLqvjCjHzcr6cSF7",
+      "y": "lE3DaLPQKFoiS2Emvwo6i3Afetu7i6diJh-SDxHLcUrccCff4NmYIiDXpmCeQbyQ"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114004016847-9c6e06a2-1800-4fc7-9235-b1f762e8931d",
+      "x": "HGT2T2Q_g6B5n0LTNPUSZKyJjb2JlK3Cl25shOsbOBs5GAplYO5mA02cE4pD_xp6",
+      "y": "R24hMUSNig88NXWgl-xMXjjcOCNhc9fYCnfuDbxFRoq9ChWAf-vKZOfsVuBCuSMO"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113220802586-4f128d41-97dc-4aa8-ab16-754d486b74b7",
+      "x": "FvcLffgfy_2OMFa8fw0Se0x9bqIgxFfGFePmEYa-gZmgS2fHnW5jJU-3Sv2ze9BC",
+      "y": "plA9Chi-BHdEjjHmMz5YWIn-SVXSMirHKZ-edVa4-tk6bvoqeWj-40tktEKL_UWm"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114011340067-c393bf2c-5897-4d59-bf0d-078e47f0808c",
+      "x": "bbwx5h22-bx0p-ceeMzdkWVUwDWdgV-aZmajSXVyoNFpE-m_jdbv0Wa7y2u8aMsy",
+      "y": "VXUML-1PoO5t3Y-vFbz9FCvaCGiSGX5i-4TsP2Zg5ZJXu36J2DxWG_ncIOfnFn8T"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114003901875-db6a0374-a879-497d-877e-694295e0b882",
+      "x": "j17zLHFkkqOhSDsDZVjuEiPpkBqI-MomAzSJg8wSabOUsPY3-UwvRY8F7PzUTKM1",
+      "y": "vtfyf4ykmIA0-MoRG9nYW2fPPLtXxZ9gf4QfVvuFgyUYoVA89n9W8EI6UKoQUN30"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113221922938-19ead4ac-cb2a-448c-b03c-aa1a7711786c",
+      "x": "IGmOkJzkcONQM37_-GGmvquEv2a6utqiObensHkyaUvgMLLIyIz9UylgR4YxLKT0",
+      "y": "D7d_sZ6mYAxiRlYDjjBkLk3Dt44XyDLwl5N9dPvCqdYCWPSAB3pmSxb9oM7PN1Oh"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114010626217-df3267a2-97c9-402e-aaba-bc0b6b3725ec",
+      "x": "bzG6ot0A74UZhJpRch12tV9Xbdc9U88gp2SakmlWp89bLExZO4ho28bwNp8_H8OB",
+      "y": "ICS2Gd71WjMVFpvI8fp-ZuOKlmfR0Er59wesLP0__CMLOBO3ddnXT_AVkMZTsTZm"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114004709793-27c64e3d-ff48-4f04-9e3d-477e352bb56d",
+      "x": "nkWLxqY0IS1EXe3s0OAqx31y_R0wfARmnMjaQ0eIzXWEwsX3TYC1nFOihLDgvJaT",
+      "y": "TKpBRv4RLEXrf8iESWjeYUSM-hdVICzHEOykNRE86F8VZXAtkGrN5Icjah65IEfS"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113223808665-d78bb4c2-d798-404c-aeea-a59eda31ed1a",
+      "x": "TMMHtGg0zdWir7jwssnJlXE1oK9JdM-47zaVBovhvlD-t01BQMd8RvSu5oG6EXdL",
+      "y": "7_oXAdvfESvB84d0mQrAMXooErq9tz2ctCT4ratF64Hn4N9cFNp5IgXcD29Pq7kd"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114011224859-7d025293-019f-4ee6-9584-9994352bfcf2",
+      "x": "xMxbIxuT_Xkt4k3xOl5jQBVVmlOyB8hNkdqMPg4mtW6K41MuuN2v8Ev0xQ3zx6s-",
+      "y": "Cl7R8qiF-KSTVX2rC1SkABNqJT247onK6inT2Hu_p9cHpzbsVYGHpc463I0ylVld"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114003802965-e59c2b89-a81e-467b-9445-451da68b6e6d",
+      "x": "WRKpkPhK7wXzM8wYyUeX3HZsS5zjwhCaWLCctD9uuEuwh9-j0OcFPvABPCyIxz7B",
+      "y": "kSFTTVQJqFE29uEs7aPewVYqyppP0akTYkogLxniT5V3bnyHDPi0SaDmp1R8qa_s"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114001251815-a029fa7b-e25d-448b-98cf-bf4a5a13812d",
+      "x": "7RMpWOB5pM2aGVbtevMjsKRVvuj0hh3_j7rIMxE-SzxDwMPOv2fkXywazlR6BVMj",
+      "y": "9lQsGzA9RlegvDuyqCR34lZPnPbRrcJ7IzoHjG2A5gVWvNK_-jlbokD4L-k8A5IT"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113194715146-0b70c074-5e2f-45c7-be10-5e890e81b971",
+      "x": "oZh79Z5SYWIwSImVdwRh0z59mmW_Ou2xeFKfpzdMiVK3RoFf7bvCrYUCOIGYRUA6",
+      "y": "60aMJlk1j3IaBO9CQKkXdocIE4vY4xtJr45Uu8410QMyBGivt7wyFUnPXLuGTCTE"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114002956457-3c8c22a4-d81d-4e21-b054-d2fae535b5e7",
+      "x": "zvYP3j_zi3AZB-xeMu9kMUIrQkOuRnuYxCLNZAS_2O8sSqpd_79Z2T7r3hu7Tphf",
+      "y": "5mvAvA-tckTv8Evgg5RZhSIEDVE9_KvAneXfUea5XkNuX7CJYrm6ssAjgpnwq6R1"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114052306740-6b56e6b2-0af0-47a9-acef-f8305f82d849",
+      "x": "sMUgmDNUH3qmhGwMZgJ88ilf161QKNXYE2sgD7_pa5jxW2KTHGC7r75G_-r1LJat",
+      "y": "lmyJtnRR_r3e_aZ0x_9QkQVva84w-0UMGKAUfk7wQt4u0_OZgK_S-8i2adydG-oT"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113172715759-c4b6420e-ff27-4bfd-a555-b7f201265b62",
+      "x": "uxmIAMGrwuC553-sq51-pAcsY5QKbCnevD6LtFiWEcNdwz3CqRPm9a-LCKTQEiJ2",
+      "y": "LWAXnpdqEvwx5nlqp-kODyHy7hFvwn76zT6CB6HrVPiYURHkWUzQWNR5O_BjisWU"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113173502824-fc8850ae-1031-4160-99ac-e32e6a752f4a",
+      "x": "QCzvnB5-u7H9ccxcZoBHqErwPDdAtFO3gc8bQODidu-w7Y0ze_9E8443igOVWhHV",
+      "y": "yxC3U2sBZZEyOW3VHLIFetsyK0qyltLbGfA6lrFe8v-WMZGMYNf_ZDO2UxIlidQE"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113194127111-6021283b-b251-4bb1-9192-f3bc7b12ec5b",
+      "x": "87XAATZV_5qRcuYk9atFbxuokbxGNU5hszk7dX-zd5aFeI7neOSGE5otzVWXZrRw",
+      "y": "mmV4EUFbg2GaSjoFxT3L7Rcsk3rdGjWeFiYj0-ue9DKDVxQVFV_r-RYMO2VTDCiU"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114050127112-6a533f07-6613-4244-b19f-48a315de6404",
+      "x": "oQQIMvUIbnZmIkWHxKb81gaGy7wpomnVMh6igoCJ20p57VhsxM2cO5kK3MlkNk2Y",
+      "y": "txQUpvm5046n0pgI9lSWFEMP3_58o0nu1jRQukYE-TjVEcAL5N-CcP05u1rqkDk3"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113172521906-dc834ba8-d4cb-435b-a0ce-ca3934d47cc9",
+      "x": "tTJX3tugBea-_PB5uviG-M8irKittPPPgKXzlIY0QVrVSXFgJZIbTFTQDLilb1Bc",
+      "y": "r6uZDPiBzBC5pEwj_rg1F8MHbDuYxaKQ45284ErbgQpqHpf5BU-yMlkvapZ90yMp"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113170521657-60d3464a-2a0f-470b-9f8f-339cb6330c79",
+      "x": "h5dBoUuy22p05V5cMpnMw31ZFApaFIeuyGm3e65itzFrey7Bcresgjd-d_tfG4ok",
+      "y": "_I1jrCafSFCHpv9CiMackGSn6XrNPMH1nyh0MYtySllcIHEgLV1ny50IlMzRDMJI"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114002959595-c8d83ac0-ca49-452f-aa5b-bacef7d2c616",
+      "x": "Jmy_ConnrTcf1drzZefH-VBmk3Y6TBTRjaQHzidBe9KBAkzjMHKxmPJpFuyVcxPE",
+      "y": "H42aeftXiBDBacZ4zeKN6E7JBZ1-Hr7jqSHXopL8etiR9vd6WSln_SwLq4yzpHCe"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114003141990-2d0ecae9-3cdf-4cea-acb5-2be595d9060a",
+      "x": "GepFtcUHWBTdFKnY8vjJrGCzPuOqE8Bj9CQ-YtWZPOvqKwkDO70QRNl_afwnnTWd",
+      "y": "0pXLBOB7mSoVsnqWj6i5f1Tq-7XiF8BgspYrA8auHz-FV9e6hKTOuioqcwWooWHI"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114050521657-6876051e-c45f-494e-97c9-970c415e5e3d",
+      "x": "6ZpERPGpkfsVp08T0Jl6TFv6rQIhVCSWRqhJrQw4fwDZFB33BITiM60xhHEjl8mk",
+      "y": "v7NChceYSzH1i0LYqw91w0I1doW0gb9jdGSmCn6ON1G1yPuGtL9yeNCGuVzRXX8a"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114003237671-5b285b99-56b4-4962-99f0-b2c5db86cf7f",
+      "x": "fKfqOzHnTOEY9nR1gk-ezxKy--dxYTikDJk-Y9EYJ302_PTZn3BMzQvinOgKI2V-",
+      "y": "eYoACAeWpkS-hVvas-T0e491XujWqMjNPbXqYonqZddwAUxL13UQsMMFPn91tfp4"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114051521906-aecd3161-82b4-4b59-8146-ebb1e077b090",
+      "x": "p7uk2iZZZry9PuyEf1BOvvpjZk_Gev8PleWnkW3lPajSO6ouq7e8lOfriA5MpGoX",
+      "y": "GpW7P5fwfz_E5ezQHCnfykQ60HQuUwU1IxoEQ9ls86CxJsuYwdni-LxkfJ4JYVqW"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113194521657-17cc2056-4932-4cd0-a5bf-a3928c32d421",
+      "x": "xJC-iiVSC-YwpIEaFf0hxBxxMQBKn0-tM4BY6l354pANMvV6SIpiH2SV2DtdvMo8",
+      "y": "s1KwLtBE9xOvreieRj_Z7sWwEDxDXXpDmtsgJ-qOPfskcHdFChv6A6-KVATMjS2Z"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114030502824-014b4a23-e383-48df-80ab-89200f23b036",
+      "x": "peoxSjbBMz0gskfh6Hi5Qfb29smda2TkHjMEPmfL0YrpPLuLUMpadYHPQ9aLF-Jn",
+      "y": "2W0w1qWUU-0JK9wrAXltkmQTJONtCGiQ6m16XimPROtE8LWm7qh66U86GqpUUK0Z"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114003249332-3c7daced-6d33-43c2-935e-f6343369a46f",
+      "x": "_SStgd6Tmw5Rj4OV27fSxyt5uR9ui5ieHBS4_tRdh6MPI6CxMzyTpyr_X2Zf9co3",
+      "y": "w4kl-wkP3gEAde9ljjgFnqfSEubsb9rDjtqNfjW10-nykfhN1AI5-DqWM9hUoW3H"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114002928558-d571a9a3-c365-4678-ac16-1c9134145694",
+      "x": "zfrXSkwBGvEatyGe1b3qagI2H4Hmn8uatLawXY-Kx7lN5RSoSukYX122C3j78lqp",
+      "y": "oxX5VoHspFcFuh5OJXEd-aHQA0Y6I3q1SdjjgNgVNXZJ1OCAyVYTwTyMrWvLVEFi"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114053502824-6e13bfe4-0415-40ec-b355-8b0ad9b77b82",
+      "x": "f4tlAp11PDb85_BjUSUg-pq67xdo35OldyJKwiPW3AT_AN8UfBmnO2Gi_-brSD3s",
+      "y": "PLxcC7vm1W1DwhnSoCa9SePFx_10WEtmiodOTtGLrZSti__3eDs5v8MEAT4lMPzF"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114002900421-14f1453c-be7c-4cd7-bddd-8e7c03f0b082",
+      "x": "Xh2Ra4vfgxoVEJyatraPxOs3N7sZYWPkDnIq4in-qF-ZxS41lmg71mwoulY7hRHP",
+      "y": "JcB-YDN308u8gtQlmIZe-6je9Jgj6x7xFybK1rHIW-7Bs8EgGBDXGBhDNurUoSGM"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113171127112-7db10144-d83e-4157-9ce6-19f8044fabcf",
+      "x": "Y7px-hFgII031FhH5KJWWvbWe44HMv3xt5KFrwKkamftdgfPCE7OjoiXXXRrXh0X",
+      "y": "1goMoh8JaNU52jdCY1hVBPPQXsD9m-Ai-wGzX9A703FWOmvIuvxOsK_SWK3d5udJ"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113171306740-808dd2df-468c-466e-b0a7-f7882f40c60f",
+      "x": "sYigmjw2aKtb9sgOVxWnppRGmxSRrhMSORSUFX8O6v3P2ZlDZxpVxthABnBvgDA5",
+      "y": "fprTSgkz8_9DjNia2UOK5flumxlckAket2GSwDgKV1cr781dk56JdasLWFQo0Gd7"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114025306740-321c4bba-563b-4db1-a732-2d4c228b42e7",
+      "x": "KeQ2PkuFknS9YbUJIIxY09m1cMoy4vDhvZf1RKtMDxx5LxFf-1Kov7lBV-u2BMzT",
+      "y": "H4ALfpxLMHSV32DM3ZEX68suJkGGn_vammfbtVdA-ho6mzO-asSdCqyAOeKQBUoI"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114024906319-6070ef79-d96d-413f-9fb5-b8bf6e522eb6",
+      "x": "soGzxHLbMSdIKZkWqJjAIOwKiux0GXbLM_9RvQhAdquHZWz15JmO32wOd5NxQpZU",
+      "y": "uOM-vJAWitJGPYZ_JBWAoze_Nllr2Nn9eeK5AZ6SXznB7n1u9WJv_42hHyvxzhMD"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113193521906-e0b85d9d-6116-4369-b278-2a6c562cc150",
+      "x": "GhkMNAy4tcs_v-AbxVcuEQPQisGxwt7LyTSPE6l__zVrun38SiOnXuLiENbM9EOZ",
+      "y": "pZ6cuMKZ4hNMMih8bL0-mPy0o6kWUXgNWBDz7_bg-a0CpvxM4uP3sAPG0sQxDYJ0"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114051715145-182f79ef-9104-4076-ab09-7d3e527b9159",
+      "x": "65LHI3KyRgjhnPkDFuRNAqmjM5tsBIE5APkLtErX5EfGok92zMXqUAMHBSsz0cKr",
+      "y": "LlKKs-_EceyaLfwu7vCHG8FbyUjMGvXErd45uwAjQoLaVw63M9BpR2FpWLwo7m7k"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113172906320-2a6d72af-f6f3-41ee-b616-044bbb4897a4",
+      "x": "NA9cGyPkbG2k1Y0JTCNeH_LhKCXpjERK_JbziwKyv7dbAQh4PgslA0A3MQ5pGQQR",
+      "y": "ynQwTc4b1C-qc4-loCcOsf_mKtUnkIVkkbXbm4btmkmNA8_51_roXDyLN8OsMbPd"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114053715760-a729b965-d663-4662-bbfe-dd283d8efd30",
+      "x": "3Ae5BSM6-KF4hDos9gsRsgMissFPO3cG2ZC15LhYdDkGb8SNlTPIimt5Rnw__x-P",
+      "y": "Msr1QSSzCtT6IaX2ftnzSjyPr-YQqYGn8zLq238aceCp6yyoIFO1EMLMd_PLgdyY"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261113172715146-63ec789e-777c-4a5b-8009-4791e5d493de",
+      "x": "1ABL2Z9mk636TPAD665hWFtM9l18qDbXP0wj16jd1Rkhm3PArQ5u61BNl4KKTWjm",
+      "y": "P5urABnF_FScly3LG0SnQR5x62gb9vbdui5h9zSEtlbThxygnYEfi2qCh5zAb6MM"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114025715760-a8a3573d-3d34-4307-9053-446803744399",
+      "x": "eZ9nwdJCuPfApsdhLOveMHoEXv8hP7qzkMJwVuS3oUGd7ze2cg3YZtUjfqukXRVI",
+      "y": "g7y-bgsRoTrq8YUS7rM67ObkdzrS0CYwaK2Ct6SKmZjejCiGFHifylxQY1ytWJRh"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114003214642-bd29c8b4-44ff-4db8-9cf5-8e6044ad4be7",
+      "x": "81yOq-rxDhuE0PdPGi7JuapOVajmBhJ3tgdUd9tgOLzBYkKZ8FVSFZeJxSHJyQA0",
+      "y": "rwFYPfsQ0QOPb8LxL7gP8AflSOgd9ZOjckC-l0xZKolExWUOpdn8nt-Opi5mjhwx"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114052906320-b56de6bf-ef92-41f9-befd-6ac272fe5550",
+      "x": "AOLy3-ZDJjIz0WqV9Tn45uJEuhJJL5jpRazIiaG2TySqoup2Jr1uR8fIBO29bVls",
+      "y": "Dc_sOTP5LGJejpw2Uh3Gpl_SbQBWuRbLi54162JRdsirJJoYmI4KHJd97xbP4sK3"
     }
   ]
 }
