@@ -7,6 +7,7 @@ import { Icon } from "@/components/funding/primitives";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { localAvailability } from "@/lib/arena/capabilities.mjs";
 import { apiUrl, decodeState, type DemoState } from "@/lib/state";
+import { STATIC_DATA } from "@/lib/record/static-data";
 
 /** Where the page's data comes from. Shown once, in the header's context selector. */
 export type ShellSource = { label: string; tone: "mainnet" | "testnet" | "local" | "fixture" | "none"; detail?: string | null; status?: "ok" | "warn" | "off" | "pending" };
@@ -30,7 +31,7 @@ function ContextSelector({ source }: { source?: ShellSource }) {
   const [open, setOpen] = useState(false);
   const [snapshot, setSnapshot] = useState<{ state: DemoState | null; loading: boolean; error: string | null }>({ state: null, loading: true, error: null });
   useEffect(() => {
-    if (!open || !snapshot.loading) return;
+    if (STATIC_DATA || !open || !snapshot.loading) return;
     let active = true;
     fetch(apiUrl("/api/state"), { cache: "no-store", credentials: "omit", signal: AbortSignal.timeout(5000) })
       .then(async (response) => { const body = await response.json(); if (!response.ok) throw new Error("unavailable"); return decodeState(body); })
@@ -66,16 +67,19 @@ export function AppShell({ source, children, home = false }: { source?: ShellSou
           })}
         </nav>
         <div className="header-right">
-          <Link className="btn btn-sm btn-primary wallet-cta" href="/rounds/live#wallet"><Icon name="wallet" />Connect wallet</Link>
+          <Link className="btn btn-sm btn-primary wallet-cta" href={STATIC_DATA ? "/rounds" : "/rounds/live#wallet"}><Icon name="wallet" />{STATIC_DATA ? "Explore rounds" : "Connect wallet"}</Link>
           <ContextSelector source={source} />
           <div className="header-tools">
             <ThemeToggle />
-            <Link href="/advanced" className={`icon-link ${path.startsWith("/advanced") ? "active" : ""}`} aria-label="Advanced owner tools" title="Advanced owner tools"><Icon name="sliders" /></Link>
+            {!STATIC_DATA && <Link href="/advanced" className={`icon-link ${path.startsWith("/advanced") ? "active" : ""}`} aria-label="Advanced owner tools" title="Advanced owner tools"><Icon name="sliders" /></Link>}
           </div>
         </div>
       </div>
     </header>
-    <main className="main">{children}</main>
+    <main className="main">
+      {STATIC_DATA && <aside className="hosted-notice" aria-label="Hosted version capabilities"><strong>Read-only showcase.</strong> Explore saved testnet rounds and live reputation. Trading needs a team-run live round and its API; funding previews, local simulations and fresh receipt checks need the local API.</aside>}
+      {children}
+    </main>
     <footer className="footer">
       <div className="footer-inner">
         <nav className="footer-links" aria-label="Footer">
