@@ -4729,6 +4729,13 @@
      "deposit": "10000000",
      "payout": "10000000",
      "profitLoss": "0"
+    },
+    {
+     "name": "OutsideWallet1",
+     "deposit": "1000000",
+     "payout": "1000000",
+     "profitLoss": "0",
+     "external": true
     }
    ],
    "transactions": [

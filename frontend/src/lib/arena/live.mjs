@@ -10,7 +10,7 @@ export const ROUND_STATUS = Object.freeze({ none: 0, trading: 1, collapsed: 2, s
 
 export const LIVE_STAGES = Object.freeze([
   Object.freeze({ id: 'funded', label: 'Funded' }), Object.freeze({ id: 'proposals', label: 'Proposals' }), Object.freeze({ id: 'forecasting', label: 'Forecasting' }),
-  Object.freeze({ id: 'selected', label: 'Selected' }), Object.freeze({ id: 'executed', label: 'Executed' }), Object.freeze({ id: 'evaluated', label: 'Evaluated' }),
+  Object.freeze({ id: 'selected', label: 'Selected' }), Object.freeze({ id: 'executed', label: 'Executed' }), Object.freeze({ id: 'evaluated', label: 'Measured' }),
   Object.freeze({ id: 'redeemed', label: 'Redeemed' }),
 ]);
 const INDEX = Object.freeze(Object.fromEntries(LIVE_STAGES.map((stage, index) => [stage.id, index])));

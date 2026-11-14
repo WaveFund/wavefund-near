@@ -179,6 +179,7 @@ function round(item) {
   const payouts = (Array.isArray(item.payouts) ? item.payouts : []).filter(isObject).map((p) => ({
     name: typeof p.name === 'string' && NAME.test(p.name) ? p.name : 'Forecaster',
     deposit: isIntegerString(p.deposit) ? p.deposit : null, payout: isIntegerString(p.payout) ? p.payout : null, profitLoss: isSignedInteger(p.profitLoss) ? p.profitLoss : null,
+    external: p.external === true,
   }));
   const transactions = (Array.isArray(item.transactions) ? item.transactions : []).filter((t) => isObject(t) && typeof t.label === 'string' && LABEL.test(t.label) && isTxHash(t.transactionHash) && isIntegerString(t.blockNumber))
     .map((t) => ({ label: t.label, transactionHash: t.transactionHash.toLowerCase(), blockNumber: t.blockNumber, url: explorerUrl(AURORA_TESTNET, 'tx', t.transactionHash) }));

@@ -99,8 +99,8 @@ export default function HomePage() {
           <dl className="wl-rows">{live.agents.map((a) => <div key={a.name}><dt>{a.name}</dt><dd><span className={`num wl-score ${Number(a.score) > 0 ? "up" : Number(a.score) < 0 ? "down" : ""}`}>{a.score === null ? "–" : Number(a.score) > 0 ? `+${a.score}` : a.score}</span></dd></div>)}</dl></>}
         <dl className="wl-rows wl-saved">
           <div><dt>Latest · round {round?.roundId ?? "–"}</dt><dd className="wl-nowrap">{failed ? na : loading ? "…" : round ? <><b>{round.winner.name}</b><span className="num">{percentFromBps(round.winner.allocationBps) ?? "–"} ETH · {result ?? "–"}</span></> : na}</dd></div>
-          <div><dt>Funding delivered</dt><dd>{delivered ? <span className="num">{delivered} USDC</span> : na}</dd></div>
-          <div><dt>Swap</dt><dd>{swapIn && eth ? <span className="num">{swapIn} USDC → {eth} ETH</span> : na}</dd></div>
+          <div><dt>Round 1 funding · NEAR Intents</dt><dd>{delivered ? <span className="num">{delivered} USDC</span> : na}</dd></div>
+          <div><dt>Round 1 swap</dt><dd>{swapIn && eth ? <span className="num">{swapIn} USDC → {eth} ETH</span> : na}</dd></div>
         </dl>
         <p className="wl-foot">Scores: live <code>eth_call</code> · rows below the line: saved receipts</p>
       </aside>

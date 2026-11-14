@@ -40,7 +40,7 @@ const completedLocal = () => ({
 });
 
 test('the seven journey steps are fixed and each asks one question', () => {
-  assert.deepEqual(STAGES.map((stage) => stage.label), ['Funded', 'Proposals', 'Forecasting', 'Selected', 'Executed', 'Evaluated', 'Redeemed']);
+  assert.deepEqual(STAGES.map((stage) => stage.label), ['Funded', 'Proposals', 'Forecasting', 'Selected', 'Executed', 'Measured', 'Redeemed']);
   assert.ok(STAGES.every((stage) => stage.question.endsWith('?')));
 });
 

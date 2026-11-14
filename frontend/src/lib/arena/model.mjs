@@ -18,7 +18,7 @@ export const STAGES = Object.freeze([
   Object.freeze({ id: 'forecasting', label: 'Forecasting', question: 'What positions back each strategy?' }),
   Object.freeze({ id: 'selected', label: 'Selected', question: 'What won, and why did it qualify?' }),
   Object.freeze({ id: 'executed', label: 'Executed', question: 'What actually changed in the Safe?' }),
-  Object.freeze({ id: 'evaluated', label: 'Evaluated', question: 'How did the portfolio perform?' }),
+  Object.freeze({ id: 'evaluated', label: 'Measured', question: 'How did the portfolio perform?' }),
   Object.freeze({ id: 'redeemed', label: 'Redeemed', question: 'What could forecasters redeem?' }),
 ]);
 const STAGE_INDEX = Object.freeze(Object.fromEntries(STAGES.map((stage, index) => [stage.id, index])));

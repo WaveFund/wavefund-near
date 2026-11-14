@@ -291,6 +291,14 @@ function projectRound(source, files, stack, manifest, reputationManifest) {
     profitLoss: int(item.profitLoss, `payout ${index} profit/loss`),
   }));
   for (const item of payouts) check(BigInt(item.payout) - BigInt(item.deposit) === BigInt(item.profitLoss), `payout arithmetic for ${item.name}`);
+  // Outside browser wallets (signed their own trades in the UI; settled by redeemFor) are participants too.
+  const externalIndependent = (Array.isArray(independent.payouts) ? independent.payouts : []).filter((item) => item?.external === true);
+  (Array.isArray(completion.externalPayouts) ? completion.externalPayouts : []).forEach((item, index) => {
+    const deposit = uint(item?.deposit, `outside wallet ${index} deposit`); const payout = uint(item?.payout, `outside wallet ${index} payout`);
+    const counted = externalIndependent.find((x) => typeof x?.address === 'string' && x.address.toLowerCase() === String(item.address).toLowerCase());
+    check(counted && counted.actualPayout === payout, `outside wallet ${index} not counted by the independent verifier`);
+    payouts.push({ name: `OutsideWallet${index + 1}`, deposit, payout, profitLoss: (BigInt(payout) - BigInt(deposit)).toString(), external: true });
+  });
 
   const swap = swapFor(source, files, stack, manifest, transactions);
   const realisedReturnX18 = uint(round.realisedReturn, 'realised return');
@@ -326,7 +334,7 @@ function projectRound(source, files, stack, manifest, reputationManifest) {
     checks: {
       independentPassed: independent.passed === true,
       returnRecomputed: independent.recomputedReturn === realisedReturnX18 && completion.portfolio?.realisedReturn === realisedReturnX18,
-      payoutsRecomputed: payouts.every((item) => independentPayouts.get(item.name) === item.payout),
+      payoutsRecomputed: payouts.every((item) => item.external === true || independentPayouts.get(item.name) === item.payout),
       swapChecked: swap ? swap.independentlyChecked : null,
       ...(manipulationProbe ? { probeOracleUsed: manipulationProbe.oracleUsed } : {}),
     },

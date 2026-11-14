@@ -71,13 +71,13 @@ function Receipts({ title, items, children }: { title: string; items: TxItem[]; 
   return <DrawerButton label="Receipts" title={title}>{children}<TxList items={items} /></DrawerButton>;
 }
 
-function RedemptionTable({ rows, total }: { rows: Array<{ name: string; scripted?: boolean; deposit: string | null; payout: string | null; profitLoss: string | null }>; total?: { deposits: string | null; paid: string | null } }) {
+function RedemptionTable({ rows, total }: { rows: Array<{ name: string; scripted?: boolean; external?: boolean; deposit: string | null; payout: string | null; profitLoss: string | null }>; total?: { deposits: string | null; paid: string | null } }) {
   return <div className="table-wrap"><table className="table compact">
     <thead><tr><th>Participant</th><th className="num">Collateral</th><th className="num">Redeemed</th><th className="num">Net P/L</th></tr></thead>
     <tbody>{rows.map((row) => {
       const diff = formatSignedUnits(row.profitLoss, 6);
       return <tr key={row.name}>
-        <td><span className="who"><AgentAvatar name={row.name} kind="forecaster" size="sm" /><span>{row.name}</span>{row.scripted ? <Cap>Scripted</Cap> : null}</span></td>
+        <td><span className="who"><AgentAvatar name={row.name} kind="forecaster" size="sm" /><span>{row.external ? "Outside wallet" : row.name}</span>{row.scripted ? <Cap>Scripted</Cap> : null}{row.external ? <Cap>Human · browser wallet</Cap> : null}</span></td>
         <td className="num">{usdc(row.deposit)}</td><td className="num">{usdc(row.payout)}</td><td className={`num ${signTone(diff)}`}>{diff ?? "—"}</td>
       </tr>;
     })}
@@ -155,6 +155,7 @@ export function ForecastingStage({ ctx }: { ctx: StageCtx }) {
     return <div className="rw-stack">
       <div className="rw-row start">
         <span><b className="num">{round.forecasters.filter((item) => item.action === "buy").length}</b> recorded trades</span>
+        {round.payouts.some((item) => item.external) ? <span className="subtle">+ {round.payouts.filter((item) => item.external).length} outside browser wallet (human) traded too · see Redeemed</span> : null}
         {ctx.signals ? null : <Cap title="The saved record keeps the winner, not each strategy's final-window average">Signal unavailable</Cap>}
         <Tip label="About credits">One deposit gives credits in every strategy&apos;s world, not split between them. Credits are traded for LONG or SHORT and are never summed across worlds.</Tip>
       </div>
@@ -243,7 +244,7 @@ export function RedeemedStage({ ctx }: { ctx: StageCtx }) {
     const { round } = saved;
     const scripted = new Map(round.forecasters.map((item) => [item.name, item.scripted]));
     return <div className="rw-stack">
-      <RedemptionTable total={round.totals} rows={round.payouts.map((item) => ({ ...item, scripted: scripted.get(item.name) }))} />
+      <RedemptionTable total={round.totals} rows={round.payouts.map((item) => ({ ...item, scripted: item.external ? false : scripted.get(item.name) }))} />
       <div className="rw-row">
         {round.reputation
           ? <span><span className="eyebrow">This round&apos;s outcome point</span> <b className="num">{formatPoints(round.reputation.score)}</b> <span className="muted">for {round.winner.name} on the {round.stack.label.replace(/ testnet stack$/i, "")} stack</span></span>
@@ -284,7 +285,7 @@ export function ResultStage({ ctx, onReplay, onPick }: { ctx: StageCtx; onReplay
 
 // ---------------------------------------------------------------- selected-stage dispatch
 
-const TITLES: Record<StageId, string> = { funded: "Funded", proposals: "Proposals", forecasting: "Forecasting", selected: "Selected", executed: "Executed", evaluated: "Evaluated", redeemed: "Redeemed" };
+const TITLES: Record<StageId, string> = { funded: "Funded", proposals: "Proposals", forecasting: "Forecasting", selected: "Selected", executed: "Executed", evaluated: "Measured", redeemed: "Redeemed" };
 
 /** Renders exactly one stage body, with its receipts drawer. */
 export function StageBody({ stage, ctx, onReplay, onPick }: { stage: StageId | "result"; ctx: StageCtx; onReplay: () => void; onPick: (stage: StageId) => void }) {
