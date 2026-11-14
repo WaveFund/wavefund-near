@@ -1945,5 +1945,6 @@
       "x": "6D4WjEKYnBHUGYGuPt5-cMpyz2l5vsgx479cnBWgmwNowLpE3jkVrj1rfzriNl_M",
       "y": "OBa-CXD3i9vC5KuVfQNfK4PCwdzTzRHR73cQJkkkbDvo_ov-juvP-oFONjb7wZb6"
     }
-  ]
+  ],
+  "allowOfficialNvidiaRotation": true
 }
