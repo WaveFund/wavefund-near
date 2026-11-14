@@ -165,7 +165,7 @@ export function selectionSignals(proposals) {
     if (best === null || BigInt(item.twapX18) > BigInt(best.twapX18)) best = item;
   }
   const winnerId = best && BigInt(best.twapX18) > threshold ? String(best.id) : '0';
-  const percent = (raw) => Number(BigInt(raw) / 10n ** 14n) / 100;
+  const percent = (raw) => Number(BigInt(raw) / 10n ** 12n) / 10000;
   return {
     holdPercent: percent(hold.twapX18), thresholdPercent: percent(threshold > ONE ? ONE : threshold), winnerId,
     rows: list.map((item) => ({ id: String(item.id), isHold: String(item.id) === '0', percent: isProbability(item.twapX18) ? percent(item.twapX18) : null,

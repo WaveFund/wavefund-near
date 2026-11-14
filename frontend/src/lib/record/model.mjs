@@ -1,4 +1,5 @@
 import { teeDisplay } from '../tee.mjs';
+import { selectionSignals } from '../arena/model.mjs';
 // Pure display logic for the Track record page, shared by the dashboard and `node --test`. No floats for money or
 // returns. Missing or malformed values never become zero: they make the item unavailable instead.
 import { AURORA_TESTNET, explorerUrl, formatUnits, isAddress, isIntegerString, isTxHash, safeText } from '../funding/model.mjs';
@@ -112,7 +113,8 @@ function proposal(item) {
   if (!isObject(item) || typeof item.id !== 'string' || !/^\d{1,3}$/.test(item.id) || typeof item.name !== 'string' || !NAME.test(item.name)
     || !Number.isSafeInteger(item.allocationBps) || item.allocationBps < 0 || item.allocationBps > 10_000) return null;
   const model = agentModel(item.model);
-  return { id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: safeText(item.rationale, 320) ?? '', ...(model ? { model } : {}) };
+  if (item.twapX18 !== undefined && (!isIntegerString(item.twapX18) || BigInt(item.twapX18) > 10n ** 18n)) return null;
+  return { id: item.id, name: item.name, allocationBps: item.allocationBps, rationale: safeText(item.rationale, 320) ?? '', ...(model ? { model } : {}), ...(item.twapX18 === undefined ? {} : { twapX18: item.twapX18 }) };
 }
 
 // ---------------------------------------------------------------- AI provenance
@@ -164,6 +166,8 @@ function round(item) {
   if (!proposals.length || proposals.includes(null)) return null;
   const winner = proposals.find((p) => p.id === item.winner.proposalId);
   if (!winner) return null;
+  if (proposals.some(p => p.twapX18 !== undefined)
+    && (proposals.some(p => p.twapX18 === undefined) || selectionSignals(proposals)?.winnerId !== winner.id)) return null;
   const rawForecasters = (Array.isArray(item.forecasters) ? item.forecasters : []).filter(isObject);
   const forecasters = rawForecasters.map((f) => ({
     name: typeof f.name === 'string' && NAME.test(f.name) ? f.name : 'Forecaster',

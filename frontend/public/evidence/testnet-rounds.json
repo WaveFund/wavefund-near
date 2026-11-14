@@ -4483,7 +4483,8 @@
      "id": "0",
      "name": "Hold",
      "allocationBps": 7463,
-     "rationale": "Preserve current token quantities."
+     "rationale": "Preserve current token quantities.",
+     "twapX18": "500000000000000000"
     },
     {
      "id": "1",
@@ -4495,7 +4496,8 @@
      "inputHash": "660787510a1e8f8083296570c599dc4aa5baa88aec1b944042ec4603b7d07e71",
      "outputHash": "be42b5ed8165b4349773aed641762df74f24ea10c6a7bf4c563bbe06149cc999",
      "scripted": false,
-     "proposeTx": "0x1757cafbf728b0a703e77cbd711f7d81729c71ec79bd737f5bc26b1d3922ac5b"
+     "proposeTx": "0x1757cafbf728b0a703e77cbd711f7d81729c71ec79bd737f5bc26b1d3922ac5b",
+     "twapX18": "490709987817209793"
     },
     {
      "id": "2",
@@ -4507,7 +4509,8 @@
      "inputHash": "779c8a123aea801aa5e7d888aaa209f42330e466206e91af13111a7b88e1011e",
      "outputHash": "e292fa8a2a582bc94620056b66b843da1a7d3ab4430f90ec97d19a77b1da9648",
      "scripted": false,
-     "proposeTx": "0xd0f600a2debb30e71856122df7063d0c8526b3a45c3b36ecd67b70658d266b63"
+     "proposeTx": "0xd0f600a2debb30e71856122df7063d0c8526b3a45c3b36ecd67b70658d266b63",
+     "twapX18": "500000000000000000"
     },
     {
      "id": "3",
@@ -4519,7 +4522,8 @@
      "inputHash": "ec5a40bcbc4e5742d4d3666e63134d66af0e36fd8bfe1818e90f00b76c4d2be0",
      "outputHash": "66f38d04279bb497152e082ce4de7587a9a395787a050b6709023bfb6bb4df0b",
      "scripted": false,
-     "proposeTx": "0x995002b16a620b505b5affbf46e4981e5aab914722ea091baf79c8bedef831a5"
+     "proposeTx": "0x995002b16a620b505b5affbf46e4981e5aab914722ea091baf79c8bedef831a5",
+     "twapX18": "509870618470969721"
     },
     {
      "id": "4",
@@ -4531,7 +4535,8 @@
      "inputHash": "b077a1757118b520fe3e2bc299340039341f05e620375a5085933efa48a4dc36",
      "outputHash": "11582272d7e74c378e84e3be90be53195554171d974cf40fa84361f905ef8f1d",
      "scripted": false,
-     "proposeTx": "0xe9771b9e0194539a480742ed369e95297027ab735c327701ef8f836f33bee9f8"
+     "proposeTx": "0xe9771b9e0194539a480742ed369e95297027ab735c327701ef8f836f33bee9f8",
+     "twapX18": "500000000000000000"
     }
    ],
    "proposers": [

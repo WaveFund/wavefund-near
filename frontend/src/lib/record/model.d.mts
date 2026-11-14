@@ -18,7 +18,7 @@ export type Provenance = {
   status: 'model' | 'scripted' | 'unknown'; model: string | null; provider: 'near-ai' | 'scripted' | null;
   inputHash: string | null; outputHash: string | null; proposeTx: string | null; proposeTxUrl: string | null; tee: TeeStatusId;
 };
-export type RoundProposal = { id: string; name: string; allocationBps: number; rationale: string; model?: string; provenance?: Provenance };
+export type RoundProposal = { id: string; name: string; allocationBps: number; rationale: string; model?: string; provenance?: Provenance; twapX18?: string };
 export type RoundForecaster = { name: string; action: 'buy' | 'abstain' | 'unknown'; side: 'long' | 'short' | null; proposalId: string | null; reason: string | null; scripted: boolean; credits: string | null; model?: string; provenance?: Provenance };
 export type RoundPayout = { name: string; deposit: string | null; payout: string | null; profitLoss: string | null; external: boolean };
 export type RoundTransaction = { label: string; transactionHash: string; blockNumber: string; url: string | null };

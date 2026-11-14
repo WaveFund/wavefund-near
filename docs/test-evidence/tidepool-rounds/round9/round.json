@@ -10,6 +10,7 @@
     "swap": "swap-independent",
     "capital": "capital-linkage",
     "reputation": "reputation",
-    "tee": "tee"
+    "tee": "tee",
+    "selection": "selection"
   }
 }
