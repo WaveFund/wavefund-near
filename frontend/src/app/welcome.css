@@ -162,3 +162,9 @@
 
 .wl-decision-icon svg { width: 25px; height: 25px; }
 .wl-product-role-icon svg { width: 22px; height: 22px; }
+
+/* Illustrative result stays separate from the actual saved-round recap. */
+.wl-illustration { border-top: 1px solid var(--border); margin-top: 24px; padding-top: 20px; }
+.wl-illustration > div { display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+.wl-illustration strong { color: var(--accent); font-size: 29px; font-weight: 500; }
+.wl-illustration p { font-size: 11px; line-height: 1.5; color: var(--muted); margin: 8px 0 0; }

@@ -77,7 +77,6 @@ export function AppShell({ source, children, home = false }: { source?: ShellSou
       </div>
     </header>
     <main className="main">
-      {STATIC_DATA && <aside className="hosted-notice" aria-label="Hosted version capabilities"><strong>Read-only showcase.</strong> Explore saved testnet rounds and live reputation. Trading needs a team-run live round and its API; funding previews, local simulations and fresh receipt checks need the local API.</aside>}
       {children}
     </main>
     <footer className="footer">
@@ -88,7 +87,6 @@ export function AppShell({ source, children, home = false }: { source?: ShellSou
           <a href="https://github.com/WaveFund/wavefund-near" target="_blank" rel="noreferrer">Source ↗</a>
           <a href="https://github.com/WaveFund/wavefund-near#judge-path-live-testnet-evidence" target="_blank" rel="noreferrer">Judge check ↗</a>
         </nav>
-        <span className="footer-meta"><span>Test assets only</span><span>The app holds no keys · your wallet signs</span></span>
         <span className="footer-meta"><ThemeToggle /><span><i className="dot testnet" /> Aurora testnet · 1313161555</span></span>
       </div>
     </footer>

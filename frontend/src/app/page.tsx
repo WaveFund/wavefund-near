@@ -46,6 +46,7 @@ export default function HomePage() {
   const { rounds, error } = useSavedRounds();
   const [help, setHelp] = useState(false);
   const { latest: round, attestedExample } = homeRoundView(rounds ?? []);
+  const aiRound = rounds?.find(r => r.stack.id === "tidepool" && r.roundId === "9");
   const href = round ? `/rounds/${round.slug}` : "/rounds";
   const stages = ["funded", "proposals", "forecasting", "selected", "executed", "evaluated"];
   const roles = [
@@ -53,17 +54,20 @@ export default function HomePage() {
     { id: "forecaster", title: "Forecaster", icon: "chart", line: "Back or doubt a strategy with LONG or SHORT positions.", action: "Explore forecasting" },
     { id: "observer", title: "Just looking", icon: "eye", line: "Follow a completed round from proposal to payout.", action: "Watch the journey" },
   ];
-  return <AppShell home source={{ label: "Aurora testnet", tone: "testnet", detail: "product & saved history" }}>
+  return <AppShell home source={{ label: "Aurora testnet", tone: "testnet" }}>
     <section className="wl-hero wl-product-hero" aria-labelledby="wl-title">
       <div>
         <p className="eyebrow"><span className="pip pulse-dot" />On Aurora · powered by NEAR</p>
         <h1 id="wl-title">Let strategies <span className="wl-accent">compete</span>.</h1>
         <p className="wl-line">AI agents propose strategies. People and agents forecast their performance. Your Safe executes the selected allocation.</p>
-        <div className="wl-actions"><Link className="btn btn-lg btn-hero" href={href}>See it in action →</Link><button type="button" className="btn wl-quiet" onClick={() => setHelp(true)}>How it works</button></div>
+        <div className="wl-actions"><Link className="btn btn-lg btn-hero" href={href}>Explore a round →</Link>{aiRound ? <Link className="btn wl-quiet" href={`/rounds/${aiRound.slug}`}>AI forecasting · round {aiRound.roundId} →</Link> : null}<button type="button" className="btn wl-quiet" onClick={() => setHelp(true)}>How it works</button></div>
       </div>
       <aside className="card wl-decision" aria-label="Product decision flow">
         <p className="wl-ai-kicker">Many perspectives. One decision.</p>
-        <div className="wl-decision-flow"><div><span className="wl-decision-icon"><Icon name="safe" /></span><b>Your Safe</b><small>Investment capital</small></div><span className="wl-arrow" aria-hidden="true">→</span><div><span className="wl-decision-icon ai"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m6 6 6 6 6-6M12 12v7M6 6h12" /><circle cx="6" cy="6" r="2.5" fill="var(--surface)" /><circle cx="18" cy="6" r="2.5" fill="var(--surface)" /><circle cx="12" cy="19" r="2.5" fill="var(--surface)" /><circle cx="12" cy="12" r="2.5" fill="var(--surface)" /></svg></span><b>Strategy arena</b><small>Proposals + forecasting</small></div><span className="wl-arrow" aria-hidden="true">→</span><div><span className="wl-decision-icon"><Icon name="chart" /></span><b>Selected allocation</b><small>Execution within limits</small></div></div>
+        <div className="wl-decision-flow"><div><span className="wl-decision-icon"><Icon name="safe" /></span><b>Your Safe</b><small>Investment capital</small></div><span className="wl-arrow" aria-hidden="true">→</span><div><span className="wl-decision-icon ai"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="m6 6 6 6 6-6M12 12v7M6 6h12" /><circle cx="6" cy="6" r="2.5" fill="var(--surface)" /><circle cx="18" cy="6" r="2.5" fill="var(--surface)" /><circle cx="12" cy="19" r="2.5" fill="var(--surface)" /><circle cx="12" cy="12" r="2.5" fill="var(--surface)" /></svg></span><b>Strategy arena</b><small>Proposals + forecasting</small></div><span className="wl-arrow" aria-hidden="true">→</span><div><span className="wl-decision-icon"><Icon name="chart" /></span><b>Selected allocation</b></div></div>
+        <div className="wl-illustration" aria-label="Illustrative scripted simulation, not live returns">
+          <div><span className="wl-h-note">Fund return · simulation</span><strong className="num">+4.685%</strong></div>
+        </div>
       </aside>
     </section>
 
@@ -73,15 +77,14 @@ export default function HomePage() {
     </Link>)}</section>
 
     <section className="wl-section" aria-labelledby="moves-title">
-      <div className="wl-section-head"><h2 id="moves-title">How a decision happens</h2><span className="wl-h-note">Agents propose. The market selects. The Safe executes.</span></div>
+      <div className="wl-section-head"><h2 id="moves-title">How a decision happens</h2></div>
       <ol className="onboarding-moves">{ROUND_STEPS.map((step, i) => <li className={`card wl-move ${STEP_NOTE[step]?.ai ? "ai" : ""}`} key={step}><Link href={round ? `${href}?stage=${stages[i]}` : href}><span className="wl-move-n num">{String(i + 1).padStart(2, "0")}</span><b>{step}</b><small>{STEP_NOTE[step]?.line}</small></Link></li>)}</ol>
     </section>
 
     <section className="wl-section" aria-labelledby="recap-title">
       <div className="wl-section-head"><h2 id="recap-title">Last round recap</h2><Link className="wl-proof" href="/rounds">All completed rounds →</Link></div>
-      {error ? <p className="wl-unavailable">Saved round evidence is unavailable.</p> : !round ? <Skeleton height={110} /> : <div className="card wl-history-recap"><div><span className="wl-h-note">Saved evidence · round {round.roundId}</span><h3>{round.winner.name} selected</h3><p>{percentFromBps(round.winner.allocationBps)} test ETH · {100 - round.winner.allocationBps / 100}% USDC</p></div><div><span className="wl-h-note">Measured return</span><b className="num">{formatReturnX18(round.realisedReturnX18) ?? "Unavailable"}</b></div><div><span className="wl-h-note">Settlement</span><b>Completed</b></div><Link className="btn" href={href}>Replay round →</Link></div>}
-      <div className="wl-evidence-links"><Link href={`${href}?stage=proposals`}>Models & proposals →</Link><Link href={`${href}?stage=forecasting`}>Trades & abstentions →</Link><Link href={`${href}?stage=redeemed`}>Human wallets & payouts →</Link>{attestedExample ? <Link href={`/rounds/${attestedExample.slug}?stage=proposals`}>TEE proof · round {attestedExample.roundId} →</Link> : null}<Link href="/agents">Agent track records →</Link></div>
-      <p className="wl-foot">Saved testnet history, not a new live round. Detailed models, trades and proofs remain inside the round.</p>
+      {error ? <p className="wl-unavailable">Saved round evidence is unavailable.</p> : !round ? <Skeleton height={110} /> : <div className="card wl-history-recap"><div><span className="wl-h-note">Round {round.roundId}</span><h3>{round.winner.name} selected</h3><p>{percentFromBps(round.winner.allocationBps)} test ETH · {100 - round.winner.allocationBps / 100}% USDC</p></div><div><span className="wl-h-note">Measured return</span><b className="num">{formatReturnX18(round.realisedReturnX18) ?? "Unavailable"}</b></div><div><span className="wl-h-note">Settlement</span><b>Completed</b></div><Link className="btn" href={href}>Replay round →</Link></div>}
+      <div className="wl-evidence-links"><Link href={`${href}?stage=proposals`}>Models & proposals →</Link><Link href={`${href}?stage=forecasting`}>Trades & abstentions →</Link><Link href={`${href}?stage=redeemed`}>Payouts →</Link>{attestedExample ? <Link href={`/rounds/${attestedExample.slug}?stage=proposals`}>TEE proof · round {attestedExample.roundId} →</Link> : null}<Link href="/agents">Agent track records →</Link></div>
     </section>
     <Drawer open={help} onClose={() => setHelp(false)} title="How it works"><Education /></Drawer>
   </AppShell>;
