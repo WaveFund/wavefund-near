@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { AppShell } from "@/components/AppShell";
-import { roleGuides, ROUND_STEPS } from "@/lib/guides.mjs";
+import { ROUND_STEPS } from "@/lib/guides.mjs";
 import { Drawer } from "@/components/v2";
 import { Skeleton } from "@/components/ui";
 import { useSavedRounds, useTidepoolDemo } from "@/lib/arena/hooks";
@@ -13,7 +13,6 @@ import { formatReturnX18 } from "@/lib/record/model.mjs";
 import { loadReputation } from "@/lib/record/loader";
 import "./welcome.css";
 
-const ROLE_ICON: Record<string, string> = { manager: "🏦", forecaster: "🎯", observer: "👀" };
 const STEP_NOTE: Record<string, { line: string; ai?: boolean }> = {
   Funded: { line: "Capital reaches the Safe via NEAR Intents" },
   Proposals: { line: "4 AI agents propose allocations", ai: true },
@@ -94,7 +93,8 @@ export default function HomePage() {
       <aside className="card wl-card" aria-label="Testnet Safe v2, live from chain">
         <p className="eyebrow"><span className="pip pulse-dot" />Testnet Safe v2 · live from chain</p>
         {liveFailed ? <p className="wl-unavailable">Live chain read unavailable right now.</p> : !live ? <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 12 }} aria-busy="true"><Skeleton width={160} height={40} /><Skeleton height={14} /><Skeleton height={14} /></div> : <>
-          <div className="wl-big"><span className="num">{v2.length || "–"}</span><small>rounds settled on Aurora testnet</small></div>
+          <div className="wl-big"><span className="num">{round?.roundId ?? "–"}</span><small>latest completed round</small></div>
+          <p className="wl-sub">{rounds ? `${v2.length} completed rounds in saved history` : "Saved round history loading…"}</p>
           <p className="wl-sub">Agent reputation, read now{live.block ? <> at block <span className="num">{live.block}</span></> : null}</p>
           <dl className="wl-rows">{live.agents.map((a) => <div key={a.name}><dt>{a.name}</dt><dd><span className={`num wl-score ${Number(a.score) > 0 ? "up" : Number(a.score) < 0 ? "down" : ""}`}>{a.score === null ? "–" : Number(a.score) > 0 ? `+${a.score}` : a.score}</span></dd></div>)}</dl></>}
         <dl className="wl-rows wl-saved">
@@ -104,15 +104,6 @@ export default function HomePage() {
         </dl>
         <p className="wl-foot">Scores: live <code>eth_call</code> · rows below the line: saved receipts</p>
       </aside>
-    </section>
-
-    <section aria-labelledby="roles-title" className="wl-section">
-      <h2 id="roles-title">I am a…</h2>
-      <div className="onboarding-roles">{roleGuides().map((role) => <Link className="card wl-role" key={role.id} href={`/start/${role.id}`}>
-        <span className="wl-emoji" aria-hidden="true">{ROLE_ICON[role.id] ?? "•"}</span>
-        <h3>{role.title}</h3><p>{role.line}</p>
-        <span className="wl-steps">{role.steps.length} steps <span aria-hidden="true">→</span></span>
-      </Link>)}</div>
     </section>
 
     <section aria-labelledby="moves-title" className="wl-section">
@@ -134,7 +125,7 @@ export default function HomePage() {
         </article>
         <article className="card wl-ai">
           <p className="wl-ai-kicker">◆ Forecasters · bet on strategies</p>
-          <h3>{showcase.forecasters.length} models, each a different lab</h3>
+          <h3>{showcase.forecasters.length} forecasters, each using a different model</h3>
           <ul>{showcase.forecasters.map((f) => <li key={f.name}><span>{f.name}</span><code>{short(f.model)}</code><i className={f.action === "buy" ? "bet" : ""}>{f.action === "buy" ? `${f.side?.toUpperCase()} #${f.proposalId}` : "abstain"}</i></li>)}</ul>
           <Link className="wl-proof muted" href={`/rounds/${showcase.slug}?stage=forecasting`}>Proxied via NEAR AI · not TEE-attested · Decisions ›</Link>
         </article>
