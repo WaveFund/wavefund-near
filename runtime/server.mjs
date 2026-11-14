@@ -1,4 +1,5 @@
 import { createServer } from 'node:http';
+import { httpPolicy, permittedHost, publicMethodAllowed, LOCAL_UI_ORIGINS } from './http-policy.mjs';
 import { pathToFileURL } from 'node:url';
 import { createAuroraRuntime } from './operator/aurora.mjs';
 import { createRuntime } from './demo.mjs';
@@ -8,16 +9,14 @@ import { handleReputationRequest, reputationBoardsFromEnvironment } from './oper
 import { handleTidepoolDemoRequest, tidepoolDemoFromEnvironment } from './operator/tidepool-demo.mjs';
 import { handleEvidenceRequest, roundEvidenceFromEnvironment } from './operator/round-evidence.mjs';
 
-export const UI_ORIGINS = new Set(['http://localhost:3000', 'http://127.0.0.1:3000']);
-export function validHost(value) {
-  if (!value) return false;
-  try { const url = new URL(`http://${value}`); return ['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) && !url.username && !url.password && url.pathname === '/'; } catch { return false; }
-}
+export const UI_ORIGINS = LOCAL_UI_ORIGINS;
+export const validHost = permittedHost;
 
 export async function startServer(options = {}) {
+  const policy = httpPolicy(options.env ?? process.env);
   const host = options.host ?? process.env.HOST ?? '127.0.0.1';
   const port = Number(options.port ?? process.env.PORT ?? 3001);
-  if (!['127.0.0.1', 'localhost', '::1'].includes(host) && !(host === '0.0.0.0' && process.env.WAVEFUND_CONTAINER === '1')) throw new Error('Public listening is disabled; container binding requires explicit local-container mode');
+  if (!['127.0.0.1', 'localhost', '::1'].includes(host) && !(host === '0.0.0.0' && (process.env.WAVEFUND_CONTAINER === '1' || policy.hosted))) throw new Error('Public listening is disabled; container binding requires explicit local-container mode');
   if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid API port');
   const runtime = options.runtime ?? (process.env.WAVEFUND_NETWORK === 'aurora-testnet' ? await createAuroraRuntime({ manifestPath: process.env.AURORA_MANIFEST ?? 'deployments/aurora-testnet.json', artifactsDir: process.env.CONTRACT_ARTIFACTS ?? 'out' }) : await createRuntime({ rpcUrl: process.env.LOCAL_RPC_URL, manifestPath: process.env.LOCAL_MANIFEST ?? 'deployments/local.json', journalPath: process.env.LOCAL_JOURNAL ?? '.run/local-demo/journal.json', artifactsDir: process.env.CONTRACT_ARTIFACTS ?? 'out', marketDataPath: process.env.WAVEFUND_MARKET_DATA_FILE, ...options }));
   // Funding-before-round read model. Disabled (no /api/funding routes) unless explicitly configured.
@@ -31,13 +30,14 @@ export async function startServer(options = {}) {
   const server = createServer(async (request, response) => {
     const origin = request.headers.origin;
     function send(status, value) {
-      response.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...(UI_ORIGINS.has(origin) ? { 'Access-Control-Allow-Origin': origin, 'Vary': 'Origin', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' } : {}) });
+      response.writeHead(status, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...(policy.origins.has(origin) ? { 'Access-Control-Allow-Origin': origin, 'Vary': 'Origin', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' } : {}) });
       response.end(json(value));
     }
-    if (!validHost(request.headers.host) || (origin && !UI_ORIGINS.has(origin))) return send(403, { error: 'Local origin/host required' });
+    if (!permittedHost(request.headers.host, policy.hosts) || (origin && !policy.origins.has(origin))) return send(403, { error: 'Origin or host not allowed' });
     if (request.method === 'OPTIONS') return send(204, null);
     let url;
     try { url = new URL(request.url, 'http://localhost'); } catch { return send(400, { error: 'Invalid URL' }); }
+    if (policy.hosted && !publicMethodAllowed(request.method, url.pathname)) return send(405, { error: 'Method unavailable on the hosted API' });
     try {
       if (url.pathname === '/api/funding' || url.pathname.startsWith('/api/funding/')) return await handleFundingRequest(funding, request, url, send);
       if (url.pathname === '/api/agents' || url.pathname.startsWith('/api/agents/')) return await handleReputationRequest(reputation, request, url, send);

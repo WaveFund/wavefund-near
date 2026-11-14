@@ -8,6 +8,7 @@ import originalManifest from "../../../../deployments/aurora-testnet-reputation.
 import tidepoolManifest from "../../../../deployments/aurora-testnet-tidepool-reputation.json";
 
 export const STATIC_DATA = process.env.NEXT_PUBLIC_DATA_MODE === "static";
+export const BUNDLED_HISTORY = STATIC_DATA || process.env.NEXT_PUBLIC_DATA_MODE === "hybrid";
 const AURORA_TESTNET_RPC = "https://testnet.aurora.dev";
 const FILES: Record<string, string> = {
   "/api/evidence/testnet-rounds": "/evidence/testnet-rounds.json",

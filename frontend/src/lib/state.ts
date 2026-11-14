@@ -1,3 +1,4 @@
+import { resolveApiUrl } from "./api-url.mjs";
 export type Receipt = {
   label: string;
   hash: string;
@@ -57,11 +58,7 @@ export function decodeState(value: unknown): DemoState {
 }
 
 export function apiUrl(path: string): string {
-  const base = new URL(process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:3001");
-  if (base.protocol !== "http:" || !["localhost", "127.0.0.1", "[::1]"].includes(base.hostname)) {
-    throw new Error("Set NEXT_PUBLIC_API_URL to a local HTTP API. Remote endpoints are disabled.");
-  }
-  return new URL(path, base).toString();
+  return resolveApiUrl(path, process.env.NEXT_PUBLIC_API_URL, typeof window === "undefined" ? undefined : window.location.origin);
 }
 
 export function units(raw: string | null | undefined, decimals: number, precision = 2): string {

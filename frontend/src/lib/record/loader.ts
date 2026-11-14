@@ -1,5 +1,5 @@
 import { apiUrl } from "@/lib/state";
-import { STATIC_DATA, staticFile, liveReputation } from "@/lib/record/static-data";
+import { STATIC_DATA, BUNDLED_HISTORY, staticFile, liveReputation } from "@/lib/record/static-data";
 import { safeText } from "@/lib/funding/model.mjs";
 import { validateReputationBoard, validateRoundEvidence, type ReputationBoard, type TestnetRound } from "@/lib/record/model.mjs";
 import { validateFreshCheck, validateTidepoolDemo, type FreshCheck, type TidepoolDemo } from "@/lib/tidepool/model.mjs";
@@ -17,7 +17,7 @@ export class RecordUnavailable extends Error {
 }
 
 async function getJson(path: string): Promise<unknown> {
-  if (STATIC_DATA) {
+  if (STATIC_DATA || (BUNDLED_HISTORY && staticFile(path))) {
     if (path.startsWith("/api/agents/reputation")) {
       try { return await liveReputation(path.endsWith("/tidepool") ? "tidepool" : "original"); }
       catch { throw new RecordUnavailable("Aurora testnet could not be read right now.", "offline"); }
