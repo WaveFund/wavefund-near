@@ -1,12 +1,41 @@
 import { createKeyFallback } from './key-fallback.mjs';
 import { randomBytes } from 'node:crypto';
-import { inspectReport, hex, verifyGpuToken, verifyCompletion } from './tee.mjs';
+import { inspectReport, hex, verifyGpuToken, verifyCompletion, sha256 } from './tee.mjs';
 import { providerConfig } from './provider.mjs';
 
 const BASE = 'https://cloud-api.near.ai/v1';
 const NRAS = 'https://nras.attestation.nvidia.com/v3/attest/gpu';
 const check = (ok, why) => { if (!ok) throw new Error(why); };
 const REPORT_KEYS = ['nonceBound', 'tdxQuoteVerified', 'configurationBound', 'eventLogVerified', 'measurementPolicyMatched'];
+export function responseFailureDetails(evidence, privacy) {
+  const sig = evidence.signature ?? {};
+  const model = JSON.parse(evidence.requestBody).model;
+  const parts = typeof sig.text === 'string' ? /^([A-Za-z0-9][A-Za-z0-9_./:-]{0,119}):([a-f0-9]{64}):([a-f0-9]{64})$/.exec(sig.text) : null;
+  const requestHash = sha256(Buffer.from(evidence.requestBody)), responseHash = sha256(Buffer.from(evidence.responseBody));
+  const details = {
+    signatureKind: ['provider_tee','gateway'].includes(sig.signature_kind) ? sig.signature_kind : 'missing-or-unknown',
+    algorithmIsEcdsa: sig.signing_algo === 'ecdsa', providerError: Boolean(sig.error_code),
+    textFormatValid: Boolean(parts), textModelMatches: parts?.[1] === model,
+    requestHashMatches: parts?.[2] === requestHash, responseHashMatches: parts?.[3] === responseHash,
+    signatureValid: privacy.signatureValid === true, signerMatchesAttestation: privacy.signerMatchesAttestation === true,
+    matchingAttestationCount: (evidence.attestationReport?.model_attestations ?? []).filter(r => typeof r.signing_address === 'string' && typeof sig.signing_address === 'string' && r.signing_address.toLowerCase() === sig.signing_address.toLowerCase()).length,
+    requestHash, responseHash,
+  };
+  const reason = details.signatureKind !== 'provider_tee' || !details.algorithmIsEcdsa || details.providerError ? 'MODEL_SIGNATURE_REQUIRED'
+    : !details.textFormatValid || !details.textModelMatches ? 'SIGNATURE_TEXT_MODEL_MISMATCH'
+    : !details.requestHashMatches ? 'SIGNED_REQUEST_HASH_MISMATCH'
+    : !details.responseHashMatches ? 'SIGNED_RESPONSE_HASH_MISMATCH'
+    : !details.signatureValid ? 'INVALID_RESPONSE_SIGNATURE'
+    : !details.signerMatchesAttestation ? 'SIGNER_ATTESTATION_MISMATCH' : 'OTHER_COMPLETION_CHECK_FAILED';
+  // Never persist arbitrary provider error text, headers or hidden reasoning in diagnostics.
+  const signature = {
+    text: parts ? sig.text : null,
+    signature: typeof sig.signature === 'string' && /^0x[a-f0-9]{130}$/i.test(sig.signature) ? sig.signature : null,
+    signing_address: typeof sig.signing_address === 'string' && /^0x[a-f0-9]{40}$/i.test(sig.signing_address) ? sig.signing_address : null,
+    signing_algo: details.algorithmIsEcdsa ? 'ecdsa' : null, signature_kind: details.signatureKind, error_code: details.providerError ? 'REDACTED_PROVIDER_ERROR' : null,
+  };
+  return { reason, checks: details, evidence: { ...evidence, signature } };
+}
 // The only accepted basis today: values pinned from NEAR AI's live attestation, labelled as not independently reproduced.
 export const TEE_TRUST_BASIS = /^observed-at-\d{4}-\d{2}-\d{2}-not-independently-reproduced$/;
 export function validateTeePolicy(policy) {
@@ -52,7 +81,7 @@ export async function verifyTeeEvidence(evidence, policy, { quoteVerifier = defa
 }
 
 // All HTTP destinations are fixed constants. No provider/model endpoint or headers are read from an evidence file.
-export function createTeeProvider(config, { policy, fetchImpl = fetch, quoteVerifier = defaultVerify, getCollateral = defaultCollateral, now = () => Math.floor(Date.now() / 1000), nonceFactory = () => randomBytes(32).toString('hex'), maxCalls = 4, timeoutMs = 20000 } = {}) {
+export function createTeeProvider(config, { policy, fetchImpl = fetch, quoteVerifier = defaultVerify, getCollateral = defaultCollateral, now = () => Math.floor(Date.now() / 1000), nonceFactory = () => randomBytes(32).toString('hex'), maxCalls = 4, timeoutMs = 20000, onVerificationFailure } = {}) {
   const checked = providerConfig({ WAVEFUND_AGENT_MODE: config.mode, WAVEFUND_AGENT_MODEL: config.model, WAVEFUND_ALLOW_REMOTE_INFERENCE: '1', NEARAI_API_KEY: config.apiKey, NEARAI_API_KEY_1: config.backupApiKeys?.[0], NEARAI_API_KEY_2: config.backupApiKeys?.[1] });
   const credentials = createKeyFallback({ ...checked, fetchImpl });
   check(checked.mode === 'near-ai', 'TEE_NEEDS_NEAR_AI'); validateTeePolicy(policy);
@@ -106,6 +135,7 @@ export function createTeeProvider(config, { policy, fetchImpl = fetch, quoteVeri
       const signature = JSON.parse(await request(`${BASE}/signature/${payload.id}?signing_algo=ecdsa`, { headers: auth }, 65536));
       const teeEvidence = { schemaVersion: 1, nonce, preflightTime, verificationTime: now(), requestBody, responseBody, attestationReport, collateral, gpuTokens, signature };
       const privacy = await verifyTeeEvidence(teeEvidence, policy, { quoteVerifier });
+      if (!privacy.verified) await onVerificationFailure?.(responseFailureDetails(teeEvidence, privacy));
       check(privacy.verified, 'TEE_RESPONSE_REJECTED');
       return { value: JSON.parse(choice.message.content), credentialUse: credentials.usage(), usage: { inputTokens: payload.usage?.prompt_tokens ?? null, outputTokens: payload.usage?.completion_tokens ?? null }, privacy, teeEvidence, auxiliaryCalls: auxiliaryCalls - auxiliaryBefore, collateralFetches: reports.length };
       } catch (error) {

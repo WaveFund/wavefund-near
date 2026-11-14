@@ -207,7 +207,7 @@ with journal_path.open('a') as journal, (a.directory / 'worker.stderr').open('a'
             acknowledgement = event['hash'] if event['stage'] == 'prepared' else f"inference-{event['request']}"
             child.stdin.write(json.dumps({'ack': acknowledgement}) + '\n')
             child.stdin.flush()
-        if event.get('stage') in ['snapshot', 'plan', 'complete', 'pool-aligned']:
+        if event.get('stage') in ['snapshot', 'plan', 'complete', 'pool-aligned', 'tee-verification-failed']:
             name = event['stage']
             value = event['plan'] if name == 'plan' else event
             temporary = a.directory / f'{name}.json.tmp'
@@ -216,6 +216,8 @@ with journal_path.open('a') as journal, (a.directory / 'worker.stderr').open('a'
         # Public model decisions remain in local files; print concise progress only.
         if event.get('stage') in ['plan', 'snapshot', 'complete']:
             print(json.dumps({'stage': event['stage'], 'file': str(a.directory / (event['stage'] + '.json'))}), flush=True)
+        elif event.get('stage') == 'tee-verification-failed':
+            print(json.dumps({'stage': event['stage'], 'agent': event.get('agent'), 'reason': event.get('reason'), 'checks': event.get('checks')}), flush=True)
         elif event.get('stage') == 'agent-record':
             record = event['record']
             print(json.dumps({'stage': 'agent-record', 'name': record['name'], 'usage': record['usage'], 'outputHash': record['outputHash']}), flush=True)

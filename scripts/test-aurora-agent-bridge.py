@@ -115,6 +115,22 @@ class AgentBridgeSafety(unittest.TestCase):
         for key in ['synthetic-primary', 'synthetic-backup', 'synthetic-third']:
             self.assertNotIn(key, result.stdout + result.stderr)
 
+    def test_failed_tee_evidence_is_saved_with_concise_stdout(self):
+        (self.root / 'snapshot.json').write_text(json.dumps({'snapshot': {}, 'market': {}, 'researchContext': {}}))
+        env_file = self.root / 'fake.env'
+        env_file.write_text('NEARAI_API_KEY=synthetic-placeholder\n')
+        executable = self.root / 'docker'
+        executable.write_text('#!/usr/bin/env python3\nimport sys,json\njson.loads(sys.stdin.readline())\n'
+                              'print(json.dumps({"stage":"tee-verification-failed","agent":"Momentum","reason":"SIGNED_RESPONSE_HASH_MISMATCH","checks":{"responseHashMatches":False},"evidence":{"responseBody":"synthetic-proof-body"}}))\n')
+        executable.chmod(0o700)
+        environment = {**os.environ, 'PATH': str(self.root) + os.pathsep + os.environ['PATH']}
+        result = subprocess.run(self.command + ['--profile', 'swarm2', '--run-inference', '--env', str(env_file)], capture_output=True, text=True, timeout=10, env=environment)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        saved = json.loads((self.root / 'tee-verification-failed.json').read_text())
+        self.assertEqual(saved['evidence']['responseBody'], 'synthetic-proof-body')
+        self.assertIn('SIGNED_RESPONSE_HASH_MISMATCH', result.stdout)
+        self.assertNotIn('synthetic-proof-body', result.stdout)
+
     def test_hybrid_plan_requires_and_forwards_a_pre_registered_target_and_window(self):
         (self.root / 'snapshot.json').write_text(json.dumps({'snapshot': {}, 'market': {}, 'researchContext': {'evidenceId': 'fixture'}}))
         environment_file = self.root / 'fake.env'
