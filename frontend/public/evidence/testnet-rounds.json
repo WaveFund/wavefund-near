@@ -5071,6 +5071,491 @@
     "Return is a 1800-second marked test portfolio observation at the oracle price, not real investment profit.",
     "Pre-flight attempt stopped before the round was scheduled (TEE_POLICY_NOT_CONFIGURED); nothing of this round was on-chain yet."
    ]
+  },
+  {
+   "key": "1313161555:0xba96a117f4de33c38df72002651f11024ed14a14:10",
+   "slug": "1313161555-0xba96a117f4de33c38df72002651f11024ed14a14-10",
+   "roundId": "10",
+   "stack": {
+    "id": "tidepool",
+    "label": "Testnet Safe v2",
+    "engine": "0xba96a117f4de33c38df72002651f11024ed14a14",
+    "safe": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11",
+    "reputation": "0xfa71a652547284d1034ae6813ed4a882cb354e92"
+   },
+   "evidence": "saved-independently-verified",
+   "title": "Pre-registered round 10: scripted target Conservative",
+   "date": "2026-11-14",
+   "kind": "tidepool-funded-real-ai-proposals-scripted-forecasters",
+   "source": "docs/test-evidence/tidepool-rounds/round10",
+   "genuineModelCalls": 4,
+   "scriptedForecasters": 4,
+   "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+   "attestationVerified": true,
+   "tee": [
+    {
+     "proposalId": "1",
+     "name": "Conservative",
+     "privacy": {
+      "schemaVersion": 1,
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "nonceBound": true,
+      "tdxQuoteVerified": true,
+      "gpuAttested": true,
+      "configurationBound": true,
+      "eventLogVerified": true,
+      "measurementPolicyMatched": true,
+      "signatureKind": "provider_tee",
+      "signatureValid": true,
+      "signerMatchesAttestation": true,
+      "requestSha256": "85dd201b054420c2e8a0cdb0128caca1971dc8b29d9215e0c1a160e1dd54c747",
+      "responseSha256": "bc997e9a5e31e8271cccf31a45652f4420a91c7a0ebd38d84a9f663ab15e5ae1",
+      "verified": true
+     },
+     "trustBasis": "observed-at-2026-11-13-not-independently-reproduced",
+     "proposalBound": true,
+     "transactionHash": "0x3dbd709e9e2e03181d23aa6706e9454e9677866d040da20fbd6607d35e4f517b"
+    },
+    {
+     "proposalId": "2",
+     "name": "Balanced",
+     "privacy": {
+      "schemaVersion": 1,
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "nonceBound": true,
+      "tdxQuoteVerified": true,
+      "gpuAttested": true,
+      "configurationBound": true,
+      "eventLogVerified": true,
+      "measurementPolicyMatched": true,
+      "signatureKind": "provider_tee",
+      "signatureValid": true,
+      "signerMatchesAttestation": true,
+      "requestSha256": "8794fc70b0b992134722a59f4975a042b3ab8fbc9f4ce6b15e984a25ebebd85b",
+      "responseSha256": "8c3e3386cb68c93c382d4988e6c77ec5ca9e920d2da52417154096da5f910c8d",
+      "verified": true
+     },
+     "trustBasis": "observed-at-2026-11-13-not-independently-reproduced",
+     "proposalBound": true,
+     "transactionHash": "0x280fbcd580de2cb603d2dedad8b09157ee181ba4e268e628d62ffcc02efd3e83"
+    },
+    {
+     "proposalId": "3",
+     "name": "Momentum",
+     "privacy": {
+      "schemaVersion": 1,
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "nonceBound": true,
+      "tdxQuoteVerified": true,
+      "gpuAttested": true,
+      "configurationBound": true,
+      "eventLogVerified": true,
+      "measurementPolicyMatched": true,
+      "signatureKind": "provider_tee",
+      "signatureValid": true,
+      "signerMatchesAttestation": true,
+      "requestSha256": "76c52cb6943adddf3c7ba0e3376160508a11a1d86bc85395f3b7440a03d09584",
+      "responseSha256": "f87f0ab477b716559486cdd102890e0a9845b8bdbaa1493b29806ece6e095d71",
+      "verified": true
+     },
+     "trustBasis": "observed-at-2026-11-13-not-independently-reproduced",
+     "proposalBound": true,
+     "transactionHash": "0x70a3e05abb6512506bce08f64048bd65df6440c55d8102d16d6deedad97ea9df"
+    },
+    {
+     "proposalId": "4",
+     "name": "HighBeta",
+     "privacy": {
+      "schemaVersion": 1,
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "nonceBound": true,
+      "tdxQuoteVerified": true,
+      "gpuAttested": true,
+      "configurationBound": true,
+      "eventLogVerified": true,
+      "measurementPolicyMatched": true,
+      "signatureKind": "provider_tee",
+      "signatureValid": true,
+      "signerMatchesAttestation": true,
+      "requestSha256": "c65d70c3d16d704e978d9d20ba46aeeddb016c8da567dd837ea8a1dedecf3e51",
+      "responseSha256": "0092d0ce6f10c4211c783f961144b5bbb01ef3c00ffa6a81c15b890139da8d33",
+      "verified": true
+     },
+     "trustBasis": "observed-at-2026-11-13-not-independently-reproduced",
+     "proposalBound": true,
+     "transactionHash": "0x36a750b87da42fc17c4cf2e97591e38e2543744264c7f0f73f596038397b2b2e"
+    }
+   ],
+   "modelUsage": {
+    "inputTokens": 7462,
+    "outputTokens": 783
+   },
+   "proposals": [
+    {
+     "id": "0",
+     "name": "Hold",
+     "allocationBps": 6478,
+     "rationale": "Preserve current token quantities.",
+     "twapX18": "500000000000000000"
+    },
+    {
+     "id": "1",
+     "name": "Conservative",
+     "allocationBps": 500,
+     "rationale": "Conservative mandate with low volatility history (max drawdown 16bps) and tight spread. Current 64.78% allocation is high for conservative profile; reducing to 5% preserves capital while maintaining minimal exposure.",
+     "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+     "provider": "near-ai",
+     "inputHash": "13bfdcca3e4f275a0c269e613ea321d5818f7e899113aa465a092343ddff0f74",
+     "outputHash": "ee3757991fd49bba49816f5e235f4736df5d401f9407c6a3c4653537a7639255",
+     "scripted": false,
+     "proposeTx": "0x3dbd709e9e2e03181d23aa6706e9454e9677866d040da20fbd6607d35e4f517b",
+     "twapX18": "536995178553394763"
+    },
+    {
+     "id": "2",
+     "name": "Balanced",
+     "allocationBps": 4200,
+     "rationale": "Current 6478 bps exceeds mandate max (5000). Recent 24h return is -259 bps with low volatility (16 bps max drawdown). Mandate requires 35-50% asset allocation. Mid-range 42% balances downside protection against potential further drift while maintaining exposure. External data is unverified, justifying lower confidence.",
+     "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+     "provider": "near-ai",
+     "inputHash": "fdbb5a585cca885f0054a57b6003e21124663d8410ecf4b1c27c4c5db4f7badc",
+     "outputHash": "9e107b70a2e9a5430053b96945debac974bf9338875c5201b245bb8feb33e85f",
+     "scripted": false,
+     "proposeTx": "0x280fbcd580de2cb603d2dedad8b09157ee181ba4e268e628d62ffcc02efd3e83",
+     "twapX18": "500000000000000000"
+    },
+    {
+     "id": "3",
+     "name": "Momentum",
+     "allocationBps": 6500,
+     "rationale": "Price action is range-bound with low volatility (max drawdown 16bps, step 14bps) and a negligible 1bps lookback return. Current allocation (6478bps) is already near the mandate floor. Given the lack of strong momentum and the mandate's minimum constraint, maintaining the floor allocation minimizes deviation risk while…",
+     "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+     "provider": "near-ai",
+     "inputHash": "a866f8cf6751c642596eda00a195f41916984e548330c18fbe5d82df003fa8a2",
+     "outputHash": "103f23e66d2f4cdc9a7389941149582ad8f203d8d5e7a58124622820ceaba270",
+     "scripted": false,
+     "proposeTx": "0x70a3e05abb6512506bce08f64048bd65df6440c55d8102d16d6deedad97ea9df",
+     "twapX18": "500000000000000000"
+    },
+    {
+     "id": "4",
+     "name": "HighBeta",
+     "allocationBps": 9500,
+     "rationale": "High-beta mandate requires near-maximum exposure. Recent price action shows low volatility (16 bps drawdown) and tight spreads, supporting high allocation despite 24h negative trend.",
+     "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+     "provider": "near-ai",
+     "inputHash": "5fe69516b76d6c9dc17dd165c289a2559f472e504b42561af36f6f09187b1cf2",
+     "outputHash": "2404f2cd8711bfad2d38f4a83c8ff54f43116a5edbb18965595349caaf5dfb7b",
+     "scripted": false,
+     "proposeTx": "0x36a750b87da42fc17c4cf2e97591e38e2543744264c7f0f73f596038397b2b2e",
+     "twapX18": "490129381529030278"
+    }
+   ],
+   "proposers": [
+    {
+     "name": "Conservative",
+     "provider": "near-ai",
+     "confidenceBps": 1500
+    },
+    {
+     "name": "Balanced",
+     "provider": "near-ai",
+     "confidenceBps": 2500
+    },
+    {
+     "name": "Momentum",
+     "provider": "near-ai",
+     "confidenceBps": 1500
+    },
+    {
+     "name": "HighBeta",
+     "provider": "near-ai",
+     "confidenceBps": 2500
+    }
+   ],
+   "winner": {
+    "proposalId": "1",
+    "name": "Conservative",
+    "allocationBps": 500,
+    "isHold": false
+   },
+   "forecasters": [
+    {
+     "name": "Quant",
+     "model": null,
+     "provider": "scripted",
+     "inputHash": "44cb25645f229e3a58b1495d77059aacdd271a0ccdbaa383999b24b7c0696a0e",
+     "outputHash": "1105e11617adef5624af6a5385926daee98244de6ac6de461d4994cd7ac98f59",
+     "scripted": true,
+     "action": "buy",
+     "side": "long",
+     "proposalId": "1",
+     "credits": "400000"
+    },
+    {
+     "name": "Guardian",
+     "model": null,
+     "provider": "scripted",
+     "inputHash": "de9495d13fd414530c90f3969755289d3f7bb1acd0da924c2b8a07f8a486ab81",
+     "outputHash": "4cad73a60708b56bbc578ad3c3dd4483d99987b70a8afe8e591a2f4788f832b2",
+     "scripted": true,
+     "action": "buy",
+     "side": "short",
+     "proposalId": "1",
+     "credits": "100000"
+    },
+    {
+     "name": "FeeAnalyst",
+     "model": null,
+     "provider": "scripted",
+     "inputHash": "bf83983429c415811bba8eef180cad16cfdeaeeabfc1662fd2962645e941c7a9",
+     "outputHash": "a57124300f71069cd47e4093f614daf679e7eb41df88a475fac03bd503f0c806",
+     "scripted": true,
+     "action": "buy",
+     "side": "short",
+     "proposalId": "4",
+     "credits": "100000"
+    },
+    {
+     "name": "StressAnalyst",
+     "model": null,
+     "provider": "scripted",
+     "inputHash": "1610d45d426d41406afab6f60964963529574b4eef5f64b98f95359db2f91f1c",
+     "outputHash": "1105e11617adef5624af6a5385926daee98244de6ac6de461d4994cd7ac98f59",
+     "scripted": true,
+     "action": "buy",
+     "side": "long",
+     "proposalId": "1",
+     "credits": "100000"
+    }
+   ],
+   "swap": {
+    "transactionHash": "0x567dc2a0313c3c368709dcc3583bdf2187eca41726b31a145ec1387626503b85",
+    "blockNumber": "277653498",
+    "safe": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11",
+    "stableDelta": "116643816",
+    "assetDelta": "-61495684509957572",
+    "slippageBps": 100,
+    "routerAllowancesZero": true,
+    "independentlyChecked": true
+   },
+   "realisedReturnX18": "995892826171544966",
+   "market": {
+    "tradingStart": "1794656871",
+    "tradingEnd": "1794657279",
+    "evaluationEnd": "1794657879",
+    "twapWindowSeconds": "90",
+    "returnBounds": {
+     "minX18": "950000000000000000",
+     "maxX18": "1050000000000000000"
+    },
+    "longPayoutX18": "458928261715449660"
+   },
+   "totals": {
+    "deposits": "40000000",
+    "paid": "39954833"
+   },
+   "collateral": {
+    "atCollapse": "139718689",
+    "ending": "99763856",
+    "seed": "99718689"
+   },
+   "payouts": [
+    {
+     "name": "Quant",
+     "deposit": "10000000",
+     "payout": "9953072",
+     "profitLoss": "-46928"
+    },
+    {
+     "name": "Guardian",
+     "deposit": "10000000",
+     "payout": "10015674",
+     "profitLoss": "15674"
+    },
+    {
+     "name": "FeeAnalyst",
+     "deposit": "10000000",
+     "payout": "10000000",
+     "profitLoss": "0"
+    },
+    {
+     "name": "StressAnalyst",
+     "deposit": "10000000",
+     "payout": "9986087",
+     "profitLoss": "-13913"
+    }
+   ],
+   "transactions": [
+    {
+     "label": "round10:oracle:open",
+     "transactionHash": "0x925062aaeab50da06aa902d1b2f9e4d93161595eee16c2b1652046b4a5509da7",
+     "blockNumber": "277652702"
+    },
+    {
+     "label": "round10:authorize",
+     "transactionHash": "0x239bbce051fce1c032f5c02ce0c9de686d7091bb6f5edee8d187ac4e480efdf6",
+     "blockNumber": "277652715"
+    },
+    {
+     "label": "round10:open",
+     "transactionHash": "0x4e8feafd1d98be01d19c90c0f793533847e415db57d85d0dce48a3f809f74499",
+     "blockNumber": "277652725"
+    },
+    {
+     "label": "round10:propose:Conservative",
+     "transactionHash": "0x3dbd709e9e2e03181d23aa6706e9454e9677866d040da20fbd6607d35e4f517b",
+     "blockNumber": "277652739"
+    },
+    {
+     "label": "round10:propose:Balanced",
+     "transactionHash": "0x280fbcd580de2cb603d2dedad8b09157ee181ba4e268e628d62ffcc02efd3e83",
+     "blockNumber": "277652751"
+    },
+    {
+     "label": "round10:propose:Momentum",
+     "transactionHash": "0x70a3e05abb6512506bce08f64048bd65df6440c55d8102d16d6deedad97ea9df",
+     "blockNumber": "277652762"
+    },
+    {
+     "label": "round10:propose:HighBeta",
+     "transactionHash": "0x36a750b87da42fc17c4cf2e97591e38e2543744264c7f0f73f596038397b2b2e",
+     "blockNumber": "277652774"
+    },
+    {
+     "label": "round10:deposit:Quant",
+     "transactionHash": "0xe09674562bbae92e3fd50215d2226011e17b3607f6806040def6f27a9e5f72b8",
+     "blockNumber": "277652795"
+    },
+    {
+     "label": "round10:claim:Quant",
+     "transactionHash": "0xef4e02c81a1df4cd2a4c11ebe4c1261083fe1f17ef0bf533764d6f1ee0b07bc5",
+     "blockNumber": "277652810"
+    },
+    {
+     "label": "round10:trade:Quant",
+     "transactionHash": "0x452f6c8357e89c89d18aa0cb49592e5c1e3e53d6c15c7f4142ed2ac9e288ed94",
+     "blockNumber": "277652821"
+    },
+    {
+     "label": "round10:deposit:Guardian",
+     "transactionHash": "0xe3135079069762d2edffc11a4d7ef368b589bbcc11938a175a74e727e56fd152",
+     "blockNumber": "277652838"
+    },
+    {
+     "label": "round10:claim:Guardian",
+     "transactionHash": "0xfdeaffd671c45c2c7f4e0d86dd9c3866b063e3adec610881a4498122709d6362",
+     "blockNumber": "277652852"
+    },
+    {
+     "label": "round10:trade:Guardian",
+     "transactionHash": "0x12ac4074f71f86b977cba2c74f97bd80b864880e59e7785d2296bb09428afb01",
+     "blockNumber": "277652864"
+    },
+    {
+     "label": "round10:deposit:FeeAnalyst",
+     "transactionHash": "0xa20036b7f5585fd5e50ce4c19e439cc8b96c0e0b62a7277aa49aa87f8518e40d",
+     "blockNumber": "277652881"
+    },
+    {
+     "label": "round10:claim:FeeAnalyst",
+     "transactionHash": "0x64a612822b9233bc9f97331671a1bf004b0f950ec402e233a3f9aaf49cae81c0",
+     "blockNumber": "277652895"
+    },
+    {
+     "label": "round10:trade:FeeAnalyst",
+     "transactionHash": "0xc817485392743eb4b0657bc1e307c8fd42379ca5d02e9ed47620acf687b54b90",
+     "blockNumber": "277652908"
+    },
+    {
+     "label": "round10:deposit:StressAnalyst",
+     "transactionHash": "0xe98c54247040a547c2aac8c353540abfe7a35f116fe2a4091dfe174edfca4626",
+     "blockNumber": "277652921"
+    },
+    {
+     "label": "round10:claim:StressAnalyst",
+     "transactionHash": "0xdf872b8f687a3ad4fcae92000aa7d1bcea333e2892d6776c2bda6c516c01c7c4",
+     "blockNumber": "277652935"
+    },
+    {
+     "label": "round10:trade:StressAnalyst",
+     "transactionHash": "0xa6773f9f77d933fc46ff7e1d62ce7b092b263c70f348892b4bd8dcb647804a8a",
+     "blockNumber": "277652947"
+    },
+    {
+     "label": "round10:collapse",
+     "transactionHash": "0x660c44422bec81c68ecf527518b74eefa37cba313bf2bad701aacc617ed5f7bd",
+     "blockNumber": "277653460"
+    },
+    {
+     "label": "round10:oracle:execute",
+     "transactionHash": "0x9ebe383728585060803f101c57327b6f20ff3bea146a371c0483258953922951",
+     "blockNumber": "277653485"
+    },
+    {
+     "label": "round10:execute",
+     "transactionHash": "0x567dc2a0313c3c368709dcc3583bdf2187eca41726b31a145ec1387626503b85",
+     "blockNumber": "277653498"
+    },
+    {
+     "label": "round10:oracle:settle",
+     "transactionHash": "0xc5708294da375f3fca49979610610ab327a5323218859a17f755012e78d74090",
+     "blockNumber": "277654507"
+    },
+    {
+     "label": "round10:settle",
+     "transactionHash": "0x1b32b09fbf96fd530d087766f29fe55cd6ca854dcff6a49bb7752ecd7eb80315",
+     "blockNumber": "277654518"
+    },
+    {
+     "label": "round10:redeem:Quant",
+     "transactionHash": "0xde73e47ed6073530c957b35aea777262794832c54dea581735610cc6b10fc4d6",
+     "blockNumber": "277654529"
+    },
+    {
+     "label": "round10:redeem:Guardian",
+     "transactionHash": "0xc4bcc51b8a9642ce2d395e077900cd6472528761e4eff35a6a5f3f5a31d949a6",
+     "blockNumber": "277654545"
+    },
+    {
+     "label": "round10:redeem:FeeAnalyst",
+     "transactionHash": "0x3ee74b7283f6fe723fa26f02ce544259a1afded6712b0dd66832fc7971a19c27",
+     "blockNumber": "277654560"
+    },
+    {
+     "label": "round10:redeem:StressAnalyst",
+     "transactionHash": "0x1b7ed2d6bbcc9923d641c02bef691f1552d4ae4746494a67422b1cac8949b20f",
+     "blockNumber": "277654574"
+    }
+   ],
+   "reputation": {
+    "agent": "0x5613c60b04fa16363c3a388aa4545073fb440345",
+    "score": "-1",
+    "cumulativeScore": "0",
+    "transactionHash": "0xa16a4e1c97e5bf081b8acbb3eb5066c9f3b59a8eb1236b647b25e1bb6dde1d24",
+    "blockNumber": "277654602",
+    "contract": "0xfa71a652547284d1034ae6813ed4a882cb354e92"
+   },
+   "preRegistration": {
+    "scriptedTarget": "1",
+    "evaluationSeconds": 600
+   },
+   "manipulationProbe": null,
+   "checks": {
+    "independentPassed": true,
+    "returnRecomputed": true,
+    "payoutsRecomputed": true,
+    "swapChecked": true
+   },
+   "scope": "HYBRID TEST: four genuine NEAR AI proposer calls with assigned exposure mandates; four SCRIPTED forecasters deliberately target pre-registered proposal1. Evaluation window 600s after trading end. Actual testnet swaps/payouts are not evidence of AI forecasting alpha.",
+   "correction": null,
+   "limitations": [
+    "Tidepool community testnet, not official mainnet 1Click execution.",
+    "Investment and forecast tokens/liquidity are worthless test assets.",
+    "Four real proposals use the same model and operator-defined risk mandates.",
+    "All forecast bets are explicitly SCRIPTED fixtures aimed at the pre-registered target (proposal 1, Conservative); the winner reflects that script, not forecasting skill.",
+    "Return is a 600-second marked test portfolio observation at the oracle price, not real investment profit."
+   ]
   }
  ]
 }

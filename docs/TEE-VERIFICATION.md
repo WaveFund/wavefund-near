@@ -89,3 +89,10 @@ The provider and record rechecker expose only structured TEE error codes. Non-em
 All five returned the same gateway measurement and the same model mrTd `df4d77c8…891b`, which is the value reproduced from dstack v0.5.12 above, with RTMR3 `os-image-hash` 91fd5d69…9829. So the **same observed-pinned basis** applies: mrTd reproduced, mrConfigId pinned as observed. `docs/tee-policy.json` lists the per-model values under `models`; `modelMeasurements` is their union (the report's `model_name` is checked separately). The NRAS JWKS re-fetch returned the same 212 keys. A third DeepSeek compose hash, if NEAR AI rotates one in, fails closed with `TEE_REPORT_REJECTED`; rerun the preflight before a live round.
 
 `Qwen/Qwen3.8-27B-abliterated` is no longer a proposer. `deepseek/deepseek-v4.1-flash` and `moonshotai/kimi-k2.6` list a `hugging_face_id` but the report endpoint answers "No provider found that supports attestation reports", so swarm2 runs five proposers plus Hold.
+
+
+### Round 10 compatibility fixes and replay
+
+Round10 has four attested Qwen3.6 proposer responses and four explicitly scripted forecasters. `node scripts/verify-tee.mjs 10 --policy docs/tee-policy.json` rechecks the saved proofs and proposal bindings. Multiple fully verified model attestations may bind the same ECDSA signing address; every report must still pass all nonce/quote/GPU/configuration/event-log/measurement checks. No unmatched signer is accepted. The regression failed with the original exactly-one condition, and the captured rejected DeepSeek proof passes after the fix.
+
+Live NVIDIA key rotation is explicitly enabled in the reviewed policy. Unknown keys come only from NVIDIA's fixed HTTPS JWKS endpoint, must verify a nonce-bound unexpired successful verdict, and are durably retained before generation. This trusts NVIDIA's HTTPS publication; it does not reproduce gateway source code or relax model measurements. Offline replay uses retained keys only. See AGENT-LAYER.md and the pre-registered round schedule for limits and failed attempts.

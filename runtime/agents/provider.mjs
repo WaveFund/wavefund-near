@@ -39,19 +39,23 @@ export function createProvider(config, { fetchImpl = fetch, timeoutMs = 20000, m
     info: Object.freeze({ mode: checked.mode, model: checked.model, attestationVerified: false }),
     async complete({ system, context }) {
       if (++calls > maxCalls) throw new Error('Inference request budget exhausted');
-      let response;
+      let response; let phase = 'transport'; let finishReason = null;
       try {
         response = await credentials.fetch(checked.endpoint, { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(timeoutMs), headers: { 'Content-Type': 'application/json', ...(checked.apiKey ? { Authorization: `Bearer ${checked.apiKey}` } : {}) }, body: JSON.stringify({ model: checked.model, messages: [{ role: 'system', content: system }, { role: 'user', content: JSON.stringify(context) }], max_tokens: 1800, temperature: 0.2, stream: false }) });
         if (!response.ok) throw new Error(`Inference HTTP ${response.status}`);
+        phase = 'response-json';
         const payload = JSON.parse(await boundedBody(response));
         const choice = payload.choices?.[0];
+        finishReason = ['stop','length','content_filter','tool_calls'].includes(choice?.finish_reason) ? choice.finish_reason : 'unknown'; phase = 'completion';
         if (choice?.finish_reason !== 'stop' || choice.message?.tool_calls?.length || typeof choice.message?.content !== 'string') throw new Error('Incomplete or non-text model answer');
+        phase = 'content-json';
         const parsed = JSON.parse(choice.message.content); // No fence stripping or JSON extraction from arbitrary prose.
         return { value: parsed, ...(checked.mode === 'near-ai' ? { credentialUse: credentials.usage() } : {}), usage: { inputTokens: Number.isSafeInteger(payload.usage?.prompt_tokens) ? payload.usage.prompt_tokens : null, outputTokens: Number.isSafeInteger(payload.usage?.completion_tokens) ? payload.usage.completion_tokens : null } };
       } catch (error) {
         // Do not surface SDK/network errors, credentials, HTTP bodies or hidden model reasoning to UI/journal.
         if (/^Inference HTTP \d{3}$/.test(error?.message ?? '')) throw error;
-        throw new Error('Inference failed: invalid, incomplete, oversized or timed-out response; no fallback or retry');
+        const code = ['TimeoutError','AbortError'].includes(error?.name) ? 'TIMEOUT' : error?.message === 'Model response exceeds size limit' ? 'OVERSIZED' : phase === 'response-json' ? 'INVALID_RESPONSE_JSON' : phase === 'content-json' ? 'INVALID_CONTENT_JSON' : phase === 'completion' ? `INCOMPLETE_${finishReason.toUpperCase()}` : 'TRANSPORT_ERROR';
+        throw new Error(`Inference failed: ${code}; no fallback or retry`);
       }
     },
   };

@@ -115,6 +115,38 @@ class AgentBridgeSafety(unittest.TestCase):
         for key in ['synthetic-primary', 'synthetic-backup', 'synthetic-third']:
             self.assertNotIn(key, result.stdout + result.stderr)
 
+    def test_failed_tee_evidence_is_saved_with_concise_stdout(self):
+        (self.root / 'snapshot.json').write_text(json.dumps({'snapshot': {}, 'market': {}, 'researchContext': {}}))
+        env_file = self.root / 'fake.env'
+        env_file.write_text('NEARAI_API_KEY=synthetic-placeholder\n')
+        executable = self.root / 'docker'
+        executable.write_text('#!/usr/bin/env python3\nimport sys,json\njson.loads(sys.stdin.readline())\n'
+                              'print(json.dumps({"stage":"tee-verification-failed","agent":"Momentum","reason":"SIGNED_RESPONSE_HASH_MISMATCH","checks":{"responseHashMatches":False},"evidence":{"responseBody":"synthetic-proof-body"}}))\n')
+        executable.chmod(0o700)
+        environment = {**os.environ, 'PATH': str(self.root) + os.pathsep + os.environ['PATH']}
+        result = subprocess.run(self.command + ['--profile', 'swarm2', '--run-inference', '--env', str(env_file)], capture_output=True, text=True, timeout=10, env=environment)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        saved = json.loads((self.root / 'tee-verification-failed.json').read_text())
+        self.assertEqual(saved['evidence']['responseBody'], 'synthetic-proof-body')
+        self.assertIn('SIGNED_RESPONSE_HASH_MISMATCH', result.stdout)
+        self.assertNotIn('synthetic-proof-body', result.stdout)
+
+    def test_plan_failure_preserves_original_error_without_a_fake_plan_or_keyerror(self):
+        (self.root / 'snapshot.json').write_text(json.dumps({'snapshot': {}, 'market': {}, 'researchContext': {}}))
+        env_file = self.root / 'fake.env'
+        env_file.write_text('NEARAI_API_KEY=synthetic-placeholder\n')
+        executable = self.root / 'docker'
+        executable.write_text('#!/usr/bin/env python3\nimport sys,json\njson.loads(sys.stdin.readline())\n'
+                              'print(json.dumps({"stage":"plan","status":"failed","reason":"TEE_GPU_REJECTED","errorName":"Error"}))\n'
+                              'sys.exit(1)\n')
+        executable.chmod(0o700)
+        environment = {**os.environ, 'PATH': str(self.root) + os.pathsep + os.environ['PATH']}
+        result = subprocess.run(self.command + ['--profile', 'swarm2', '--run-inference', '--env', str(env_file)], capture_output=True, text=True, timeout=10, env=environment)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('TEE_GPU_REJECTED', result.stdout)
+        self.assertNotIn('KeyError', result.stderr)
+        self.assertFalse((self.root / 'plan.json').exists())
+
     def test_hybrid_plan_requires_and_forwards_a_pre_registered_target_and_window(self):
         (self.root / 'snapshot.json').write_text(json.dumps({'snapshot': {}, 'market': {}, 'researchContext': {'evidenceId': 'fixture'}}))
         environment_file = self.root / 'fake.env'
@@ -266,6 +298,35 @@ class AgentBridgeSafety(unittest.TestCase):
         result = self.run_bridge('--tee', '--tee-policy', 'missing-policy.json', '--profile', 'swarm2', '--run-inference')
         self.assertNotIn('--tee applies only', result.stderr)
         self.assertNotIn('invalid choice', result.stderr)
+
+    def test_nvidia_rotation_is_durable_before_ack_and_requires_opt_in(self):
+        (self.root / 'snapshot.json').write_text(json.dumps({'snapshot': {}, 'market': {}, 'researchContext': {}}))
+        env_file = self.root / 'fake.env'
+        env_file.write_text('NEARAI_API_KEY=synthetic-placeholder\n')
+        policy_file = self.root / 'policy.json'
+        key = dict(kty='EC', crv='P-384', kid='synthetic-rotation', x='A'*64, y='B'*64)
+        executable = self.root / 'docker'
+        executable.write_text('#!/usr/bin/env python3\nimport sys,json\nc=json.loads(sys.stdin.readline())\n'
+            + 'event=' + repr(dict(stage='tee-key-rotation', source='https://nras.attestation.nvidia.com/.well-known/jwks.json', key=key, ackId='nras-key-'+'a'*64)) + '\n'
+            + 'print(json.dumps(event),flush=True)\nack=sys.stdin.readline()\n'
+            + 'if ack:\n assert json.loads(ack)["ack"]==event["ackId"]\n'
+            + ' assert event["key"] in json.load(open(' + repr(str(policy_file)) + '))["nrasKeys"]\n'
+            + ' print(json.dumps({"stage":"plan","plan":{"persisted":True}}),flush=True)\n')
+        executable.chmod(0o700)
+        env = {**os.environ, 'PATH':str(self.root)+os.pathsep+os.environ['PATH']}
+        args = self.command + ['--profile','swarm2','--run-inference','--tee','--tee-policy',str(policy_file),'--env',str(env_file)]
+        for enabled in [False, True]:
+            (self.root / 'journal.jsonl').write_text('')
+            policy_file.write_text(json.dumps(dict(schemaVersion=1, allowOfficialNvidiaRotation=enabled, nrasKeys=[])))
+            result = subprocess.run(args,capture_output=True,text=True,timeout=10,env=env)
+            if enabled:
+                self.assertEqual(result.returncode,0,result.stderr)
+                self.assertTrue(json.loads((self.root/'plan.json').read_text())['persisted'])
+            else:
+                self.assertNotEqual(result.returncode,0)
+                self.assertIn('NVIDIA key update rejected',result.stderr)
+                self.assertEqual(json.loads(policy_file.read_text())['nrasKeys'],[])
+
 
 if __name__ == '__main__':
     unittest.main()

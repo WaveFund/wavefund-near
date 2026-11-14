@@ -1,0 +1,281 @@
+{
+  "schemaVersion": 1,
+  "mode": "public-read-only",
+  "paidInference": false,
+  "fundsMoved": false,
+  "checks": [
+    {
+      "name": "live-aurora-outcome-reputation",
+      "required": true,
+      "status": "passed",
+      "observation": {
+        "schemaVersion": 1,
+        "chainId": 1313161555,
+        "contract": "0xac9c56f1c032f74a9e84703602894315df2d9488",
+        "agent": "0x8b6af0b1738b941c0c7dd4deec6fabee3447888f",
+        "blockNumber": "277654970",
+        "blockTimestamp": "1794658161",
+        "samples": "1",
+        "positive": "0",
+        "negative": "1",
+        "flat": "0",
+        "score": "-1",
+        "hasEvaluatedStrategies": true,
+        "metric": "absolute-marked-return-points-v1",
+        "evidence": "trusted-rpc-pinned-contract-reads",
+        "scope": "Selected, executed and settled strategies only; not lending creditworthiness."
+      }
+    },
+    {
+      "name": "live-tidepool-outcome-reputation",
+      "required": true,
+      "status": "passed",
+      "observation": {
+        "schemaVersion": 1,
+        "chainId": 1313161555,
+        "contract": "0xfa71a652547284d1034ae6813ed4a882cb354e92",
+        "agent": "0x8b6af0b1738b941c0c7dd4deec6fabee3447888f",
+        "blockNumber": "277654974",
+        "blockTimestamp": "1794658164",
+        "samples": "3",
+        "positive": "1",
+        "negative": "2",
+        "flat": "0",
+        "score": "-1",
+        "hasEvaluatedStrategies": true,
+        "metric": "absolute-marked-return-points-v1",
+        "evidence": "trusted-rpc-pinned-contract-reads",
+        "scope": "Selected, executed and settled strategies only; not lending creditworthiness."
+      }
+    },
+    {
+      "name": "tidepool-signed-dry-quote",
+      "required": true,
+      "status": "passed",
+      "provider": "Tidepool community testnet, not official production 1Click",
+      "signatureVerified": true,
+      "safe": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11",
+      "amountIn": "200000000",
+      "minAmountOut": "197485200",
+      "expiresAt": 1794658767,
+      "deliveryProven": false,
+      "note": "A dry quote proves quoting, not funding or strategy execution."
+    },
+    {
+      "name": "live-tidepool-delivery-receipts",
+      "required": true,
+      "status": "passed",
+      "provider": "Tidepool community testnet",
+      "deliveryProven": true,
+      "source": {
+        "chainId": 421614,
+        "transactionHash": "0xb56675db59f1eda47a2b0998cb4ca28689a83a1e66f2723215aba29a31fd5a69",
+        "blockNumber": "328309683",
+        "amount": "200000000"
+      },
+      "destination": {
+        "chainId": 1313161555,
+        "transactionHash": "0x28999ced84c15e9a7bc53bfe0ea8d368d6a332455cfde3bd8e741d01ce51c45b",
+        "blockNumber": "277272331",
+        "safe": "0x37947266fc1c2b20ffa36869af5dd531f2d80f11",
+        "amount": "199480000"
+      }
+    },
+    {
+      "name": "live-near-testnet-execute-intents",
+      "required": true,
+      "status": "passed",
+      "network": "NEAR testnet",
+      "provider": "Tidepool community verifier",
+      "transactionHash": "93tnePQQPVsRDV4xFiQ4eeEYFUZWbQEr1YQXANatCVYC",
+      "receiver": "verifier.tidepool-sandbox.testnet",
+      "method": "execute_intents",
+      "final": true,
+      "rpc": "https://archival-rpc.testnet.near.org",
+      "attempts": 1
+    },
+    {
+      "name": "live-tidepool-strategy-and-redemptions",
+      "required": true,
+      "status": "passed",
+      "network": "Aurora testnet",
+      "engine": "0xba96a117f4de33c38df72002651f11024ed14a14",
+      "roundId": "1",
+      "winner": "3",
+      "allocationBps": 7500,
+      "investmentSwapTransaction": "0x4dc76edba6d01cb0eacb6bcd8538ce9d5071b4e24d2872a8c4ed13da61a2de40",
+      "pair": "0x218F2849E4401c194bf9068edf41Fd3a8F643a1b",
+      "redeemedForecasters": 4,
+      "proposers": "four genuine NEAR AI calls",
+      "forecasters": "four scripted test actors",
+      "scope": "Test assets, not predictive alpha"
+    },
+    {
+      "name": "tidepool-rounds-independently-verified",
+      "required": true,
+      "status": "passed",
+      "source": "saved independent.json re-checked against public Aurora testnet receipts and engine state",
+      "engine": "0xba96a117f4de33c38df72002651f11024ed14a14",
+      "rounds": [
+        {
+          "round": "2",
+          "winner": "1",
+          "fills": 4,
+          "redemptions": 4,
+          "outsideWallets": 0
+        },
+        {
+          "round": "3",
+          "winner": "2",
+          "fills": 4,
+          "redemptions": 4,
+          "outsideWallets": 0
+        },
+        {
+          "round": "5",
+          "winner": "4",
+          "fills": 4,
+          "redemptions": 4,
+          "outsideWallets": 0
+        },
+        {
+          "round": "6",
+          "winner": "0",
+          "fills": 4,
+          "redemptions": 4,
+          "outsideWallets": 0
+        },
+        {
+          "round": "7",
+          "winner": "0",
+          "fills": 0,
+          "redemptions": 4,
+          "outsideWallets": 0
+        },
+        {
+          "round": "8",
+          "winner": "3",
+          "fills": 4,
+          "redemptions": 4,
+          "outsideWallets": 0
+        },
+        {
+          "round": "9",
+          "winner": "3",
+          "fills": 3,
+          "redemptions": 9,
+          "outsideWallets": 1
+        },
+        {
+          "round": "10",
+          "winner": "1",
+          "fills": 4,
+          "redemptions": 4,
+          "outsideWallets": 0
+        }
+      ],
+      "notIncluded": "round 1 (checked above), round 4 (failed and cancelled with refunds; disclosed in SCHEDULE.md)"
+    },
+    {
+      "name": "round9-tee-proofs-offline",
+      "required": true,
+      "status": "passed",
+      "round": "9",
+      "policy": "docs/tee-policy.json",
+      "verifiedProposals": 4,
+      "same": "node scripts/verify-tee.mjs 9 --policy docs/tee-policy.json",
+      "note": "Offline recheck of captured attestations and on-chain bindings; not a fresh attestation."
+    },
+    {
+      "name": "round9-outside-wallet-receipts",
+      "required": true,
+      "status": "passed",
+      "wallet": "0xbdd8f98a5778cf401daaf8f355382ed2c1ae77b3",
+      "steps": [
+        "approve",
+        "deposit",
+        "claimCredits",
+        "buyLong"
+      ],
+      "redeemFor": "0xe69ec099db15a951327bb7b676a412c7d44917cc9dd8f6e2ad14d1854e6882be",
+      "payout": "1000000",
+      "signedBy": "the wallet itself (receipt.from)"
+    },
+    {
+      "name": "live-attack-suite",
+      "required": true,
+      "status": "passed",
+      "method": "eth_call at one pinned block; no keys, no transactions",
+      "blockNumber": "277655029",
+      "blocked": "12/12",
+      "attacks": [
+        {
+          "name": "Non-owner authorizes a round on the Safe module",
+          "expectedError": "OnlySafe",
+          "observedError": "OnlySafe"
+        },
+        {
+          "name": "Re-execute an already-executed settled round (8)",
+          "expectedError": "NotExecutable",
+          "observedError": "NotExecutable"
+        },
+        {
+          "name": "Execute a cancelled round (4)",
+          "expectedError": "NotExecutable",
+          "observedError": "NotExecutable"
+        },
+        {
+          "name": "Non-keeper opens a round",
+          "expectedError": "AccessControlUnauthorizedAccount",
+          "observedError": "AccessControlUnauthorizedAccount"
+        },
+        {
+          "name": "Settle the performance observation of round 8 again",
+          "expectedError": "AlreadyObserved",
+          "observedError": "AlreadyObserved"
+        },
+        {
+          "name": "Collapse an already-settled round (8)",
+          "expectedError": "AlreadyCollapsed",
+          "observedError": "AlreadyCollapsed"
+        },
+        {
+          "name": "Redeem round 8 twice (already-paid forecaster)",
+          "expectedError": "NothingToRedeem",
+          "observedError": "NothingToRedeem"
+        },
+        {
+          "name": "Record reputation for a Hold round (6)",
+          "expectedError": "NoAgentWinner",
+          "observedError": "NoAgentWinner"
+        },
+        {
+          "name": "Record reputation for a Hold round (7)",
+          "expectedError": "NoAgentWinner",
+          "observedError": "NoAgentWinner"
+        },
+        {
+          "name": "Record reputation for round 8 a second time",
+          "expectedError": "AlreadyRecorded",
+          "observedError": "AlreadyRecorded"
+        },
+        {
+          "name": "Stranger mints test tokens",
+          "expectedError": "OnlyOperator",
+          "observedError": "OnlyOperator"
+        },
+        {
+          "name": "Submit a proposal to a settled (non-trading) round",
+          "expectedError": "TradingNotOpen",
+          "observedError": "TradingNotOpen"
+        }
+      ]
+    }
+  ],
+  "summary": {
+    "passed": 10,
+    "failed": 0,
+    "amber": 0,
+    "unavailable": 0
+  }
+}

@@ -88,8 +88,8 @@ export async function verifyCompletion({ model, nonce, requestBody, responseBody
       p.signatureValid = signer.toLowerCase() === signature.signing_address?.toLowerCase();
     }
     const candidates = modelReports.filter(r => r.signingAddress?.toLowerCase() === signature.signing_address?.toLowerCase() && r.algorithm === signature.signing_algo);
-    p.signerMatchesAttestation = p.signatureValid && candidates.length === 1;
-    // All candidates must have passed preflight; never select one good report from a mixed set.
+    p.signerMatchesAttestation = p.signatureValid && candidates.length >= 1;
+    // Multiple serving reports may bind the same key. Every report must still pass; never select one good report from a mixed set.
     for (const key of TEE_CHECKS.filter(k => !['signatureValid', 'signerMatchesAttestation'].includes(k))) p[key] = modelReports.length > 0 && modelReports.every(r => r[key] === true);
     p.verified = privacyVerified(p);
   } catch { /* Not verified. */ }

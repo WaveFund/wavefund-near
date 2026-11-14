@@ -62,7 +62,7 @@ Requirements: a running Docker plus `bash`, `git`, `rsync` and `curl`. No wallet
 5. Optional: on **Portfolio → Funding → Funding preview** (`/portfolio/fund`), press **Get quote** for a signed official 1Click **mainnet** dry quote. Delivery is unproven and execution disabled.
 6. Run `node scripts/judge-check.mjs` (see the top of this README). It is read-only, needs internet, starts no round, makes no paid model call, and signs or moves nothing.
 
-The launcher starts the API with `WAVEFUND_TEE_POLICY=docs/tee-policy.json`, which the read-only evidence API needs to load round 9 (without it `/api/evidence/testnet-rounds` answers 503). Rounds 2-9 are then listed too: see [Judge path: live testnet evidence](#judge-path-live-testnet-evidence).
+The launcher starts the API with `WAVEFUND_TEE_POLICY=docs/tee-policy.json`, which the read-only evidence API needs to load round 9 (without it `/api/evidence/testnet-rounds` answers 503). Rounds 2-10 are then listed too: see [Judge path: live testnet evidence](#judge-path-live-testnet-evidence).
 
 Stop with `bash scripts/docker-demo/down.sh`. Use `up.sh --fresh` for a new local chain. Details and which panel is fixture, saved evidence or fresh read: [docs/INTENTS-DASHBOARD.md](docs/INTENTS-DASHBOARD.md#judge-path).
 
@@ -194,7 +194,7 @@ The separate [Tidepool testnet happy path](docs/TIDEPOOL-DEMO.md) (round 1, Test
 
 ## Attestation and onboarding
 
-[NEAR AI TEE verification](docs/TEE-VERIFICATION.md) is an opt-in, fail-closed hardware, model-signature and proposal-binding path. **Round 9 is the only attested round.** Rounds 1-8 were run without it and cannot be attested afterwards. Its four proposer responses were checked as follows (offline recheck below): nonce-bound Intel TDX quote, NVIDIA GPU verdict, configuration and event-log checks, a measurement allowlist, a `provider_tee` signature whose signer matches the attestation, and the on-chain `ProposalCreated` binding. The 8 forecasters are proxied third-party models and are **not** attested.
+[NEAR AI TEE verification](docs/TEE-VERIFICATION.md) is an opt-in, fail-closed hardware, model-signature and proposal-binding path. **Rounds 9 and 10 have attested proposer responses.** Round 10 is a separately labelled happy-path test: four genuine Qwen3.6 proposer calls, four scripted forecasters, Conservative selected at 53.6995% TWAP versus Hold at 50%, a real 0.061496 test ETH → 116.643816 test USDC swap, −0.410717% measured return, all redemptions checked and the selected agent scored −1. See [Round 10 evidence](docs/test-evidence/tidepool-rounds/round10/report.json). Rounds 1-8 were run without it and cannot be attested afterwards. Its four proposer responses were checked as follows (offline recheck below): nonce-bound Intel TDX quote, NVIDIA GPU verdict, configuration and event-log checks, a measurement allowlist, a `provider_tee` signature whose signer matches the attestation, and the on-chain `ProposalCreated` binding. The 8 forecasters are proxied third-party models and are **not** attested.
 
 Trust basis, quoted from `docs/tee-policy.json` and [TEE-VERIFICATION.md](docs/TEE-VERIFICATION.md): `observed-at-2026-11-13-not-independently-reproduced`. The measurements were pinned from NEAR AI's live attestation on 13 Nov 2026. The mrTd half was reproduced from the dstack v0.5.12 release; the mrConfigId half (NEAR AI's app-compose hash) was **not** reproduced because NEAR AI publishes no expected value. We never call this "independently verified".
 
@@ -261,12 +261,12 @@ Pre-registration: [SCHEDULE.md](docs/test-evidence/tidepool-rounds/SCHEDULE.md) 
 ### Honest limits
 
 - **Test assets only.** All tokens, liquidity and the Safe's capital are worthless; returns are not alpha. The Aurora testnet stack is a single-operator rehearsal, not audited.
-- **Forecasters in rounds 2, 3, 5, 6 and 8 were scripted** to a pre-registered target, so those winners reflect the schedule, not forecasting skill. Round 7 had 4 genuine AI forecasters; all abstained. Only round 9 has AI-chosen trades, and its sample is 3 small bets of 0.1 credits.
+- **Forecasters in rounds 2, 3, 5, 6, 8 and 10 were scripted** to a pre-registered target, so those winners reflect the schedule, not forecasting skill. Round 7 had 4 genuine AI forecasters; all abstained. Only round 9 has AI-chosen trades, and its sample is 3 small bets of 0.1 credits.
 - **Measured returns are tiny or pool-driven.** Round 2's +5.39% is a test-pool artifact. Rounds 3 onward were aligned to the oracle first, so their returns are near zero.
 - **TEE trust basis is observed-pinned**, not independently reproduced (see above). The compose hash (mrConfigId) was **not** independently reproduced. Forecaster calls are unattested.
 - **No official NEAR Intents testnet.** Tidepool is a community testnet; delivery on the official mainnet route is unproven and execution is disabled. Funding from Tidepool cannot be confused with mainnet.
 - **Wallet trading is testnet-only**, needs team-supplied test assets, and works only inside a live round's forecasting window.
-- **Failures are disclosed:** round 4, and three round 9 plan attempts that spent paid calls without going on-chain.
+- **Failures are disclosed:** round 4, three round 9 plan attempts and the failed full-AI Round 10 planning attempts. The reproduced duplicate-attestation verifier bug and rotating NVIDIA-key fix are documented in [the Round 10 diagnosis](docs/test-evidence/round10-diagnosis.json) and [schedule](docs/test-evidence/tidepool-rounds/SCHEDULE.md).
 
 ## Hosted read-only version (Vercel)
 
