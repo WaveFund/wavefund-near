@@ -64,7 +64,7 @@ The UI truncates display precision; raw integer amounts remain available through
 
 The API accepts loopback Host headers and only the two localhost frontend origins. Every write checks chain 31337 and an Anvil client. The journal records a prepared nonce before submission. Ambiguous broadcasts stop as unknown; startup refuses automatic replay. Safe owner calls require both successful simulation and the actual indexed `ExecutionSuccess` receipt event.
 
-## Verification and limits
+## Historical verification and limits (10 November local fixture)
 
 - 400 Foundry tests passed across all 24 Solidity test files, zero failed/skipped.
 - Six Node runtime tests passed. Three scratch mutants were killed: RPC restriction, HTTP origin check and indexed Safe event decoding.
@@ -73,4 +73,4 @@ The API accepts loopback Host headers and only the two localhost frontend origin
 - The one-command launcher was exercised in a fresh isolated container: frontend HTTP 200, start HTTP 202, duplicate start HTTP 409, then 27 successful receipts and the expected measured return.
 - Evidence: [summary](test-evidence/local-demo-summary.json), [launcher assertions and full state](test-evidence/local-launcher-e2e.json), [dashboard snapshot](test-evidence/local-demo-state.json), and [all Solidity logs](test-evidence/local-demo-regression/).
 
-This is not yet live AI coordination, fresh RedStone data, an Aurora deployment or a real investment-liquidity integration. RedStone access remains pending. Native NEAR integrations, multi-Safe onboarding, wallet UX, live agent inference, operational recovery and independent security review remain separate work before real funds. Existing production contract logic was not changed by the demo; the base deployment function was only made virtual for the local bootstrap subclass.
+This local fixture does not itself exercise live AI, public Aurora swaps or cross-chain funding. Those were subsequently tested in separate public-testnet rounds: see the current README, Round 9 evidence and `docs/TIDEPOOL-DEMO.md`. RedStone access remains optional; the testnet stack uses Supra. Self-service multi-Safe onboarding and independent production security review remain outside this release. The local deployment function was only made virtual for its bootstrap subclass.
