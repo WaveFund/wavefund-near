@@ -131,6 +131,22 @@ class AgentBridgeSafety(unittest.TestCase):
         self.assertIn('SIGNED_RESPONSE_HASH_MISMATCH', result.stdout)
         self.assertNotIn('synthetic-proof-body', result.stdout)
 
+    def test_plan_failure_preserves_original_error_without_a_fake_plan_or_keyerror(self):
+        (self.root / 'snapshot.json').write_text(json.dumps({'snapshot': {}, 'market': {}, 'researchContext': {}}))
+        env_file = self.root / 'fake.env'
+        env_file.write_text('NEARAI_API_KEY=synthetic-placeholder\n')
+        executable = self.root / 'docker'
+        executable.write_text('#!/usr/bin/env python3\nimport sys,json\njson.loads(sys.stdin.readline())\n'
+                              'print(json.dumps({"stage":"plan","status":"failed","reason":"TEE_GPU_REJECTED","errorName":"Error"}))\n'
+                              'sys.exit(1)\n')
+        executable.chmod(0o700)
+        environment = {**os.environ, 'PATH': str(self.root) + os.pathsep + os.environ['PATH']}
+        result = subprocess.run(self.command + ['--profile', 'swarm2', '--run-inference', '--env', str(env_file)], capture_output=True, text=True, timeout=10, env=environment)
+        self.assertEqual(result.returncode, 1)
+        self.assertIn('TEE_GPU_REJECTED', result.stdout)
+        self.assertNotIn('KeyError', result.stderr)
+        self.assertFalse((self.root / 'plan.json').exists())
+
     def test_hybrid_plan_requires_and_forwards_a_pre_registered_target_and_window(self):
         (self.root / 'snapshot.json').write_text(json.dumps({'snapshot': {}, 'market': {}, 'researchContext': {'evidenceId': 'fixture'}}))
         environment_file = self.root / 'fake.env'

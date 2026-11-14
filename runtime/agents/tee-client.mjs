@@ -122,7 +122,17 @@ export function createTeeProvider(config, { policy, fetchImpl = fetch, quoteVeri
           check(payload?.nonce?.toLowerCase() === nonce, 'TEE_GPU_NONCE_MISMATCH');
           auxiliaryCalls++;
           const nras = JSON.parse(await request(NRAS, { method: 'POST', headers, body: JSON.stringify(payload) }));
-          check(nras?.[0]?.[0] === 'JWT' && verifyGpuToken(nras[0][1], nonce, policy.nrasKeys, now()), 'TEE_GPU_REJECTED');
+          const token = nras?.[0]?.[0] === 'JWT' ? nras[0][1] : null;
+          const gpuVerified = typeof token === 'string' && verifyGpuToken(token, nonce, policy.nrasKeys, now());
+          if (!gpuVerified) {
+            let kid = null;
+            try { const value = JSON.parse(Buffer.from(token.split('.')[0], 'base64url')).kid; if (typeof value === 'string' && /^[A-Za-z0-9_.-]{1,160}$/.test(value)) kid = value; } catch {}
+            const policyHasKey = kid !== null && policy.nrasKeys.some(k => k.kid === kid);
+            await onVerificationFailure?.({ reason: !token ? 'GPU_TOKEN_MISSING' : !policyHasKey ? 'GPU_SIGNING_KEY_NOT_PINNED' : 'GPU_VERDICT_REJECTED',
+              checks: { phase: 'gpu-preflight', signingKeyId: kid, policyHasKey, tokenPresent: typeof token === 'string' },
+              evidence: { phase: 'gpu-preflight', nonce, preflightTime, attestationReport, collateral, token: typeof token === 'string' ? token : null } });
+          }
+          check(gpuVerified, 'TEE_GPU_REJECTED');
           gpuTokens.push(nras[0][1]);
         }
       }

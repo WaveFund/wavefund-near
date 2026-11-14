@@ -44,3 +44,20 @@ test('the live-provider failure hook retains rejected proof before throwing, wit
   assert.equal(saved.reason,'MODEL_SIGNATURE_REQUIRED');assert.equal(saved.evidence.requestBody,req);assert.equal(calls,1);
   assert.ok(!JSON.stringify(saved).includes('synthetic-placeholder'));
 });
+
+test('a rotated GPU signing key is identified before any completion and the verdict is retained',async()=>{
+  const f=await syntheticTee();let saved;let paid=0;const token=f.gpuToken();
+  const policy={...f.policy,nrasKeys:f.policy.nrasKeys.map(k=>({...k,kid:'different-pinned-key'}))};
+  const p=createTeeProvider({mode:'near-ai',model:f.model,apiKey:'synthetic-placeholder'}, {
+    policy,quoteVerifier:f.quoteVerifier,getCollateral:async()=>({}),now:()=>f.at,nonceFactory:()=>f.nonce,
+    onVerificationFailure:async d=>{saved=d;},
+    fetchImpl:async url=>{
+      if(url.includes('/attestation/report'))return Response.json(f.evidence.attestationReport);
+      if(url.includes('nras.attestation'))return Response.json([['JWT',token]]);
+      paid++;throw Error('paid request must not be reached');
+    }
+  });
+  await assert.rejects(p.complete({system:'test',context:{}}),/TEE_GPU_REJECTED/);
+  assert.equal(saved.reason,'GPU_SIGNING_KEY_NOT_PINNED');assert.equal(saved.checks.policyHasKey,false);
+  assert.equal(saved.evidence.token,token);assert.equal(paid,0);
+});

@@ -1,0 +1,11 @@
+{
+  "paidRequests": 0,
+  "nrasHttpStatus": 200,
+  "tokenPresent": true,
+  "kid": "nv-eat-kid-prod-20261114102809464-aaff19d2-960c-4807-864f-c4cb7d4772b8",
+  "policyHasKey": false,
+  "officialJwksHasKey": true,
+  "verifiedWithCurrentPolicy": false,
+  "verifiedWithOfficialCurrentKeys": true,
+  "stopCode": "TEE_GPU_REJECTED"
+}

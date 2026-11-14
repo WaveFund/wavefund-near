@@ -1937,6 +1937,13 @@
       "kid": "nv-eat-kid-prod-20261114052906320-b56de6bf-ef92-41f9-befd-6ac272fe5550",
       "x": "AOLy3-ZDJjIz0WqV9Tn45uJEuhJJL5jpRazIiaG2TySqoup2Jr1uR8fIBO29bVls",
       "y": "Dc_sOTP5LGJejpw2Uh3Gpl_SbQBWuRbLi54162JRdsirJJoYmI4KHJd97xbP4sK3"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114102809464-aaff19d2-960c-4807-864f-c4cb7d4772b8",
+      "x": "6D4WjEKYnBHUGYGuPt5-cMpyz2l5vsgx479cnBWgmwNowLpE3jkVrj1rfzriNl_M",
+      "y": "OBa-CXD3i9vC5KuVfQNfK4PCwdzTzRHR73cQJkkkbDvo_ov-juvP-oFONjb7wZb6"
     }
   ]
 }
