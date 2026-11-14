@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "intendedRound": "10",
+  "attempt": "diagnostic-d",
+  "roundOpened": false,
+  "strategyExecuted": false,
+  "reason": "duplicate-verified-attestations-rejected-by-exactly-one-count",
+  "matchingAttestationCount": 2,
+  "requestHashMatches": true,
+  "responseHashMatches": true,
+  "signatureValid": true,
+  "savedProofVerifiedAfterFix": true,
+  "originalAttemptAExactCause": "unknown; original raw rejected proof was not retained",
+  "note": "This reproduces a final-response verifier bug on the same model, not proof of the original unavailable response."
+}

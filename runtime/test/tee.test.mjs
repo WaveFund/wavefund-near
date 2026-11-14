@@ -16,7 +16,7 @@ test('synthetic exact-byte model signature and independently supplied report/GPU
   assert.equal(proposalBinding({ ...record, decision: { allocationBps: 7500 } }, { rationale, allocationBps: 7500 }), false, 'a changed local decision and matching event still cannot replace the signed allocation');
   assert.equal(proposalBinding(record, { rationale: rationale.replace(p.responseSha256, '0'.repeat(64)), allocationBps: 4500 }), false);
 });
-test('tampered bytes, signer, unknown/gateway kind and duplicated signers cannot yield verified model evidence', async () => {
+test('tampered bytes, signer and unknown/gateway kind cannot yield verified model evidence', async () => {
   const f = await syntheticTee();
   const r = { ...inspectReport(f.report, f.quoteResult, { nonce: f.nonce, allowedMeasurements: f.policy.modelMeasurements }), gpuAttested: true, signingAddress: f.report.signing_address, algorithm: 'ecdsa' };
   const input = { model: f.model, nonce: f.nonce, requestBody: f.evidence.requestBody, responseBody: f.evidence.responseBody, signature: f.evidence.signature, modelReports: [r] };
@@ -25,7 +25,7 @@ test('tampered bytes, signer, unknown/gateway kind and duplicated signers cannot
     { responseBody: `${input.responseBody} ` }, { requestBody: `${input.requestBody} ` },
     { signature: { ...input.signature, signing_address: `0x${'00'.repeat(20)}` } },
     { signature: { ...input.signature, signature_kind: 'gateway' } }, { signature: { ...input.signature, signature_kind: 'unknown' } },
-    { modelReports: [r, r] }, { modelReports: [] }, { modelReports: [{ ...r, gpuAttested: false }] },
+    { modelReports: [] }, { modelReports: [{ ...r, gpuAttested: false }] },
   ]) assert.equal((await verifyCompletion({ ...input, ...mutation })).verified, false);
 });
 test('nonce, debug, TCB, configuration, events and measurement allowlist each fail closed', async () => {
@@ -146,4 +146,15 @@ test('committed policy validates with an observed-pinned trust basis; any change
     await assert.rejects(verifyTeeEvidence(f.evidence, { ...good, gatewayMeasurements: [changed] }, opts), /TEE_REPORT_REJECTED/);
     await assert.rejects(verifyTeeEvidence(f.evidence, { ...good, modelMeasurements: [changed] }, opts), /TEE_REPORT_REJECTED/);
   }
+});
+
+test('multiple fully verified reports may attest the same signer, while any invalid report still rejects', async()=>{
+  const f=await syntheticTee();
+  const r={...inspectReport(f.report,f.quoteResult,{nonce:f.nonce,allowedMeasurements:f.policy.modelMeasurements}),gpuAttested:true,signingAddress:f.report.signing_address,algorithm:'ecdsa'};
+  const input={model:f.model,nonce:f.nonce,requestBody:f.evidence.requestBody,responseBody:f.evidence.responseBody,signature:f.evidence.signature,modelReports:[r,{...r}]};
+  assert.equal((await verifyCompletion(input)).verified,true);
+  for(const flag of ['nonceBound','tdxQuoteVerified','gpuAttested','configurationBound','eventLogVerified','measurementPolicyMatched']){
+    assert.equal((await verifyCompletion({...input,modelReports:[r,{...r,[flag]:false}]})).verified,false,flag);
+  }
+  assert.equal((await verifyCompletion({...input,modelReports:[{...r,signingAddress:'0x'+'12'.repeat(20)}]})).verified,false);
 });
