@@ -26,7 +26,17 @@ npm run dev      # frontend on 127.0.0.1:3000
 npm test         # view-model and capability rules (node --test, no extra dependencies)
 ```
 
-Default backend: `http://127.0.0.1:3001`. Override only with a local HTTP `NEXT_PUBLIC_API_URL`; remote endpoints are refused.
+Default backend: `http://127.0.0.1:3001`. Override only with a local HTTP `NEXT_PUBLIC_API_URL`; remote endpoints are refused. Use port 3000 for the local frontend: the API's allowed browser origins are localhost/127.0.0.1 on port 3000. A custom frontend port needs an explicitly reviewed local proxy; changing the URL alone does not change CORS.
+
+For a no-backend recording of completed rounds, run from the repository root:
+
+```sh
+npm run evidence:static:check
+NEXT_PUBLIC_DATA_MODE=static npm run frontend:build
+NEXT_PUBLIC_DATA_MODE=static npm run start --workspace @wavefund/frontend
+```
+
+Open `http://127.0.0.1:3000`. This mode shows saved rounds and browser-read reputation; live wallet trading, dry-quote previews, local simulations and fresh receipt checks need the local API. No wallet or model keys are needed to replay Round 9. Restart/rebuild without static mode when testing a new public-testnet round.
 
 - `/rounds/local` uses `/api/state` and `/api/demo/start` (the header context selector reads `/api/state` once, only when opened). Completed or interrupted rounds require a deliberate reset (`up.sh --fresh`) rather than silently submitting twice.
 - `/`, `/rounds`, `/rounds/[id]`, `/portfolio` and `/agents` use `/api/evidence/testnet-rounds`, `/api/tidepool/demo` (+ `/fresh-check`) and `/api/agents/reputation[/tidepool]`.

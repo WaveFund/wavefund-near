@@ -182,11 +182,14 @@ export function SelectedStage({ ctx }: { ctx: StageCtx }) {
       <StrategyCard strategy={ctx.winner} selected compact />
       <div className="rw-row">
         {ctx.windows?.twap ? <Cap icon="clock">{ctx.windows.twap} final window</Cap> : null}
-        <Cap>Margin over Hold: 0.5 points</Cap>
+        <Cap>Required margin over Hold: &gt; 0.5 points</Cap>
         <span className="muted">Selection rule <Tip label="Selection rule">The challenger with the best final-window average (TWAP) is selected only if it is strictly above Hold&apos;s average plus 0.5 probability points. Otherwise Hold stays. It is not a count of LONG users.</Tip></span>
       </div>
     </div>
-    {ctx.signals ? <SignalBoard signals={ctx.signals} strategies={ctx.strategies} /> : null}
+    {ctx.signals ? <>
+      <p className="muted">Final-window market averages{ctx.mode === "saved" ? " recorded in the on-chain selection event" : ""}. {ctx.winner.name}: {ctx.signals.rows.find(r => r.id === ctx.winner?.id)?.percent?.toFixed(3)}%; Hold: {ctx.signals.holdPercent.toFixed(3)}%; qualifying line: {ctx.signals.thresholdPercent.toFixed(3)}%.</p>
+      <SignalBoard signals={ctx.signals} strategies={ctx.strategies} />
+    </> : <p className="muted">Final-window averages were not saved for this round.</p>}
   </div>;
 }
 

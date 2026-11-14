@@ -218,3 +218,5 @@ dialog.drawer:has(.tee-proof) { width: min(1100px, 100vw); }
 
 .footer-links { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; width: 100%; }
 .footer-links a { color: var(--muted); } .footer-links a:hover { color: var(--accent); }
+.hosted-notice { margin-bottom: 20px; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; color: var(--muted); font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
+.hosted-notice strong { color: var(--text); }

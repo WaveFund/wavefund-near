@@ -1,4 +1,5 @@
 import { verifyTeeProposals } from '../agents/tee-proof.mjs';
+import { selectionTwaps } from './selection-evidence.mjs';
 import { readFile, readdir } from 'node:fs/promises';
 
 // Developer C: validated, read-only projection of the published Aurora testnet round evidence for two separate
@@ -26,7 +27,7 @@ export const ROUND_SOURCES = Object.freeze([
 // Pre-registered Tidepool rounds exported by scripts/export-tidepool-round.mjs: one directory per round, each with a
 // round.json manifest naming its files. They are validated exactly like the fixed sources above.
 export const DISCOVERED_ROUNDS_DIR = 'docs/test-evidence/tidepool-rounds';
-export const DISCOVERED_FILES = Object.freeze({ report: 'report', plan: 'plan', independent: 'independent', swap: 'swap-independent', capital: 'capital-linkage', reputation: 'reputation', probe: 'manipulation-probe', tee: 'tee' });
+export const DISCOVERED_FILES = Object.freeze({ report: 'report', plan: 'plan', independent: 'independent', swap: 'swap-independent', capital: 'capital-linkage', reputation: 'reputation', probe: 'manipulation-probe', tee: 'tee', selection: 'selection' });
 const ROUND_DIR = /^round([1-9][0-9]{0,3})$/;
 const MAX_PROBE_STABLE = 20000n * 1000000n;
 const PROBE_LABELS = ['approve', 'swap', 'resetApproval', 'approveRestore', 'restore', 'resetRestoreApproval'];
@@ -266,6 +267,11 @@ function projectRound(source, files, stack, manifest, reputationManifest) {
   if (multiModel) check(new Set(records.map((r) => r.model)).size === records.length, 'a multi-model plan reuses a model');
   const winner = proposals.find((item) => item.id === winnerId);
   check(winner, 'the winning proposal is not in the plan');
+  if (files.selection) {
+    const twaps = selectionTwaps(files.selection, { engine: stack.engine, roundId: source.roundId, winnerId, proposals,
+      transaction: transactions.find(t => t.label === `round${source.roundId}:collapse`) });
+    proposals.forEach((p, i) => { p.twapX18 = twaps[i]; });
+  }
   const proposers = records.filter((item) => item?.role === 'proposer').map((item) => ({
     name: name(item.name, 'proposer'), provider: text(item.provider, 'proposer provider', 40), confidenceBps: bps(item.decision?.confidenceBps, 'proposer confidence'),
   }));

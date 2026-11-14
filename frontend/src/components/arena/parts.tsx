@@ -133,10 +133,10 @@ export function SignalBoard({ signals, strategies }: { signals: SelectionSignals
       return <div key={row.id} className={`signal ${row.qualifies ? "qualifies" : ""} ${row.isHold ? "is-hold" : ""}`}>
         <span className="signal-name"><AgentAvatar name={strategy?.name ?? row.id} kind={row.isHold ? "hold" : "proposer"} size="sm" /><span>{row.isHold ? "Keep allocation" : strategy?.name ?? `#${row.id}`}</span></span>
         <span className="signal-bar" aria-hidden="true"><i style={{ width: `${row.percent ?? 0}%` }} />{!row.isHold ? <span className="threshold" style={{ left: `${signals.thresholdPercent}%` }} /> : null}</span>
-        <span className="signal-value">{row.percent === null ? "—" : `${row.percent.toFixed(1)}%`}</span>
+        <span className="signal-value">{row.percent === null ? "—" : `${row.percent.toFixed(3)}%`}</span>
       </div>;
     })}
-    <p className="signal-legend"><i aria-hidden="true" />Line: Hold&apos;s average plus 0.5 points ({signals.thresholdPercent.toFixed(1)}%). Only a strategy past it can be selected.</p>
+    <p className="signal-legend"><i aria-hidden="true" />Line: Hold&apos;s average plus 0.5 points ({signals.thresholdPercent.toFixed(3)}%). Only a strategy past it can be selected.</p>
   </div>;
 }
 

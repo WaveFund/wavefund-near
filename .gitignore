@@ -9,6 +9,8 @@ broadcast/
 __pycache__/
 *.pyc
 node_modules/
+# Local worktree dependency symlinks are caches too.
+/frontend/node_modules
 frontend/.next/
 frontend/next-env.d.ts
 frontend/*.tsbuildinfo
