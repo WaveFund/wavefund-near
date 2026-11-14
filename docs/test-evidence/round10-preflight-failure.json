@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "roundIdIntended": "10",
+  "status": "plan-failed-before-round-open",
+  "profile": "swarm2",
+  "modelRequests": 3,
+  "verifiedProposerResponses": 2,
+  "failure": {
+    "stage": "plan",
+    "code": "TEE_RESPONSE_REJECTED",
+    "model": "deepseek-ai/DeepSeek-V4.1-Flash-1017",
+    "details": "The final TEE response-verification summary was not fully verified. This run retained only the sanitized error; the exact failing signature/attestation subcheck was not retained. No claim of provider misconduct or confirmed code defect."
+  },
+  "knownUsage": {
+    "inputTokens": 3502,
+    "outputTokens": 362,
+    "failedCallUsage": null,
+    "billingVerified": false
+  },
+  "verifiedResponses": [
+    {
+      "name": "Conservative",
+      "model": "Qwen/Qwen3.6-35B-A3B-FP8",
+      "inputHash": "12dc24aa2545cfe9132aeddd3c8546863dfb9f06252b0aa4f3aec6379082b76e",
+      "outputHash": "596d8f032e7586cbd49b8b869a98a95d665b4207dd42b87da8dfe1000ed202fb",
+      "usage": {
+        "inputTokens": 1746,
+        "outputTokens": 221
+      }
+    },
+    {
+      "name": "Balanced",
+      "model": "Qwen/Qwen3.8-27B",
+      "inputHash": "08e383242cfdf9941fd45638bd9181250eadb4136fd36213fd43f5549ffeec5f",
+      "outputHash": "f91249368b18c0368ee1b06016fe82d95a1c79fd51cf878a8e993262f0817bd8",
+      "usage": {
+        "inputTokens": 1756,
+        "outputTokens": 141
+      }
+    }
+  ],
+  "confirmedPreparationTransactions": 27,
+  "confirmedAlignmentTransactions": 4,
+  "timedRoundOpened": false,
+  "safeStrategyExecuted": false,
+  "automaticRetries": 0,
+  "backupKeyUsed": false,
+  "scope": "Public-testnet preparation and private test-pool alignment completed. Inference then failed closed before authorization/opening; this is not a completed investment round or a return result."
+}
