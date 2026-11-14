@@ -2,13 +2,17 @@
 
 Wavefund runs a **round**: AI agents propose trading strategies for a Safe, other agents trade LONG/SHORT claims on each proposal in a Uniswap v4 market, the market picks one, a CALL-only Safe module executes it, and a Supra-authenticated price settles the measured return. Proposers earn an outcome point (+1, -1 or 0) in an on-chain reputation contract. Everything public runs on Aurora testnet with **worthless test assets**.
 
-## Summary for judges (14 Nov 2026)
+**[Open the hosted demo](https://wavefund-near.vercel.app/)** · [Live Aurora monitor](https://wavefund-near.vercel.app/rounds/live) · [Backend health](https://wavefund-api.onrender.com/api/health) · [Hosting configuration](docs/HOSTING.md)
+
+Built for **NEAR HACKATHON 2026**. Primary track: **AI Swarms**. Additional track evidence: **AI Security & Defense, Unstoppable DeFi, Privacy & Private AI, and Open Innovation** (see [track mapping](#tracks-this-project-targets)).
+
+## Summary for judges (15 Nov 2026)
 
 What exists, with where to see it (details and the "do X, see Y" steps are in [Judge path: live testnet evidence](#judge-path-live-testnet-evidence)):
 
 | Claim | Evidence |
 |---|---|
-| 9 scheduled rounds on the Tidepool-funded stack (**Testnet Safe v2**): 8 completed and published, 1 failed and cancelled (round 4, disclosed) | [SCHEDULE.md](docs/test-evidence/tidepool-rounds/SCHEDULE.md) and each `round<N>/report.json` |
+| 10 recorded rounds on the Tidepool-funded stack (**Testnet Safe v2**): 9 completed and published, 1 cancelled (round 4); round 10 adds a TEE-proposer happy-path run | [SCHEDULE.md](docs/test-evidence/tidepool-rounds/SCHEDULE.md) and each `round<N>/report.json` |
 | Round 9 showcase: 4 proposals from 4 different models, each **TEE-verified** (NEAR AI: Intel TDX, NVIDIA GPU, signed response, measurement policy) and bound to its on-chain proposal; 8 forecasters on 8 other models; real AI bets | [round9/report.json](docs/test-evidence/tidepool-rounds/round9/report.json), [tee.json](docs/test-evidence/tidepool-rounds/round9/tee.json), [TEE-VERIFICATION.md](docs/TEE-VERIFICATION.md) |
 | Live attack suite: 12 access-control and state-machine attacks, each reverting with its exact named error (12/12) | [ATTACK-SUITE.md](docs/ATTACK-SUITE.md), `node scripts/attack-suite.mjs` |
 | Manipulation-resistance probe (round 8): the pool price was pushed up 528 bps after execution; the measured return still followed the oracle | [round8/manipulation-probe.json](docs/test-evidence/tidepool-rounds/round8/manipulation-probe.json) |
@@ -47,13 +51,23 @@ One instance supports one Safe, a six-decimal stablecoin, an eighteen-decimal in
 
 ## Judge quickstart: do this, see this
 
-### Fastest path: one command (Docker)
+### Hosted walkthrough: no installation or keys
+
+1. Open [Rounds](https://wavefund-near.vercel.app/rounds) → **Round 9 · Testnet Safe v2**. Follow proposals, forecasting, selection, execution, measurement and redemption.
+2. In **Proposals**, open a proposal's **Proof** to inspect its TEE checks and on-chain binding. In **Forecasting**, inspect the eight AI forecasters, their trades and abstentions, and the outside wallet's recorded participation.
+3. Open **Selected** for final-window TWAP comparisons, then **Executed** for the Safe swap and explorer receipt. **Measured** and **Redeemed** show the recorded result and payouts.
+4. Open [Agents](https://wavefund-near.vercel.app/agents) for current on-chain outcome scores, or [Portfolio](https://wavefund-near.vercel.app/portfolio) for the Safe and its funding history. Round 1 contains the complete Tidepool cross-chain funding journey; Round 10 contains the latest completed TEE-proposer happy path.
+5. [Live view](https://wavefund-near.vercel.app/rounds/live) reads the existing Aurora deployment. **Connect wallet** opens its wallet panel; forecasting transactions are available during an operator-opened round's trading window.
+
+Completed history is bundled with the frontend. Live reads and fresh receipt checks use the keyless Render API; Free hosting may take about 50 seconds or more to wake after inactivity. The local simulation below is a separate reproducible path.
+
+### Reproduce locally: one command (Docker)
 
 Requirements: a running Docker plus `bash`, `git`, `rsync` and `curl`. No wallet, API key or `.env` file is needed. Startup sends no public-network transactions and makes no paid model calls.
 
 1. Run `bash scripts/docker-demo/up.sh`. The first run takes a few minutes; then open http://127.0.0.1:3000.
 2. Open **Rounds → Local simulation** (`/rounds/local`) and press **Run local simulation**. The workspace follows the round live, one stage at a time, through seven steps: funded, proposals, LONG/SHORT forecasting, selection, Safe execution, evaluation and redemption, on a local Anvil chain. This is a **fixture round**: simulated prices and agents, real local contract transactions.
-3. On the welcome page press **Explore a round** (or **Rounds → Round 1 · Testnet Safe v2**). It opens on the **Result** recap; **Replay journey** steps through each stage. You'll see:
+3. Open **Rounds → Round 1 · Testnet Safe v2**. It opens on the **Result** recap; **Replay journey** steps through each stage. You'll see:
    - Arbitrum Sepolia test USDC → Tidepool → NEAR testnet settlement → the Aurora testnet Safe (200 sent, 199.48 delivered);
    - four genuine AI proposals and four **scripted** forecaster trades, with Momentum's 75% test ETH selected;
    - the actual Safe swap, a measured −0.6458% return, the forecaster redemptions and the −1 outcome point.
@@ -68,7 +82,7 @@ Stop with `bash scripts/docker-demo/down.sh`. Use `up.sh --fresh` for a new loca
 
 ### Manual path
 
-To run the read-only API alone (needs the compiled contract artifacts, so after `forge build`; this is what the launcher does): `WAVEFUND_TEE_POLICY=docs/tee-policy.json node runtime/server.mjs` (`npm run dev:api` sets this by default). Check it: `curl -s localhost:3001/api/evidence/testnet-rounds` lists 10 rounds, and 503 `EVIDENCE_INVALID` means the policy variable is missing.
+To run the read-only API alone (needs the compiled contract artifacts, so after `forge build`; this is what the launcher does): `WAVEFUND_TEE_POLICY=docs/tee-policy.json node runtime/server.mjs` (`npm run dev:api` sets this by default). Check it: `curl -s localhost:3001/api/evidence/testnet-rounds` lists 11 completed rounds across the two stacks, and 503 `EVIDENCE_INVALID` means the policy variable is missing.
 
 Use a clean isolated development environment. Requirements: Node 22+, Python 3.12+, Foundry 1.5.1 and Solidity 0.8.26. No wallet connection or API key is required for the local fixture demo.
 
@@ -176,7 +190,13 @@ Forecasting code and associated tests derive from https://github.com/advaitrane9
 
 ## Hackathon baseline and new work
 
-This adapts an existing Wavefund project; reused forecasting contracts are baseline regardless of import date. The upstream reference is listed under Attribution. Local import checkpoint: `f8c0177`. New work includes the Aurora Safe module, valuation/oracle adapters, bounded model orchestration, operator workflows and dashboard. Inspect changes with `git diff f8c0177..HEAD -- src script test runtime frontend scripts`. The completed public cycle is documented separately from local fixtures and the historical mock-controller experiment.
+This adapts an existing Wavefund project; reused forecasting contracts are baseline regardless of import date. The upstream reference is listed under Attribution. Local import checkpoint: `f8c0177`. New work includes the Aurora Safe module, valuation/oracle adapters, bounded model orchestration, operator workflows and dashboard. [Review the baseline-to-submission changes](https://github.com/WaveFund/wavefund-near/compare/f8c0177...docs/submission-readiness), or run `git diff f8c0177..HEAD -- src script test runtime frontend scripts`. The dedicated `docs/submission-readiness` branch records this submission checkpoint. The completed public cycle is documented separately from local fixtures and the historical mock-controller experiment.
+
+### Reuse, tooling and independent project disclosure
+
+The project uses Safe 1.4.1, Uniswap v4 core/periphery and Permit2, OpenZeppelin, forge-std, Solmate, RedStone adapter dependencies, Next.js, React and viem. Solidity sources are pinned in [dependency-pins.json](docs/dependency-pins.json); JavaScript versions are locked in [package-lock.json](package-lock.json). Claude Code and Codex assisted implementation, testing and documentation. Upstream forecasting attribution and dependency licenses remain intact.
+
+Team members also work on the independent [CashFlowFi NEAR](https://github.com/CashFlowFi/CashFlowFi-Near) project: invoice financing and payment workflows. Wavefund is the separate strategy-selection, forecasting and Trading Safe project, with its own repository, contracts and demo.
 
 ## Current execution and funding model
 
@@ -194,7 +214,7 @@ The separate [Tidepool testnet happy path](docs/TIDEPOOL-DEMO.md) (round 1, Test
 
 ## Attestation and onboarding
 
-[NEAR AI TEE verification](docs/TEE-VERIFICATION.md) is an opt-in, fail-closed hardware, model-signature and proposal-binding path. **Rounds 9 and 10 have attested proposer responses.** Round 10 is a separately labelled happy-path test: four genuine Qwen3.6 proposer calls, four scripted forecasters, Conservative selected at 53.6995% TWAP versus Hold at 50%, a real 0.061496 test ETH → 116.643816 test USDC swap, −0.410717% measured return, all redemptions checked and the selected agent scored −1. See [Round 10 evidence](docs/test-evidence/tidepool-rounds/round10/report.json). Rounds 1-8 were run without it and cannot be attested afterwards. Its four proposer responses were checked as follows (offline recheck below): nonce-bound Intel TDX quote, NVIDIA GPU verdict, configuration and event-log checks, a measurement allowlist, a `provider_tee` signature whose signer matches the attestation, and the on-chain `ProposalCreated` binding. The 8 forecasters are proxied third-party models and are **not** attested.
+[NEAR AI TEE verification](docs/TEE-VERIFICATION.md) is an opt-in, fail-closed hardware, model-signature and proposal-binding path. **Rounds 9 and 10 have attested proposer responses.** Round 10 is a separately labelled happy-path test: four genuine Qwen3.6 proposer calls, four scripted forecasters, Conservative selected at 53.6995% TWAP versus Hold at 50%, a real 0.061496 test ETH → 116.643816 test USDC swap, −0.410717% measured return, all redemptions checked and the selected agent scored −1. See [Round 10 evidence](docs/test-evidence/tidepool-rounds/round10/report.json). Rounds 1-8 were run without it and cannot be attested afterwards. Round 9's four proposer responses were checked as follows (offline recheck below): nonce-bound Intel TDX quote, NVIDIA GPU verdict, configuration and event-log checks, a measurement allowlist, a `provider_tee` signature whose signer matches the attestation, and the on-chain `ProposalCreated` binding. The 8 forecasters are proxied third-party models and are **not** attested.
 
 Trust basis, quoted from `docs/tee-policy.json` and [TEE-VERIFICATION.md](docs/TEE-VERIFICATION.md): `observed-at-2026-11-13-not-independently-reproduced`. The measurements were pinned from NEAR AI's live attestation on 13 Nov 2026. The mrTd half was reproduced from the dstack v0.5.12 release; the mrConfigId half (NEAR AI's app-compose hash) was **not** reproduced because NEAR AI publishes no expected value. We never call this "independently verified".
 
@@ -206,7 +226,7 @@ All steps below are read-only. Start the demo first (`bash scripts/docker-demo/u
 
 | Do this | See this | Evidence file |
 |---|---|---|
-| Open **Rounds**, pick a **Testnet Safe v2** round (2-9) | Result recap, then the stages; scripted rounds show forecasters flagged **scripted** | `docs/test-evidence/tidepool-rounds/round<N>/` |
+| Open **Rounds**, pick a **Testnet Safe v2** round (2-10) | Result recap, then the stages; scripted rounds show forecasters flagged **scripted** | `docs/test-evidence/tidepool-rounds/round<N>/` |
 | Open **Round 9 → Proposals**; press **Proof ›** on a proposal | A drawer listing each check (quote, GPU, signature, measurement policy, on-chain binding), raw JSON and limits | `round9/tee.json`, `round9/plan.json` |
 | `node scripts/verify-tee.mjs 9 --policy docs/tee-policy.json` | JSON with `"verified": true` and four proposals, each with every check true and `trustBasis` `observed-at-2026-11-13-not-independently-reproduced`; exit code 0. Offline, no key or network. It checks captured material at its captured time, not current revocation | `round9/tee.json`, `docs/tee-policy.json` |
 | Open **Round 9 → Forecasting** | 8 forecasters, each on a different model; 3 bought a side, 5 abstained | `round9/report.json` (`decisions`), `round9/independent.json` (`fills`) |
@@ -233,6 +253,7 @@ Source: each `round<N>/report.json` (`completion`) and `reputation.json`. Return
 | 7 | 0 Hold | +0.1216% | none | 4 genuine AI forecasters, all abstained; no swap |
 | 8 | 3 Momentum (75%) | +0.0105% | +1 | Manipulation-resistance probe; point +1 for a return of about +0.01% |
 | 9 | 3 Momentum (65%) | -0.0052% | -1 | Showcase round: TEE-verified proposers, 8 AI forecasters, outside wallet |
+| 10 | 1 Conservative (5%) | -0.4107% | -1 | 4 genuine TEE-verified proposers, 4 scripted forecasters; Safe execution, settlement and redemptions completed |
 
 Pre-registration: [SCHEDULE.md](docs/test-evidence/tidepool-rounds/SCHEDULE.md) fixes the rounds before they ran, including the rule that a failed round is recorded as failed, not silently re-run. Disclosed changes are in its addenda:
 - after round 2: pool alignment to the oracle before each later round opens (never while a round is active);
@@ -250,13 +271,15 @@ Pre-registration: [SCHEDULE.md](docs/test-evidence/tidepool-rounds/SCHEDULE.md) 
 
 ### Tracks this project targets
 
-| Track | What supports it |
-|---|---|
-| AI Swarms (primary) | 4 proposer agents plus 8 forecaster agents on 12 different models, each with its own wallet, competing in one round; trades only on an explicit value rule; on-chain outcome reputation per proposer |
-| AI Security | `docs/ATTACK-SUITE.md` (12/12 named reverts); the round 8 manipulation probe; fail-closed TEE verification with mutation tests (`scripts/test-tee-mutations.mjs`); a CALL-only Safe module with oracle and slippage checks |
-| Unstoppable DeFi | Funds and rules live in contracts: Safe module, Uniswap v4 markets with a hook, permissionless oracle caches, anyone-can-settle delayed path. Our own deployment of Uniswap v4 contracts on Aurora testnet with a custom hook (WaveHook) recording the final-window TWAP. This is not an official Uniswap deployment on NEAR |
-| Privacy & Private AI | Round 9 proposals ran on NEAR AI TEE models (Intel TDX + NVIDIA GPU) with signed responses checked offline. Limits: forecasters are not attested, and we do not claim privacy from the gateway |
-| Open Innovation | Funding path through NEAR Intents (Tidepool testnet transfer, signed official 1Click mainnet dry quote), plus the evidence-first UI and offline verifiers |
+| Track / submission ID | Implemented contribution | Where judges can verify it |
+|---|---|---|
+| **AI Swarms — `swarms` (primary)** | A coordination market connects four strategy proposers with eight independent forecasting agents in round 9. Twelve distinct model assignments, agent wallets, value-based LONG/SHORT trades, TWAP selection and outcome reputation complete the decision loop. | [Round 9](docs/test-evidence/tidepool-rounds/round9/report.json), [on-chain fills](docs/test-evidence/tidepool-rounds/round9/independent.json), [agent reputation](docs/AGENT-REPUTATION.md); UI: Round 9 → Proposals / Forecasting / Selected |
+| **AI Security & Defense — `security`** | Agents propose while a CALL-only Safe module enforces authorized terms, canonical winner, balances, oracle floors and slippage. Hardware/signature checks bind proposer responses to submitted proposals. Twelve named-error attacks and the round 8 manipulation probe exercise the controls. | [Attack suite](docs/ATTACK-SUITE.md), [TEE verification](docs/TEE-VERIFICATION.md), [manipulation probe](docs/test-evidence/tidepool-rounds/round8/manipulation-probe.json); `node scripts/attack-suite.mjs` |
+| **Unstoppable DeFi — `defi`** | Arbitrum Sepolia → NEAR testnet intent settlement → Aurora Safe funding through Tidepool; conditional forecasting markets then select an allocation executed through Trisolaris. Self-deployed Uniswap v4 and WaveHook supply forecast trading and TWAP. Official production 1Click is separately demonstrated with signed mainnet dry quotes. | [Tidepool funding and complete cycle](docs/TIDEPOOL-DEMO.md), [deployment](deployments/aurora-testnet-tidepool.json), [funding provider](docs/INTENTS-PROVIDER.md); UI: Round 1 → Funded / Executed |
+| **Privacy & Private AI — `privacy`** | The private-AI contribution is NEAR AI Cloud TEE proposer inference, nonce-bound Intel TDX and NVIDIA evidence, verified response signatures and proposal binding in rounds 9 and 10. Verification follows the documented observed-pinned measurement policy; the eight external forecasters are identified separately as unattested. | [TEE verification and trust model](docs/TEE-VERIFICATION.md), [Round 9 proofs](docs/test-evidence/tidepool-rounds/round9/tee.json); `node scripts/verify-tee.mjs 9 --policy docs/tee-policy.json` |
+| **Open Innovation — `open`** | Quantum-market credits let one forecasting deposit support positions in mutually exclusive strategy worlds; only the selected world determines settlement. This connects AI proposals, manager-owned capital, market selection, measured outcomes and agent reputation. | [Business and contract model](#model), [Round 9 showcase](#round-9-showcase), [complete Tidepool flow](docs/TIDEPOOL-DEMO.md) |
+
+The implementation uses Aurora's EVM on NEAR for financial contracts, NEAR AI Cloud for model inference and attestation, and Tidepool's community NEAR testnet intents flow for cross-chain funding. Track hints such as sub-accounts and function-call keys are examples, not mandatory integrations under [official rule Q-011](https://nearhackathon.com/HACKATHON.md). Tidepool funding and official 1Click mainnet dry quotes are labelled separately throughout the evidence.
 
 ### Honest limits
 
@@ -268,12 +291,13 @@ Pre-registration: [SCHEDULE.md](docs/test-evidence/tidepool-rounds/SCHEDULE.md) 
 - **Wallet trading is testnet-only**, needs team-supplied test assets, and works only inside a live round's forecasting window.
 - **Failures are disclosed:** round 4, three round 9 plan attempts and the failed full-AI Round 10 planning attempts. The reproduced duplicate-attestation verifier bug and rotating NVIDIA-key fix are documented in [the Round 10 diagnosis](docs/test-evidence/round10-diagnosis.json) and [schedule](docs/test-evidence/tidepool-rounds/SCHEDULE.md).
 
-## Hosted read-only version (Vercel)
+## Hosted frontend and keyless backend
 
-The frontend works with no backend: `NEXT_PUBLIC_DATA_MODE=static`. Completed rounds load from
-`frontend/public/evidence/*.json`, generated by `npm run evidence:static` with the same projection and TEE verification
-as the API (`npm run evidence:static:check` fails if they are stale). Agent reputation is read live from Aurora testnet's
-public RPC in the browser. Live-round trading still needs the operator's API.
+**Frontend:** https://wavefund-near.vercel.app/ · **API:** https://wavefund-api.onrender.com/api/health
+
+Production uses `NEXT_PUBLIC_DATA_MODE=hybrid` and `NEXT_PUBLIC_API_URL=https://wavefund-api.onrender.com`. Completed rounds load from `frontend/public/evidence/*.json`, generated by `npm run evidence:static` using the same projection and TEE verification as the API. `npm run evidence:static:check` verifies that the bundle matches the evidence. Live monitoring, reputation, dry funding previews and fresh receipt checks use the HTTPS API. The API contains no wallet or model credentials; wallet transactions are signed in the visitor's browser during live forecasting windows. [Hosting and reproducible configuration](docs/HOSTING.md).
+
+A standalone `NEXT_PUBLIC_DATA_MODE=static` deployment is also supported for bundled history and browser-side reputation reads.
 
 ## Components by evidence
 
@@ -282,4 +306,4 @@ public RPC in the browser. Live-round trading still needs the operator's API.
 | NEAR AI Cloud inference | Proposal and forecast generation, 12 models in round 9 | `round9/report.json` |
 | NEAR AI hardware verification | Nonce-bound quote, NVIDIA verdict, signed response and proposal binding | Round 9 `tee.json`; `scripts/verify-tee.mjs 9` passes offline |
 | NEAR Intents (Tidepool community testnet) | Cross-chain funding of the Safe | Round 1 receipts, `scripts/judge-check.mjs` |
-| Aurora testnet | Safe, Uniswap v4 markets, WaveHook, oracles, reputation | `deployments/`, rounds 2-9 |
+| Aurora testnet | Safe, Uniswap v4 markets, WaveHook, oracles, reputation | `deployments/`, rounds 2-10 |
