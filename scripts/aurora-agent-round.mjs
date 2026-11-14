@@ -37,11 +37,11 @@ try {
     requireLive(expanded || config.evaluationSeconds === undefined || config.evaluationSeconds === 180, 'The classic profile keeps its 180 second horizon');
     const terms = expanded ? { ...(config.scriptedTarget !== undefined ? { scriptedTarget: config.scriptedTarget } : {}), ...(config.evaluationSeconds !== undefined ? { evaluationSeconds: config.evaluationSeconds } : {}) } : {};
     const plan = swarm2 ? await makeSwarm2Plan({ snapshot: config.snapshot, market: config.market, ...terms, teePolicy: config.teePolicy, researchContext: config.researchContext,
-      env: { WAVEFUND_ALLOW_REMOTE_INFERENCE: '1', NEARAI_API_KEY: config.apiKey },
+      env: { WAVEFUND_ALLOW_REMOTE_INFERENCE: '1', NEARAI_API_KEY: config.apiKey, NEARAI_API_KEY_1: config.backupApiKeys?.[0], NEARAI_API_KEY_2: config.backupApiKeys?.[1] },
       onRequest: async request => { emit({ stage: 'inference-request', ...request }); await acknowledge(`inference-${request.request}`); },
       onRecord: record => emit({ stage: 'agent-record', record }) }) : await (expanded ? makeStrategyPlan : makeAuroraPlan)({ snapshot: config.snapshot, market: config.market, ...terms,
       teePolicy: config.teePolicy, scriptedForecasts: config.hybrid === true, researchContext: config.researchContext,
-      env: { WAVEFUND_AGENT_MODE: 'near-ai', WAVEFUND_AGENT_MODEL: config.model, WAVEFUND_ALLOW_REMOTE_INFERENCE: '1', NEARAI_API_KEY: config.apiKey },
+      env: { WAVEFUND_AGENT_MODE: 'near-ai', WAVEFUND_AGENT_MODEL: config.model, WAVEFUND_ALLOW_REMOTE_INFERENCE: '1', NEARAI_API_KEY: config.apiKey, NEARAI_API_KEY_1: config.backupApiKeys?.[0], NEARAI_API_KEY_2: config.backupApiKeys?.[1] },
       onRequest: async request => { emit({ stage: 'inference-request', ...request }); await acknowledge(`inference-${request.request}`); },
       onRecord: record => emit({ stage: 'agent-record', record }) });
     emit({ stage: 'plan', plan });

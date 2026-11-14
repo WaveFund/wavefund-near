@@ -87,7 +87,7 @@ export async function makeStrategyPlan({ snapshot, market: input, researchContex
     check(!teePolicy || actor === scripted || (response.privacy?.verified === true && privacyVerified(response.privacy)), 'TEE model response is not verified');
     const decision = validate(response.value);
     const record = { name: spec.name, role, provider: actor.info.mode, model: actor.info.model, attestationVerified: response.privacy?.verified === true, ...(response.privacy ? { privacy: response.privacy, teeEvidence: response.teeEvidence } : {}),
-      inputHash: digest(task), outputHash: digest(decision), decision, usage: response.usage ?? {}, ...(response.privacy ? { auxiliaryRequests: response.auxiliaryCalls, collateralFetches: response.collateralFetches } : {}), timestamp: new Date().toISOString() };
+      inputHash: digest(task), outputHash: digest(decision), decision, usage: response.usage ?? {}, ...(response.credentialUse?.switches ? { credentialUse: response.credentialUse } : {}), ...(response.privacy ? { auxiliaryRequests: response.auxiliaryCalls, collateralFetches: response.collateralFetches } : {}), timestamp: new Date().toISOString() };
     record.input = task; // Public source facts + literal role/policy prompt for judge inspection.
     records.push(record); await onRecord?.(record); return decision;
   }
@@ -182,9 +182,9 @@ export function swarm2FixtureProvider() {
 }
 
 /** Live NEAR AI provider for ONE agent and its allowlisted model: TEE for proposers when a policy is supplied. */
-export function swarm2LiveProvider(agent, role, { apiKey, teePolicy, fetchImpl = fetch } = {}) {
+export function swarm2LiveProvider(agent, role, { apiKey, backupApiKeys, teePolicy, fetchImpl = fetch } = {}) {
   check(modelOf(agent.name) === agent.model, 'Agent model differs from the swarm2 allowlist');
-  const config = { mode: 'near-ai', model: agent.model, apiKey };
+  const config = { mode: 'near-ai', model: agent.model, apiKey, backupApiKeys };
   if (teePolicy && role === 'proposer') return createTeeProvider(config, { policy: teePolicy, fetchImpl, maxCalls: 1, timeoutMs: SWARM2_TEE_TIMEOUT_MS });
   return createProvider(config, { maxCalls: 1, timeoutMs: SWARM2_TIMEOUT_MS, fetchImpl: (url, options) =>
     fetchImpl(url, { ...options, body: JSON.stringify(requestBodyFor(agent.model, role, JSON.parse(options.body))) }) });
@@ -205,7 +205,7 @@ export async function makeSwarm2Plan({ snapshot, market: input, researchContext,
     check(typeof env.NEARAI_API_KEY === 'string' && env.NEARAI_API_KEY && !/[\r\n]/.test(env.NEARAI_API_KEY), 'Configure NEARAI_API_KEY locally; never paste it into chat');
   }
   const fixtureProvider = fixture ? swarm2FixtureProvider() : null;
-  const make = fixture ? () => fixtureProvider : providerFor ?? ((agent, role) => swarm2LiveProvider(agent, role, { apiKey: env.NEARAI_API_KEY, teePolicy }));
+  const make = fixture ? () => fixtureProvider : providerFor ?? ((agent, role) => swarm2LiveProvider(agent, role, { apiKey: env.NEARAI_API_KEY, backupApiKeys: [env.NEARAI_API_KEY_1, env.NEARAI_API_KEY_2].filter(Boolean), teePolicy }));
   const cap = roundCallCap('swarm2'); let reserved = 0;
   const records = [];
   const proposals = [{ id: 0, name: 'Hold', allocationBps: snapshot.portfolio.currentAllocationBps, rationale: 'Preserve current token quantities.' }];
@@ -225,13 +225,13 @@ export async function makeSwarm2Plan({ snapshot, market: input, researchContext,
       const request = cap.take(); reserved += allowance;
       await onRequest?.({ request, agent: agent.name, model: agent.model, inputBytes: bytes, reservedNanoUsd: reserved });
     }
-    const response = await actor.complete(task); // No retries or fallback.
+    const response = await actor.complete(task); // Only explicit HTTP credential rejection can use a configured backup.
     const tee = Boolean(teePolicy) && role === 'proposer';
     check(!tee || (response.privacy?.verified === true && privacyVerified(response.privacy)), 'TEE model response is not verified');
     check(tee || !response.privacy, 'Unexpected attestation on an unattested call');
     const decision = validate(response.value);
     const record = { name: agent.name, role, provider: actor.info.mode, model: actor.info.model, attestationVerified: tee, ...(tee ? { privacy: response.privacy, teeEvidence: response.teeEvidence } : {}),
-      inputHash: digest(task), outputHash: digest(decision), decision, usage: response.usage ?? {}, ...(tee ? { auxiliaryRequests: response.auxiliaryCalls, collateralFetches: response.collateralFetches } : {}), timestamp: new Date().toISOString() };
+      inputHash: digest(task), outputHash: digest(decision), decision, usage: response.usage ?? {}, ...(response.credentialUse?.switches ? { credentialUse: response.credentialUse } : {}), ...(tee ? { auxiliaryRequests: response.auxiliaryCalls, collateralFetches: response.collateralFetches } : {}), timestamp: new Date().toISOString() };
     record.input = task;
     records.push(record); await onRecord?.(record); return decision;
   }

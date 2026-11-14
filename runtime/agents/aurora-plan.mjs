@@ -32,7 +32,7 @@ export function boundedLiveProvider(config, { fetchImpl, onRequest, maxCalls = 4
       check(requests < maxCalls && reserved + allowance <= budgetNanoUsd, 'Live inference budget exhausted');
       requests++; reserved += allowance;
       await onRequest?.({ request: requests, inputBytes: bytes, reservedNanoUsd: reserved });
-      return provider.complete(task); // No retries or fallback.
+      return provider.complete(task); // Only explicit HTTP credential rejection can use a configured backup.
     },
   };
 }

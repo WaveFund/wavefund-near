@@ -123,12 +123,12 @@ if a.phase == 'plan':
     environment = {}
     for line in a.env.read_text().splitlines():
         key, sep, value = line.partition('=')
-        if sep and key.strip() in ['NEARAI_API_KEY', 'WAVEFUND_AGENT_MODEL'] and not (swarm2 and key.strip() == 'WAVEFUND_AGENT_MODEL'):
+        if sep and key.strip() in ['NEARAI_API_KEY', 'NEARAI_API_KEY_1', 'NEARAI_API_KEY_2', 'WAVEFUND_AGENT_MODEL'] and not (swarm2 and key.strip() == 'WAVEFUND_AGENT_MODEL'):
             environment[key.strip()] = value.strip().strip('"').strip("'")
     if not environment.get('NEARAI_API_KEY'):
         sys.exit('Configure the private NEAR AI key locally; never paste it in chat.')
     # swarm2 assigns one allowlisted model per agent in code; a single env model is never used.
-    config.update(apiKey=environment['NEARAI_API_KEY'], model=None if swarm2 else environment.get('WAVEFUND_AGENT_MODEL'))
+    config.update(apiKey=environment['NEARAI_API_KEY'], backupApiKeys=[environment[k] for k in ['NEARAI_API_KEY_1', 'NEARAI_API_KEY_2'] if environment.get(k)], model=None if swarm2 else environment.get('WAVEFUND_AGENT_MODEL'))
     del environment
 else:
     config['manifest'] = json.loads(a.manifest.read_text())
