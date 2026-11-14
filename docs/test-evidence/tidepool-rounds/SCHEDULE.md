@@ -86,3 +86,12 @@ were replaced (FeeAnalyst gpt-4.1, StressAnalyst grok-4.7, Skeptic kimi-k3); per
 **Third plan attempt (nothing on-chain):** 11 of 12 calls succeeded, including all 4 TEE-verified proposers;
 the 12th (`moonshotai/kimi-k3`) failed. 12 paid calls spent, session closed. Skeptic moves to
 `google/gemini-2.5-flash-lite`; forecasters are 8 distinct models across 5 families. Design otherwise unchanged.
+
+## Round 10 — full AI follow-up, pre-registered 14 November 2026
+
+- Existing Tidepool-funded Safe/engine; next round 10 (round 9 settled, no outstanding deposits).
+- Same tested swarm2 roster: four genuine TEE proposer calls and eight genuine, unattested forecaster calls; 12 calls maximum, no automatic paid retries or forced trades.
+- Forecasting: 600 seconds, final TWAP window: 90 seconds. Evaluation: 600 seconds after trading closes. Return bounds remain 0.95–1.05, strict selection margin remains 0.005, trade edge remains 300 bps.
+- No scripted target, no pool manipulation, no positive-return target, no new outside-wallet activity claimed. Align the private pool to the authenticated oracle before planning/execution; disclose alignment. Publish Hold, abstention, losses or failure unchanged.
+- Fresh public TEE preflight: all four model attestations passed, model measurements unchanged. Gateway configuration changed; added the cryptographically checked observed gateway configuration and refreshed public NVIDIA keys after Rahul explicitly approved the trust-policy update. Preserve the observed-pinned/source-not-independently-reproduced limitation and historical verification entries.
+- User authorizes the new full test and confirms sole operation. No new mainnet funding or bridge transfer. Primary API key selected; no silent key rotation or restart of a partially spent plan.
