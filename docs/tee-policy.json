@@ -1958,6 +1958,13 @@
       "kid": "nv-eat-kid-prod-20261114102923794-2b8715e6-ed35-449f-8748-128bdc862956",
       "x": "v5N02oD1SJA2V_iPodYU3bNV2DUlL5wyYGwma-koIjSgFi3vi3ZjU27v0v1wvBKy",
       "y": "W_s3rCYgpm6c1rCp2sTwL289trucFt6NfzpQoVxVeJwB8lAS9CWxrN5lRXyQ75X6"
+    },
+    {
+      "kty": "EC",
+      "crv": "P-384",
+      "kid": "nv-eat-kid-prod-20261114103833906-7da7b25c-436d-4fd4-a41c-2572501621a8",
+      "x": "_HjM6z3sRjtRyAaxg9O-zpU08HiAD1otrY01IwvGb6RdongeDWiVvChFqPC0X3W7",
+      "y": "SAiT8hyoAyFSOVtnpBkM8XmAfXer9muEgC7ve8D5ZDeD7PBQy6_hwkbzq7ub0fwt"
     }
   ],
   "allowOfficialNvidiaRotation": true

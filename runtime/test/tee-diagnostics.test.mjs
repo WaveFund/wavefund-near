@@ -82,3 +82,15 @@ test('optional official-key rotation verifies the verdict and persists before pi
   const bad=policy();assert.equal(await verifyGpuWithRotation(f.gpuToken({'x-nvidia-overall-att-result':false}),f.nonce,bad,{at:f.at,fetchKeys:async()=>({keys:[freshKey]}),onRotation:async()=>{throw Error('must not persist');}}),false);
   await assert.rejects(verifyGpuWithRotation(token,f.nonce,policy(),{at:f.at,fetchKeys:async()=>({keys:[freshKey]}),onRotation:async()=>{throw Error('synthetic persistence failed');}}),/synthetic persistence failed/);
 });
+
+test('unattested inference failures expose only fixed diagnostic codes and never provider text',async()=>{
+  const {createProvider}=await import('../agents/provider.mjs');
+  for(const [response,code] of [
+    [new Response('synthetic-private-text'),'INVALID_RESPONSE_JSON'],
+    [Response.json({choices:[{finish_reason:'length',message:{content:'synthetic-private-text'}}]}),'INCOMPLETE_LENGTH'],
+    [Response.json({choices:[{finish_reason:'stop',message:{content:'synthetic-private-text'}}]}),'INVALID_CONTENT_JSON'],
+  ]){
+    let calls=0;const p=createProvider({mode:'near-ai',model:'synthetic-model',apiKey:'synthetic-key'},{maxCalls:1,fetchImpl:async()=>{calls++;return response;}});
+    await assert.rejects(p.complete({system:'test',context:{}}),new RegExp(`Inference failed: ${code};`));assert.equal(calls,1);
+  }
+});

@@ -62,7 +62,7 @@ export function deliberateProvider({ targetProposalId = 2, views } = {}) {
   } };
 }
 
-export async function makeStrategyPlan({ snapshot, market: input, researchContext, scriptedForecasts = false, scriptedTarget = DEFAULT_SCRIPTED_TARGET, evaluationSeconds = DEFAULT_EVALUATION_SECONDS, env, fixture = false, provider, teePolicy, onRecord, onRequest, now = Math.floor(Date.now() / 1000) }) {
+export async function makeStrategyPlan({ snapshot, market: input, researchContext, scriptedForecasts = false, scriptedTarget = DEFAULT_SCRIPTED_TARGET, evaluationSeconds = DEFAULT_EVALUATION_SECONDS, env, fixture = false, provider, teePolicy, onRecord, onRequest, onNvidiaKeyRotation, onVerificationFailure, now = Math.floor(Date.now() / 1000) }) {
   scriptedTargetOf(scriptedTarget); evaluationSecondsOf(evaluationSeconds);
   exactKeys(snapshot, ['chainId', 'roundId', 'safe', 'engine', 'portfolio', 'blockNumber'], 'strategy snapshot');
   exactKeys(snapshot.portfolio, ['stableBalance', 'assetBalance', 'currentAllocationBps'], 'strategy portfolio');
@@ -71,7 +71,7 @@ export async function makeStrategyPlan({ snapshot, market: input, researchContex
   if (researchContext) validateResearchContext(researchContext, { market, now });
   check(!scriptedForecasts || (!fixture && researchContext), 'Hybrid requires live proposers and explicit research context');
   check(market.source === 'external-unverified', 'Public strategy planning requires external research');
-  const selected = provider ?? (fixture ? deliberateProvider() : boundedLiveProvider(providerConfig(env), { onRequest, teePolicy, maxCalls: scriptedForecasts ? 4 : 8, budgetNanoUsd: scriptedForecasts ? 50000000 : 100000000 }));
+  const selected = provider ?? (fixture ? deliberateProvider() : boundedLiveProvider(providerConfig(env), { onRequest, teePolicy, onNvidiaKeyRotation, onVerificationFailure, maxCalls: scriptedForecasts ? 4 : 8, budgetNanoUsd: scriptedForecasts ? 50000000 : 100000000 }));
   const scripted = deliberateProvider({ views: scriptedViews(scriptedTarget) });
   check(selected.info.mode === (fixture ? 'test-fixture' : 'near-ai'), 'Wrong strategy provider mode');
   const records = [];

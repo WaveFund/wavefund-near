@@ -106,7 +106,7 @@ test('inference timeout is bounded and does not retry', async () => {
       });
     },
   });
-  await assert.rejects(provider.complete({ system: 'test', context: {} }), /timed-out/);
+  await assert.rejects(provider.complete({ system: 'test', context: {} }), /Inference failed: TIMEOUT;/);
   assert.equal(requests, 1); assert.equal(aborted, true);
 });
 
