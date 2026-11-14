@@ -1,3 +1,4 @@
+import { createKeyFallback } from './key-fallback.mjs';
 import { randomBytes } from 'node:crypto';
 import { inspectReport, hex, verifyGpuToken, verifyCompletion } from './tee.mjs';
 import { providerConfig } from './provider.mjs';
@@ -52,12 +53,13 @@ export async function verifyTeeEvidence(evidence, policy, { quoteVerifier = defa
 
 // All HTTP destinations are fixed constants. No provider/model endpoint or headers are read from an evidence file.
 export function createTeeProvider(config, { policy, fetchImpl = fetch, quoteVerifier = defaultVerify, getCollateral = defaultCollateral, now = () => Math.floor(Date.now() / 1000), nonceFactory = () => randomBytes(32).toString('hex'), maxCalls = 4, timeoutMs = 20000 } = {}) {
-  const checked = providerConfig({ WAVEFUND_AGENT_MODE: config.mode, WAVEFUND_AGENT_MODEL: config.model, WAVEFUND_ALLOW_REMOTE_INFERENCE: '1', NEARAI_API_KEY: config.apiKey });
+  const checked = providerConfig({ WAVEFUND_AGENT_MODE: config.mode, WAVEFUND_AGENT_MODEL: config.model, WAVEFUND_ALLOW_REMOTE_INFERENCE: '1', NEARAI_API_KEY: config.apiKey, NEARAI_API_KEY_1: config.backupApiKeys?.[0], NEARAI_API_KEY_2: config.backupApiKeys?.[1] });
+  const credentials = createKeyFallback({ ...checked, fetchImpl });
   check(checked.mode === 'near-ai', 'TEE_NEEDS_NEAR_AI'); validateTeePolicy(policy);
   check(Number.isInteger(maxCalls) && maxCalls >= 1 && maxCalls <= 8 && Number.isInteger(timeoutMs) && timeoutMs > 0 && timeoutMs <= 60000, 'TEE_INVALID_LIMITS');
   let calls = 0; let auxiliaryCalls = 0;
   async function request(url, options = {}, cap = 4 * 1024 * 1024) {
-    const response = await fetchImpl(url, { ...options, redirect: 'error', signal: AbortSignal.timeout(timeoutMs) });
+    const response = await credentials.fetch(url, { ...options, redirect: 'error', signal: AbortSignal.timeout(timeoutMs) });
     check(response.ok, `TEE_HTTP_${response.status}`);
     check(response.body, 'TEE_EMPTY_RESPONSE');
     const reader = response.body.getReader(); const parts = []; let size = 0;
@@ -105,7 +107,7 @@ export function createTeeProvider(config, { policy, fetchImpl = fetch, quoteVeri
       const teeEvidence = { schemaVersion: 1, nonce, preflightTime, verificationTime: now(), requestBody, responseBody, attestationReport, collateral, gpuTokens, signature };
       const privacy = await verifyTeeEvidence(teeEvidence, policy, { quoteVerifier });
       check(privacy.verified, 'TEE_RESPONSE_REJECTED');
-      return { value: JSON.parse(choice.message.content), usage: { inputTokens: payload.usage?.prompt_tokens ?? null, outputTokens: payload.usage?.completion_tokens ?? null }, privacy, teeEvidence, auxiliaryCalls: auxiliaryCalls - auxiliaryBefore, collateralFetches: reports.length };
+      return { value: JSON.parse(choice.message.content), credentialUse: credentials.usage(), usage: { inputTokens: payload.usage?.prompt_tokens ?? null, outputTokens: payload.usage?.completion_tokens ?? null }, privacy, teeEvidence, auxiliaryCalls: auxiliaryCalls - auxiliaryBefore, collateralFetches: reports.length };
       } catch (error) {
         if (/^TEE_[A-Z0-9_]+$/.test(error?.message ?? '')) throw error;
         throw new Error('TEE_INFERENCE_OR_VERIFICATION_FAILED');

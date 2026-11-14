@@ -97,6 +97,24 @@ class AgentBridgeSafety(unittest.TestCase):
         executable.chmod(0o700)
         return {**os.environ, 'PATH': str(self.root) + os.pathsep + os.environ['PATH']}
 
+    def test_backup_credentials_only_travel_in_plan_stdin_and_are_not_printed(self):
+        (self.root / 'snapshot.json').write_text(json.dumps({'snapshot': {}, 'market': {}, 'researchContext': {}}))
+        env_file = self.root / 'fake.env'
+        env_file.write_text('NEARAI_API_KEY=synthetic-primary\nNEARAI_API_KEY_1=synthetic-backup\nNEARAI_API_KEY_2=synthetic-third\n')
+        executable = self.root / 'docker'
+        executable.write_text('#!/usr/bin/env python3\nimport sys,json\nc=json.loads(sys.stdin.readline())\n'
+                              'assert c["apiKey"]=="synthetic-primary"\n'
+                              'assert c["backupApiKeys"]==["synthetic-backup","synthetic-third"]\n'
+                              'assert "synthetic-primary" not in " ".join(sys.argv)\n'
+                              'print(json.dumps({"stage":"plan","plan":{"backupCount":len(c["backupApiKeys"])}}))\n')
+        executable.chmod(0o700)
+        environment = {**os.environ, 'PATH': str(self.root) + os.pathsep + os.environ['PATH']}
+        result = subprocess.run(self.command + ['--profile', 'swarm2', '--run-inference', '--env', str(env_file)], capture_output=True, text=True, timeout=10, env=environment)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads((self.root / 'plan.json').read_text())['backupCount'], 2)
+        for key in ['synthetic-primary', 'synthetic-backup', 'synthetic-third']:
+            self.assertNotIn(key, result.stdout + result.stderr)
+
     def test_hybrid_plan_requires_and_forwards_a_pre_registered_target_and_window(self):
         (self.root / 'snapshot.json').write_text(json.dumps({'snapshot': {}, 'market': {}, 'researchContext': {'evidenceId': 'fixture'}}))
         environment_file = self.root / 'fake.env'
