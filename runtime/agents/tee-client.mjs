@@ -5,8 +5,28 @@ import { providerConfig } from './provider.mjs';
 
 const BASE = 'https://cloud-api.near.ai/v1';
 const NRAS = 'https://nras.attestation.nvidia.com/v3/attest/gpu';
+export const NVIDIA_JWKS = 'https://nras.attestation.nvidia.com/.well-known/jwks.json';
 const check = (ok, why) => { if (!ok) throw new Error(why); };
 const REPORT_KEYS = ['nonceBound', 'tdxQuoteVerified', 'configurationBound', 'eventLogVerified', 'measurementPolicyMatched'];
+export async function verifyGpuWithRotation(token, nonce, policy, { at, fetchKeys, onRotation, now = () => at } = {}) {
+  if (verifyGpuToken(token, nonce, policy.nrasKeys, now())) return true;
+  if (policy.allowOfficialNvidiaRotation !== true || typeof onRotation !== 'function') return false;
+  let kid;
+  try { kid = JSON.parse(Buffer.from(token.split('.')[0], 'base64url')).kid; } catch { return false; }
+  if (typeof kid !== 'string' || !/^[A-Za-z0-9_.-]{1,160}$/.test(kid) || policy.nrasKeys.some(k => k.kid === kid) || policy.nrasKeys.length >= 1024) return false;
+  // The caller supplies only a fixed-endpoint transport, never an evidence-controlled URL or key.
+  const jwks = await fetchKeys();
+  const candidates = Array.isArray(jwks?.keys) ? jwks.keys.filter(k => k?.kid === kid) : [];
+  if (candidates.length !== 1) return false;
+  const { kty, crv, x, y } = candidates[0];
+  if (kty !== 'EC' || crv !== 'P-384' || typeof x !== 'string' || typeof y !== 'string' || !/^[A-Za-z0-9_-]{64}$/.test(x) || !/^[A-Za-z0-9_-]{64}$/.test(y) || Object.hasOwn(candidates[0], 'd')) return false;
+  const key = { kty, crv, kid, x, y };
+  if (!verifyGpuToken(token, nonce, [key], now())) return false;
+  // Persist the accepted public key before proceeding to a paid completion. Offline rechecks still use pinned keys.
+  await onRotation({ source: NVIDIA_JWKS, key });
+  policy.nrasKeys.push(key);
+  return true;
+}
 export function responseFailureDetails(evidence, privacy) {
   const sig = evidence.signature ?? {};
   const model = JSON.parse(evidence.requestBody).model;
@@ -39,7 +59,7 @@ export function responseFailureDetails(evidence, privacy) {
 // The only accepted basis today: values pinned from NEAR AI's live attestation, labelled as not independently reproduced.
 export const TEE_TRUST_BASIS = /^observed-at-\d{4}-\d{2}-\d{2}-not-independently-reproduced$/;
 export function validateTeePolicy(policy) {
-  check(policy?.schemaVersion === 1 && TEE_TRUST_BASIS.test(policy.trustBasis ?? '') && Array.isArray(policy.gatewayMeasurements) && Array.isArray(policy.modelMeasurements)
+  check(policy?.schemaVersion === 1 && (policy.allowOfficialNvidiaRotation === undefined || typeof policy.allowOfficialNvidiaRotation === 'boolean') && TEE_TRUST_BASIS.test(policy.trustBasis ?? '') && Array.isArray(policy.gatewayMeasurements) && Array.isArray(policy.modelMeasurements)
     && policy.gatewayMeasurements.length > 0 && policy.modelMeasurements.length > 0
     && [...policy.gatewayMeasurements, ...policy.modelMeasurements].every(m => /^[a-f0-9]{96}:[a-f0-9]{96}$/.test(m))
     && Array.isArray(policy.nrasKeys) && policy.nrasKeys.length > 0 && policy.nrasKeys.length <= 1024
@@ -81,7 +101,7 @@ export async function verifyTeeEvidence(evidence, policy, { quoteVerifier = defa
 }
 
 // All HTTP destinations are fixed constants. No provider/model endpoint or headers are read from an evidence file.
-export function createTeeProvider(config, { policy, fetchImpl = fetch, quoteVerifier = defaultVerify, getCollateral = defaultCollateral, now = () => Math.floor(Date.now() / 1000), nonceFactory = () => randomBytes(32).toString('hex'), maxCalls = 4, timeoutMs = 20000, onVerificationFailure } = {}) {
+export function createTeeProvider(config, { policy, fetchImpl = fetch, quoteVerifier = defaultVerify, getCollateral = defaultCollateral, now = () => Math.floor(Date.now() / 1000), nonceFactory = () => randomBytes(32).toString('hex'), maxCalls = 4, timeoutMs = 20000, onVerificationFailure, onNvidiaKeyRotation } = {}) {
   const checked = providerConfig({ WAVEFUND_AGENT_MODE: config.mode, WAVEFUND_AGENT_MODEL: config.model, WAVEFUND_ALLOW_REMOTE_INFERENCE: '1', NEARAI_API_KEY: config.apiKey, NEARAI_API_KEY_1: config.backupApiKeys?.[0], NEARAI_API_KEY_2: config.backupApiKeys?.[1] });
   const credentials = createKeyFallback({ ...checked, fetchImpl });
   check(checked.mode === 'near-ai', 'TEE_NEEDS_NEAR_AI'); validateTeePolicy(policy);
@@ -123,7 +143,8 @@ export function createTeeProvider(config, { policy, fetchImpl = fetch, quoteVeri
           auxiliaryCalls++;
           const nras = JSON.parse(await request(NRAS, { method: 'POST', headers, body: JSON.stringify(payload) }));
           const token = nras?.[0]?.[0] === 'JWT' ? nras[0][1] : null;
-          const gpuVerified = typeof token === 'string' && verifyGpuToken(token, nonce, policy.nrasKeys, now());
+          const gpuVerified = typeof token === 'string' && await verifyGpuWithRotation(token, nonce, policy, { at: now(), now, onRotation: onNvidiaKeyRotation,
+            fetchKeys: async () => { auxiliaryCalls++; return JSON.parse(await request(NVIDIA_JWKS, { headers }, 1024 * 1024)); } });
           if (!gpuVerified) {
             let kid = null;
             try { const value = JSON.parse(Buffer.from(token.split('.')[0], 'base64url')).kid; if (typeof value === 'string' && /^[A-Za-z0-9_.-]{1,160}$/.test(value)) kid = value; } catch {}

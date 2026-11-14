@@ -13,6 +13,7 @@ from decimal import Decimal, InvalidOperation
 import fcntl
 import json
 import os
+import re
 from pathlib import Path
 import secrets
 import subprocess
@@ -203,6 +204,33 @@ with journal_path.open('a') as journal, (a.directory / 'worker.stderr').open('a'
         journal.write(json.dumps(event) + '\n')
         journal.flush()
         os.fsync(journal.fileno())
+        if event.get('stage') == 'tee-key-rotation':
+            if a.phase != 'plan' or not a.tee or event.get('source') != 'https://nras.attestation.nvidia.com/.well-known/jwks.json':
+                child.kill()
+                sys.exit('Unexpected NVIDIA key update source or phase')
+            policy = json.loads(a.tee_policy.read_text())
+            key = event.get('key', {})
+            valid = (policy.get('allowOfficialNvidiaRotation') is True and policy.get('schemaVersion') == 1
+                     and isinstance(key, dict) and set(key) == {'kty', 'crv', 'kid', 'x', 'y'} and key['kty'] == 'EC' and key['crv'] == 'P-384'
+                     and all(isinstance(key[k], str) for k in ['kid', 'x', 'y'])
+                     and re.fullmatch(r'[A-Za-z0-9_.-]{1,160}', key['kid'])
+                     and re.fullmatch(r'[A-Za-z0-9_-]{64}', key['x']) and re.fullmatch(r'[A-Za-z0-9_-]{64}', key['y'])
+                     and re.fullmatch(r'nras-key-[a-f0-9]{64}', event.get('ackId', '')))
+            existing = next((k for k in policy.get('nrasKeys', []) if k.get('kid') == key.get('kid')), None) if isinstance(key, dict) else None
+            if not valid or (existing is not None and existing != key) or len(policy.get('nrasKeys', [])) >= 1024:
+                child.kill()
+                sys.exit('NVIDIA key update rejected')
+            if existing is None:
+                policy['nrasKeys'].append(key)
+                temporary = a.tee_policy.with_suffix('.rotation.tmp')
+                with temporary.open('w') as file:
+                    json.dump(policy, file, indent=2)
+                    file.write('\n')
+                    file.flush()
+                    os.fsync(file.fileno())
+                temporary.replace(a.tee_policy)
+            child.stdin.write(json.dumps({'ack': event['ackId']}) + '\n')
+            child.stdin.flush()
         if event.get('stage') in ['prepared', 'inference-request']:
             acknowledgement = event['hash'] if event['stage'] == 'prepared' else f"inference-{event['request']}"
             child.stdin.write(json.dumps({'ack': acknowledgement}) + '\n')

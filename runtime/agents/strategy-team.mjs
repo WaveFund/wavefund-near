@@ -182,15 +182,15 @@ export function swarm2FixtureProvider() {
 }
 
 /** Live NEAR AI provider for ONE agent and its allowlisted model: TEE for proposers when a policy is supplied. */
-export function swarm2LiveProvider(agent, role, { apiKey, backupApiKeys, teePolicy, fetchImpl = fetch, onVerificationFailure } = {}) {
+export function swarm2LiveProvider(agent, role, { apiKey, backupApiKeys, teePolicy, fetchImpl = fetch, onVerificationFailure, onNvidiaKeyRotation } = {}) {
   check(modelOf(agent.name) === agent.model, 'Agent model differs from the swarm2 allowlist');
   const config = { mode: 'near-ai', model: agent.model, apiKey, backupApiKeys };
-  if (teePolicy && role === 'proposer') return createTeeProvider(config, { policy: teePolicy, fetchImpl, maxCalls: 1, timeoutMs: SWARM2_TEE_TIMEOUT_MS, onVerificationFailure });
+  if (teePolicy && role === 'proposer') return createTeeProvider(config, { policy: teePolicy, fetchImpl, maxCalls: 1, timeoutMs: SWARM2_TEE_TIMEOUT_MS, onVerificationFailure, onNvidiaKeyRotation });
   return createProvider(config, { maxCalls: 1, timeoutMs: SWARM2_TIMEOUT_MS, fetchImpl: (url, options) =>
     fetchImpl(url, { ...options, body: JSON.stringify(requestBodyFor(agent.model, role, JSON.parse(options.body))) }) });
 }
 
-export async function makeSwarm2Plan({ snapshot, market: input, researchContext, evaluationSeconds = DEFAULT_EVALUATION_SECONDS, env = {}, fixture = false, providerFor, teePolicy, onRecord, onRequest, onVerificationFailure, now = Math.floor(Date.now() / 1000) }) {
+export async function makeSwarm2Plan({ snapshot, market: input, researchContext, evaluationSeconds = DEFAULT_EVALUATION_SECONDS, env = {}, fixture = false, providerFor, teePolicy, onRecord, onRequest, onVerificationFailure, onNvidiaKeyRotation, now = Math.floor(Date.now() / 1000) }) {
   evaluationSecondsOf(evaluationSeconds);
   exactKeys(snapshot, ['chainId', 'roundId', 'safe', 'engine', 'portfolio', 'blockNumber'], 'strategy snapshot');
   exactKeys(snapshot.portfolio, ['stableBalance', 'assetBalance', 'currentAllocationBps'], 'strategy portfolio');
@@ -205,7 +205,7 @@ export async function makeSwarm2Plan({ snapshot, market: input, researchContext,
     check(typeof env.NEARAI_API_KEY === 'string' && env.NEARAI_API_KEY && !/[\r\n]/.test(env.NEARAI_API_KEY), 'Configure NEARAI_API_KEY locally; never paste it into chat');
   }
   const fixtureProvider = fixture ? swarm2FixtureProvider() : null;
-  const make = fixture ? () => fixtureProvider : providerFor ?? ((agent, role) => swarm2LiveProvider(agent, role, { apiKey: env.NEARAI_API_KEY, backupApiKeys: [env.NEARAI_API_KEY_1, env.NEARAI_API_KEY_2].filter(Boolean), teePolicy, onVerificationFailure: details => onVerificationFailure?.({ agent: agent.name, model: agent.model, ...details }) }));
+  const make = fixture ? () => fixtureProvider : providerFor ?? ((agent, role) => swarm2LiveProvider(agent, role, { apiKey: env.NEARAI_API_KEY, backupApiKeys: [env.NEARAI_API_KEY_1, env.NEARAI_API_KEY_2].filter(Boolean), teePolicy, onVerificationFailure: details => onVerificationFailure?.({ agent: agent.name, model: agent.model, ...details }), onNvidiaKeyRotation }));
   const cap = roundCallCap('swarm2'); let reserved = 0;
   const records = [];
   const proposals = [{ id: 0, name: 'Hold', allocationBps: snapshot.portfolio.currentAllocationBps, rationale: 'Preserve current token quantities.' }];

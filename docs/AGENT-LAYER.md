@@ -83,3 +83,8 @@ One explicitly approved real request to `Qwen/Qwen3.6-35B-A3B-FP8` passed: 80 in
 `NEARAI_API_KEY` is primary; optional `NEARAI_API_KEY_1` and `NEARAI_API_KEY_2` are ordered backups. Only explicit completion HTTP 401 (authentication), 402 (payment/credits) or 429 (rate limit) can move to the next distinct configured key. At most three completion HTTP attempts are possible per logical call; the selected key stays active within that provider and is used for signature retrieval. Logical model-call caps stay unchanged. These HTTP statuses are not proof of zero provider billing.
 
 Timeouts, network ambiguity, 5xx, malformed answers, failed attestations and invalid signatures never regenerate a completion. In particular, fallback does not fix Round 10’s `TEE_RESPONSE_REJECTED`. All keys remain inference-only over private stdin; journals may record only slot/rejection-status metadata, never key values. Duplicate keys do not add attempts. No paid/live request is made merely by configuring backups.
+
+
+### NVIDIA signing-key rotation
+
+`allowOfficialNvidiaRotation` is optional and defaults to false. When explicitly enabled, live proposer preflight may fetch only `https://nras.attestation.nvidia.com/.well-known/jwks.json` for an unknown verdict key ID. It requires a unique EC P-384 public key and verifies the nonce-bound, unexpired successful NVIDIA verdict before accepting it. The host bridge durably saves the public key and acknowledges it before any model completion proceeds. Existing key IDs cannot be replaced; model/gateway measurements are unchanged. This trusts NVIDIA's HTTPS key publication, not independently reproduced gateway source code. Offline evidence verification uses persisted keys only and never fetches keys supplied by evidence.

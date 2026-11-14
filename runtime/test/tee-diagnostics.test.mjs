@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { responseFailureDetails, createTeeProvider } from '../agents/tee-client.mjs';
+import { responseFailureDetails, createTeeProvider, verifyGpuWithRotation, NVIDIA_JWKS } from '../agents/tee-client.mjs';
 import { inspectReport, verifyCompletion } from '../agents/tee.mjs';
 import { syntheticTee } from './fixtures/tee-synthetic.mjs';
 
@@ -60,4 +60,25 @@ test('a rotated GPU signing key is identified before any completion and the verd
   await assert.rejects(p.complete({system:'test',context:{}}),/TEE_GPU_REJECTED/);
   assert.equal(saved.reason,'GPU_SIGNING_KEY_NOT_PINNED');assert.equal(saved.checks.policyHasKey,false);
   assert.equal(saved.evidence.token,token);assert.equal(paid,0);
+});
+
+test('optional official-key rotation verifies the verdict and persists before pinning; invalid evidence never adds trust',async()=>{
+  const f=await syntheticTee();const token=f.gpuToken();const freshKey=f.policy.nrasKeys[0];
+  const policy=()=>({...f.policy,nrasKeys:f.policy.nrasKeys.map(k=>({...k,kid:'previous-key'})),allowOfficialNvidiaRotation:true});
+  const p=policy();let persisted=0;
+  assert.equal(await verifyGpuWithRotation(token,f.nonce,p,{at:f.at,fetchKeys:async()=>({keys:[freshKey]}),onRotation:async update=>{
+    assert.equal(p.nrasKeys.length,1,'must not mutate policy before durable parent acknowledgement');
+    assert.equal(update.source,NVIDIA_JWKS);assert.deepEqual(update.key,Object.fromEntries(['kty','crv','kid','x','y'].map(k=>[k,freshKey[k]])));persisted++;
+  }}),true);
+  assert.equal(p.nrasKeys.length,2);assert.equal(persisted,1);
+  for(const mutate of [p=>{p.allowOfficialNvidiaRotation=false;},p=>{p.nrasKeys=[{...freshKey,x:'A'.repeat(64)}];}]){
+    const bad=policy();mutate(bad);let fetches=0;
+    assert.equal(await verifyGpuWithRotation(token,f.nonce,bad,{at:f.at,fetchKeys:async()=>{fetches++;return{keys:[freshKey]};},onRotation:async()=>{throw Error('must not persist');}}),false);
+    assert.equal(fetches,0);
+  }
+  for(const keys of [[],[freshKey,freshKey],[{...freshKey,d:''}],[{...freshKey,x:'A'.repeat(64)}]]){
+    const bad=policy();assert.equal(await verifyGpuWithRotation(token,f.nonce,bad,{at:f.at,fetchKeys:async()=>({keys}),onRotation:async()=>{throw Error('must not persist');}}),false);assert.equal(bad.nrasKeys.length,1);
+  }
+  const bad=policy();assert.equal(await verifyGpuWithRotation(f.gpuToken({'x-nvidia-overall-att-result':false}),f.nonce,bad,{at:f.at,fetchKeys:async()=>({keys:[freshKey]}),onRotation:async()=>{throw Error('must not persist');}}),false);
+  await assert.rejects(verifyGpuWithRotation(token,f.nonce,policy(),{at:f.at,fetchKeys:async()=>({keys:[freshKey]}),onRotation:async()=>{throw Error('synthetic persistence failed');}}),/synthetic persistence failed/);
 });
